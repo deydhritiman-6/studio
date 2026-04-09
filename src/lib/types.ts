@@ -58,3 +58,14 @@ export type TopProductData = {
   name: string;
   sales: number;
 };
+
+export type Distributor = {
+  id: string;
+  name: string;
+  contactPerson: string;
+  email: string;
+  phone: string;
+  region: string;
+  status: 'Active' | 'Inactive';
+  lastOrderDate: string;
+};

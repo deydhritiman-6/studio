@@ -1,4 +1,4 @@
-import type { Customer, Order, Product, InventoryItem, Recipe, SalesData, TopProductData } from './types';
+import type { Customer, Order, Product, InventoryItem, Recipe, SalesData, TopProductData, Distributor } from './types';
 
 export const customers: Customer[] = [
   { id: 'C001', name: 'Aarav Sharma', email: 'aarav.sharma@example.com', phone: '+91 9876543210', customerType: 'VIP', vipLevel: 'Platinum', totalPurchaseValue: 150000, joinedDate: '2023-01-15' },
@@ -55,4 +55,11 @@ export const topProductsData: TopProductData[] = [
     { name: "Salted Caramel", sales: 200 },
     { name: "Raspberry Ganache", sales: 150 },
     { name: "Classic Milk", sales: 100 },
+];
+
+export const distributors: Distributor[] = [
+  { id: 'D001', name: 'Premium Foods India', contactPerson: 'Rohan Mehta', email: 'rohan@premiumfoods.in', phone: '+91 9988776655', region: 'North India', status: 'Active', lastOrderDate: '2024-05-15' },
+  { id: 'D002', name: 'South Delicacies', contactPerson: 'Ananya Rao', email: 'ananya@southdelicacies.com', phone: '+91 8877665544', region: 'South India', status: 'Active', lastOrderDate: '2024-05-18' },
+  { id: 'D003', name: 'Western Gourmet', contactPerson: 'Siddharth Joshi', email: 'sid@westerngourmet.co', phone: '+91 7766554433', region: 'West India', status: 'Inactive', lastOrderDate: '2023-12-10' },
+  { id: 'D004', name: 'Eastern Treats', contactPerson: 'Ishita Banerjee', email: 'ishita@easterntreats.net', phone: '+91 6655443322', region: 'East India', status: 'Active', lastOrderDate: '2024-04-30' },
 ];
