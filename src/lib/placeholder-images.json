@@ -1,3 +1,40 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "dark-chocolate-truffle",
+      "description": "A rich dark chocolate truffle.",
+      "imageUrl": "https://picsum.photos/seed/101/400/300",
+      "imageHint": "dark chocolate"
+    },
+    {
+      "id": "milk-chocolate-bar",
+      "description": "A smooth milk chocolate bar.",
+      "imageUrl": "https://picsum.photos/seed/102/400/300",
+      "imageHint": "milk chocolate"
+    },
+    {
+      "id": "hazelnut-praline",
+      "description": "A creamy hazelnut praline.",
+      "imageUrl": "https://picsum.photos/seed/103/400/300",
+      "imageHint": "chocolate praline"
+    },
+    {
+      "id": "sea-salt-caramel",
+      "description": "Chocolate with a sea salt caramel filling.",
+      "imageUrl": "https://picsum.photos/seed/104/400/300",
+      "imageHint": "caramel chocolate"
+    },
+    {
+      "id": "raspberry-ganache",
+      "description": "Dark chocolate with raspberry ganache.",
+      "imageUrl": "https://picsum.photos/seed/105/400/300",
+      "imageHint": "raspberry chocolate"
+    },
+    {
+      "id": "assorted-box",
+      "description": "A box of assorted artisan chocolates.",
+      "imageUrl": "https://picsum.photos/seed/106/400/300",
+      "imageHint": "chocolate box"
+    }
+  ]
 }

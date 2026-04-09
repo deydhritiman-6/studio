@@ -1,0 +1,56 @@
+export type Customer = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  customerType: 'VIP' | 'Regular' | 'Corporate' | 'Wholesale';
+  vipLevel: 'Gold' | 'Platinum' | 'Royal' | 'None';
+  totalPurchaseValue: number;
+  joinedDate: string;
+};
+
+export type Order = {
+  id: string;
+  customerId: string;
+  customerName: string;
+  orderDate: string;
+  totalAmount: number;
+  paymentStatus: 'Paid' | 'Pending' | 'Failed';
+  deliveryStatus: 'Pending' | 'Confirmed' | 'Preparing' | 'Packed' | 'Shipped' | 'Delivered';
+};
+
+export type Product = {
+  id: string;
+  name: string;
+  flavor: string;
+  price: number;
+  wholesalePrice: number;
+  availabilityStatus: 'In Stock' | 'Out of Stock';
+  imageUrl: string;
+  imageHint: string;
+};
+
+export type Recipe = {
+  id: string;
+  name: string;
+  associatedProduct: string;
+  ingredients: { name: string; quantity: string }[];
+};
+
+export type InventoryItem = {
+  id: string;
+  name: string;
+  category: 'Raw Materials' | 'Packaging Materials' | 'Finished Products';
+  stockLevel: number;
+  status: 'In Stock' | 'Low Stock' | 'Out of Stock';
+};
+
+export type SalesData = {
+  month: string;
+  sales: number;
+};
+
+export type TopProductData = {
+  name: string;
+  sales: number;
+};
