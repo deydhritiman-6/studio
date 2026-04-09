@@ -30,6 +30,7 @@ import {
   Settings,
   BrainCircuit,
   Lightbulb,
+  HelpCircle,
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -116,6 +117,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarContent>
         <SidebarFooter className="p-2 border-t border-sidebar-border">
            <SidebarMenu>
+             <SidebarMenuItem>
+                <SidebarMenuButton isActive={pathname === '/guide'} asChild>
+                  <Link href="/guide">
+                    <HelpCircle />
+                    <span>Developer Guide</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             <SidebarMenuItem>
                 <SidebarMenuButton isActive={pathname === '/settings'} asChild>
                   <Link href="/settings">
