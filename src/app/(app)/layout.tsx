@@ -31,6 +31,7 @@ import {
   BrainCircuit,
   Lightbulb,
   HelpCircle,
+  BookUser,
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -117,6 +118,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarContent>
         <SidebarFooter className="p-2 border-t border-sidebar-border">
            <SidebarMenu>
+             <SidebarMenuItem>
+                <SidebarMenuButton isActive={pathname === '/user-guide'} asChild>
+                  <Link href="/user-guide">
+                    <BookUser />
+                    <span>User Guide</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
              <SidebarMenuItem>
                 <SidebarMenuButton isActive={pathname === '/guide'} asChild>
                   <Link href="/guide">
