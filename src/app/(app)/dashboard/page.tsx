@@ -1,11 +1,11 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { PageHeader } from '@/components/page-header';
 import { recentSalesData, topProductsData } from '@/lib/data';
 import { IndianRupee, ShoppingBag, Crown } from 'lucide-react';
-import { Bar, BarChart, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
+import { Bar, BarChart, Pie, PieChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 
 export default function DashboardPage() {
   const kpiData = [
@@ -22,11 +22,11 @@ export default function DashboardPage() {
     "Salted Caramel": { label: "Salted Caramel", color: "hsl(var(--chart-3))" },
     "Raspberry Ganache": { label: "Raspberry Ganache", color: "hsl(var(--chart-4))" },
     "Classic Milk": { label: "Classic Milk", color: "hsl(var(--chart-5))" },
-  }
+  } satisfies import('@/components/ui/chart').ChartConfig;
 
   const recentSalesChartConfig = {
     sales: { label: 'Sales', color: 'hsl(var(--chart-1))' },
-  };
+  } satisfies import('@/components/ui/chart').ChartConfig;
 
 
   return (
@@ -54,35 +54,47 @@ export default function DashboardPage() {
           <CardContent className="pl-2">
              <ChartContainer config={recentSalesChartConfig} className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={recentSalesData}>
+                <BarChart data={recentSalesData} margin={{ top: 20, right: 20, bottom: 0, left: 0 }}>
                    <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value / 1000}k`} />
-                  <Tooltip
+                  <ChartTooltip
                     cursor={false}
                     content={<ChartTooltipContent
                         formatter={(value) => `₹${Number(value).toLocaleString()}`}
                         indicator="dot"
                       />}
                     />
-                  <Bar dataKey="sales" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="sales" fill="var(--color-sales)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
           </CardContent>
         </Card>
-        <Card className="lg:col-span-3">
+        <Card className="lg:col-span-3 flex flex-col">
           <CardHeader>
             <CardTitle>Top Selling Products</CardTitle>
           </CardHeader>
-          <CardContent>
-             <ChartContainer config={topProductsChartConfig} className="h-[300px] w-full">
+          <CardContent className="flex-1 pb-4">
+             <ChartContainer config={topProductsChartConfig} className="mx-auto aspect-square h-full">
                <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Tooltip
+                    <ChartTooltip
                         cursor={false}
                         content={<ChartTooltipContent hideLabel indicator="dot" />}
                     />
-                    <Pie data={topProductsData} dataKey="sales" nameKey="name" cx="50%" cy="50%" outerRadius={100} innerRadius={60} fill="hsl(var(--primary))" />
+                    <Pie 
+                      data={topProductsData} 
+                      dataKey="sales" 
+                      nameKey="name" 
+                      cx="50%" 
+                      cy="50%" 
+                      innerRadius="60%"
+                      strokeWidth={2}
+                    />
+                    <ChartLegend 
+                      content={<ChartLegendContent nameKey="name" />}
+                      className="-translate-y-4 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center"
+                    />
                 </PieChart>
                </ResponsiveContainer>
              </ChartContainer>
