@@ -41,20 +41,20 @@ export const inventory: InventoryItem[] = [
 ];
 
 export const recentSalesData: SalesData[] = [
-  { month: 'Jan', sales: 4000 },
-  { month: 'Feb', sales: 3000 },
-  { month: 'Mar', sales: 5000 },
-  { month: 'Apr', sales: 4500 },
-  { month: 'May', sales: 6000 },
-  { month: 'Jun', sales: 5500 },
+  { month: 'Jan', sales: 400000 },
+  { month: 'Feb', sales: 300000 },
+  { month: 'Mar', sales: 500000 },
+  { month: 'Apr', sales: 450000 },
+  { month: 'May', sales: 600000 },
+  { month: 'Jun', sales: 550000 },
 ];
 
 export const topProductsData: TopProductData[] = [
-    { name: "Velvet Noir 85%", sales: 400 },
-    { name: "Hazelnut Praline", sales: 300 },
-    { name: "Salted Caramel", sales: 200 },
-    { name: "Raspberry Ganache", sales: 150 },
-    { name: "Classic Milk", sales: 100 },
+    { name: "Velvet Noir 85% Cacao", sales: 400 },
+    { name: "Golden Hazelnut Praline", sales: 300 },
+    { name: "Himalayan Pink Salt Caramel", sales: 200 },
+    { name: "Royal Raspberry Ganache", sales: 150 },
+    { name: "Classic Milk Chocolate Bar", sales: 100 },
 ];
 
 export const distributors: Distributor[] = [
