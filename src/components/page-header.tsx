@@ -9,11 +9,11 @@ type PageHeaderProps = {
 
 export function PageHeader({ title, actions, className }: PageHeaderProps) {
   return (
-    <div className={cn("flex items-center justify-between mb-6", className)}>
-      <h1 className="text-3xl font-bold font-headline text-foreground">
+    <div className={cn("flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4", className)}>
+      <h1 className="text-2xl md:text-3xl font-bold font-headline text-foreground">
         {title}
       </h1>
-      {actions && <div className="flex items-center gap-2">{actions}</div>}
+      {actions && <div className="flex items-center gap-2 w-full md:w-auto [&>button]:w-full md:[&>button]:w-auto">{actions}</div>}
     </div>
   );
 }

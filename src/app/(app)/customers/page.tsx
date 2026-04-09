@@ -20,20 +20,22 @@ export default function CustomersPage() {
       } />
       <Card>
         <CardContent>
-          <div className="flex items-center justify-between gap-4 py-4">
-            <Input placeholder="Search customers..." className="max-w-sm" />
-            <Select>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="vip">VIP</SelectItem>
-                <SelectItem value="regular">Regular</SelectItem>
-                <SelectItem value="corporate">Corporate</SelectItem>
-                <SelectItem value="wholesale">Wholesale</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="flex flex-col md:flex-row items-center gap-4 py-4">
+            <Input placeholder="Search customers..." className="w-full md:max-w-sm" />
+            <div className="w-full md:w-auto md:ml-auto">
+                <Select>
+                <SelectTrigger className="w-full md:w-[180px]">
+                    <SelectValue placeholder="Filter by type" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="vip">VIP</SelectItem>
+                    <SelectItem value="regular">Regular</SelectItem>
+                    <SelectItem value="corporate">Corporate</SelectItem>
+                    <SelectItem value="wholesale">Wholesale</SelectItem>
+                </SelectContent>
+                </Select>
+            </div>
           </div>
           <Table>
             <TableHeader>
