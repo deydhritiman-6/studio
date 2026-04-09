@@ -212,7 +212,11 @@ export default function DashboardPage() {
                   <TableRow key={item.id}>
                     <TableCell className="font-medium">{item.name}</TableCell>
                     <TableCell>{item.category}</TableCell>
-                    <TableCell className="text-right font-bold text-destructive">{item.stockLevel}</TableCell>
+                    <TableCell className="text-right">
+                      <span className="inline-block animate-bell-shake text-lg font-bold text-destructive">
+                        {item.stockLevel}
+                      </span>
+                    </TableCell>
                   </TableRow>
                 )) : (
                   <TableRow>
