@@ -83,34 +83,30 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   <SidebarMenuSub>
                     {item.subItems.map((subItem) => (
                       <SidebarMenuSubItem key={subItem.href}>
-                        <Link href={subItem.href} legacyBehavior passHref>
-                          <SidebarMenuSubButton
-                            isActive={pathname === subItem.href}
-                            asChild
-                          >
-                            <a>
-                              <subItem.icon />
-                              <span>{subItem.label}</span>
-                            </a>
-                          </SidebarMenuSubButton>
-                        </Link>
+                        <SidebarMenuSubButton
+                          isActive={pathname === subItem.href}
+                          asChild
+                        >
+                          <Link href={subItem.href}>
+                            <subItem.icon />
+                            <span>{subItem.label}</span>
+                          </Link>
+                        </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
                     ))}
                   </SidebarMenuSub>
                 </SidebarMenuItem>
               ) : (
                 <SidebarMenuItem key={item.href}>
-                   <Link href={item.href} legacyBehavior passHref>
-                    <SidebarMenuButton
-                      isActive={pathname === item.href}
-                      asChild
-                    >
-                      <a>
-                        <item.icon />
-                        <span>{item.label}</span>
-                      </a>
-                    </SidebarMenuButton>
-                  </Link>
+                   <SidebarMenuButton
+                    isActive={pathname === item.href}
+                    asChild
+                  >
+                    <Link href={item.href}>
+                      <item.icon />
+                      <span>{item.label}</span>
+                    </Link>
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
               )
             )}
@@ -119,14 +115,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <SidebarFooter className="p-2 border-t border-sidebar-border">
            <SidebarMenu>
             <SidebarMenuItem>
-                <Link href="/settings" legacyBehavior passHref>
-                  <SidebarMenuButton isActive={pathname === '/settings'} asChild>
-                    <a>
-                      <Settings />
-                      <span>Settings</span>
-                    </a>
-                  </SidebarMenuButton>
-                </Link>
+                <SidebarMenuButton isActive={pathname === '/settings'} asChild>
+                  <Link href="/settings">
+                    <Settings />
+                    <span>Settings</span>
+                  </Link>
+                </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                  <SidebarMenuButton>
