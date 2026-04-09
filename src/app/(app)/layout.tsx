@@ -43,14 +43,16 @@ const navItems = [
   { href: '/products', icon: Package, label: 'Products' },
   { href: '/inventory', icon: Boxes, label: 'Inventory' },
   { href: '/invoices', icon: FileText, label: 'Invoices' },
-  { href: '/marketing', icon: Megaphone, label: 'Marketing' },
-  { href: '/vip-clients', icon: Gem, label: 'VIP Clients' },
   { href: '/distributors', icon: Truck, label: 'Distributors' },
-  { href: '/analytics', icon: BarChart, label: 'Analytics' },
   {
     icon: BrainCircuit,
     label: 'AI System',
-    subItems: [{ href: '/ai/recommendations', icon: Lightbulb, label: 'Recommendations' }],
+    subItems: [
+      { href: '/ai/recommendations', icon: Lightbulb, label: 'Recommendations' },
+      { href: '/analytics', icon: BarChart, label: 'Demand Forecasting' },
+      { href: '/marketing', icon: Megaphone, label: 'Marketing Copy' },
+      { href: '/vip-clients', icon: Gem, label: 'VIP Insights' },
+    ],
   },
 ];
 
