@@ -52,12 +52,18 @@ Analyze the provided customer's purchase history to identify patterns, preferred
 
 For each recommendation, provide the product ID, product name, and a brief, compelling reason for the recommendation, linking it back to their purchase history.
 
+If the purchase history is empty, recommend 3 to 5 of the most popular or universally appealing products. The reason should state that these are popular choices for new customers.
+
 Customer ID: {{{customerId}}}
 
 Customer Purchase History:
+{{#if purchaseHistory}}
 {{#each purchaseHistory}}
 - Product ID: {{{productId}}}, Name: {{{productName}}}, Flavor: {{{flavor}}}, Quantity: {{{quantity}}}
 {{/each}}
+{{else}}
+No purchase history available.
+{{/if}}
 
 Provide your recommendations in the specified JSON format.`,
 });

@@ -9,16 +9,16 @@ import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { getChocolateRecommendations } from './actions';
 import type { RecommendChocolateOutput } from '@/ai/flows/recommend-chocolate';
 import { Lightbulb, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { products } from '@/lib/data';
+import { products, customers } from '@/lib/data';
 import Image from 'next/image';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const formSchema = z.object({
-  customerId: z.string().min(1, 'Customer ID is required'),
+  customerId: z.string().min(1, 'Customer selection is required'),
 });
 
 export default function RecommendationsPage() {
@@ -57,6 +57,8 @@ export default function RecommendationsPage() {
    const getProductImageHint = (productId: string) => {
     return products.find(p => p.id === productId)?.imageHint || 'chocolate';
   }
+  
+  const selectedCustomerName = customers.find(c => c.id === form.getValues('customerId'))?.name;
 
 
   return (
@@ -66,7 +68,7 @@ export default function RecommendationsPage() {
         <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle>Get Recommendations</CardTitle>
-            <CardDescription>Enter a customer ID to generate personalized chocolate recommendations.</CardDescription>
+            <CardDescription>Select a customer to generate personalized chocolate recommendations.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -76,15 +78,24 @@ export default function RecommendationsPage() {
                   name="customerId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Customer ID</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., C001" {...field} />
-                      </FormControl>
+                      <FormLabel>Customer</FormLabel>
+                       <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a customer" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                           {customers.map((customer) => (
+                            <SelectItem key={customer.id} value={customer.id}>{customer.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <Button type="submit" disabled={isLoading} className="w-full">
+                <Button type="submit" disabled={isLoading || !form.getValues('customerId')} className="w-full">
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -120,7 +131,7 @@ export default function RecommendationsPage() {
           )}
           {recommendations && (
             <>
-            <h2 className="text-2xl font-headline font-bold mb-4">Recommendations for {form.getValues('customerId')}</h2>
+            <h2 className="text-2xl font-headline font-bold mb-4">Recommendations for {selectedCustomerName}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {recommendations.recommendations.map((rec) => (
                 <Card key={rec.productId}>
@@ -141,7 +152,7 @@ export default function RecommendationsPage() {
                 <Lightbulb className="h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="text-xl font-semibold font-headline">AI-Powered Insights Await</h3>
                 <p className="text-muted-foreground mt-2 max-w-sm">
-                    Enter a customer ID and let our AI discover the perfect chocolates to delight them.
+                    Select a customer and let our AI discover the perfect chocolates to delight them.
                 </p>
             </div>
           )}
