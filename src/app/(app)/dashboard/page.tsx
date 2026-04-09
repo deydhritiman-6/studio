@@ -4,13 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { PageHeader } from '@/components/page-header';
 import { recentSalesData, topProductsData } from '@/lib/data';
-import { DollarSign, Users, ShoppingBag, Crown } from 'lucide-react';
+import { IndianRupee, ShoppingBag, Crown } from 'lucide-react';
 import { Bar, BarChart, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 
 export default function DashboardPage() {
   const kpiData = [
-    { title: 'Daily Sales', value: '₹1,84,320', icon: DollarSign, change: '+4.2%' },
-    { title: 'Monthly Revenue', value: '₹45,23,189', icon: DollarSign, change: '+12.5%' },
+    { title: 'Daily Sales', value: '₹1,84,320', icon: IndianRupee, change: '+4.2%' },
+    { title: 'Monthly Revenue', value: '₹45,23,189', icon: IndianRupee, change: '+12.5%' },
     { title: 'New Orders', value: '215', icon: ShoppingBag, change: '-2.1%' },
     { title: 'VIP Customers', value: '48', icon: Crown, change: '+3' },
   ];
