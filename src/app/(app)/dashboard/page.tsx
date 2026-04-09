@@ -6,7 +6,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLe
 import { PageHeader } from '@/components/page-header';
 import { recentSalesData, topProductsData, orders, inventory, customers } from '@/lib/data';
 import { IndianRupee, ShoppingBag, Crown, Users, ArrowUpRight } from 'lucide-react';
-import { Area, AreaChart, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Cell } from 'recharts';
+import { Area, AreaChart, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Cell, CartesianGrid } from 'recharts';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 
@@ -71,7 +71,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
              <ChartContainer config={recentSalesChartConfig} className="h-[300px] w-full">
-              <AreaChart data={recentSalesData} margin={{ top: 5, right: 10, bottom: 0, left: -20 }}>
+              <AreaChart accessibilityLayer data={recentSalesData} margin={{ top: 5, right: 10, bottom: 0, left: 10 }}>
                  <defs>
                   <linearGradient id="fillSales" x1="0" y1="0" x2="0" y2="1">
                     <stop
@@ -86,16 +86,29 @@ export default function DashboardPage() {
                     />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={{ stroke: 'hsl(var(--border))', strokeWidth: 1 }} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={{ stroke: 'hsl(var(--border))', strokeWidth: 1 }} tickFormatter={(value) => `₹${value / 1000}k`} />
+                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value / 1000}k`} />
+                <CartesianGrid vertical={false} stroke="hsl(var(--border))" strokeDasharray="3 3" />
                 <ChartTooltip
-                  cursor={true}
+                  cursor={false}
                   content={<ChartTooltipContent
                       formatter={(value) => `₹${Number(value).toLocaleString()}`}
                       indicator="dot"
                     />}
                 />
-                <Area dataKey="sales" type="natural" fill="url(#fillSales)" fillOpacity={0.4} stroke="var(--color-sales)" stackId="a" />
+                <Area 
+                  dataKey="sales" 
+                  type="natural" 
+                  fill="url(#fillSales)" 
+                  fillOpacity={0.4} 
+                  stroke="var(--color-sales)" 
+                  strokeWidth={2}
+                  activeDot={{
+                    r: 6,
+                    strokeWidth: 2,
+                    className: "stroke-primary fill-background"
+                  }}
+                />
               </AreaChart>
             </ChartContainer>
           </CardContent>
