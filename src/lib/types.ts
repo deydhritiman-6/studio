@@ -15,6 +15,10 @@ export type Order = {
   customerName: string;
   orderDate: string;
   totalAmount: number;
+  products: {
+    productId: string;
+    quantity: number;
+  }[];
   paymentStatus: 'Paid' | 'Pending' | 'Failed';
   deliveryStatus: 'Pending' | 'Confirmed' | 'Preparing' | 'Packed' | 'Shipped' | 'Delivered';
 };

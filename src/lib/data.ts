@@ -9,12 +9,12 @@ export const customers: Customer[] = [
 ];
 
 export const orders: Order[] = [
-  { id: 'ORD-001', customerId: 'C001', customerName: 'Aarav Sharma', orderDate: '2024-05-20', totalAmount: 12500, paymentStatus: 'Paid', deliveryStatus: 'Delivered' },
-  { id: 'ORD-002', customerId: 'C002', customerName: 'Vivaan Singh', orderDate: '2024-05-18', totalAmount: 3200, paymentStatus: 'Paid', deliveryStatus: 'Shipped' },
-  { id: 'ORD-003', customerId: 'C005', customerName: 'Sweet Delights', orderDate: '2024-05-15', totalAmount: 150000, paymentStatus: 'Paid', deliveryStatus: 'Packed' },
-  { id: 'ORD-004', customerId: 'C003', customerName: 'Global Exports Inc.', orderDate: '2024-05-12', totalAmount: 85000, paymentStatus: 'Pending', deliveryStatus: 'Confirmed' },
-  { id: 'ORD-005', customerId: 'C004', customerName: 'Priya Patel', orderDate: '2024-05-10', totalAmount: 8800, paymentStatus: 'Paid', deliveryStatus: 'Preparing' },
-  { id: 'ORD-006', customerId: 'C001', customerName: 'Aarav Sharma', orderDate: '2024-05-08', totalAmount: 7200, paymentStatus: 'Paid', deliveryStatus: 'Delivered' },
+  { id: 'ORD-001', customerId: 'C001', customerName: 'Aarav Sharma', orderDate: '2024-05-20', totalAmount: 12500, products: [{ productId: 'P001', quantity: 10 }, { productId: 'P002', quantity: 5 }], paymentStatus: 'Paid', deliveryStatus: 'Delivered' },
+  { id: 'ORD-002', customerId: 'C002', customerName: 'Vivaan Singh', orderDate: '2024-05-18', totalAmount: 3200, products: [{ productId: 'P005', quantity: 5 }], paymentStatus: 'Paid', deliveryStatus: 'Shipped' },
+  { id: 'ORD-003', customerId: 'C005', customerName: 'Sweet Delights', orderDate: '2024-05-15', totalAmount: 150000, products: [{ productId: 'P001', quantity: 100 }, { productId: 'P005', quantity: 200 }], paymentStatus: 'Paid', deliveryStatus: 'Packed' },
+  { id: 'ORD-004', customerId: 'C003', customerName: 'Global Exports Inc.', orderDate: '2024-05-12', totalAmount: 85000, products: [{ productId: 'P003', quantity: 50 }, { productId: 'P004', quantity: 50 }], paymentStatus: 'Pending', deliveryStatus: 'Confirmed' },
+  { id: 'ORD-005', customerId: 'C004', customerName: 'Priya Patel', orderDate: '2024-05-10', totalAmount: 8800, products: [{ productId: 'P002', quantity: 4 }, { productId: 'P004', quantity: 4 }], paymentStatus: 'Paid', deliveryStatus: 'Preparing' },
+  { id: 'ORD-006', customerId: 'C001', customerName: 'Aarav Sharma', orderDate: '2024-05-08', totalAmount: 7200, products: [{ productId: 'P003', quantity: 8 }], paymentStatus: 'Paid', deliveryStatus: 'Delivered' },
 ];
 
 export const products: Product[] = [
