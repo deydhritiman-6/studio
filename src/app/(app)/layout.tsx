@@ -35,6 +35,7 @@ import {
   BookUser,
   LogOut,
   PanelLeft,
+  Bell,
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -48,6 +49,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import { inventory } from '@/lib/data';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -81,6 +83,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [isClient, setIsClient] = useState(false);
+
+  const lowStockItems = inventory.filter(item => item.status === 'Low Stock');
+  const hasLowStock = lowStockItems.length > 0;
 
   useEffect(() => {
     setIsClient(true);
@@ -212,7 +217,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="flex flex-1 flex-col">
         <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b bg-background px-6">
             <SidebarTrigger className="md:hidden" />
-            <div className="flex flex-1 justify-end">
+            <div className="flex flex-1 items-center justify-end gap-2">
+                {hasLowStock && (
+                  <Button asChild variant="ghost" size="icon" className="relative">
+                      <Link href="/inventory" aria-label="View low stock items">
+                          <Bell className="h-6 w-6 animate-bell-shake text-yellow-500" />
+                          <span className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
+                              {lowStockItems.length}
+                          </span>
+                      </Link>
+                  </Button>
+                )}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="relative h-10 w-10 rounded-full">

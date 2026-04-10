@@ -213,7 +213,7 @@ export default function DashboardPage() {
                     <TableCell className="font-medium">{item.name}</TableCell>
                     <TableCell>{item.category}</TableCell>
                     <TableCell className="text-right">
-                      <span className="inline-block animate-bell-shake text-lg font-bold text-destructive">
+                      <span className="inline-block animate-bell-shake text-lg font-bold text-yellow-500">
                         {item.stockLevel}
                       </span>
                     </TableCell>
