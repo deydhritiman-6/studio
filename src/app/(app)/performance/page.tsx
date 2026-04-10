@@ -57,7 +57,7 @@ export default function PerformancePage() {
                 {(Object.keys(metricConfig) as Array<keyof typeof metricConfig>).map((m) => (
                   <Button
                     key={m}
-                    variant={metric === m ? 'secondary' : 'ghost'}
+                    variant={metric === m ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setMetric(m)}
                     className="flex-1 px-2 h-8"
