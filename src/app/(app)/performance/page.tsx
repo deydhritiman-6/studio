@@ -78,6 +78,12 @@ export default function PerformancePage() {
                   cursor={true}
                   content={<ChartTooltipContent
                       indicator="dot"
+                      labelFormatter={(label, payload) => {
+                        if (payload && payload.length > 0) {
+                          return `${label} / ${payload[0].payload.currentMonth}`;
+                        }
+                        return label;
+                      }}
                       formatter={(value) => currentMetricConfig.tooltipFormatter(value as number)}
                     />}
                 />

@@ -72,6 +72,7 @@ export type Distributor = {
 
 export type PerformanceDataPoint = {
   month: string;
+  currentMonth: string;
   previousSales: number;
   currentSales: number;
   previousRevenue: number;
