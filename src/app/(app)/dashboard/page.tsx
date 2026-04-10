@@ -20,11 +20,11 @@ export default function DashboardPage() {
   
   const topProductsChartConfig = {
     sales: { label: 'Sales' },
-    "Velvet-Noir-85%-Cacao": { label: "Velvet Noir 85% Cacao", color: "hsl(var(--chart-1))" },
-    "Golden-Hazelnut-Praline": { label: "Golden Hazelnut Praline", color: "hsl(var(--chart-2))" },
-    "Himalayan-Pink-Salt-Caramel": { label: "Himalayan Pink Salt Caramel", color: "hsl(var(--chart-3))" },
-    "Royal-Raspberry-Ganache": { label: "Royal Raspberry Ganache", color: "hsl(var(--chart-4))" },
-    "Classic-Milk-Chocolate-Bar": { label: "Classic Milk Chocolate Bar", color: "hsl(var(--chart-5))" },
+    "Velvet-Noir-85%-Cacao": { label: "Velvet Noir 85% Cacao", color: "green" },
+    "Golden-Hazelnut-Praline": { label: "Golden Hazelnut Praline", color: "yellow" },
+    "Himalayan-Pink-Salt-Caramel": { label: "Himalayan Pink Salt Caramel", color: "cyan" },
+    "Royal-Raspberry-Ganache": { label: "Royal Raspberry Ganache", color: "magenta" },
+    "Classic-Milk-Chocolate-Bar": { label: "Classic Milk Chocolate Bar", color: "crimson" },
   } satisfies import('@/components/ui/chart').ChartConfig;
 
   const recentSalesChartConfig = {
