@@ -1,4 +1,4 @@
-import type { Customer, Order, Product, InventoryItem, Recipe, SalesData, TopProductData, Distributor } from './types';
+import type { Customer, Order, Product, InventoryItem, Recipe, SalesData, TopProductData, Distributor, PerformanceDataPoint } from './types';
 
 export const customers: Customer[] = [
   { id: 'C001', name: 'Aarav Sharma', email: 'aarav.sharma@example.com', phone: '+91 9876543210', customerType: 'VIP', vipLevel: 'Platinum', totalPurchaseValue: 150000, joinedDate: '2023-01-15' },
@@ -62,4 +62,13 @@ export const distributors: Distributor[] = [
   { id: 'D002', name: 'South Delicacies', contactPerson: 'Ananya Rao', email: 'ananya@southdelicacies.com', phone: '+91 8877665544', region: 'South India', status: 'Active', lastOrderDate: '2024-05-18' },
   { id: 'D003', name: 'Western Gourmet', contactPerson: 'Siddharth Joshi', email: 'sid@westerngourmet.co', phone: '+91 7766554433', region: 'West India', status: 'Inactive', lastOrderDate: '2023-12-10' },
   { id: 'D004', name: 'Eastern Treats', contactPerson: 'Ishita Banerjee', email: 'ishita@easterntreats.net', phone: '+91 6655443322', region: 'East India', status: 'Active', lastOrderDate: '2024-04-30' },
+];
+
+export const performanceData: PerformanceDataPoint[] = [
+  { month: 'Month 1', previousSales: 350, currentSales: 450, previousRevenue: 350000, currentRevenue: 450000, previousOrders: 80, currentOrders: 100, previousCustomers: 20, currentCustomers: 25 },
+  { month: 'Month 2', previousSales: 380, currentSales: 480, previousRevenue: 380000, currentRevenue: 480000, previousOrders: 85, currentOrders: 110, previousCustomers: 22, currentCustomers: 28 },
+  { month: 'Month 3', previousSales: 420, currentSales: 520, previousRevenue: 420000, currentRevenue: 520000, previousOrders: 95, currentOrders: 120, previousCustomers: 25, currentCustomers: 32 },
+  { month: 'Month 4', previousSales: 400, currentSales: 550, previousRevenue: 400000, currentRevenue: 550000, previousOrders: 90, currentOrders: 130, previousCustomers: 24, currentCustomers: 35 },
+  { month: 'Month 5', previousSales: 450, currentSales: 580, previousRevenue: 450000, currentRevenue: 580000, previousOrders: 100, currentOrders: 140, previousCustomers: 28, currentCustomers: 40 },
+  { month: 'Month 6', previousSales: 480, currentSales: 620, previousRevenue: 480000, currentRevenue: 620000, previousOrders: 110, currentOrders: 150, previousCustomers: 30, currentCustomers: 45 },
 ];

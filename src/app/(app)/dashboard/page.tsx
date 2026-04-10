@@ -4,13 +4,17 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { PageHeader } from '@/components/page-header';
-import { recentSalesData, topProductsData, orders, inventory, customers } from '@/lib/data';
+import { performanceData, topProductsData, orders, inventory, customers } from '@/lib/data';
+import type { PerformanceDataPoint } from '@/lib/types';
 import { IndianRupee, ShoppingBag, Crown, Users, ArrowUpRight } from 'lucide-react';
-import { Area, AreaChart, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Cell, CartesianGrid } from 'recharts';
+import { Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Cell, CartesianGrid, Line, LineChart } from 'recharts';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 
 export default function DashboardPage() {
+  const [metric, setMetric] = useState<'Revenue' | 'Sales' | 'Orders' | 'Customers'>('Revenue');
+
   const kpiData = [
     { title: 'Total Revenue', value: '₹45,23,189', icon: IndianRupee, change: '+12.5% this month' },
     { title: 'Total Orders', value: '2,350', icon: ShoppingBag, change: '+15.2% this month' },
@@ -27,10 +31,36 @@ export default function DashboardPage() {
     "Classic-Milk-Chocolate-Bar": { label: "Classic Milk Chocolate Bar", color: "crimson" },
   } satisfies import('@/components/ui/chart').ChartConfig;
 
-  const recentSalesChartConfig = {
-    sales: { label: 'Sales', color: 'hsl(var(--chart-1))' },
+  const performanceChartConfig = {
+    previous: { label: 'Previous 6 Months', color: 'hsl(var(--chart-2))' },
+    current: { label: 'Current 6 Months', color: 'hsl(var(--destructive))' },
   } satisfies import('@/components/ui/chart').ChartConfig;
-  
+
+  const metricConfig = {
+    Revenue: {
+      keys: { previous: 'previousRevenue', current: 'currentRevenue' },
+      formatter: (value: number) => `₹${(value / 1000).toFixed(0)}k`,
+      tooltipFormatter: (value: number) => `₹${value.toLocaleString()}`,
+    },
+    Sales: {
+      keys: { previous: 'previousSales', current: 'currentSales' },
+      formatter: (value: number) => value.toLocaleString(),
+      tooltipFormatter: (value: number) => value.toLocaleString(),
+    },
+    Orders: {
+      keys: { previous: 'previousOrders', current: 'currentOrders' },
+      formatter: (value: number) => value.toLocaleString(),
+      tooltipFormatter: (value: number) => value.toLocaleString(),
+    },
+    Customers: {
+      keys: { previous: 'previousCustomers', current: 'currentCustomers' },
+      formatter: (value: number) => value.toLocaleString(),
+      tooltipFormatter: (value: number) => value.toLocaleString(),
+    },
+  };
+
+  const currentMetricConfig = metricConfig[metric];
+
   const recentOrders = orders.slice(0, 5);
   const lowStockItems = inventory.filter(item => item.status === 'Low Stock');
 
@@ -55,61 +85,60 @@ export default function DashboardPage() {
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
         <Card className="lg:col-span-2">
-          <CardHeader className="flex flex-row items-center">
-             <div className="grid gap-2">
-              <CardTitle>Recent Sales</CardTitle>
-              <CardDescription>
-                Revenue from the past 6 months.
-              </CardDescription>
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <CardTitle>Performance Comparison</CardTitle>
+                <CardDescription>
+                  Comparing the last 6 months with the previous 6 months.
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-1 bg-muted p-1 rounded-md">
+                {(Object.keys(metricConfig) as Array<keyof typeof metricConfig>).map((m) => (
+                  <Button
+                    key={m}
+                    variant={metric === m ? 'secondary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setMetric(m)}
+                    className="flex-1 px-2 h-8"
+                  >
+                    {m}
+                  </Button>
+                ))}
+              </div>
             </div>
-             <Button asChild size="sm" className="ml-auto gap-1">
-              <Link href="/orders">
-                View All
-                <ArrowUpRight className="h-4 w-4" />
-              </Link>
-            </Button>
           </CardHeader>
           <CardContent>
-             <ChartContainer config={recentSalesChartConfig} className="h-[300px] w-full">
-              <AreaChart accessibilityLayer data={recentSalesData} margin={{ top: 5, right: 10, bottom: 0, left: 10 }}>
-                 <defs>
-                  <linearGradient id="fillSales" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor="var(--color-sales)"
-                      stopOpacity={0.8}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--color-sales)"
-                      stopOpacity={0.1}
-                    />
-                  </linearGradient>
-                </defs>
+             <ChartContainer config={performanceChartConfig} className="h-[300px] w-full">
+              <LineChart accessibilityLayer data={performanceData} margin={{ top: 5, right: 10, bottom: 0, left: 10 }}>
                 <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value / 1000}k`} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={currentMetricConfig.formatter} />
                 <CartesianGrid vertical={false} stroke="hsl(var(--border))" strokeDasharray="3 3" />
                 <ChartTooltip
-                  cursor={false}
+                  cursor={true}
                   content={<ChartTooltipContent
-                      formatter={(value) => `₹${Number(value).toLocaleString()}`}
                       indicator="dot"
+                      formatter={(value) => currentMetricConfig.tooltipFormatter(value as number)}
                     />}
                 />
-                <Area 
-                  dataKey="sales" 
-                  type="natural" 
-                  fill="url(#fillSales)" 
-                  fillOpacity={0.4} 
-                  stroke="var(--color-sales)" 
+                <ChartLegend content={<ChartLegendContent />} />
+                <Line 
+                  dataKey={currentMetricConfig.keys.previous}
+                  name="previous"
+                  type="monotone" 
+                  stroke="var(--color-previous)" 
                   strokeWidth={2}
-                  activeDot={{
-                    r: 6,
-                    strokeWidth: 2,
-                    className: "stroke-primary fill-background"
-                  }}
+                  activeDot={{ r: 6, strokeWidth: 2 }}
                 />
-              </AreaChart>
+                <Line 
+                  dataKey={currentMetricConfig.keys.current}
+                  name="current"
+                  type="monotone" 
+                  stroke="var(--color-current)" 
+                  strokeWidth={2}
+                  activeDot={{ r: 6, strokeWidth: 2 }}
+                />
+              </LineChart>
             </ChartContainer>
           </CardContent>
         </Card>

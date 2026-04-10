@@ -69,3 +69,15 @@ export type Distributor = {
   status: 'Active' | 'Inactive';
   lastOrderDate: string;
 };
+
+export type PerformanceDataPoint = {
+  month: string;
+  previousSales: number;
+  currentSales: number;
+  previousRevenue: number;
+  currentRevenue: number;
+  previousOrders: number;
+  currentOrders: number;
+  previousCustomers: number;
+  currentCustomers: number;
+};
