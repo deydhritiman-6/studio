@@ -65,10 +65,10 @@ export const distributors: Distributor[] = [
 ];
 
 export const performanceData: PerformanceDataPoint[] = [
-  { month: 'Month 1', previousSales: 350, currentSales: 450, previousRevenue: 350000, currentRevenue: 450000, previousOrders: 80, currentOrders: 100, previousCustomers: 20, currentCustomers: 25 },
-  { month: 'Month 2', previousSales: 380, currentSales: 480, previousRevenue: 380000, currentRevenue: 480000, previousOrders: 85, currentOrders: 110, previousCustomers: 22, currentCustomers: 28 },
-  { month: 'Month 3', previousSales: 420, currentSales: 520, previousRevenue: 420000, currentRevenue: 520000, previousOrders: 95, currentOrders: 120, previousCustomers: 25, currentCustomers: 32 },
-  { month: 'Month 4', previousSales: 400, currentSales: 550, previousRevenue: 400000, currentRevenue: 550000, previousOrders: 90, currentOrders: 130, previousCustomers: 24, currentCustomers: 35 },
-  { month: 'Month 5', previousSales: 450, currentSales: 580, previousRevenue: 450000, currentRevenue: 580000, previousOrders: 100, currentOrders: 140, previousCustomers: 28, currentCustomers: 40 },
-  { month: 'Month 6', previousSales: 480, currentSales: 620, previousRevenue: 480000, currentRevenue: 620000, previousOrders: 110, currentOrders: 150, previousCustomers: 30, currentCustomers: 45 },
+  { month: 'January', previousSales: 350, currentSales: 450, previousRevenue: 350000, currentRevenue: 450000, previousOrders: 80, currentOrders: 100, previousCustomers: 20, currentCustomers: 25 },
+  { month: 'February', previousSales: 380, currentSales: 480, previousRevenue: 380000, currentRevenue: 480000, previousOrders: 85, currentOrders: 110, previousCustomers: 22, currentCustomers: 28 },
+  { month: 'March', previousSales: 420, currentSales: 520, previousRevenue: 420000, currentRevenue: 520000, previousOrders: 95, currentOrders: 120, previousCustomers: 25, currentCustomers: 32 },
+  { month: 'April', previousSales: 400, currentSales: 550, previousRevenue: 400000, currentRevenue: 550000, previousOrders: 90, currentOrders: 130, previousCustomers: 24, currentCustomers: 35 },
+  { month: 'May', previousSales: 450, currentSales: 580, previousRevenue: 450000, currentRevenue: 580000, previousOrders: 100, currentOrders: 140, previousCustomers: 28, currentCustomers: 40 },
+  { month: 'June', previousSales: 480, currentSales: 620, previousRevenue: 480000, currentRevenue: 620000, previousOrders: 110, currentOrders: 150, previousCustomers: 30, currentCustomers: 45 },
 ];
