@@ -9,12 +9,23 @@ import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+
+const userCredentials = {
+  'Super Admin': {
+    email: 'admin@roseberry.com',
+    name: 'Admin User',
+  },
+  'Staff': {
+    email: 'staff@roseberry.com',
+    name: 'Staff User',
+  }
+}
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [email, setEmail] = useState('admin@roseberry.com');
-  const [password, setPassword] = useState('password');
+  const [role, setRole] = useState<'Super Admin' | 'Staff'>('Super Admin');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = (e: React.FormEvent) => {
@@ -23,23 +34,13 @@ export default function LoginPage() {
 
     // Mock login logic
     setTimeout(() => {
-      if (email && password) {
-        // In a real app, you'd validate credentials.
-        // For this demo, we'll just store a mock session.
-        localStorage.setItem('user', JSON.stringify({ name: 'Admin User', email, role: 'Super Admin' }));
-        toast({
-          title: 'Login Successful',
-          description: 'Welcome back!',
-        });
-        router.push('/dashboard');
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Login Failed',
-          description: 'Please enter both email and password.',
-        });
-        setIsLoading(false);
-      }
+      const userToLogin = userCredentials[role];
+      localStorage.setItem('user', JSON.stringify({ name: userToLogin.name, email: userToLogin.email, role: role }));
+      toast({
+        title: 'Login Successful',
+        description: 'Welcome back!',
+      });
+      router.push('/dashboard');
     }, 1000);
   };
 
@@ -51,20 +52,39 @@ export default function LoginPage() {
              <Logo />
           </div>
           <CardTitle className="font-headline text-2xl">Welcome Back</CardTitle>
-          <CardDescription>Enter your credentials to access your dashboard.</CardDescription>
+          <CardDescription>Select a user role to log in.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-6">
+            <RadioGroup value={role} onValueChange={(value: any) => setRole(value)} className="grid grid-cols-2 gap-4">
+              <div>
+                <RadioGroupItem value="Super Admin" id="super-admin" className="peer sr-only" />
+                <Label
+                  htmlFor="super-admin"
+                  className="flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                >
+                  Super Admin
+                </Label>
+              </div>
+              <div>
+                <RadioGroupItem value="Staff" id="staff" className="peer sr-only" />
+                <Label
+                  htmlFor="staff"
+                  className="flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                >
+                  Staff
+                </Label>
+              </div>
+            </RadioGroup>
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@roseberry.com"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
+                value={userCredentials[role].email}
+                disabled
               />
             </div>
             <div className="space-y-2">
@@ -73,13 +93,12 @@ export default function LoginPage() {
                 id="password"
                 type="password"
                 required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
+                value="password"
+                disabled
               />
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? <Loader2 className="animate-spin" /> : 'Login'}
+              {isLoading ? <Loader2 className="animate-spin" /> : `Login as ${role}`}
             </Button>
           </form>
         </CardContent>
