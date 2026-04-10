@@ -65,10 +65,10 @@ export const distributors: Distributor[] = [
 ];
 
 export const performanceData: PerformanceDataPoint[] = [
-  { month: 'January', currentMonth: 'July', previousSales: 350, currentSales: 450, previousRevenue: 350000, currentRevenue: 450000, previousOrders: 80, currentOrders: 100, previousCustomers: 20, currentCustomers: 25 },
-  { month: 'February', currentMonth: 'August', previousSales: 380, currentSales: 480, previousRevenue: 380000, currentRevenue: 480000, previousOrders: 85, currentOrders: 110, previousCustomers: 22, currentCustomers: 28 },
-  { month: 'March', currentMonth: 'September', previousSales: 420, currentSales: 520, previousRevenue: 420000, currentRevenue: 520000, previousOrders: 95, currentOrders: 120, previousCustomers: 25, currentCustomers: 32 },
-  { month: 'April', currentMonth: 'October', previousSales: 400, currentSales: 550, previousRevenue: 400000, currentRevenue: 550000, previousOrders: 90, currentOrders: 130, previousCustomers: 24, currentCustomers: 35 },
-  { month: 'May', currentMonth: 'November', previousSales: 450, currentSales: 580, previousRevenue: 450000, currentRevenue: 580000, previousOrders: 100, currentOrders: 140, previousCustomers: 28, currentCustomers: 40 },
-  { month: 'June', currentMonth: 'December', previousSales: 480, currentSales: 620, previousRevenue: 480000, currentRevenue: 620000, previousOrders: 110, currentOrders: 150, previousCustomers: 30, currentCustomers: 45 },
+  { month: 'Month One', previousMonthName: 'January', currentMonthName: 'July', previousSales: 350, currentSales: 450, previousRevenue: 350000, currentRevenue: 450000, previousOrders: 80, currentOrders: 100, previousCustomers: 20, currentCustomers: 25 },
+  { month: 'Month Two', previousMonthName: 'February', currentMonthName: 'August', previousSales: 380, currentSales: 480, previousRevenue: 380000, currentRevenue: 480000, previousOrders: 85, currentOrders: 110, previousCustomers: 22, currentCustomers: 28 },
+  { month: 'Month Three', previousMonthName: 'March', currentMonthName: 'September', previousSales: 420, currentSales: 520, previousRevenue: 420000, currentRevenue: 520000, previousOrders: 95, currentOrders: 120, previousCustomers: 25, currentCustomers: 32 },
+  { month: 'Month Four', previousMonthName: 'April', currentMonthName: 'October', previousSales: 400, currentSales: 550, previousRevenue: 400000, currentRevenue: 550000, previousOrders: 90, currentOrders: 130, previousCustomers: 24, currentCustomers: 35 },
+  { month: 'Month Five', previousMonthName: 'May', currentMonthName: 'November', previousSales: 450, currentSales: 580, previousRevenue: 450000, currentRevenue: 580000, previousOrders: 100, currentOrders: 140, previousCustomers: 28, currentCustomers: 40 },
+  { month: 'Month Six', previousMonthName: 'June', currentMonthName: 'December', previousSales: 480, currentSales: 620, previousRevenue: 480000, currentRevenue: 620000, previousOrders: 110, currentOrders: 150, previousCustomers: 30, currentCustomers: 45 },
 ];
