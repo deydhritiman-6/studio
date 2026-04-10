@@ -36,6 +36,7 @@ import {
   LogOut,
   PanelLeft,
   Bell,
+  TrendingUp,
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -54,6 +55,7 @@ import { Badge } from '@/components/ui/badge';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/performance', icon: TrendingUp, label: 'Performance' },
   { href: '/customers', icon: Users, label: 'Customers' },
   { href: '/orders', icon: ShoppingCart, label: 'Orders' },
   { href: '/production', icon: Package, label: 'Production' },
