@@ -50,6 +50,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { inventory } from '@/lib/data';
+import { Badge } from '@/components/ui/badge';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -76,6 +77,7 @@ const navItems = [
 type User = {
   name: string;
   email: string;
+  role: string;
 };
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -217,7 +219,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="flex flex-1 flex-col">
         <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b bg-background px-6">
             <SidebarTrigger className="md:hidden" />
-            <div className="flex flex-1 items-center justify-end gap-2">
+            <div className="flex flex-1 items-center justify-end gap-4">
                 {hasLowStock && (
                   <Button asChild variant="ghost" size="icon" className="relative">
                       <Link href="/inventory" aria-label="View low stock items">
@@ -228,6 +230,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       </Link>
                   </Button>
                 )}
+                {user.role && <Badge variant="secondary">{user.role}</Badge>}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="relative h-10 w-10 rounded-full">

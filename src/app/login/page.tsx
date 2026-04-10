@@ -26,7 +26,7 @@ export default function LoginPage() {
       if (email && password) {
         // In a real app, you'd validate credentials.
         // For this demo, we'll just store a mock session.
-        localStorage.setItem('user', JSON.stringify({ name: 'Admin User', email }));
+        localStorage.setItem('user', JSON.stringify({ name: 'Admin User', email, role: 'Super Admin' }));
         toast({
           title: 'Login Successful',
           description: 'Welcome back!',
