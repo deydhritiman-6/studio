@@ -338,37 +338,6 @@ export default function ProductsPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Product Images</FormLabel>
-                         <div className="p-2 border rounded-md">
-                            <Label className="text-xs text-muted-foreground">
-                            {imageUrls && imageUrls.length > 0 ? "Click a thumbnail to set it as the primary image." : "Images will appear here once selected."}
-                            </Label>
-                            {imageUrls && imageUrls.length > 0 ? (
-                            <div className="grid grid-cols-3 gap-2 mt-2">
-                                <div className="col-span-3 aspect-video relative rounded-md overflow-hidden bg-muted">
-                                <Image src={imageUrls[0]} alt="Primary product image" fill className="object-cover" />
-                                </div>
-                                {imageUrls.slice(1).map((url, index) => (
-                                <button
-                                    type="button"
-                                    key={index}
-                                    onClick={() => {
-                                        const newImageUrls = [...imageUrls];
-                                        [newImageUrls[0], newImageUrls[index + 1]] = [newImageUrls[index + 1], newImageUrls[0]];
-                                        form.setValue('imageUrls', newImageUrls, { shouldValidate: true });
-                                    }}
-                                    className="aspect-video relative rounded-md overflow-hidden"
-                                >
-                                    <Image src={url} alt={`Thumbnail ${index + 1}`} fill className="object-cover" />
-                                </button>
-                                ))}
-                            </div>
-                            ) : (
-                            <div className="aspect-video bg-muted rounded-md flex items-center justify-center mt-2">
-                                <Camera className="h-10 w-10 text-muted-foreground" />
-                            </div>
-                            )}
-                        </div>
-                        
                         <Tabs defaultValue="gallery" className="w-full" onValueChange={(tab) => { if (tab !== 'camera') stopCamera(); }}>
                             <TabsList className="grid w-full grid-cols-4">
                                 <TabsTrigger value="gallery">Gallery</TabsTrigger>
@@ -377,44 +346,73 @@ export default function ProductsPage() {
                                 <TabsTrigger value="upload">Upload</TabsTrigger>
                             </TabsList>
                             <TabsContent value="gallery">
-                                <FormControl>
-                                  <RadioGroup
-                                      onValueChange={(value) => {
-                                        const selectedImage = PlaceHolderImages.find(img => img.imageUrl === value);
-                                        if (selectedImage) {
-                                            const seed = selectedImage.imageUrl.split('/seed/')[1].split('/')[0];
-                                            const newImageUrls = [
-                                                selectedImage.imageUrl,
-                                                `https://picsum.photos/seed/${seed}_a/400/300`,
-                                                `https://picsum.photos/seed/${seed}_b/400/300`,
-                                                `https://picsum.photos/seed/${seed}_c/400/300`,
-                                            ];
-                                            field.onChange(newImageUrls);
-                                            form.setValue('imageHint', selectedImage.imageHint, { shouldValidate: true });
-                                        }
-                                      }}
-                                      value={hasCustomImages ? undefined : field.value?.[0]}
-                                      className="grid grid-cols-3 gap-4 pt-4"
-                                  >
-                                      {PlaceHolderImages.map((image) => (
-                                      <FormItem key={image.id}>
-                                          <RadioGroupItem value={image.imageUrl} id={image.id} className="peer sr-only" />
-                                          <Label
-                                          htmlFor={image.id}
-                                          className="block cursor-pointer rounded-md border-2 border-muted bg-popover hover:border-accent peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                                          >
-                                          <Image
-                                              src={image.imageUrl}
-                                              alt={image.description}
-                                              width={200}
-                                              height={150}
-                                              className="rounded-md object-cover aspect-[4/3] w-full"
-                                          />
-                                          </Label>
-                                      </FormItem>
-                                      ))}
-                                  </RadioGroup>
-                                </FormControl>
+                                <div className="pt-4">
+                                    {hasCustomImages && imageUrls && imageUrls.length > 0 ? (
+                                        <div>
+                                            <Label className="text-xs text-muted-foreground">
+                                                Click a thumbnail to set it as the primary image. The other tabs can be used to replace these images.
+                                            </Label>
+                                            <div className="grid grid-cols-3 gap-2 mt-2">
+                                                <div className="col-span-3 aspect-video relative rounded-md overflow-hidden bg-muted">
+                                                    <Image src={imageUrls[0]} alt="Primary product image" fill className="object-cover" />
+                                                </div>
+                                                {imageUrls.slice(1).map((url, index) => (
+                                                    <button
+                                                        type="button"
+                                                        key={index}
+                                                        onClick={() => {
+                                                            const newImageUrls = [...imageUrls];
+                                                            [newImageUrls[0], newImageUrls[index + 1]] = [newImageUrls[index + 1], newImageUrls[0]];
+                                                            form.setValue('imageUrls', newImageUrls, { shouldValidate: true });
+                                                        }}
+                                                        className="aspect-video relative rounded-md overflow-hidden"
+                                                    >
+                                                        <Image src={url} alt={`Thumbnail ${index + 1}`} fill className="object-cover" />
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <FormControl>
+                                            <RadioGroup
+                                                onValueChange={(value) => {
+                                                    const selectedImage = PlaceHolderImages.find(img => img.imageUrl === value);
+                                                    if (selectedImage) {
+                                                        const seed = selectedImage.imageUrl.split('/seed/')[1].split('/')[0];
+                                                        const newImageUrls = [
+                                                            selectedImage.imageUrl,
+                                                            `https://picsum.photos/seed/${seed}_a/400/300`,
+                                                            `https://picsum.photos/seed/${seed}_b/400/300`,
+                                                            `https://picsum.photos/seed/${seed}_c/400/300`,
+                                                        ];
+                                                        field.onChange(newImageUrls);
+                                                        form.setValue('imageHint', selectedImage.imageHint, { shouldValidate: true });
+                                                    }
+                                                }}
+                                                value={field.value?.[0]}
+                                                className="grid grid-cols-3 gap-4"
+                                            >
+                                                {PlaceHolderImages.map((image) => (
+                                                    <FormItem key={image.id}>
+                                                        <RadioGroupItem value={image.imageUrl} id={image.id} className="peer sr-only" />
+                                                        <Label
+                                                            htmlFor={image.id}
+                                                            className="block cursor-pointer rounded-md border-2 border-muted bg-popover hover:border-accent peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                                                        >
+                                                            <Image
+                                                                src={image.imageUrl}
+                                                                alt={image.description}
+                                                                width={200}
+                                                                height={150}
+                                                                className="rounded-md object-cover aspect-[4/3] w-full"
+                                                            />
+                                                        </Label>
+                                                    </FormItem>
+                                                ))}
+                                            </RadioGroup>
+                                        </FormControl>
+                                    )}
+                                </div>
                             </TabsContent>
                             <TabsContent value="camera">
                                 <div className="space-y-4 pt-4">
