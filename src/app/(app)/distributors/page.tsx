@@ -81,10 +81,19 @@ export default function DistributorsPage() {
     resolver: zodResolver(distributorFormSchema),
   });
 
+  const selectedRegion = form.watch('region');
   const selectedState = form.watch('state');
+
+  const statesForSelectedRegion = useMemo(() => {
+    if (!selectedRegion) {
+      return [];
+    }
+    return indianStates.states.filter(s => s.region === selectedRegion);
+  }, [selectedRegion]);
+
   const districtsForSelectedState = useMemo(() => {
-    return indianStates.states.find(s => s.name === selectedState)?.districts || [];
-  }, [selectedState]);
+    return statesForSelectedRegion.find(s => s.name === selectedState)?.districts || [];
+  }, [selectedState, statesForSelectedRegion]);
 
 
   useEffect(() => {
@@ -105,8 +114,15 @@ export default function DistributorsPage() {
   }, [editingDistributor, form]);
   
   useEffect(() => {
+    // When the region changes, reset state and district
+    if (form.getValues('state') && !statesForSelectedRegion.some(s => s.name === form.getValues('state'))) {
+      form.setValue('state', '');
+      form.setValue('district', '');
+    }
+  }, [selectedRegion, statesForSelectedRegion, form]);
+
+  useEffect(() => {
     // When the state changes, reset the district field
-    // This is to prevent having a district that doesn't belong to the new state
     if (form.getValues('district') && !districtsForSelectedState.includes(form.getValues('district'))) {
       form.setValue('district', '');
     }
@@ -283,14 +299,14 @@ export default function DistributorsPage() {
                   <FormField control={form.control} name="state" render={({ field }) => (
                     <FormItem>
                       <FormLabel>State</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value} disabled={!selectedRegion}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a state" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {indianStates.states.map(state => (
+                          {statesForSelectedRegion.map(state => (
                             <SelectItem key={state.name} value={state.name}>{state.name}</SelectItem>
                           ))}
                         </SelectContent>
