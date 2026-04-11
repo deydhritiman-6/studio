@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { distributors as initialDistributors } from '@/lib/data';
+import indianStates from '@/lib/indian-states.json';
 import type { Distributor } from '@/lib/types';
 import { MoreHorizontal, PlusCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +28,8 @@ const distributorFormSchema = z.object({
   email: z.string().email('Invalid email address'),
   phone: z.string().min(10, 'Phone number must be at least 10 digits'),
   region: z.string().min(1, 'Region is required'),
+  state: z.string().min(1, 'State is required'),
+  district: z.string().min(1, 'District is required'),
   status: z.enum(['Active', 'Inactive']),
 });
 
@@ -75,6 +78,12 @@ export default function DistributorsPage() {
     resolver: zodResolver(distributorFormSchema),
   });
 
+  const selectedState = form.watch('state');
+  const districtsForSelectedState = useMemo(() => {
+    return indianStates.states.find(s => s.name === selectedState)?.districts || [];
+  }, [selectedState]);
+
+
   useEffect(() => {
     if (editingDistributor) {
       form.reset(editingDistributor);
@@ -85,10 +94,20 @@ export default function DistributorsPage() {
         email: '',
         phone: '',
         region: '',
+        state: '',
+        district: '',
         status: 'Active',
       });
     }
   }, [editingDistributor, form]);
+  
+  useEffect(() => {
+    // When the state changes, reset the district field
+    // This is to prevent having a district that doesn't belong to the new state
+    if (form.getValues('district') && !districtsForSelectedState.includes(form.getValues('district'))) {
+      form.setValue('district', '');
+    }
+  }, [selectedState, districtsForSelectedState, form]);
 
   const onDialogSubmit = (values: DistributorFormValues) => {
     if (editingDistributor) {
@@ -119,6 +138,8 @@ export default function DistributorsPage() {
         email: '',
         phone: '',
         region: '',
+        state: '',
+        district: '',
         status: 'Active',
     });
     setIsAddOrEditDialogOpen(true);
@@ -174,6 +195,14 @@ export default function DistributorsPage() {
                <div className="flex justify-between items-center">
                   <h4 className="text-sm font-medium text-muted-foreground">Region</h4>
                   <p className="text-sm font-semibold">{viewingDistributor.region}</p>
+              </div>
+              <div className="flex justify-between items-center">
+                  <h4 className="text-sm font-medium text-muted-foreground">State</h4>
+                  <p className="text-sm font-semibold">{viewingDistributor.state}</p>
+              </div>
+              <div className="flex justify-between items-center">
+                  <h4 className="text-sm font-medium text-muted-foreground">District</h4>
+                  <p className="text-sm font-semibold">{viewingDistributor.district}</p>
               </div>
                <div className="flex justify-between items-center">
                   <h4 className="text-sm font-medium text-muted-foreground">Last Order</h4>
@@ -232,6 +261,42 @@ export default function DistributorsPage() {
                 <FormItem>
                   <FormLabel>Region</FormLabel>
                   <FormControl><Input placeholder="e.g., North India" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+               <FormField control={form.control} name="state" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>State</FormLabel>
+                   <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a state" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                       {indianStates.states.map(state => (
+                        <SelectItem key={state.name} value={state.name}>{state.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
+               <FormField control={form.control} name="district" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>District</FormLabel>
+                   <Select onValueChange={field.onChange} value={field.value} disabled={!selectedState}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a district" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                       {districtsForSelectedState.map(district => (
+                        <SelectItem key={district} value={district}>{district}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )} />

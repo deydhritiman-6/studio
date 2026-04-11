@@ -66,6 +66,8 @@ export type Distributor = {
   email: string;
   phone: string;
   region: string;
+  state: string;
+  district: string;
   status: 'Active' | 'Inactive';
   lastOrderDate: string;
 };
