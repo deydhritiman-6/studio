@@ -32,6 +32,23 @@ const customerFormSchema = z.object({
 
 type CustomerFormValues = z.infer<typeof customerFormSchema>;
 
+const getCustomerBadgeProps = (customer: Customer): { text: string; className: string; variant: 'default' | 'secondary' } => {
+  if (customer.customerType === 'VIP') {
+    switch (customer.vipLevel) {
+      case 'Royal':
+        return { text: 'Royal', className: 'bg-purple-600 text-white hover:bg-purple-700 border-transparent', variant: 'default' };
+      case 'Platinum':
+        return { text: 'Platinum', className: 'bg-slate-600 text-white hover:bg-slate-700 border-transparent', variant: 'default' };
+      case 'Gold':
+        return { text: 'Gold', className: 'bg-yellow-500 text-black hover:bg-yellow-600 border-transparent', variant: 'default' };
+      case 'None':
+      default:
+        return { text: 'VIP', className: 'bg-accent text-accent-foreground', variant: 'default' };
+    }
+  }
+  return { text: customer.customerType, className: '', variant: 'secondary' };
+};
+
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
   const [searchTerm, setSearchTerm] = useState('');
@@ -149,17 +166,16 @@ export default function CustomersPage() {
               </div>
                <Separator />
                <div className="flex justify-between items-center">
-                  <h4 className="text-sm font-medium text-muted-foreground">Customer Type</h4>
-                  <Badge variant={viewingCustomer.customerType === 'VIP' ? 'default' : 'secondary' } className={viewingCustomer.customerType === 'VIP' ? 'bg-accent text-accent-foreground' : ''}>
-                      {viewingCustomer.customerType}
-                  </Badge>
+                <h4 className="text-sm font-medium text-muted-foreground">Status</h4>
+                {(() => {
+                    const badgeProps = getCustomerBadgeProps(viewingCustomer);
+                    return (
+                        <Badge variant={badgeProps.variant} className={badgeProps.className}>
+                            {badgeProps.text}
+                        </Badge>
+                    );
+                })()}
               </div>
-              {viewingCustomer.customerType === 'VIP' && (
-                <div className="flex justify-between items-center">
-                    <h4 className="text-sm font-medium text-muted-foreground">VIP Level</h4>
-                    <p className="text-sm font-semibold">{viewingCustomer.vipLevel}</p>
-                </div>
-              )}
                <Separator />
                <div className="flex justify-between items-center">
                   <h4 className="text-sm font-medium text-muted-foreground">Total Spend</h4>
@@ -294,13 +310,15 @@ export default function CustomersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredCustomers.map((customer) => (
+              {filteredCustomers.map((customer) => {
+                const badgeProps = getCustomerBadgeProps(customer);
+                return (
                 <TableRow key={customer.id}>
                   <TableCell className="font-medium">{customer.name}</TableCell>
                   <TableCell>{customer.email}</TableCell>
                   <TableCell>
-                    <Badge variant={customer.customerType === 'VIP' ? 'default' : 'secondary' } className={customer.customerType === 'VIP' ? 'bg-accent text-accent-foreground' : ''}>
-                      {customer.customerType}
+                    <Badge variant={badgeProps.variant} className={badgeProps.className}>
+                      {badgeProps.text}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -326,7 +344,7 @@ export default function CustomersPage() {
                     </DropdownMenu>
                   </TableCell>
                 </TableRow>
-              ))}
+              )})}
             </TableBody>
           </Table>
         </CardContent>
