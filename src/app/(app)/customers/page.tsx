@@ -70,6 +70,8 @@ export default function CustomersPage() {
     resolver: zodResolver(customerFormSchema),
   });
 
+  const customerType = form.watch('customerType');
+
   useEffect(() => {
     if (editingCustomer) {
       form.reset({
@@ -254,7 +256,7 @@ export default function CustomersPage() {
                <FormField control={form.control} name="vipLevel" render={({ field }) => (
                 <FormItem>
                   <FormLabel>VIP Level</FormLabel>
-                   <Select onValueChange={field.onChange} defaultValue={field.value}>
+                   <Select onValueChange={field.onChange} defaultValue={field.value} disabled={customerType !== 'VIP'}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a level" />
