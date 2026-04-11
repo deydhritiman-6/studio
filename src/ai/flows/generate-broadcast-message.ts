@@ -12,7 +12,7 @@ import { z } from 'genkit';
 
 export const GenerateBroadcastMessageInputSchema = z.object({
   broadcastType: z
-    .enum(['Product Update', 'Special Discount', 'General Announcement', 'Event Invitation'])
+    .enum(['Product Update', 'Special Discount', 'General Announcement', 'Event Invitation', 'Festival Greeting'])
     .describe('The type of broadcast being sent.'),
   targetAudience: z
     .enum(['All Customers', 'VIP Customers', 'Wholesale Partners', 'New Subscribers'])

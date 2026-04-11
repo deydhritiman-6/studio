@@ -11,13 +11,30 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Send } from 'lucide-react';
-import { generateBroadcastAction } from './actions';
+import { generateBroadcastAction, generateFestivalMessageAction } from './actions';
 import { GenerateBroadcastMessageInputSchema, type GenerateBroadcastMessageOutput } from '@/ai/flows/generate-broadcast-message';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Calendar } from '@/components/ui/calendar';
+import { festivals as festivalData } from '@/lib/indian-festivals.json';
+import { format, parseISO } from 'date-fns';
+
+type Festival = {
+  date: string;
+  name: string;
+  type: string;
+};
+
+const festivalDays = festivalData.map(f => parseISO(f.date));
+const festivalMap: Map<string, Festival> = new Map(
+  festivalData.map(f => [format(parseISO(f.date), 'yyyy-MM-dd'), f])
+);
 
 export default function BroadcastPage() {
   const [generatedMessage, setGeneratedMessage] = useState<GenerateBroadcastMessageOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingForFestival, setIsGeneratingForFestival] = useState(false);
+  const [date, setDate] = useState<Date | undefined>(new Date());
   const { toast } = useToast();
 
   const form = useForm<import('zod').infer<typeof GenerateBroadcastMessageInputSchema>>({
@@ -29,6 +46,28 @@ export default function BroadcastPage() {
       messageDetails: '',
     },
   });
+
+  async function handleDateSelect(selectedDate: Date | undefined) {
+    setDate(selectedDate);
+    if (!selectedDate) return;
+
+    const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+    const festival = festivalMap.get(formattedDate);
+
+    if (festival) {
+      setIsGeneratingForFestival(true);
+      const result = await generateFestivalMessageAction({ festivalName: festival.name });
+      setIsGeneratingForFestival(false);
+
+      if ('error' in result) {
+        toast({ variant: 'destructive', title: 'AI Error', description: result.error });
+      } else {
+        form.setValue('messageDetails', result.greeting);
+        form.setValue('broadcastType', 'Festival Greeting');
+        toast({ title: 'AI Suggestion', description: `Message generated for ${festival.name}!` });
+      }
+    }
+  }
 
   async function onSubmit(values: import('zod').infer<typeof GenerateBroadcastMessageInputSchema>) {
     setIsLoading(true);
@@ -48,73 +87,100 @@ export default function BroadcastPage() {
   return (
     <>
       <PageHeader title="Broadcast System" />
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle>Create Broadcast</CardTitle>
-            <CardDescription>Craft and send announcements to your customers.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField control={form.control} name="broadcastType" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Broadcast Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        {['Product Update', 'Special Discount', 'General Announcement', 'Event Invitation'].map(type => (
-                          <SelectItem key={type} value={type}>{type}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="targetAudience" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Target Audience</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        {['All Customers', 'VIP Customers', 'Wholesale Partners', 'New Subscribers'].map(audience => (
-                          <SelectItem key={audience} value={audience}>{audience}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                 <FormField control={form.control} name="channel" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Channel</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        {['Email', 'SMS', 'Social Media Post'].map(c => (
-                          <SelectItem key={c} value={c}>{c}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="messageDetails" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Message Details</FormLabel>
-                    <FormControl><Textarea placeholder="e.g., Announcing our new Monsoon Collection, available from July 1st. 15% off for the first week." {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <Button type="submit" disabled={isLoading} className="w-full">
-                  {isLoading ? <Loader2 className="animate-spin" /> : <Send />}
-                  Generate Broadcast
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-        <div className="lg:col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="space-y-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>Create Broadcast</CardTitle>
+                <CardDescription>Craft and send announcements to your customers.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <FormField control={form.control} name="broadcastType" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Broadcast Type</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                          <SelectContent>
+                            {['Product Update', 'Special Discount', 'General Announcement', 'Event Invitation', 'Festival Greeting'].map(type => (
+                              <SelectItem key={type} value={type}>{type}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="targetAudience" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Target Audience</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                          <SelectContent>
+                            {['All Customers', 'VIP Customers', 'Wholesale Partners', 'New Subscribers'].map(audience => (
+                              <SelectItem key={audience} value={audience}>{audience}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="channel" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Channel</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                          <SelectContent>
+                            {['Email', 'SMS', 'Social Media Post'].map(c => (
+                              <SelectItem key={c} value={c}>{c}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="messageDetails" render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center justify-between">
+                            <FormLabel>Message Details</FormLabel>
+                            {isGeneratingForFestival && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                        </div>
+                        <FormControl><Textarea placeholder="e.g., Announcing our new Monsoon Collection, available from July 1st. 15% off for the first week." {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <Button type="submit" disabled={isLoading} className="w-full">
+                      {isLoading ? <Loader2 className="animate-spin" /> : <Send />}
+                      Generate Broadcast
+                    </Button>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                  <CardTitle>Festival Calendar</CardTitle>
+                  <CardDescription>Select a date to get an AI-generated message for that occasion.</CardDescription>
+              </CardHeader>
+              <CardContent className="flex justify-center">
+                   <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={handleDateSelect}
+                    className="rounded-md border p-0"
+                    modifiers={{
+                        festival: festivalDays,
+                    }}
+                    modifiersClassNames={{
+                        festival: 'relative after:content-[""] after:block after:h-1 after:w-1 after:rounded-full after:bg-primary after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2',
+                    }}
+                   />
+              </CardContent>
+            </Card>
+        </div>
+
+        <div className="lg:col-span-1">
           <Card className="h-full">
             <CardHeader>
               <CardTitle>Generated Message</CardTitle>

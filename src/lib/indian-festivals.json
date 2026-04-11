@@ -1,0 +1,18 @@
+{
+  "festivals": [
+    { "date": "2024-08-15", "name": "Independence Day", "type": "National Holiday" },
+    { "date": "2024-08-19", "name": "Raksha Bandhan", "type": "Hindu Festival" },
+    { "date": "2024-08-26", "name": "Janmashtami", "type": "Hindu Festival" },
+    { "date": "2024-09-07", "name": "Ganesh Chaturthi", "type": "Hindu Festival" },
+    { "date": "2024-09-16", "name": "Milad un-Nabi (Eid-e-Milad)", "type": "Muslim Festival" },
+    { "date": "2024-10-02", "name": "Gandhi Jayanti", "type": "National Holiday" },
+    { "date": "2024-10-12", "name": "Dussehra", "type": "Hindu Festival" },
+    { "date": "2024-10-31", "name": "Diwali", "type": "Hindu Festival" },
+    { "date": "2024-11-15", "name": "Guru Nanak Jayanti", "type": "Sikh Festival" },
+    { "date": "2024-12-25", "name": "Christmas", "type": "Christian Festival" },
+    { "date": "2025-01-14", "name": "Makar Sankranti", "type": "Hindu Festival" },
+    { "date": "2025-01-26", "name": "Republic Day", "type": "National Holiday" },
+    { "date": "2025-03-14", "name": "Holi", "type": "Hindu Festival" },
+    { "date": "2025-03-30", "name": "Eid al-Fitr", "type": "Muslim Festival" }
+  ]
+}
