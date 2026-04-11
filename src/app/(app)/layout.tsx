@@ -37,6 +37,7 @@ import {
   PanelLeft,
   Bell,
   TrendingUp,
+  Radio,
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -64,6 +65,7 @@ const navItems = [
   { href: '/inventory', icon: Boxes, label: 'Inventory' },
   { href: '/invoices', icon: FileText, label: 'Invoices' },
   { href: '/distributors', icon: Truck, label: 'Distributors' },
+  { href: '/broadcast', icon: Radio, label: 'Broadcasts' },
   {
     icon: BrainCircuit,
     label: 'AI System',
