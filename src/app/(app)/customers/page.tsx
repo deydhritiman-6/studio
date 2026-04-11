@@ -1,29 +1,270 @@
+'use client';
+
+import { useState, useMemo, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { customers } from '@/lib/data';
+import { customers as initialCustomers } from '@/lib/data';
+import type { Customer } from '@/lib/types';
 import { MoreHorizontal, PlusCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useToast } from '@/hooks/use-toast';
+import { Separator } from '@/components/ui/separator';
+
+
+const customerFormSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().email('Invalid email address'),
+  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
+  customerType: z.enum(['VIP', 'Regular', 'Corporate', 'Wholesale']),
+  vipLevel: z.enum(['Gold', 'Platinum', 'Royal', 'None']),
+});
+
+type CustomerFormValues = z.infer<typeof customerFormSchema>;
 
 export default function CustomersPage() {
+  const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState('all');
+
+  const [isAddOrEditDialogOpen, setIsAddOrEditDialogOpen] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [viewingCustomer, setViewingCustomer] = useState<Customer | null>(null);
+  
+  const { toast } = useToast();
+
+  const form = useForm<CustomerFormValues>({
+    resolver: zodResolver(customerFormSchema),
+  });
+
+  useEffect(() => {
+    if (editingCustomer) {
+      form.reset({
+        name: editingCustomer.name,
+        email: editingCustomer.email,
+        phone: editingCustomer.phone,
+        customerType: editingCustomer.customerType,
+        vipLevel: editingCustomer.vipLevel,
+      });
+    } else {
+      form.reset({
+        name: '',
+        email: '',
+        phone: '',
+        customerType: 'Regular',
+        vipLevel: 'None',
+      });
+    }
+  }, [editingCustomer, form]);
+
+  const onDialogSubmit = (values: CustomerFormValues) => {
+    if (editingCustomer) {
+      // Edit logic
+      const updatedCustomer: Customer = {
+        ...editingCustomer,
+        ...values,
+      };
+      setCustomers(customers.map(c => c.id === editingCustomer.id ? updatedCustomer : c));
+      toast({ title: 'Customer Updated', description: `${values.name}'s details have been updated.` });
+    } else {
+      // Add logic
+      const newCustomer: Customer = {
+        id: `C${String(customers.length + 10).padStart(3, '0')}`,
+        totalPurchaseValue: 0,
+        joinedDate: new Date().toISOString().split('T')[0],
+        ...values,
+      };
+      setCustomers([newCustomer, ...customers]);
+      toast({ title: 'Customer Added', description: `${values.name} has been added.` });
+    }
+    setIsAddOrEditDialogOpen(false);
+    setEditingCustomer(null);
+  };
+  
+  const handleOpenAddDialog = () => {
+    setEditingCustomer(null);
+    form.reset({
+      name: '',
+      email: '',
+      phone: '',
+      customerType: 'Regular',
+      vipLevel: 'None',
+    });
+    setIsAddOrEditDialogOpen(true);
+  };
+  
+  const handleOpenEditDialog = (customer: Customer) => {
+    setEditingCustomer(customer);
+    setIsAddOrEditDialogOpen(true);
+  };
+
+  const filteredCustomers = useMemo(() => {
+    return customers
+      .filter(c => filterType === 'all' || c.customerType.toLowerCase() === filterType.toLowerCase())
+      .filter(c => 
+        c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        c.email.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+  }, [customers, searchTerm, filterType]);
+
   return (
     <>
       <PageHeader title="Customers" actions={
-        <Button>
+        <Button onClick={handleOpenAddDialog}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Add Customer
         </Button>
       } />
+      
+      {/* View Details Dialog */}
+      <Dialog open={!!viewingCustomer} onOpenChange={(open) => !open && setViewingCustomer(null)}>
+        {viewingCustomer && (
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{viewingCustomer.name}</DialogTitle>
+              <DialogDescription>{viewingCustomer.email}</DialogDescription>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              <div className="flex justify-between items-center">
+                  <h4 className="text-sm font-medium text-muted-foreground">Customer ID</h4>
+                  <p className="text-sm font-semibold">{viewingCustomer.id}</p>
+              </div>
+              <div className="flex justify-between items-center">
+                  <h4 className="text-sm font-medium text-muted-foreground">Phone</h4>
+                  <p className="text-sm font-semibold">{viewingCustomer.phone}</p>
+              </div>
+               <Separator />
+               <div className="flex justify-between items-center">
+                  <h4 className="text-sm font-medium text-muted-foreground">Customer Type</h4>
+                  <Badge variant={viewingCustomer.customerType === 'VIP' ? 'default' : 'secondary' } className={viewingCustomer.customerType === 'VIP' ? 'bg-accent text-accent-foreground' : ''}>
+                      {viewingCustomer.customerType}
+                  </Badge>
+              </div>
+              {viewingCustomer.customerType === 'VIP' && (
+                <div className="flex justify-between items-center">
+                    <h4 className="text-sm font-medium text-muted-foreground">VIP Level</h4>
+                    <p className="text-sm font-semibold">{viewingCustomer.vipLevel}</p>
+                </div>
+              )}
+               <Separator />
+               <div className="flex justify-between items-center">
+                  <h4 className="text-sm font-medium text-muted-foreground">Total Spend</h4>
+                  <p className="text-sm font-semibold">₹{viewingCustomer.totalPurchaseValue.toLocaleString('en-IN')}</p>
+              </div>
+               <div className="flex justify-between items-center">
+                  <h4 className="text-sm font-medium text-muted-foreground">Joined Date</h4>
+                  <p className="text-sm font-semibold">{viewingCustomer.joinedDate}</p>
+              </div>
+            </div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button type="button" variant="secondary">Close</Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
+      
+      {/* Add/Edit Dialog */}
+      <Dialog open={isAddOrEditDialogOpen} onOpenChange={setIsAddOrEditDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{editingCustomer ? 'Edit Customer' : 'Add New Customer'}</DialogTitle>
+            <DialogDescription>
+              {editingCustomer ? "Update the customer's details." : "Fill in the details for the new customer."}
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onDialogSubmit)} className="space-y-4 py-4">
+              <FormField control={form.control} name="name" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Customer Name</FormLabel>
+                  <FormControl><Input placeholder="e.g., Aarav Sharma" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="email" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl><Input placeholder="e.g., aarav@example.com" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="phone" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone</FormLabel>
+                  <FormControl><Input placeholder="e.g., +91 9876543210" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+               <FormField control={form.control} name="customerType" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Customer Type</FormLabel>
+                   <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                       {['VIP', 'Regular', 'Corporate', 'Wholesale'].map(type => (
+                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
+               <FormField control={form.control} name="vipLevel" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>VIP Level</FormLabel>
+                   <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a level" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                       {['None', 'Gold', 'Platinum', 'Royal'].map(level => (
+                        <SelectItem key={level} value={level}>{level}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button type="button" variant="secondary">Cancel</Button>
+                </DialogClose>
+                <Button type="submit">Save</Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+      
       <Card>
         <CardContent>
           <div className="flex flex-col md:flex-row items-center gap-4 py-4">
-            <Input placeholder="Search customers..." className="w-full md:max-w-sm" />
+            <Input 
+              placeholder="Search customers..." 
+              className="w-full md:max-w-sm"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
             <div className="w-full md:w-auto md:ml-auto">
-                <Select>
+                <Select value={filterType} onValueChange={setFilterType}>
                 <SelectTrigger className="w-full md:w-[180px]">
                     <SelectValue placeholder="Filter by type" />
                 </SelectTrigger>
@@ -49,7 +290,7 @@ export default function CustomersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {customers.map((customer) => (
+              {filteredCustomers.map((customer) => (
                 <TableRow key={customer.id}>
                   <TableCell className="font-medium">{customer.name}</TableCell>
                   <TableCell>{customer.email}</TableCell>
@@ -71,8 +312,12 @@ export default function CustomersPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>View details</DropdownMenuItem>
-                        <DropdownMenuItem>Edit customer</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setViewingCustomer(customer)}>
+                          View details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleOpenEditDialog(customer)}>
+                          Edit customer
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
