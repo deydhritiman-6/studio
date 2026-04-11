@@ -21,9 +21,6 @@ import { Calendar } from '@/components/ui/calendar';
 import { festivals as festivalData } from '@/lib/indian-festivals.json';
 import { format, parseISO } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
 
 type Festival = {
   date: string;
@@ -74,9 +71,6 @@ export default function BroadcastPage() {
   const [isGeneratingForFestival, setIsGeneratingForFestival] = useState(false);
   const [date, setDate] = useState<Date | undefined>(new Date());
   
-  const [scheduleDate, setScheduleDate] = useState<Date | undefined>(new Date());
-  const [scheduleTime, setScheduleTime] = useState<string>(() => new Date().toTimeString().slice(0, 5));
-
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -143,13 +137,13 @@ export default function BroadcastPage() {
       toast({ variant: 'destructive', title: 'No message to schedule', description: 'Please generate a message first.' });
       return;
     }
-    if (!scheduleDate) {
-      toast({ variant: 'destructive', title: 'No date selected', description: 'Please select a date to schedule the broadcast.' });
+    if (!date) {
+      toast({ variant: 'destructive', title: 'No date selected', description: 'Please select a date from the calendar to schedule the broadcast.' });
       return;
     }
     toast({
       title: 'Broadcast Scheduled',
-      description: `Your message is scheduled to be sent on ${format(scheduleDate, 'PPP')} at ${scheduleTime}.`,
+      description: `Your message is scheduled to be sent on ${format(date, 'PPP')}.`,
     });
   }
 
@@ -284,44 +278,10 @@ export default function BroadcastPage() {
             <CardHeader>
               <CardTitle>Schedule & Send</CardTitle>
               <CardDescription>
-                Send your broadcast immediately or schedule it for a future date and time.
+                Send your broadcast immediately or schedule it for a future date using the calendar below.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-2">
-                <Label>Schedule Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={'outline'}
-                      className={cn(
-                        'w-full justify-start text-left font-normal',
-                        !scheduleDate && 'text-muted-foreground'
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {scheduleDate ? format(scheduleDate, 'PPP') : <span>Pick a date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={scheduleDate}
-                      onSelect={setScheduleDate}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="schedule-time">Schedule Time</Label>
-                <Input
-                  id="schedule-time"
-                  type="time"
-                  value={scheduleTime}
-                  onChange={(e) => setScheduleTime(e.target.value)}
-                />
-              </div>
+            <CardContent>
               <div className="flex space-x-2">
                 <Button variant="outline" className="w-full" onClick={handleSendNow} disabled={!generatedMessage || isLoading}>
                   <Send className="mr-2 h-4 w-4" />
