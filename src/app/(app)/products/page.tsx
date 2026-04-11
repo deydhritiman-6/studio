@@ -48,7 +48,7 @@ export default function ProductsPage() {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [viewingProduct, setViewingProduct] = useState<{images: string[], startIndex: number} | null>(null);
+  const [viewingProduct, setViewingProduct] = useState<{images: string[], startIndex: number, productName: string} | null>(null);
 
 
   const form = useForm<ProductFormValues>({
@@ -230,25 +230,33 @@ export default function ProductsPage() {
       <Dialog open={!!viewingProduct} onOpenChange={(open) => !open && setViewingProduct(null)}>
         <DialogContent className="sm:max-w-4xl p-0 border-0 bg-transparent shadow-none">
           {viewingProduct && (
-            <Carousel
-              opts={{
-                startIndex: viewingProduct.startIndex,
-                loop: true,
-              }}
-              className="w-full"
-            >
-              <CarouselContent>
-                {viewingProduct.images.map((url, index) => (
-                  <CarouselItem key={index}>
-                    <div className="aspect-video relative">
-                      <Image src={url} alt={`Enlarged product image ${index + 1}`} fill className="object-contain" />
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/80" />
-              <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/80" />
-            </Carousel>
+            <>
+              <DialogHeader className="sr-only">
+                <DialogTitle>{`${viewingProduct.productName} Image Gallery`}</DialogTitle>
+                <DialogDescription>
+                  Use the arrow buttons to navigate through images of {viewingProduct.productName}.
+                </DialogDescription>
+              </DialogHeader>
+              <Carousel
+                opts={{
+                  startIndex: viewingProduct.startIndex,
+                  loop: true,
+                }}
+                className="w-full"
+              >
+                <CarouselContent>
+                  {viewingProduct.images.map((url, index) => (
+                    <CarouselItem key={index}>
+                      <div className="aspect-video relative">
+                        <Image src={url} alt={`Enlarged product image ${index + 1}`} fill className="object-contain" />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/80" />
+                <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/80" />
+              </Carousel>
+            </>
           )}
         </DialogContent>
       </Dialog>
@@ -477,7 +485,7 @@ export default function ProductsPage() {
                <button
                   type="button"
                   className="block w-full aspect-[4/3] relative rounded-t-lg overflow-hidden"
-                  onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: 0 })}
+                  onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: 0, productName: product.name })}
                 >
                   <Image
                     src={product.imageUrls[0]}
@@ -495,7 +503,7 @@ export default function ProductsPage() {
                     key={index}
                     type="button"
                     className="block w-full aspect-[4/3] relative rounded-md overflow-hidden"
-                    onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: index + 1 })}
+                    onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: index + 1, productName: product.name })}
                   >
                     <Image
                       src={url}
