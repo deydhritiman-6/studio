@@ -355,7 +355,8 @@ export default function DistributorsPage() {
                 <TableHead>Distributor Name</TableHead>
                 <TableHead>Contact Person</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>Region</TableHead>
+                <TableHead>State</TableHead>
+                <TableHead>District</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead><span className="sr-only">Actions</span></TableHead>
               </TableRow>
@@ -366,7 +367,8 @@ export default function DistributorsPage() {
                   <TableCell className="font-medium">{distributor.name}</TableCell>
                   <TableCell>{distributor.contactPerson}</TableCell>
                   <TableCell>{distributor.email}</TableCell>
-                  <TableCell>{distributor.region}</TableCell>
+                  <TableCell>{distributor.state}</TableCell>
+                  <TableCell>{distributor.district}</TableCell>
                   <TableCell>
                     <Badge variant={distributor.status === 'Active' ? 'default' : 'destructive'} className={getStatusBadgeClassName(distributor.status)}>
                       {distributor.status}
