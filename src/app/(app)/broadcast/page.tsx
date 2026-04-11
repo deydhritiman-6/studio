@@ -18,7 +18,7 @@ import { type GenerateBroadcastMessageOutput } from '@/ai/flows/generate-broadca
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Calendar } from '@/components/ui/calendar';
-import { festivals as festivalData } from '@/lib/indian-festivals.json';
+import festivalJsonData from '@/lib/indian-festivals.json';
 import { format, parseISO } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
@@ -30,6 +30,8 @@ type Festival = {
   type: string;
   description: string;
 };
+
+const festivalData: Festival[] = festivalJsonData.festivals;
 
 const formSchema = z.object({
   broadcastType: z
