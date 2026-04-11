@@ -383,16 +383,16 @@ export default function BroadcastPage() {
                         formatDay: (date) => <DayContentWithTooltip date={date} />
                       }}
                       classNames={{
-                          months: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6",
+                          months: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6",
                           month: "space-y-4 rounded-lg bg-card p-4 shadow-sm",
                           caption: "flex justify-center text-center relative items-center mb-2",
                           caption_label: "text-sm font-medium uppercase tracking-wider text-muted-foreground",
                           nav_button: "hidden",
                           head_row: "flex",
-                          head_cell: "text-muted-foreground rounded-md w-full font-normal text-[0.8rem] uppercase",
+                          head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] uppercase",
                           row: "flex w-full mt-2",
-                          cell: "w-full text-center text-sm p-0 relative focus-within:relative focus-within:z-20 aspect-square",
-                          day: "h-full w-full p-0 font-normal aria-selected:opacity-100 flex items-center justify-center",
+                          cell: "h-9 w-9 text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
+                          day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 flex items-center justify-center",
                           day_selected: "bg-primary text-primary-foreground rounded-full hover:bg-primary/90 focus:bg-primary focus:text-primary-foreground",
                           day_today: "bg-accent text-accent-foreground rounded-full",
                           day_outside: "text-muted-foreground opacity-50",
