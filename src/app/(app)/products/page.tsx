@@ -24,6 +24,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 
 const productFormSchema = z.object({
@@ -47,6 +48,7 @@ export default function ProductsPage() {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [viewingProduct, setViewingProduct] = useState<{images: string[], startIndex: number} | null>(null);
 
 
   const form = useForm<ProductFormValues>({
@@ -225,6 +227,32 @@ export default function ProductsPage() {
 
   return (
     <>
+      <Dialog open={!!viewingProduct} onOpenChange={(open) => !open && setViewingProduct(null)}>
+        <DialogContent className="sm:max-w-4xl p-0 border-0 bg-transparent shadow-none">
+          {viewingProduct && (
+            <Carousel
+              opts={{
+                startIndex: viewingProduct.startIndex,
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent>
+                {viewingProduct.images.map((url, index) => (
+                  <CarouselItem key={index}>
+                    <div className="aspect-video relative">
+                      <Image src={url} alt={`Enlarged product image ${index + 1}`} fill className="object-contain" />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/80" />
+              <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/80" />
+            </Carousel>
+          )}
+        </DialogContent>
+      </Dialog>
+      
       <Dialog open={!!activeDialog} onOpenChange={(open) => {
         if (!open) {
           setEditingProduct(null);
@@ -446,27 +474,37 @@ export default function ProductsPage() {
         {products.map((product) => (
           <Card key={product.id} className="flex flex-col">
             <CardHeader className="p-0 relative">
-              <Image
-                src={product.imageUrls[0]}
-                alt={product.name}
-                width={400}
-                height={300}
-                className="object-cover rounded-t-lg aspect-[4/3]"
-                data-ai-hint={product.imageHint}
-              />
+               <button
+                  type="button"
+                  className="block w-full aspect-[4/3] relative rounded-t-lg overflow-hidden"
+                  onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: 0 })}
+                >
+                  <Image
+                    src={product.imageUrls[0]}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                    data-ai-hint={product.imageHint}
+                  />
+                </button>
             </CardHeader>
             <CardContent className="p-4 flex-grow">
               <div className="grid grid-cols-3 gap-2 mb-4">
                 {product.imageUrls.slice(1, 4).map((url, index) => (
-                    <Image
+                   <button
                     key={index}
-                    src={url}
-                    alt={`${product.name} thumbnail ${index + 1}`}
-                    width={120}
-                    height={90}
-                    className="rounded-md object-cover aspect-[4/3]"
-                    data-ai-hint={product.imageHint}
+                    type="button"
+                    className="block w-full aspect-[4/3] relative rounded-md overflow-hidden"
+                    onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: index + 1 })}
+                  >
+                    <Image
+                      src={url}
+                      alt={`${product.name} thumbnail ${index + 1}`}
+                      fill
+                      className="object-cover"
+                      data-ai-hint={product.imageHint}
                     />
+                  </button>
                 ))}
               </div>
               <CardTitle className="font-headline text-lg mb-1">{product.name}</CardTitle>
