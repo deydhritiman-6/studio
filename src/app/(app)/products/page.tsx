@@ -32,7 +32,7 @@ const productFormSchema = z.object({
   price: z.coerce.number().positive('Price must be a positive number.'),
   wholesalePrice: z.coerce.number().positive('Wholesale price must be a positive number.'),
   availabilityStatus: z.enum(['In Stock', 'Out of Stock']),
-  imageUrl: z.string().min(1, 'Please select an image.'),
+  imageUrls: z.array(z.string()).min(1, "Please select at least one image.").max(4, "You can upload a maximum of 4 images."),
   imageHint: z.string().min(1, 'Image hint is required.'),
 });
 
@@ -55,7 +55,7 @@ export default function ProductsPage() {
       name: '',
       flavor: '',
       availabilityStatus: 'In Stock',
-      imageUrl: '',
+      imageUrls: [],
       imageHint: '',
     }
   });
@@ -77,7 +77,7 @@ export default function ProductsPage() {
         price: editingProduct.price,
         wholesalePrice: editingProduct.wholesalePrice,
         availabilityStatus: editingProduct.availabilityStatus,
-        imageUrl: editingProduct.imageUrls[0],
+        imageUrls: editingProduct.imageUrls,
         imageHint: editingProduct.imageHint,
       });
     } else {
@@ -87,25 +87,13 @@ export default function ProductsPage() {
         price: undefined,
         wholesalePrice: undefined,
         availabilityStatus: 'In Stock',
-        imageUrl: '',
+        imageUrls: [],
         imageHint: '',
       });
     }
   }, [editingProduct, form]);
 
   function onAddSubmit(values: ProductFormValues) {
-    const imageUrls = [values.imageUrl];
-    if (values.imageUrl.includes('picsum.photos/seed/')) {
-        const seed = values.imageUrl.split('/seed/')[1].split('/')[0];
-        imageUrls.push(`https://picsum.photos/seed/${seed}_a/120/90`);
-        imageUrls.push(`https://picsum.photos/seed/${seed}_b/120/90`);
-        imageUrls.push(`https://picsum.photos/seed/${seed}_c/120/90`);
-    } else {
-        imageUrls.push(values.imageUrl);
-        imageUrls.push(values.imageUrl);
-        imageUrls.push(values.imageUrl);
-    }
-    
     const newProduct: Product = {
       id: `P${String(products.length + 10).padStart(3, '0')}`,
       name: values.name,
@@ -113,7 +101,7 @@ export default function ProductsPage() {
       price: values.price,
       wholesalePrice: values.wholesalePrice,
       availabilityStatus: values.availabilityStatus,
-      imageUrls: imageUrls,
+      imageUrls: values.imageUrls,
       imageHint: values.imageHint,
     };
     setProducts([newProduct, ...products]);
@@ -126,18 +114,6 @@ export default function ProductsPage() {
 
   function onEditSubmit(values: ProductFormValues) {
     if (!editingProduct) return;
-    
-    const imageUrls = [values.imageUrl];
-    if (values.imageUrl.includes('picsum.photos/seed/')) {
-        const seed = values.imageUrl.split('/seed/')[1].split('/')[0];
-        imageUrls.push(`https://picsum.photos/seed/${seed}_a/120/90`);
-        imageUrls.push(`https://picsum.photos/seed/${seed}_b/120/90`);
-        imageUrls.push(`https://picsum.photos/seed/${seed}_c/120/90`);
-    } else {
-        imageUrls.push(values.imageUrl);
-        imageUrls.push(values.imageUrl);
-        imageUrls.push(values.imageUrl);
-    }
 
     const updatedProduct: Product = {
         ...editingProduct,
@@ -146,7 +122,7 @@ export default function ProductsPage() {
         price: values.price,
         wholesalePrice: values.wholesalePrice,
         availabilityStatus: values.availabilityStatus,
-        imageUrls: imageUrls,
+        imageUrls: values.imageUrls,
         imageHint: values.imageHint,
     };
 
@@ -190,7 +166,7 @@ export default function ProductsPage() {
       if (context) {
         context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
         const dataUrl = canvas.toDataURL('image/jpeg');
-        form.setValue('imageUrl', dataUrl, { shouldValidate: true });
+        form.setValue('imageUrls', [dataUrl, dataUrl, dataUrl, dataUrl], { shouldValidate: true });
         form.setValue('imageHint', 'custom photo');
         stopCamera();
       }
@@ -198,32 +174,54 @@ export default function ProductsPage() {
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith('image/')) {
-        toast({
-          variant: 'destructive',
-          title: 'Invalid File Type',
-          description: 'Please select an image file.',
-        });
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (loadEvent) => {
-        const dataUrl = loadEvent.target?.result as string;
-        if (dataUrl) {
-          form.setValue('imageUrl', dataUrl, { shouldValidate: true });
-          form.setValue('imageHint', 'uploaded image');
-        }
-      };
-      reader.readAsDataURL(file);
+    const files = event.target.files;
+    if (!files || files.length === 0) {
+      return;
     }
+
+    if (files.length > 4) {
+      toast({
+        variant: "destructive",
+        title: "Maximum 4 images",
+        description: "You can select up to 4 images.",
+      });
+      return;
+    }
+    
+    const fileArray = Array.from(files);
+    
+    if (fileArray.some(file => !file.type.startsWith('image/'))) {
+        toast({ variant: 'destructive', title: 'Invalid File Type', description: 'Please select only image files.' });
+        return;
+    }
+    
+    const fileToUrlPromises = fileArray.map(file => {
+      return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target!.result as string);
+        reader.onerror = e => reject(e);
+        reader.readAsDataURL(file);
+      });
+    });
+
+    Promise.all(fileToUrlPromises).then(urls => {
+        const finalUrls = [...urls];
+        while (finalUrls.length > 0 && finalUrls.length < 4) {
+            finalUrls.push(finalUrls[finalUrls.length - 1]);
+        }
+        form.setValue('imageUrls', finalUrls, { shouldValidate: true });
+        form.setValue('imageHint', 'uploaded image');
+    }).catch(err => {
+      console.error(err);
+      toast({ variant: "destructive", title: "Error uploading files", description: "There was an error processing your images." });
+    });
   };
 
 
   const activeDialog = editingProduct ? 'edit' : (isAddDialogOpen ? 'add' : null);
   const onDialogSubmit = editingProduct ? form.handleSubmit(onEditSubmit) : form.handleSubmit(onAddSubmit);
-  const imageUrl = form.watch('imageUrl');
+  const imageUrls = form.watch('imageUrls');
+  const imageUrl = imageUrls && imageUrls.length > 0 ? imageUrls[0] : null;
 
   return (
     <>
@@ -299,7 +297,7 @@ export default function ProductsPage() {
 
                   <FormField
                     control={form.control}
-                    name="imageUrl"
+                    name="imageUrls"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Product Image</FormLabel>
@@ -322,13 +320,20 @@ export default function ProductsPage() {
                                 <FormControl>
                                 <RadioGroup
                                     onValueChange={(value) => {
-                                    const selectedImage = PlaceHolderImages.find(img => img.imageUrl === value);
-                                    if (selectedImage) {
-                                        field.onChange(selectedImage.imageUrl);
-                                        form.setValue('imageHint', selectedImage.imageHint, { shouldValidate: true });
-                                    }
+                                      const selectedImage = PlaceHolderImages.find(img => img.imageUrl === value);
+                                      if (selectedImage) {
+                                          const seed = selectedImage.imageUrl.split('/seed/')[1].split('/')[0];
+                                          const newImageUrls = [
+                                              selectedImage.imageUrl,
+                                              `https://picsum.photos/seed/${seed}_a/120/90`,
+                                              `https://picsum.photos/seed/${seed}_b/120/90`,
+                                              `https://picsum.photos/seed/${seed}_c/120/90`,
+                                          ];
+                                          field.onChange(newImageUrls);
+                                          form.setValue('imageHint', selectedImage.imageHint, { shouldValidate: true });
+                                      }
                                     }}
-                                    value={field.value}
+                                    value={field.value?.[0]}
                                     className="grid grid-cols-3 gap-4 pt-4"
                                 >
                                     {PlaceHolderImages.map((image) => (
@@ -382,10 +387,14 @@ export default function ProductsPage() {
                                     <Input
                                         id="url-input"
                                         placeholder="https://example.com/image.png"
-                                        value={field.value.startsWith('http') ? field.value : ''}
+                                        value={field.value?.[0]?.startsWith('http') ? field.value[0] : ''}
                                         onChange={(e) => {
-                                            field.onChange(e.target.value);
-                                            form.setValue('imageHint', 'from url');
+                                            const url = e.target.value;
+                                            const newUrls = url ? [url, url, url, url] : [];
+                                            field.onChange(newUrls);
+                                            if (url) {
+                                                form.setValue('imageHint', 'from url');
+                                            }
                                         }}
                                     />
                                     <p className="text-xs text-muted-foreground">
@@ -395,15 +404,16 @@ export default function ProductsPage() {
                             </TabsContent>
                             <TabsContent value="upload">
                                 <div className="space-y-2 pt-4">
-                                    <Label htmlFor="file-upload">Upload from device</Label>
+                                    <Label htmlFor="file-upload">Upload from device (up to 4 images)</Label>
                                     <Input
                                         id="file-upload"
                                         type="file"
                                         accept="image/*"
+                                        multiple
                                         onChange={handleFileChange}
                                     />
                                     <p className="text-xs text-muted-foreground">
-                                        Select an image file from your device gallery.
+                                        Select one or more image files from your device.
                                     </p>
                                 </div>
                             </TabsContent>
