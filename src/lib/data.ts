@@ -18,11 +18,11 @@ export const orders: Order[] = [
 ];
 
 export const products: Product[] = [
-  { id: 'P001', name: 'Velvet Noir 85% Cacao', flavor: 'Dark Chocolate', price: 850, wholesalePrice: 600, availabilityStatus: 'In Stock', imageUrl: "https://picsum.photos/seed/101/400/300", imageHint: "dark chocolate" },
-  { id: 'P002', name: 'Golden Hazelnut Praline', flavor: 'Nutty', price: 1200, wholesalePrice: 850, availabilityStatus: 'In Stock', imageUrl: "https://picsum.photos/seed/103/400/300", imageHint: "chocolate praline" },
-  { id: 'P003', name: 'Himalayan Pink Salt Caramel', flavor: 'Caramel', price: 950, wholesalePrice: 700, availabilityStatus: 'In Stock', imageUrl: "https://picsum.photos/seed/104/400/300", imageHint: "caramel chocolate" },
-  { id: 'P004', name: 'Royal Raspberry Ganache', flavor: 'Fruity', price: 1100, wholesalePrice: 800, availabilityStatus: 'Out of Stock', imageUrl: "https://picsum.photos/seed/105/400/300", imageHint: "raspberry chocolate" },
-  { id: 'P005', name: 'Classic Milk Chocolate Bar', flavor: 'Milk Chocolate', price: 650, wholesalePrice: 450, availabilityStatus: 'In Stock', imageUrl: "https://picsum.photos/seed/102/400/300", imageHint: "milk chocolate" },
+  { id: 'P001', name: 'Velvet Noir 85% Cacao', flavor: 'Dark Chocolate', price: 850, wholesalePrice: 600, availabilityStatus: 'In Stock', imageUrls: ["https://picsum.photos/seed/101/400/300", "https://picsum.photos/seed/101a/200/150", "https://picsum.photos/seed/101b/200/150", "https://picsum.photos/seed/101c/200/150"], imageHint: "dark chocolate" },
+  { id: 'P002', name: 'Golden Hazelnut Praline', flavor: 'Nutty', price: 1200, wholesalePrice: 850, availabilityStatus: 'In Stock', imageUrls: ["https://picsum.photos/seed/103/400/300", "https://picsum.photos/seed/103a/200/150", "https://picsum.photos/seed/103b/200/150", "https://picsum.photos/seed/103c/200/150"], imageHint: "chocolate praline" },
+  { id: 'P003', name: 'Himalayan Pink Salt Caramel', flavor: 'Caramel', price: 950, wholesalePrice: 700, availabilityStatus: 'In Stock', imageUrls: ["https://picsum.photos/seed/104/400/300", "https://picsum.photos/seed/104a/200/150", "https://picsum.photos/seed/104b/200/150", "https://picsum.photos/seed/104c/200/150"], imageHint: "caramel chocolate" },
+  { id: 'P004', name: 'Royal Raspberry Ganache', flavor: 'Fruity', price: 1100, wholesalePrice: 800, availabilityStatus: 'Out of Stock', imageUrls: ["https://picsum.photos/seed/105/400/300", "https://picsum.photos/seed/105a/200/150", "https://picsum.photos/seed/105b/200/150", "https://picsum.photos/seed/105c/200/150"], imageHint: "raspberry chocolate" },
+  { id: 'P005', name: 'Classic Milk Chocolate Bar', flavor: 'Milk Chocolate', price: 650, wholesalePrice: 450, availabilityStatus: 'In Stock', imageUrls: ["https://picsum.photos/seed/102/400/300", "https://picsum.photos/seed/102a/200/150", "https://picsum.photos/seed/102b/200/150", "https://picsum.photos/seed/102c/200/150"], imageHint: "milk chocolate" },
 ];
 
 export const recipes: Recipe[] = [

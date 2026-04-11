@@ -30,7 +30,7 @@ export type Product = {
   price: number;
   wholesalePrice: number;
   availabilityStatus: 'In Stock' | 'Out of Stock';
-  imageUrl: string;
+  imageUrls: string[];
   imageHint: string;
 };
 

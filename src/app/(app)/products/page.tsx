@@ -77,7 +77,7 @@ export default function ProductsPage() {
         price: editingProduct.price,
         wholesalePrice: editingProduct.wholesalePrice,
         availabilityStatus: editingProduct.availabilityStatus,
-        imageUrl: editingProduct.imageUrl,
+        imageUrl: editingProduct.imageUrls[0],
         imageHint: editingProduct.imageHint,
       });
     } else {
@@ -94,9 +94,27 @@ export default function ProductsPage() {
   }, [editingProduct, form]);
 
   function onAddSubmit(values: ProductFormValues) {
+    const imageUrls = [values.imageUrl];
+    if (values.imageUrl.includes('picsum.photos/seed/')) {
+        const seed = values.imageUrl.split('/seed/')[1].split('/')[0];
+        imageUrls.push(`https://picsum.photos/seed/${seed}_a/120/90`);
+        imageUrls.push(`https://picsum.photos/seed/${seed}_b/120/90`);
+        imageUrls.push(`https://picsum.photos/seed/${seed}_c/120/90`);
+    } else {
+        imageUrls.push(values.imageUrl);
+        imageUrls.push(values.imageUrl);
+        imageUrls.push(values.imageUrl);
+    }
+    
     const newProduct: Product = {
       id: `P${String(products.length + 10).padStart(3, '0')}`,
-      ...values,
+      name: values.name,
+      flavor: values.flavor,
+      price: values.price,
+      wholesalePrice: values.wholesalePrice,
+      availabilityStatus: values.availabilityStatus,
+      imageUrls: imageUrls,
+      imageHint: values.imageHint,
     };
     setProducts([newProduct, ...products]);
     setIsAddDialogOpen(false);
@@ -108,10 +126,33 @@ export default function ProductsPage() {
 
   function onEditSubmit(values: ProductFormValues) {
     if (!editingProduct) return;
+    
+    const imageUrls = [values.imageUrl];
+    if (values.imageUrl.includes('picsum.photos/seed/')) {
+        const seed = values.imageUrl.split('/seed/')[1].split('/')[0];
+        imageUrls.push(`https://picsum.photos/seed/${seed}_a/120/90`);
+        imageUrls.push(`https://picsum.photos/seed/${seed}_b/120/90`);
+        imageUrls.push(`https://picsum.photos/seed/${seed}_c/120/90`);
+    } else {
+        imageUrls.push(values.imageUrl);
+        imageUrls.push(values.imageUrl);
+        imageUrls.push(values.imageUrl);
+    }
+
+    const updatedProduct: Product = {
+        ...editingProduct,
+        name: values.name,
+        flavor: values.flavor,
+        price: values.price,
+        wholesalePrice: values.wholesalePrice,
+        availabilityStatus: values.availabilityStatus,
+        imageUrls: imageUrls,
+        imageHint: values.imageHint,
+    };
 
     setProducts(
       products.map((p) =>
-        p.id === editingProduct.id ? { ...p, ...values } : p
+        p.id === editingProduct.id ? updatedProduct : p
       )
     );
     setEditingProduct(null);
@@ -396,7 +437,7 @@ export default function ProductsPage() {
           <Card key={product.id} className="flex flex-col">
             <CardHeader className="p-0 relative">
               <Image
-                src={product.imageUrl}
+                src={product.imageUrls[0]}
                 alt={product.name}
                 width={400}
                 height={300}
@@ -405,6 +446,19 @@ export default function ProductsPage() {
               />
             </CardHeader>
             <CardContent className="p-4 flex-grow">
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                {product.imageUrls.slice(1, 4).map((url, index) => (
+                    <Image
+                    key={index}
+                    src={url}
+                    alt={`${product.name} thumbnail ${index + 1}`}
+                    width={120}
+                    height={90}
+                    className="rounded-md object-cover aspect-[4/3]"
+                    data-ai-hint={product.imageHint}
+                    />
+                ))}
+              </div>
               <CardTitle className="font-headline text-lg mb-1">{product.name}</CardTitle>
               <p className="text-sm text-muted-foreground">{product.flavor}</p>
               <div className="flex justify-between items-center mt-4">
