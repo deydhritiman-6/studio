@@ -56,7 +56,29 @@ const getCustomerBadgeProps = (customer: Customer): { text: string; className: s
 };
 
 export default function CustomersPage() {
-  const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
+  const [customers, setCustomers] = useState<Customer[]>(() => {
+    if (typeof window === 'undefined') {
+      return initialCustomers;
+    }
+    try {
+      const savedCustomers = localStorage.getItem('roseberry-customers');
+      return savedCustomers ? JSON.parse(savedCustomers) : initialCustomers;
+    } catch (error) {
+      console.error("Failed to read customers from localStorage", error);
+      return initialCustomers;
+    }
+  });
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('roseberry-customers', JSON.stringify(customers));
+      } catch (error) {
+        console.error("Failed to save customers to localStorage", error);
+      }
+    }
+  }, [customers]);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
 
