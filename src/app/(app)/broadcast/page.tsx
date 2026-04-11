@@ -13,12 +13,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Send } from 'lucide-react';
 import { generateBroadcastAction, generateFestivalMessageAction } from './actions';
-import { type GenerateBroadcastMessageOutput } from '@/ai/flows/generate-broadcast-message';
+import { type GenerateBroadcastMessageOutput, GenerateBroadcastMessageInputSchema } from '@/ai/flows/generate-broadcast-message';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Calendar } from '@/components/ui/calendar';
 import { festivals as festivalData } from '@/lib/indian-festivals.json';
 import { format, parseISO } from 'date-fns';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 type Festival = {
   date: string;
@@ -26,17 +27,30 @@ type Festival = {
   type: string;
 };
 
-const formSchema = z.object({
-  broadcastType: z.enum(['Product Update', 'Special Discount', 'General Announcement', 'Event Invitation', 'Festival Greeting']),
-  targetAudience: z.enum(['All Customers', 'VIP Customers', 'Wholesale Partners', 'New Subscribers']),
-  channel: z.enum(['Email', 'SMS', 'Social Media Post']),
-  messageDetails: z.string().min(1, 'Message details cannot be empty.'),
-});
+const formSchema = GenerateBroadcastMessageInputSchema;
 
 const festivalDays = festivalData.map(f => parseISO(f.date));
 const festivalMap: Map<string, Festival> = new Map(
   festivalData.map(f => [format(parseISO(f.date), 'yyyy-MM-dd'), f])
 );
+
+function DayContentWithTooltip({ date }: { date: Date }) {
+  const formattedDate = format(date, 'yyyy-MM-dd');
+  const festival = festivalMap.get(formattedDate);
+
+  if (festival) {
+    return (
+      <Tooltip>
+        <TooltipTrigger>{format(date, 'd')}</TooltipTrigger>
+        <TooltipContent>
+          <p>{festival.name}</p>
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+  return <>{format(date, 'd')}</>;
+}
+
 
 export default function BroadcastPage() {
   const [generatedMessage, setGeneratedMessage] = useState<GenerateBroadcastMessageOutput | null>(null);
@@ -61,21 +75,29 @@ export default function BroadcastPage() {
 
     const formattedDate = format(selectedDate, 'yyyy-MM-dd');
     const festival = festivalMap.get(formattedDate);
-
+    const broadcastType = form.getValues('broadcastType');
+    
     if (festival) {
-      setIsGeneratingForFestival(true);
-      const result = await generateFestivalMessageAction({ festivalName: festival.name });
-      setIsGeneratingForFestival(false);
+        if (broadcastType === 'Festival Greeting') {
+            setIsGeneratingForFestival(true);
+            const result = await generateFestivalMessageAction({ festivalName: festival.name });
+            setIsGeneratingForFestival(false);
 
-      if ('error' in result) {
-        toast({ variant: 'destructive', title: 'AI Error', description: result.error });
-      } else {
-        form.setValue('messageDetails', result.greeting);
-        form.setValue('broadcastType', 'Festival Greeting');
-        toast({ title: 'AI Suggestion', description: `Message generated for ${festival.name}!` });
-      }
+            if ('error' in result) {
+                toast({ variant: 'destructive', title: 'AI Error', description: result.error });
+            } else {
+                form.setValue('messageDetails', result.greeting);
+                toast({ title: 'AI Suggestion', description: `Message generated for ${festival.name}!` });
+            }
+        } else {
+            toast({
+                title: 'Set Broadcast Type',
+                description: `To auto-generate a message for ${festival.name}, please select "Festival Greeting" as the broadcast type first.`,
+            });
+        }
     }
   }
+
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
@@ -169,21 +191,25 @@ export default function BroadcastPage() {
             <Card>
               <CardHeader>
                   <CardTitle>Festival Calendar</CardTitle>
-                  <CardDescription>Select a date to get an AI-generated message for that occasion.</CardDescription>
+                  <CardDescription>When "Festival Greeting" is selected, click a highlighted date to generate a message.</CardDescription>
               </CardHeader>
               <CardContent className="flex justify-center">
-                   <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={handleDateSelect}
-                    className="rounded-md border p-0"
-                    modifiers={{
-                        festival: festivalDays,
-                    }}
-                    modifiersClassNames={{
-                        festival: 'relative after:content-[""] after:block after:h-1 after:w-1 after:rounded-full after:bg-primary after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2',
-                    }}
-                   />
+                   <TooltipProvider>
+                       <Calendar
+                        mode="single"
+                        selected={date}
+                        onSelect={handleDateSelect}
+                        className="rounded-md border p-0"
+                        numberOfMonths={3}
+                        formatters={{ formatDay: (date) => <DayContentWithTooltip date={date} /> }}
+                        modifiers={{
+                            festival: festivalDays,
+                        }}
+                        modifiersClassNames={{
+                            festival: 'relative after:content-[""] after:block after:h-1 after:w-1 after:rounded-full after:bg-primary after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2',
+                        }}
+                       />
+                   </TooltipProvider>
               </CardContent>
             </Card>
         </div>
