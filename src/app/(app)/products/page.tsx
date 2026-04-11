@@ -36,6 +36,11 @@ export default function ProductsPage() {
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
+    defaultValues: {
+      name: '',
+      flavor: '',
+      availabilityStatus: 'In Stock',
+    }
   });
 
   useEffect(() => {
@@ -51,8 +56,8 @@ export default function ProductsPage() {
       form.reset({
         name: '',
         flavor: '',
-        price: 0,
-        wholesalePrice: 0,
+        price: undefined,
+        wholesalePrice: undefined,
         availabilityStatus: 'In Stock',
       });
     }
@@ -89,7 +94,7 @@ export default function ProductsPage() {
   }
 
   const activeDialog = editingProduct ? 'edit' : (isAddDialogOpen ? 'add' : null);
-  const onDialogSubmit = editingProduct ? onEditSubmit : onAddSubmit;
+  const onDialogSubmit = editingProduct ? form.handleSubmit(onEditSubmit) : form.handleSubmit(onAddSubmit);
 
   return (
     <>
@@ -107,7 +112,7 @@ export default function ProductsPage() {
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onDialogSubmit)} className="space-y-4 py-4">
+            <form onSubmit={onDialogSubmit} className="space-y-4 py-4">
               <FormField control={form.control} name="name" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Product Name</FormLabel>
@@ -138,19 +143,27 @@ export default function ProductsPage() {
                   </FormItem>
                 )} />
               </div>
-              <FormField control={form.control} name="availabilityStatus" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Availability</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                    <SelectContent>
-                      <SelectItem value="In Stock">In Stock</SelectItem>
-                      <SelectItem value="Out of Stock">Out of Stock</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )} />
+              <FormField
+                control={form.control}
+                name="availabilityStatus"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Availability</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select availability" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="In Stock">In Stock</SelectItem>
+                        <SelectItem value="Out of Stock">Out of Stock</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <DialogFooter>
                  <DialogClose asChild>
                     <Button type="button" variant="secondary">Cancel</Button>
