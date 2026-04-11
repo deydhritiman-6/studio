@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Send, Calendar as CalendarIcon, Clock } from 'lucide-react';
+import { Loader2, Send, Calendar as CalendarIcon, Clock, Info } from 'lucide-react';
 import { generateBroadcastAction, generateFestivalMessageAction } from './actions';
 import { type GenerateBroadcastMessageOutput } from '@/ai/flows/generate-broadcast-message';
 import { Input } from '@/components/ui/input';
@@ -21,11 +21,14 @@ import { Calendar } from '@/components/ui/calendar';
 import { festivals as festivalData } from '@/lib/indian-festivals.json';
 import { format, parseISO } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
+
 
 type Festival = {
   date: string;
   name: string;
   type: string;
+  description: string;
 };
 
 const formSchema = z.object({
@@ -42,7 +45,7 @@ const formSchema = z.object({
 
 
 const festivalMap: Map<string, Festival> = new Map(
-  festivalData.map(f => [format(parseISO(f.date), 'yyyy-MM-dd'), f])
+  festivalData.map(f => [format(parseISO(f.date), 'yyyy-MM-dd'), f as Festival])
 );
 
 function DayContentWithTooltip({ date }: { date: Date }) {
@@ -70,7 +73,8 @@ export default function BroadcastPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingForFestival, setIsGeneratingForFestival] = useState(false);
   const [date, setDate] = useState<Date | undefined>(new Date());
-  
+  const [viewingFestival, setViewingFestival] = useState<Festival | null>(null);
+
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -88,33 +92,47 @@ export default function BroadcastPage() {
   const muslimFestivals = festivalData.filter(f => f.type === 'Muslim Festival').map(f => parseISO(f.date));
   const sikhFestivals = festivalData.filter(f => f.type === 'Sikh Festival').map(f => parseISO(f.date));
   const christianFestivals = festivalData.filter(f => f.type === 'Christian Festival').map(f => parseISO(f.date));
+  const jainFestivals = festivalData.filter(f => f.type === 'Jain Festival').map(f => parseISO(f.date));
+  const buddhistFestivals = festivalData.filter(f => f.type === 'Buddhist Festival').map(f => parseISO(f.date));
 
-  async function handleDateSelect(selectedDate: Date | undefined) {
+
+  function handleDateSelect(selectedDate: Date | undefined) {
     setDate(selectedDate);
     if (!selectedDate) return;
 
     const formattedDate = format(selectedDate, 'yyyy-MM-dd');
     const festival = festivalMap.get(formattedDate);
-    const broadcastType = form.getValues('broadcastType');
-    
-    if (festival) {
-        if (broadcastType === 'Festival Greeting') {
-            setIsGeneratingForFestival(true);
-            const result = await generateFestivalMessageAction({ festivalName: festival.name });
-            setIsGeneratingForFestival(false);
 
-            if ('error' in result) {
-                toast({ variant: 'destructive', title: 'AI Error', description: result.error });
-            } else {
-                form.setValue('messageDetails', result.greeting);
-                toast({ title: 'AI Suggestion', description: `Message generated for ${festival.name}!` });
-            }
-        } else {
-            toast({
-                title: 'Set Broadcast Type',
-                description: `To auto-generate a message for ${festival.name}, please select "Festival Greeting" as the broadcast type first.`,
-            });
-        }
+    if (festival) {
+      setViewingFestival(festival);
+    }
+  }
+  
+  async function handleGenerateFromDialog() {
+    if (!viewingFestival) return;
+
+    const broadcastType = form.getValues('broadcastType');
+    if (broadcastType !== 'Festival Greeting') {
+      toast({
+        title: 'Set Broadcast Type First',
+        description: `To generate a message for ${viewingFestival.name}, please change the broadcast type to "Festival Greeting".`,
+      });
+      setViewingFestival(null);
+      return;
+    }
+
+    setIsGeneratingForFestival(true);
+    const festivalName = viewingFestival.name;
+    setViewingFestival(null);
+
+    const result = await generateFestivalMessageAction({ festivalName });
+    setIsGeneratingForFestival(false);
+
+    if ('error' in result) {
+      toast({ variant: 'destructive', title: 'AI Error', description: result.error });
+    } else {
+      form.setValue('messageDetails', result.greeting);
+      toast({ title: 'AI Suggestion', description: `Message for ${festivalName} has been generated!` });
     }
   }
 
@@ -159,6 +177,28 @@ export default function BroadcastPage() {
 
   return (
     <>
+      <Dialog open={!!viewingFestival} onOpenChange={(open) => !open && setViewingFestival(null)}>
+        {viewingFestival && (
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="font-headline">{viewingFestival.name}</DialogTitle>
+              <DialogDescription>{viewingFestival.type}</DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <p className="text-sm text-muted-foreground">{viewingFestival.description}</p>
+            </div>
+            <DialogFooter className="sm:justify-between gap-2">
+              <DialogClose asChild>
+                <Button type="button" variant="secondary">Close</Button>
+              </DialogClose>
+              <Button onClick={handleGenerateFromDialog}>
+                Generate Greeting
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
+
       <PageHeader title="Broadcast System" />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-8">
@@ -302,7 +342,7 @@ export default function BroadcastPage() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center gap-3">
                     <CalendarIcon className="h-8 w-8 text-primary" />
-                    <CardTitle className="text-2xl font-bold">
+                    <CardTitle className="text-2xl font-bold font-headline">
                         {new Date().getFullYear()} Annual Multi-Faith Planner
                     </CardTitle>
                 </div>
@@ -322,6 +362,10 @@ export default function BroadcastPage() {
                     <div className="flex items-center gap-2">
                         <div className="h-2.5 w-2.5 rounded-full bg-chart-4"></div>
                         <span>Sikh</span>
+                    </div>
+                     <div className="flex items-center gap-2">
+                        <div className="h-2.5 w-2.5 rounded-full bg-chart-6"></div>
+                        <span>Jain/Buddhist</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <div className="h-2.5 w-2.5 rounded-full bg-chart-1"></div>
@@ -346,15 +390,15 @@ export default function BroadcastPage() {
                           months: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6",
                           month: "space-y-4 rounded-lg bg-card p-4 shadow-sm",
                           caption: "flex justify-center text-center relative items-center mb-2",
-                          caption_label: "text-sm font-medium uppercase tracking-wider text-muted-foreground",
+                          caption_label: "text-lg font-bold font-headline text-primary",
                           nav_button: "hidden",
                           head_row: "flex",
                           head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] uppercase",
                           row: "flex w-full mt-2",
                           cell: "h-9 w-9 text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
-                          day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 flex items-center justify-center",
-                          day_selected: "bg-primary text-primary-foreground rounded-full hover:bg-primary/90 focus:bg-primary focus:text-primary-foreground",
-                          day_today: "bg-accent text-accent-foreground rounded-full",
+                          day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 flex items-center justify-center rounded-full",
+                          day_selected: "bg-primary text-primary-foreground hover:bg-primary/90 focus:bg-primary focus:text-primary-foreground",
+                          day_today: "bg-accent text-accent-foreground",
                           day_outside: "text-muted-foreground opacity-50",
                           day_disabled: "text-muted-foreground opacity-50",
                           day_hidden: "invisible",
@@ -363,6 +407,8 @@ export default function BroadcastPage() {
                           muslimFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-3 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
                           sikhFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-4 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
                           christianFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-5 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
+                          jainFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-6 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
+                          buddhistFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-6 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
                       }}
                       modifiers={{
                         nationalHoliday: nationalHolidays,
@@ -370,6 +416,8 @@ export default function BroadcastPage() {
                         muslimFestival: muslimFestivals,
                         sikhFestival: sikhFestivals,
                         christianFestival: christianFestivals,
+                        jainFestival: jainFestivals,
+                        buddhistFestival: buddhistFestivals,
                       }}
                       modifiersClassNames={{
                         nationalHoliday: 'nationalHoliday',
@@ -377,6 +425,8 @@ export default function BroadcastPage() {
                         muslimFestival: 'muslimFestival',
                         sikhFestival: 'sikhFestival',
                         christianFestival: 'christianFestival',
+                        jainFestival: 'jainFestival',
+                        buddhistFestival: 'buddhistFestival',
                       }}
                      />
                  </TooltipProvider>

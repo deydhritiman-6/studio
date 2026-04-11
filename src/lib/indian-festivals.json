@@ -1,18 +1,20 @@
 {
   "festivals": [
-    { "date": "2024-08-15", "name": "Independence Day", "type": "National Holiday" },
-    { "date": "2024-08-19", "name": "Raksha Bandhan", "type": "Hindu Festival" },
-    { "date": "2024-08-26", "name": "Janmashtami", "type": "Hindu Festival" },
-    { "date": "2024-09-07", "name": "Ganesh Chaturthi", "type": "Hindu Festival" },
-    { "date": "2024-09-16", "name": "Milad un-Nabi (Eid-e-Milad)", "type": "Muslim Festival" },
-    { "date": "2024-10-02", "name": "Gandhi Jayanti", "type": "National Holiday" },
-    { "date": "2024-10-12", "name": "Dussehra", "type": "Hindu Festival" },
-    { "date": "2024-10-31", "name": "Diwali", "type": "Hindu Festival" },
-    { "date": "2024-11-15", "name": "Guru Nanak Jayanti", "type": "Sikh Festival" },
-    { "date": "2024-12-25", "name": "Christmas", "type": "Christian Festival" },
-    { "date": "2025-01-14", "name": "Makar Sankranti", "type": "Hindu Festival" },
-    { "date": "2025-01-26", "name": "Republic Day", "type": "National Holiday" },
-    { "date": "2025-03-14", "name": "Holi", "type": "Hindu Festival" },
-    { "date": "2025-03-30", "name": "Eid al-Fitr", "type": "Muslim Festival" }
+    { "date": "2024-08-15", "name": "Independence Day", "type": "National Holiday", "description": "Commemorates India's independence from the United Kingdom in 1947." },
+    { "date": "2024-08-19", "name": "Raksha Bandhan", "type": "Hindu Festival", "description": "A festival that celebrates the bond between brothers and sisters." },
+    { "date": "2024-08-26", "name": "Janmashtami", "type": "Hindu Festival", "description": "Celebrates the birth of Krishna, the eighth avatar of Vishnu." },
+    { "date": "2024-09-07", "name": "Ganesh Chaturthi", "type": "Hindu Festival", "description": "A festival honoring the elephant-headed god Ganesha." },
+    { "date": "2024-09-16", "name": "Milad un-Nabi (Eid-e-Milad)", "type": "Muslim Festival", "description": "Commemorates the birth of the Islamic prophet Muhammad." },
+    { "date": "2024-10-02", "name": "Gandhi Jayanti", "type": "National Holiday", "description": "Celebrates the birthday of Mahatma Gandhi, the 'Father of the Nation'." },
+    { "date": "2024-10-12", "name": "Dussehra", "type": "Hindu Festival", "description": "A major Hindu festival celebrated at the end of Navratri every year." },
+    { "date": "2024-10-31", "name": "Diwali", "type": "Hindu Festival", "description": "The festival of lights, one of the major festivals celebrated by Hindus, Jains, and Sikhs." },
+    { "date": "2024-11-15", "name": "Guru Nanak Jayanti", "type": "Sikh Festival", "description": "Celebrates the birth of the first Sikh Guru, Guru Nanak." },
+    { "date": "2024-12-25", "name": "Christmas", "type": "Christian Festival", "description": "An annual festival commemorating the birth of Jesus Christ." },
+    { "date": "2025-01-14", "name": "Makar Sankranti", "type": "Hindu Festival", "description": "A festival day in the Hindu calendar, dedicated to the deity Surya (sun)." },
+    { "date": "2025-01-26", "name": "Republic Day", "type": "National Holiday", "description": "Honours the date on which the Constitution of India came into effect in 1950." },
+    { "date": "2025-03-14", "name": "Holi", "type": "Hindu Festival", "description": "A popular ancient Hindu festival, also known as the 'Festival of Colors'." },
+    { "date": "2025-03-30", "name": "Eid al-Fitr", "type": "Muslim Festival", "description": "An important religious holiday celebrated by Muslims worldwide that marks the end of Ramadan." },
+    { "date": "2025-04-03", "name": "Mahavir Jayanti", "type": "Jain Festival", "description": "Celebrates the birth of Mahavira, the twenty-fourth and last Tirthankara of present Avasarpiṇī." },
+    { "date": "2025-05-12", "name": "Buddha Purnima", "type": "Buddhist Festival", "description": "Commemorates the birth, enlightenment, and death of Gautama Buddha." }
   ]
 }
