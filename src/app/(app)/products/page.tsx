@@ -17,6 +17,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const productFormSchema = z.object({
   name: z.string().min(1, 'Product name is required.'),
@@ -24,6 +27,8 @@ const productFormSchema = z.object({
   price: z.coerce.number().positive('Price must be a positive number.'),
   wholesalePrice: z.coerce.number().positive('Wholesale price must be a positive number.'),
   availabilityStatus: z.enum(['In Stock', 'Out of Stock']),
+  imageUrl: z.string().url('Please select an image.'),
+  imageHint: z.string().min(1, 'Image hint is required.'),
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
@@ -40,6 +45,8 @@ export default function ProductsPage() {
       name: '',
       flavor: '',
       availabilityStatus: 'In Stock',
+      imageUrl: '',
+      imageHint: '',
     }
   });
 
@@ -51,6 +58,8 @@ export default function ProductsPage() {
         price: editingProduct.price,
         wholesalePrice: editingProduct.wholesalePrice,
         availabilityStatus: editingProduct.availabilityStatus,
+        imageUrl: editingProduct.imageUrl,
+        imageHint: editingProduct.imageHint,
       });
     } else {
       form.reset({
@@ -59,6 +68,8 @@ export default function ProductsPage() {
         price: undefined,
         wholesalePrice: undefined,
         availabilityStatus: 'In Stock',
+        imageUrl: '',
+        imageHint: '',
       });
     }
   }, [editingProduct, form]);
@@ -67,8 +78,6 @@ export default function ProductsPage() {
     const newProduct: Product = {
       id: `P${String(products.length + 10).padStart(3, '0')}`,
       ...values,
-      imageUrl: `https://picsum.photos/seed/${Math.random()}/400/300`,
-      imageHint: values.name.toLowerCase().split(' ').slice(0, 2).join(' '),
     };
     setProducts([newProduct, ...products]);
     setIsAddDialogOpen(false);
@@ -104,7 +113,7 @@ export default function ProductsPage() {
           setIsAddDialogOpen(false);
         }
       }}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>{activeDialog === 'edit' ? 'Edit Product' : 'Add New Product'}</DialogTitle>
             <DialogDescription>
@@ -112,60 +121,105 @@ export default function ProductsPage() {
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={onDialogSubmit} className="space-y-4 py-4">
-              <FormField control={form.control} name="name" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Product Name</FormLabel>
-                  <FormControl><Input placeholder="e.g., Velvet Noir 85%" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={form.control} name="flavor" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Flavor Profile</FormLabel>
-                  <FormControl><Input placeholder="e.g., Dark Chocolate" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <div className="grid grid-cols-2 gap-4">
-                <FormField control={form.control} name="price" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Retail Price (₹)</FormLabel>
-                    <FormControl><Input type="number" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="wholesalePrice" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Wholesale Price (₹)</FormLabel>
-                    <FormControl><Input type="number" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-              </div>
-              <FormField
-                control={form.control}
-                name="availabilityStatus"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Availability</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select availability" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="In Stock">In Stock</SelectItem>
-                        <SelectItem value="Out of Stock">Out of Stock</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <DialogFooter>
-                 <DialogClose asChild>
+            <form onSubmit={onDialogSubmit}>
+              <ScrollArea className="h-[60vh] pr-6">
+                <div className="space-y-4">
+                  <FormField control={form.control} name="name" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Product Name</FormLabel>
+                      <FormControl><Input placeholder="e.g., Velvet Noir 85%" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="flavor" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Flavor Profile</FormLabel>
+                      <FormControl><Input placeholder="e.g., Dark Chocolate" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField control={form.control} name="price" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Retail Price (₹)</FormLabel>
+                        <FormControl><Input type="number" {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="wholesalePrice" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Wholesale Price (₹)</FormLabel>
+                        <FormControl><Input type="number" {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  </div>
+                  <FormField
+                    control={form.control}
+                    name="availabilityStatus"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Availability</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select availability" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="In Stock">In Stock</SelectItem>
+                            <SelectItem value="Out of Stock">Out of Stock</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="imageUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Product Image</FormLabel>
+                        <FormControl>
+                           <RadioGroup
+                            onValueChange={(value) => {
+                              const selectedImage = PlaceHolderImages.find(img => img.imageUrl === value);
+                              if (selectedImage) {
+                                field.onChange(selectedImage.imageUrl);
+                                form.setValue('imageHint', selectedImage.imageHint, { shouldValidate: true });
+                              }
+                            }}
+                            value={field.value}
+                            className="grid grid-cols-3 gap-4"
+                          >
+                            {PlaceHolderImages.map((image) => (
+                              <FormItem key={image.id}>
+                                <RadioGroupItem value={image.imageUrl} id={image.id} className="peer sr-only" />
+                                <Label
+                                  htmlFor={image.id}
+                                  className="block cursor-pointer rounded-md border-2 border-muted bg-popover hover:border-accent peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                                >
+                                  <Image
+                                    src={image.imageUrl}
+                                    alt={image.description}
+                                    width={200}
+                                    height={150}
+                                    className="rounded-md object-cover aspect-[4/3] w-full"
+                                  />
+                                </Label>
+                              </FormItem>
+                            ))}
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </ScrollArea>
+              <DialogFooter className="mt-6 pt-4 border-t">
+                <DialogClose asChild>
                     <Button type="button" variant="secondary">Cancel</Button>
                 </DialogClose>
                 <Button type="submit">Save Changes</Button>
