@@ -20,6 +20,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { festivals as festivalData } from '@/lib/indian-festivals.json';
 import { format, parseISO } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type Festival = {
   date: string;
@@ -250,39 +251,64 @@ export default function BroadcastPage() {
       </div>
        <Card className="mt-8">
           <CardHeader>
-              <CardTitle>Festival Calendar</CardTitle>
+              <CardTitle>Festival Calendar & Holiday List</CardTitle>
               <CardDescription>When "Festival Greeting" is selected, click a highlighted date to generate a message.</CardDescription>
           </CardHeader>
-          <CardContent className="p-0">
-               <TooltipProvider>
-                   <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={handleDateSelect}
-                    className="p-0"
-                    numberOfMonths={12}
-                    classNames={{
-                        months: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4",
-                        month: "space-y-4 border rounded-lg p-2 bg-card",
-                        caption_label: "font-headline",
-                    }}
-                    formatters={{ formatDay: (date) => <DayContentWithTooltip date={date} /> }}
-                    modifiers={{
-                      nationalHoliday: nationalHolidays,
-                      hinduFestival: hinduFestivals,
-                      muslimFestival: muslimFestivals,
-                      sikhFestival: sikhFestivals,
-                      christianFestival: christianFestivals,
-                    }}
-                    modifiersClassNames={{
-                      nationalHoliday: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-1 after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2',
-                      hinduFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-2 after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2',
-                      muslimFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-3 after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2',
-                      sikhFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-4 after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2',
-                      christianFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-5 after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2',
-                    }}
-                   />
-               </TooltipProvider>
+          <CardContent className="grid grid-cols-1 xl:grid-cols-3 gap-8 p-4">
+               <div className="xl:col-span-2">
+                 <TooltipProvider>
+                     <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={handleDateSelect}
+                      className="p-0"
+                      numberOfMonths={12}
+                      classNames={{
+                          months: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-10",
+                          month: "space-y-3",
+                          caption_label: "font-headline text-base",
+                          head_cell: "text-muted-foreground rounded-md w-8 font-normal text-[0.8rem]",
+                          row: "flex w-full mt-2",
+                          cell: "h-8 w-8 text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+                          day: "h-8 w-8 p-0 font-normal aria-selected:opacity-100",
+                          day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                          nationalHoliday: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-1 after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2',
+                          hinduFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-2 after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2',
+                          muslimFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-3 after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2',
+                          sikhFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-4 after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2',
+                          christianFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-5 after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2',
+                      }}
+                      formatters={{ formatDay: (date) => <DayContentWithTooltip date={date} /> }}
+                      modifiers={{
+                        nationalHoliday: nationalHolidays,
+                        hinduFestival: hinduFestivals,
+                        muslimFestival: muslimFestivals,
+                        sikhFestival: sikhFestivals,
+                        christianFestival: christianFestivals,
+                      }}
+                      modifiersClassNames={{
+                        nationalHoliday: 'nationalHoliday',
+                        hinduFestival: 'hinduFestival',
+                        muslimFestival: 'muslimFestival',
+                        sikhFestival: 'sikhFestival',
+                        christianFestival: 'christianFestival',
+                      }}
+                     />
+                 </TooltipProvider>
+               </div>
+               <div className="xl:col-span-1">
+                 <h3 className="font-semibold mb-4 font-headline">Holidays & Observances</h3>
+                 <ScrollArea className="h-[500px] pr-4">
+                    <div className="space-y-3">
+                        {festivalData.map((festival) => (
+                           <div key={festival.name} className="flex items-start text-sm">
+                                <p className="font-medium w-24 text-muted-foreground">{format(parseISO(festival.date), 'MMM dd')}</p>
+                                <p className="">{festival.name}</p>
+                            </div>
+                        ))}
+                    </div>
+                </ScrollArea>
+               </div>
           </CardContent>
         </Card>
     </>
