@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Send, Calendar as CalendarIcon, Clock } from 'lucide-react';
+import { Loader2, Send, Calendar as CalendarIcon } from 'lucide-react';
 import { generateBroadcastAction, generateFestivalMessageAction } from './actions';
 import { type GenerateBroadcastMessageOutput } from '@/ai/flows/generate-broadcast-message';
 import { Input } from '@/components/ui/input';
@@ -31,9 +31,9 @@ type Festival = {
   description: string;
 };
 
-const festivalData: Festival[] = festivalJsonData.festivals;
+const festivalData: Festival[] = (festivalJsonData as { festivals: Festival[] }).festivals;
 
-const formSchema = z.object({
+const broadcastFormSchema = z.object({
   broadcastType: z
     .enum(['Product Update', 'Special Discount', 'General Announcement', 'Event Invitation', 'Festival Greeting']),
   targetAudience: z
@@ -58,7 +58,9 @@ function DayContentWithTooltip({ date }: { date: Date }) {
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-            <span>{format(date, 'd')}</span>
+            <span className="relative flex h-full w-full items-center justify-center">
+              {format(date, 'd')}
+            </span>
         </TooltipTrigger>
         <TooltipContent>
           <p>{festival.name}</p>
@@ -81,8 +83,8 @@ export default function BroadcastPage() {
 
   const startOfYear = new Date(new Date().getFullYear(), 0, 1);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof broadcastFormSchema>>({
+    resolver: zodResolver(broadcastFormSchema),
     defaultValues: {
       broadcastType: 'General Announcement',
       targetAudience: 'All Customers',
@@ -155,7 +157,7 @@ export default function BroadcastPage() {
   }
 
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof broadcastFormSchema>) {
     setIsLoading(true);
     setGeneratedMessage(null);
     const result = await generateBroadcastAction(values);
@@ -344,7 +346,7 @@ export default function BroadcastPage() {
                   Send Now
                 </Button>
                 <Button className="w-full" onClick={handleSchedule} disabled={!generatedMessage || isLoading}>
-                  <Clock className="mr-2 h-4 w-4" />
+                  <CalendarIcon className="mr-2 h-4 w-4" />
                   Schedule
                 </Button>
               </div>
@@ -367,6 +369,8 @@ export default function BroadcastPage() {
           <CardContent className="p-4 bg-muted/50">
                 <TooltipProvider>
                     <Calendar
+                      fromYear={new Date().getFullYear()}
+                      toYear={new Date().getFullYear()}
                       month={startOfYear}
                       mode="single"
                       selected={date}
@@ -393,14 +397,14 @@ export default function BroadcastPage() {
                           day_outside: "text-muted-foreground opacity-50",
                           day_disabled: "text-muted-foreground opacity-50",
                           day_hidden: "invisible",
-                          sunday: "text-destructive",
-                          nationalHoliday: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-1 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
-                          hinduFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-2 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
-                          muslimFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-3 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
-                          sikhFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-4 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
-                          christianFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-5 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
-                          jainFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-6 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
-                          buddhistFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-6 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
+                          day_sunday: "text-destructive",
+                          day_nationalHoliday: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-1 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
+                          day_hinduFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-2 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
+                          day_muslimFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-3 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
+                          day_sikhFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-4 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
+                          day_christianFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-5 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
+                          day_jainFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-6 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
+                          day_buddhistFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-6 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
                       }}
                       modifiers={{
                         nationalHoliday: nationalHolidays,
@@ -411,16 +415,6 @@ export default function BroadcastPage() {
                         jainFestival: jainFestivals,
                         buddhistFestival: buddhistFestivals,
                         sunday: { dayOfWeek: [0] },
-                      }}
-                      modifiersClassNames={{
-                        nationalHoliday: 'nationalHoliday',
-                        hinduFestival: 'hinduFestival',
-                        muslimFestival: 'muslimFestival',
-                        sikhFestival: 'sikhFestival',
-                        christianFestival: 'christianFestival',
-                        jainFestival: 'jainFestival',
-                        buddhistFestival: 'buddhistFestival',
-                        sunday: 'sunday',
                       }}
                      />
                  </TooltipProvider>
