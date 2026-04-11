@@ -34,17 +34,23 @@ type CustomerFormValues = z.infer<typeof customerFormSchema>;
 
 const getCustomerBadgeProps = (customer: Customer): { text: string; className: string; variant: 'default' | 'secondary' } => {
   if (customer.customerType === 'VIP') {
+    const text = `VIP - ${customer.vipLevel}`;
+    let className = 'bg-accent text-accent-foreground';
     switch (customer.vipLevel) {
       case 'Royal':
-        return { text: 'Royal', className: 'bg-purple-600 text-white hover:bg-purple-700 border-transparent', variant: 'default' };
+        className = 'bg-purple-600 text-white hover:bg-purple-700 border-transparent';
+        break;
       case 'Platinum':
-        return { text: 'Platinum', className: 'bg-slate-600 text-white hover:bg-slate-700 border-transparent', variant: 'default' };
+        className = 'bg-slate-600 text-white hover:bg-slate-700 border-transparent';
+        break;
       case 'Gold':
-        return { text: 'Gold', className: 'bg-yellow-500 text-black hover:bg-yellow-600 border-transparent', variant: 'default' };
+        className = 'bg-yellow-500 text-black hover:bg-yellow-600 border-transparent';
+        break;
       case 'None':
-      default:
-        return { text: 'VIP', className: 'bg-accent text-accent-foreground', variant: 'default' };
+        // Use default accent color for None
+        break;
     }
+    return { text, className, variant: 'default' };
   }
   return { text: customer.customerType, className: '', variant: 'secondary' };
 };
