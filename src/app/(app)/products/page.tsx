@@ -248,9 +248,10 @@ export default function ProductsPage() {
                           </div>
                         )}
                         <Tabs defaultValue="gallery" className="w-full" onValueChange={(tab) => { if (tab !== 'camera') stopCamera(); }}>
-                            <TabsList className="grid w-full grid-cols-2">
+                            <TabsList className="grid w-full grid-cols-3">
                                 <TabsTrigger value="gallery">Gallery</TabsTrigger>
                                 <TabsTrigger value="camera">Camera</TabsTrigger>
+                                <TabsTrigger value="url">URL</TabsTrigger>
                             </TabsList>
                             <TabsContent value="gallery">
                                 <FormControl>
@@ -308,6 +309,23 @@ export default function ProductsPage() {
                                              <Button type="button" onClick={capturePhoto}>Capture Photo</Button>
                                         )}
                                     </div>
+                                </div>
+                            </TabsContent>
+                             <TabsContent value="url">
+                                <div className="space-y-2 pt-4">
+                                    <Label htmlFor="url-input">Image URL</Label>
+                                    <Input
+                                        id="url-input"
+                                        placeholder="https://example.com/image.png"
+                                        value={field.value.startsWith('http') ? field.value : ''}
+                                        onChange={(e) => {
+                                            field.onChange(e.target.value);
+                                            form.setValue('imageHint', 'from url');
+                                        }}
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        Paste a link to an image from the web.
+                                    </p>
                                 </div>
                             </TabsContent>
                         </Tabs>
