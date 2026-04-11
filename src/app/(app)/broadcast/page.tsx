@@ -30,7 +30,7 @@ type Festival = {
   description: string;
 };
 
-const festivalData: Festival[] = (festivalJsonData as { festivals: Festival[] }).festivals;
+const festivalData: Festival[] = festivalJsonData.festivals;
 
 
 const broadcastFormSchema = z.object({
@@ -111,9 +111,11 @@ export default function BroadcastPage() {
 
   const { monthlyFestivals, monthlyImportantDays } = useMemo(() => {
     const currentMonth = displayDate.getMonth();
+    const currentYear = displayDate.getFullYear();
+
     const festivals = festivalData.filter(f => {
         const festivalDate = parseISO(f.date);
-        return festivalDate.getMonth() === currentMonth;
+        return festivalDate.getMonth() === currentMonth && festivalDate.getFullYear() === currentYear;
     });
     
     return {
@@ -277,7 +279,7 @@ export default function BroadcastPage() {
                 </div>
             </CardContent>
             <div className="border-t-2 border-amber-200 bg-amber-100/50 p-3 rounded-b-lg">
-                 <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm font-semibold text-amber-800">
+                 <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm font-semibold text-amber-900/80">
                     {Object.entries(categoryIcons).map(([type, icon]) => (
                         <div key={type} className="flex items-center gap-2">
                             {React.cloneElement(icon as React.ReactElement, {className: 'h-4 w-4'})}
@@ -435,4 +437,3 @@ export default function BroadcastPage() {
     </>
   );
 }
-
