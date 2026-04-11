@@ -360,7 +360,69 @@ export default function BroadcastPage() {
                         {new Date().getFullYear()} Annual Multi-Faith Planner
                     </CardTitle>
                 </div>
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+              </div>
+          </CardHeader>
+          <CardContent className="p-4 bg-muted/50">
+                <TooltipProvider>
+                    <Calendar
+                      month={startOfYear}
+                      mode="single"
+                      selected={date}
+                      onSelect={handleDateSelect}
+                      className="p-0"
+                      numberOfMonths={12}
+                      formatters={{ 
+                        formatCaption: (month, options) => format(month, 'LLLL', { locale: options?.locale }).toUpperCase(),
+                        formatDay: (date) => <DayContentWithTooltip date={date} />
+                      }}
+                      classNames={{
+                          months: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6",
+                          month: "space-y-4 rounded-xl bg-card p-4 shadow-lg border",
+                          caption: "flex justify-center text-center relative items-center mb-2",
+                          caption_label: "text-2xl font-bold font-headline text-primary",
+                          nav_button: "hidden",
+                          head_row: "flex border-b",
+                          head_cell: "text-muted-foreground rounded-md w-full font-bold text-sm uppercase pb-2",
+                          row: "flex w-full mt-2",
+                          cell: "h-9 w-9 text-center text-sm p-0 relative focus-within:relative focus-within:z-20 border",
+                          day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 flex items-center justify-center",
+                          day_selected: "bg-primary text-primary-foreground hover:bg-primary/90 focus:bg-primary focus:text-primary-foreground rounded-full",
+                          day_today: "bg-accent text-accent-foreground rounded-full",
+                          day_outside: "text-muted-foreground opacity-50",
+                          day_disabled: "text-muted-foreground opacity-50",
+                          day_hidden: "invisible",
+                          sunday: "text-destructive",
+                          nationalHoliday: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-1 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
+                          hinduFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-2 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
+                          muslimFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-3 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
+                          sikhFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-4 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
+                          christianFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-5 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
+                          jainFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-6 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
+                          buddhistFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-6 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
+                      }}
+                      modifiers={{
+                        nationalHoliday: nationalHolidays,
+                        hinduFestival: hinduFestivals,
+                        muslimFestival: muslimFestivals,
+                        sikhFestival: sikhFestivals,
+                        christianFestival: christianFestivals,
+                        jainFestival: jainFestivals,
+                        buddhistFestival: buddhistFestivals,
+                        sunday: { dayOfWeek: [0] },
+                      }}
+                      modifiersClassNames={{
+                        nationalHoliday: 'nationalHoliday',
+                        hinduFestival: 'hinduFestival',
+                        muslimFestival: 'muslimFestival',
+                        sikhFestival: 'sikhFestival',
+                        christianFestival: 'christianFestival',
+                        jainFestival: 'jainFestival',
+                        buddhistFestival: 'buddhistFestival',
+                        sunday: 'sunday',
+                      }}
+                     />
+                 </TooltipProvider>
+                 <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-muted-foreground mt-6 border-t pt-4">
                     <div className="flex items-center gap-2">
                         <div className="h-2.5 w-2.5 rounded-full bg-chart-2"></div>
                         <span>Hindu</span>
@@ -386,67 +448,10 @@ export default function BroadcastPage() {
                         <span>National</span>
                     </div>
                 </div>
-              </div>
-          </CardHeader>
-          <CardContent className="p-4 bg-muted/50">
-                <TooltipProvider>
-                    <Calendar
-                      month={startOfYear}
-                      mode="single"
-                      selected={date}
-                      onSelect={handleDateSelect}
-                      className="p-0"
-                      numberOfMonths={12}
-                      formatters={{ 
-                        formatCaption: (month, options) => format(month, 'LLLL yyyy', { locale: options?.locale }).toUpperCase(),
-                        formatDay: (date) => <DayContentWithTooltip date={date} />
-                      }}
-                      classNames={{
-                          months: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6",
-                          month: "space-y-4 rounded-lg bg-card p-4 shadow-sm",
-                          caption: "flex justify-center text-center relative items-center mb-2",
-                          caption_label: "text-lg font-bold font-headline text-primary",
-                          nav_button: "hidden",
-                          head_row: "flex",
-                          head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] uppercase",
-                          row: "flex w-full mt-2",
-                          cell: "h-9 w-9 text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
-                          day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 flex items-center justify-center rounded-full",
-                          day_selected: "bg-primary text-primary-foreground hover:bg-primary/90 focus:bg-primary focus:text-primary-foreground",
-                          day_today: "bg-accent text-accent-foreground",
-                          day_outside: "text-muted-foreground opacity-50",
-                          day_disabled: "text-muted-foreground opacity-50",
-                          day_hidden: "invisible",
-                          nationalHoliday: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-1 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
-                          hinduFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-2 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
-                          muslimFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-3 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
-                          sikhFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-4 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
-                          christianFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-5 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
-                          jainFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-6 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
-                          buddhistFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-6 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
-                      }}
-                      modifiers={{
-                        nationalHoliday: nationalHolidays,
-                        hinduFestival: hinduFestivals,
-                        muslimFestival: muslimFestivals,
-                        sikhFestival: sikhFestivals,
-                        christianFestival: christianFestivals,
-                        jainFestival: jainFestivals,
-                        buddhistFestival: buddhistFestivals,
-                      }}
-                      modifiersClassNames={{
-                        nationalHoliday: 'nationalHoliday',
-                        hinduFestival: 'hinduFestival',
-                        muslimFestival: 'muslimFestival',
-                        sikhFestival: 'sikhFestival',
-                        christianFestival: 'christianFestival',
-                        jainFestival: 'jainFestival',
-                        buddhistFestival: 'buddhistFestival',
-                      }}
-                     />
-                 </TooltipProvider>
           </CardContent>
         </Card>
     </>
   );
 }
+
+    
