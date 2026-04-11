@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Send } from 'lucide-react';
+import { Loader2, Send, Calendar as CalendarIcon, Clock } from 'lucide-react';
 import { generateBroadcastAction, generateFestivalMessageAction } from './actions';
 import { type GenerateBroadcastMessageOutput } from '@/ai/flows/generate-broadcast-message';
 import { Input } from '@/components/ui/input';
@@ -22,6 +22,8 @@ import { festivals as festivalData } from '@/lib/indian-festivals.json';
 import { format, parseISO } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 type Festival = {
   date: string;
@@ -69,6 +71,10 @@ export default function BroadcastPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingForFestival, setIsGeneratingForFestival] = useState(false);
   const [date, setDate] = useState<Date | undefined>(new Date());
+  
+  const [scheduleDate, setScheduleDate] = useState<Date | undefined>(new Date());
+  const [scheduleTime, setScheduleTime] = useState<string>(() => new Date().toTimeString().slice(0, 5));
+
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -128,6 +134,29 @@ export default function BroadcastPage() {
     } else {
       setGeneratedMessage(result);
     }
+  }
+
+  function handleSchedule() {
+    if (!generatedMessage) {
+      toast({ variant: 'destructive', title: 'No message to schedule', description: 'Please generate a message first.' });
+      return;
+    }
+    if (!scheduleDate) {
+      toast({ variant: 'destructive', title: 'No date selected', description: 'Please select a date to schedule the broadcast.' });
+      return;
+    }
+    toast({
+      title: 'Broadcast Scheduled',
+      description: `Your message is scheduled to be sent on ${format(scheduleDate, 'PPP')} at ${scheduleTime}.`,
+    });
+  }
+
+  function handleSendNow() {
+     if (!generatedMessage) {
+      toast({ variant: 'destructive', title: 'No message to send', description: 'Please generate a message first.' });
+      return;
+    }
+     toast({ title: 'Broadcast Sent', description: 'Your message has been sent successfully.' });
   }
   
   const channel = form.watch('channel');
@@ -199,7 +228,7 @@ export default function BroadcastPage() {
                     )} />
                     <Button type="submit" disabled={isLoading} className="w-full">
                       {isLoading ? <Loader2 className="animate-spin" /> : <Send />}
-                      Generate Broadcast
+                      Generate Message
                     </Button>
                   </form>
                 </Form>
@@ -207,8 +236,8 @@ export default function BroadcastPage() {
             </Card>
         </div>
 
-        <div className="lg:col-span-1">
-          <Card className="h-full">
+        <div className="lg:col-span-1 space-y-8">
+          <Card>
             <CardHeader>
               <CardTitle>Generated Message</CardTitle>
               <CardDescription>The AI-generated message will appear here. Review and copy it for sending.</CardDescription>
@@ -238,7 +267,7 @@ export default function BroadcastPage() {
                 </div>
               )}
                {!isLoading && !generatedMessage && (
-                 <div className="flex flex-col items-center justify-center h-full rounded-lg border-2 border-dashed border-border text-center p-8 min-h-[300px]">
+                 <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border text-center p-8 min-h-[300px]">
                     <Send className="h-12 w-12 text-muted-foreground mb-4" />
                     <h3 className="text-xl font-semibold font-headline">Reach Your Audience</h3>
                     <p className="text-muted-foreground mt-2 max-w-sm">
@@ -248,6 +277,62 @@ export default function BroadcastPage() {
               )}
             </CardContent>
           </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Schedule & Send</CardTitle>
+              <CardDescription>
+                Send your broadcast immediately or schedule it for a future date and time.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-2">
+                <Label>Schedule Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={'outline'}
+                      className={cn(
+                        'w-full justify-start text-left font-normal',
+                        !scheduleDate && 'text-muted-foreground'
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {scheduleDate ? format(scheduleDate, 'PPP') : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={scheduleDate}
+                      onSelect={setScheduleDate}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="schedule-time">Schedule Time</Label>
+                <Input
+                  id="schedule-time"
+                  type="time"
+                  value={scheduleTime}
+                  onChange={(e) => setScheduleTime(e.target.value)}
+                />
+              </div>
+              <div className="flex space-x-2">
+                <Button variant="outline" className="w-full" onClick={handleSendNow} disabled={!generatedMessage || isLoading}>
+                  <Send className="mr-2 h-4 w-4" />
+                  Send Now
+                </Button>
+                <Button className="w-full" onClick={handleSchedule} disabled={!generatedMessage || isLoading}>
+                  <Clock className="mr-2 h-4 w-4" />
+                  Schedule
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
         </div>
       </div>
        <Card className="mt-8">
