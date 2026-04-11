@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Send } from 'lucide-react';
 import { generateBroadcastAction, generateFestivalMessageAction } from './actions';
-import { type GenerateBroadcastMessageOutput, GenerateBroadcastMessageInputSchema } from '@/ai/flows/generate-broadcast-message';
+import { type GenerateBroadcastMessageOutput } from '@/ai/flows/generate-broadcast-message';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Calendar } from '@/components/ui/calendar';
@@ -27,9 +27,19 @@ type Festival = {
   type: string;
 };
 
-const formSchema = GenerateBroadcastMessageInputSchema;
+const formSchema = z.object({
+  broadcastType: z
+    .enum(['Product Update', 'Special Discount', 'General Announcement', 'Event Invitation', 'Festival Greeting']),
+  targetAudience: z
+    .enum(['All Customers', 'VIP Customers', 'Wholesale Partners', 'New Subscribers']),
+  channel: z
+    .enum(['Email', 'SMS', 'Social Media Post']),
+  messageDetails: z
+    .string()
+    .min(1, 'Message details are required.'),
+});
 
-const festivalDays = festivalData.map(f => parseISO(f.date));
+
 const festivalMap: Map<string, Festival> = new Map(
   festivalData.map(f => [format(parseISO(f.date), 'yyyy-MM-dd'), f])
 );
@@ -68,6 +78,12 @@ export default function BroadcastPage() {
       messageDetails: '',
     },
   });
+
+  const nationalHolidays = festivalData.filter(f => f.type === 'National Holiday').map(f => parseISO(f.date));
+  const hinduFestivals = festivalData.filter(f => f.type === 'Hindu Festival').map(f => parseISO(f.date));
+  const muslimFestivals = festivalData.filter(f => f.type === 'Muslim Festival').map(f => parseISO(f.date));
+  const sikhFestivals = festivalData.filter(f => f.type === 'Sikh Festival').map(f => parseISO(f.date));
+  const christianFestivals = festivalData.filter(f => f.type === 'Christian Festival').map(f => parseISO(f.date));
 
   async function handleDateSelect(selectedDate: Date | undefined) {
     setDate(selectedDate);
@@ -187,31 +203,6 @@ export default function BroadcastPage() {
                 </Form>
               </CardContent>
             </Card>
-            
-            <Card>
-              <CardHeader>
-                  <CardTitle>Festival Calendar</CardTitle>
-                  <CardDescription>When "Festival Greeting" is selected, click a highlighted date to generate a message.</CardDescription>
-              </CardHeader>
-              <CardContent className="flex justify-center">
-                   <TooltipProvider>
-                       <Calendar
-                        mode="single"
-                        selected={date}
-                        onSelect={handleDateSelect}
-                        className="rounded-md border p-0"
-                        numberOfMonths={3}
-                        formatters={{ formatDay: (date) => <DayContentWithTooltip date={date} /> }}
-                        modifiers={{
-                            festival: festivalDays,
-                        }}
-                        modifiersClassNames={{
-                            festival: 'relative after:content-[""] after:block after:h-1 after:w-1 after:rounded-full after:bg-primary after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2',
-                        }}
-                       />
-                   </TooltipProvider>
-              </CardContent>
-            </Card>
         </div>
 
         <div className="lg:col-span-1">
@@ -257,6 +248,43 @@ export default function BroadcastPage() {
           </Card>
         </div>
       </div>
+       <Card className="mt-8">
+          <CardHeader>
+              <CardTitle>Festival Calendar</CardTitle>
+              <CardDescription>When "Festival Greeting" is selected, click a highlighted date to generate a message.</CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+               <TooltipProvider>
+                   <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={handleDateSelect}
+                    className="p-0"
+                    numberOfMonths={12}
+                    classNames={{
+                        months: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4",
+                        month: "space-y-4 border rounded-lg p-2 bg-card",
+                        caption_label: "font-headline",
+                    }}
+                    formatters={{ formatDay: (date) => <DayContentWithTooltip date={date} /> }}
+                    modifiers={{
+                      nationalHoliday: nationalHolidays,
+                      hinduFestival: hinduFestivals,
+                      muslimFestival: muslimFestivals,
+                      sikhFestival: sikhFestivals,
+                      christianFestival: christianFestivals,
+                    }}
+                    modifiersClassNames={{
+                      nationalHoliday: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-1 after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2',
+                      hinduFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-2 after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2',
+                      muslimFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-3 after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2',
+                      sikhFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-4 after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2',
+                      christianFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-5 after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2',
+                    }}
+                   />
+               </TooltipProvider>
+          </CardContent>
+        </Card>
     </>
   );
 }
