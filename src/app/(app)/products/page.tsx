@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -224,6 +224,11 @@ export default function ProductsPage() {
   const imageUrls = form.watch('imageUrls');
   const imageUrl = imageUrls && imageUrls.length > 0 ? imageUrls[0] : null;
 
+  const hasCustomImages = useMemo(() => {
+    if (!imageUrls || imageUrls.length === 0) return false;
+    return !PlaceHolderImages.some(p => p.imageUrl === imageUrls[0]);
+  }, [imageUrls]);
+
   return (
     <>
       <Dialog open={!!viewingProduct} onOpenChange={(open) => !open && setViewingProduct(null)}>
@@ -351,42 +356,77 @@ export default function ProductsPage() {
                             </TabsList>
                             <TabsContent value="gallery">
                                 <FormControl>
-                                <RadioGroup
-                                    onValueChange={(value) => {
-                                      const selectedImage = PlaceHolderImages.find(img => img.imageUrl === value);
-                                      if (selectedImage) {
-                                          const seed = selectedImage.imageUrl.split('/seed/')[1].split('/')[0];
-                                          const newImageUrls = [
-                                              selectedImage.imageUrl,
-                                              `https://picsum.photos/seed/${seed}_a/120/90`,
-                                              `https://picsum.photos/seed/${seed}_b/120/90`,
-                                              `https://picsum.photos/seed/${seed}_c/120/90`,
-                                          ];
-                                          field.onChange(newImageUrls);
-                                          form.setValue('imageHint', selectedImage.imageHint, { shouldValidate: true });
-                                      }
-                                    }}
-                                    value={field.value?.[0]}
-                                    className="grid grid-cols-3 gap-4 pt-4"
-                                >
-                                    {PlaceHolderImages.map((image) => (
-                                    <FormItem key={image.id}>
-                                        <RadioGroupItem value={image.imageUrl} id={image.id} className="peer sr-only" />
-                                        <Label
-                                        htmlFor={image.id}
-                                        className="block cursor-pointer rounded-md border-2 border-muted bg-popover hover:border-accent peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                                        >
-                                        <Image
-                                            src={image.imageUrl}
-                                            alt={image.description}
-                                            width={200}
-                                            height={150}
-                                            className="rounded-md object-cover aspect-[4/3] w-full"
-                                        />
-                                        </Label>
-                                    </FormItem>
-                                    ))}
-                                </RadioGroup>
+                                  {hasCustomImages ? (
+                                    <RadioGroup
+                                      onValueChange={(value) => {
+                                        const indexToMove = parseInt(value, 10);
+                                        const currentImages = form.getValues('imageUrls') || [];
+                                        if (!isNaN(indexToMove) && indexToMove >= 0 && indexToMove < currentImages.length) {
+                                            const newOrderedImages = [...currentImages];
+                                            const [selectedImage] = newOrderedImages.splice(indexToMove, 1);
+                                            newOrderedImages.unshift(selectedImage);
+                                            field.onChange(newOrderedImages);
+                                        }
+                                      }}
+                                      value="0"
+                                      className="grid grid-cols-4 gap-4 pt-4"
+                                    >
+                                      {field.value?.map((url, index) => (
+                                        <FormItem key={`${url}-${index}`}>
+                                          <RadioGroupItem value={String(index)} id={`custom-${index}`} className="peer sr-only" />
+                                          <Label
+                                            htmlFor={`custom-${index}`}
+                                            className="block cursor-pointer rounded-md border-2 border-muted bg-popover hover:border-accent peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                                          >
+                                            <Image
+                                              src={url}
+                                              alt={`Custom product image ${index + 1}`}
+                                              width={200}
+                                              height={150}
+                                              className="rounded-md object-cover aspect-[4/3] w-full"
+                                            />
+                                          </Label>
+                                        </FormItem>
+                                      ))}
+                                    </RadioGroup>
+                                  ) : (
+                                    <RadioGroup
+                                        onValueChange={(value) => {
+                                          const selectedImage = PlaceHolderImages.find(img => img.imageUrl === value);
+                                          if (selectedImage) {
+                                              const seed = selectedImage.imageUrl.split('/seed/')[1].split('/')[0];
+                                              const newImageUrls = [
+                                                  selectedImage.imageUrl,
+                                                  `https://picsum.photos/seed/${seed}_a/120/90`,
+                                                  `https://picsum.photos/seed/${seed}_b/120/90`,
+                                                  `https://picsum.photos/seed/${seed}_c/120/90`,
+                                              ];
+                                              field.onChange(newImageUrls);
+                                              form.setValue('imageHint', selectedImage.imageHint, { shouldValidate: true });
+                                          }
+                                        }}
+                                        value={field.value?.[0]}
+                                        className="grid grid-cols-3 gap-4 pt-4"
+                                    >
+                                        {PlaceHolderImages.map((image) => (
+                                        <FormItem key={image.id}>
+                                            <RadioGroupItem value={image.imageUrl} id={image.id} className="peer sr-only" />
+                                            <Label
+                                            htmlFor={image.id}
+                                            className="block cursor-pointer rounded-md border-2 border-muted bg-popover hover:border-accent peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                                            >
+                                            <Image
+                                                src={image.imageUrl}
+                                                alt={image.description}
+                                                width={200}
+                                                height={150}
+                                                className="rounded-md object-cover aspect-[4/3] w-full"
+                                            />
+                                            </Label>
+                                        </FormItem>
+                                        ))}
+                                    </RadioGroup>
+                                  )}
                                 </FormControl>
                             </TabsContent>
                             <TabsContent value="camera">
