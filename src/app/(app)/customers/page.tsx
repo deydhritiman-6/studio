@@ -27,7 +27,7 @@ const customerFormSchema = z.object({
   email: z.string().email('Invalid email address'),
   phone: z.string().min(10, 'Phone number must be at least 10 digits'),
   customerType: z.enum(['VIP', 'Regular', 'Corporate', 'Wholesale']),
-  vipLevel: z.enum(['Gold', 'Platinum', 'Royal', 'None']),
+  vipLevel: z.enum(['Gold', 'Platinum', 'Diamond', 'Silver']),
 });
 
 type CustomerFormValues = z.infer<typeof customerFormSchema>;
@@ -37,7 +37,7 @@ const getCustomerBadgeProps = (customer: Customer): { text: string; className: s
     const text = `VIP - ${customer.vipLevel}`;
     let className = 'bg-accent text-accent-foreground';
     switch (customer.vipLevel) {
-      case 'Royal':
+      case 'Diamond':
         className = 'bg-purple-600 text-white hover:bg-purple-700 border-transparent';
         break;
       case 'Platinum':
@@ -46,8 +46,8 @@ const getCustomerBadgeProps = (customer: Customer): { text: string; className: s
       case 'Gold':
         className = 'bg-yellow-500 text-black hover:bg-yellow-600 border-transparent';
         break;
-      case 'None':
-        // Use default accent color for None
+      case 'Silver':
+        className = 'bg-gray-400 text-black hover:bg-gray-500 border-transparent';
         break;
     }
     return { text, className, variant: 'default' };
@@ -85,7 +85,7 @@ export default function CustomersPage() {
         email: '',
         phone: '',
         customerType: 'Regular',
-        vipLevel: 'None',
+        vipLevel: 'Silver',
       });
     }
   }, [editingCustomer, form]);
@@ -121,7 +121,7 @@ export default function CustomersPage() {
       email: '',
       phone: '',
       customerType: 'Regular',
-      vipLevel: 'None',
+      vipLevel: 'Silver',
     });
     setIsAddOrEditDialogOpen(true);
   };
@@ -261,7 +261,7 @@ export default function CustomersPage() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                       {['None', 'Gold', 'Platinum', 'Royal'].map(level => (
+                       {['Silver', 'Gold', 'Platinum', 'Diamond'].map(level => (
                         <SelectItem key={level} value={level}>{level}</SelectItem>
                       ))}
                     </SelectContent>

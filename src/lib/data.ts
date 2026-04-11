@@ -2,10 +2,10 @@ import type { Customer, Order, Product, InventoryItem, Recipe, SalesData, TopPro
 
 export const customers: Customer[] = [
   { id: 'C001', name: 'Aarav Sharma', email: 'aarav.sharma@example.com', phone: '+91 9876543210', customerType: 'VIP', vipLevel: 'Platinum', totalPurchaseValue: 150000, joinedDate: '2023-01-15' },
-  { id: 'C002', name: 'Vivaan Singh', email: 'vivaan.singh@example.com', phone: '+91 8765432109', customerType: 'Regular', vipLevel: 'None', totalPurchaseValue: 25000, joinedDate: '2023-03-22' },
-  { id: 'C003', name: 'Global Exports Inc.', email: 'contact@globalexports.com', phone: '+91 7654321098', customerType: 'Corporate', vipLevel: 'None', totalPurchaseValue: 500000, joinedDate: '2022-11-05' },
+  { id: 'C002', name: 'Vivaan Singh', email: 'vivaan.singh@example.com', phone: '+91 8765432109', customerType: 'Regular', vipLevel: 'Silver', totalPurchaseValue: 25000, joinedDate: '2023-03-22' },
+  { id: 'C003', name: 'Global Exports Inc.', email: 'contact@globalexports.com', phone: '+91 7654321098', customerType: 'Corporate', vipLevel: 'Silver', totalPurchaseValue: 500000, joinedDate: '2022-11-05' },
   { id: 'C004', name: 'Priya Patel', email: 'priya.patel@example.com', phone: '+91 6543210987', customerType: 'VIP', vipLevel: 'Gold', totalPurchaseValue: 85000, joinedDate: '2023-02-10' },
-  { id: 'C005', name: 'Sweet Delights', email: 'orders@sweetdelights.com', phone: '+91 5432109876', customerType: 'Wholesale', vipLevel: 'None', totalPurchaseValue: 1200000, joinedDate: '2022-09-01' },
+  { id: 'C005', name: 'Sweet Delights', email: 'orders@sweetdelights.com', phone: '+91 5432109876', customerType: 'Wholesale', vipLevel: 'Silver', totalPurchaseValue: 1200000, joinedDate: '2022-09-01' },
 ];
 
 export const orders: Order[] = [

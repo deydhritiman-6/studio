@@ -15,7 +15,7 @@ const AnalyzeVIPCustomerBehaviorInputSchema = z.object({
   customerProfile: z.object({
     name: z.string().describe('The name of the VIP customer.'),
     email: z.string().email().describe('The email address of the VIP customer.'),
-    vipLevel: z.enum(['Gold', 'Platinum', 'Royal', 'None']).describe('The VIP level of the customer.').default('None'),
+    vipLevel: z.enum(['Gold', 'Platinum', 'Diamond', 'Silver']).describe('The VIP level of the customer.').default('Silver'),
     customerType: z.enum(['VIP', 'Regular', 'Corporate', 'Wholesale']).describe('The type of customer.'),
     totalPurchaseValue: z.number().describe('The total value of all purchases made by the customer.'),
     birthday: z.string().optional().describe('The customer\'s birthday in YYYY-MM-DD format.'),

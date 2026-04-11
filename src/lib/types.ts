@@ -4,7 +4,7 @@ export type Customer = {
   email: string;
   phone: string;
   customerType: 'VIP' | 'Regular' | 'Corporate' | 'Wholesale';
-  vipLevel: 'Gold' | 'Platinum' | 'Royal' | 'None';
+  vipLevel: 'Gold' | 'Platinum' | 'Diamond' | 'Silver';
   totalPurchaseValue: number;
   joinedDate: string;
 };
