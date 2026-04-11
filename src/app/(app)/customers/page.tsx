@@ -132,7 +132,7 @@ export default function CustomersPage() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{viewingCustomer.name}</DialogTitle>
-              <DialogDescription>{viewingCustomer.email}</DialogDescription>
+              <DialogDescription>Customer Details</DialogDescription>
             </DialogHeader>
             <div className="py-4 space-y-4">
               <div className="flex justify-between items-center">
@@ -142,6 +142,10 @@ export default function CustomersPage() {
               <div className="flex justify-between items-center">
                   <h4 className="text-sm font-medium text-muted-foreground">Phone</h4>
                   <p className="text-sm font-semibold">{viewingCustomer.phone}</p>
+              </div>
+              <div className="flex justify-between items-center">
+                  <h4 className="text-sm font-medium text-muted-foreground">Email</h4>
+                  <p className="text-sm font-semibold">{viewingCustomer.email}</p>
               </div>
                <Separator />
                <div className="flex justify-between items-center">
