@@ -23,38 +23,25 @@ import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 
-const getStatusBadgeVariant = (status: Order['deliveryStatus']) => {
+const getStatusBadgeClassName = (status: Order['deliveryStatus']) => {
   switch (status) {
     case 'Pending':
+      return 'bg-gray-500 text-white hover:bg-gray-600';
     case 'Confirmed':
-      return 'secondary';
+      return 'bg-sky-500 text-white hover:bg-sky-600';
     case 'Preparing':
+      return 'bg-yellow-500 text-black hover:bg-yellow-600';
     case 'Packed':
-      return 'default';
+      return 'bg-primary text-primary-foreground hover:bg-primary/90';
     case 'Shipped':
-      return 'outline';
+      return 'bg-blue-600 text-white hover:bg-blue-700';
     case 'Delivered':
-      return 'default'; // A different color would be better
+      return 'bg-green-600 text-white hover:bg-green-700';
     default:
-      return 'secondary';
+      return 'bg-gray-200 text-gray-800';
   }
 };
 
-const getStatusBadgeClassName = (status: Order['deliveryStatus']) => {
-  switch (status) {
-    case 'Delivered':
-      return 'bg-green-700 hover:bg-green-800';
-    case 'Shipped':
-      return 'bg-blue-700 hover:bg-blue-800';
-    case 'Preparing':
-    case 'Packed':
-      return 'bg-primary hover:bg-primary/90';
-    case 'Confirmed':
-        return 'bg-blue-600 hover:bg-blue-700';
-    default:
-      return '';
-  }
-};
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>(initialOrders);
@@ -120,7 +107,7 @@ export default function OrdersPage() {
                 </div>
                 <div className="flex justify-between items-center">
                     <h4 className="font-semibold">Delivery Status</h4>
-                    <Badge variant="default" className={getStatusBadgeClassName(viewingOrder.deliveryStatus)}>
+                    <Badge className={getStatusBadgeClassName(viewingOrder.deliveryStatus)}>
                         {viewingOrder.deliveryStatus}
                     </Badge>
                 </div>
@@ -158,7 +145,7 @@ export default function OrdersPage() {
                     ₹{order.totalAmount.toLocaleString('en-IN')}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={getStatusBadgeVariant(order.deliveryStatus)} className={getStatusBadgeClassName(order.deliveryStatus)}>
+                    <Badge className={getStatusBadgeClassName(order.deliveryStatus)}>
                       {order.deliveryStatus}
                     </Badge>
                   </TableCell>
