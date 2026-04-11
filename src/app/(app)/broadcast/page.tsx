@@ -12,26 +12,26 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Send, Calendar as CalendarIcon } from 'lucide-react';
+import { Loader2, Send, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Flame, Moon, Cross, Flag, Plus, Star } from 'lucide-react';
 import { generateBroadcastAction, generateFestivalMessageAction } from './actions';
 import { type GenerateBroadcastMessageOutput } from '@/ai/flows/generate-broadcast-message';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Calendar } from '@/components/ui/calendar';
 import festivalJsonData from '@/lib/indian-festivals.json';
-import { format, parseISO } from 'date-fns';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { format, parseISO, startOfMonth, getDaysInMonth, getDay, addMonths, subMonths, isSameDay, isToday } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 
 type Festival = {
   date: string;
   name: string;
   type: string;
+  category: string;
   description: string;
 };
 
 const festivalData: Festival[] = (festivalJsonData as { festivals: Festival[] }).festivals;
+
 
 const broadcastFormSchema = z.object({
   broadcastType: z
@@ -46,42 +46,43 @@ const broadcastFormSchema = z.object({
 });
 
 
-const festivalMap: Map<string, Festival> = new Map(
-  festivalData.map(f => [format(parseISO(f.date), 'yyyy-MM-dd'), f as Festival])
+// --- Custom Icons ---
+
+const SikhIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 256 256" className="h-4 w-4">
+    <path fill="currentColor" d="M224 56a8 8 0 0 1-8 8h-46.9a88.1 88.1 0 0 1-138.2 0H8a8 8 0 0 1 0-16h208a8 8 0 0 1 8 8M71.42 80h113.16a72.11 72.11 0 0 0-113.16 0M120 120.47V216a8 8 0 0 0 16 0V120.47a40 40 0 1 0-16 0m0 64a24 24 0 1 1 24-24a24 24 0 0 1-24 24"/>
+  </svg>
 );
 
-function DayContentWithTooltip({ date }: { date: Date }) {
-  const formattedDate = format(date, 'yyyy-MM-dd');
-  const festival = festivalMap.get(formattedDate);
+const BuddhistJainIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" className="h-4 w-4">
+    <path fill="currentColor" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2m0 18a8 8 0 1 1 8-8a8 8 0 0 1-8 8m4-7h-3v-3a1 1 0 0 0-2 0v3H8a1 1 0 0 0 0 2h3v3a1 1 0 0 0 2 0v-3h3a1 1 0 0 0 0-2"/>
+  </svg>
+);
 
-  if (festival) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-            <span className="relative flex h-full w-full items-center justify-center">
-              {format(date, 'd')}
-            </span>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{festival.name}</p>
-        </TooltipContent>
-      </Tooltip>
-    );
-  }
-  return <>{format(date, 'd')}</>;
-}
+
+const categoryIcons: { [key: string]: React.ReactNode } = {
+    'Hindu Festival': <Flame className="text-orange-500" />,
+    'Muslim Festival': <Moon className="text-green-500" />,
+    'Christian Festival': <Cross className="text-blue-500" />,
+    'Sikh Festival': <SikhIcon className="text-yellow-500" />,
+    'Buddhist Festival': <BuddhistJainIcon className="text-purple-500" />,
+    'Jain Festival': <BuddhistJainIcon className="text-purple-500" />,
+    'National Holiday': <Flag className="text-red-500" />,
+    'Observance': <Star className="text-sky-500" />,
+};
 
 
 export default function BroadcastPage() {
   const [generatedMessage, setGeneratedMessage] = useState<GenerateBroadcastMessageOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingForFestival, setIsGeneratingForFestival] = useState(false);
-  const [date, setDate] = useState<Date | undefined>(new Date());
-  const [viewingFestival, setViewingFestival] = useState<Festival | null>(null);
+  
+  // State for the new calendar
+  const [displayDate, setDisplayDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   const { toast } = useToast();
-
-  const startOfYear = new Date(new Date().getFullYear(), 0, 1);
 
   const form = useForm<z.infer<typeof broadcastFormSchema>>({
     resolver: zodResolver(broadcastFormSchema),
@@ -93,69 +94,57 @@ export default function BroadcastPage() {
     },
   });
 
-  const nationalHolidays = festivalData.filter(f => f.type === 'National Holiday').map(f => parseISO(f.date));
-  const hinduFestivals = festivalData.filter(f => f.type === 'Hindu Festival').map(f => parseISO(f.date));
-  const muslimFestivals = festivalData.filter(f => f.type === 'Muslim Festival').map(f => parseISO(f.date));
-  const sikhFestivals = festivalData.filter(f => f.type === 'Sikh Festival').map(f => parseISO(f.date));
-  const christianFestivals = festivalData.filter(f => f.type === 'Christian Festival').map(f => parseISO(f.date));
-  const jainFestivals = festivalData.filter(f => f.type === 'Jain Festival').map(f => parseISO(f.date));
-  const buddhistFestivals = festivalData.filter(f => f.type === 'Buddhist Festival').map(f => parseISO(f.date));
-
   const broadcastType = form.watch('broadcastType');
   const channel = form.watch('channel');
 
-  async function handleDateSelect(selectedDate: Date | undefined) {
-    setDate(selectedDate);
-    if (!selectedDate) return;
+  const festivalsByDate = useMemo(() => {
+    const map = new Map<string, Festival[]>();
+    festivalData.forEach(f => {
+      const dateKey = format(parseISO(f.date), 'yyyy-MM-dd');
+      if (!map.has(dateKey)) {
+        map.set(dateKey, []);
+      }
+      map.get(dateKey)!.push(f);
+    });
+    return map;
+  }, []);
 
-    const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-    const festival = festivalMap.get(formattedDate);
+  const { monthlyFestivals, monthlyImportantDays } = useMemo(() => {
+    const currentMonth = displayDate.getMonth();
+    const currentYear = displayDate.getFullYear();
+    const festivals = festivalData.filter(f => {
+        const festivalDate = parseISO(f.date);
+        return festivalDate.getMonth() === currentMonth && festivalDate.getFullYear() === currentYear;
+    });
     
-    if (festival) {
-        if (broadcastType !== 'Festival Greeting') {
-            setViewingFestival(festival);
-        } else {
-            setIsGeneratingForFestival(true);
-            const result = await generateFestivalMessageAction({ festivalName: festival.name });
-            setIsGeneratingForFestival(false);
+    return {
+        monthlyFestivals: festivals.filter(f => f.category === 'Festival'),
+        monthlyImportantDays: festivals.filter(f => f.category === 'Important Day'),
+    };
+  }, [displayDate]);
 
-            if ('error' in result) {
-                toast({ variant: 'destructive', title: 'AI Error', description: result.error });
-            } else {
-                form.setValue('messageDetails', result.greeting);
-                toast({ title: 'AI Suggestion', description: `Message for ${festival.name} has been generated!` });
-            }
-        }
+
+  async function handleDateClick(day: number) {
+    const newSelectedDate = new Date(displayDate.getFullYear(), displayDate.getMonth(), day);
+    setSelectedDate(newSelectedDate);
+    
+    const dateKey = format(newSelectedDate, 'yyyy-MM-dd');
+    const festivalsOnDate = festivalsByDate.get(dateKey);
+
+    if (festivalsOnDate && broadcastType === 'Festival Greeting') {
+      setIsGeneratingForFestival(true);
+      const festivalName = festivalsOnDate[0].name;
+      const result = await generateFestivalMessageAction({ festivalName });
+      setIsGeneratingForFestival(false);
+
+      if ('error' in result) {
+        toast({ variant: 'destructive', title: 'AI Error', description: result.error });
+      } else {
+        form.setValue('messageDetails', result.greeting);
+        toast({ title: 'AI Suggestion', description: `Message for ${festivalName} has been generated!` });
+      }
     }
   }
-  
-  async function handleGenerateFromDialog() {
-    if (!viewingFestival) return;
-
-    if (broadcastType !== 'Festival Greeting') {
-      toast({
-        title: 'Set Broadcast Type First',
-        description: `To generate a message for ${viewingFestival.name}, please change the broadcast type to "Festival Greeting".`,
-      });
-      setViewingFestival(null);
-      return;
-    }
-
-    setIsGeneratingForFestival(true);
-    const festivalName = viewingFestival.name;
-    setViewingFestival(null);
-
-    const result = await generateFestivalMessageAction({ festivalName });
-    setIsGeneratingForFestival(false);
-
-    if ('error' in result) {
-      toast({ variant: 'destructive', title: 'AI Error', description: result.error });
-    } else {
-      form.setValue('messageDetails', result.greeting);
-      toast({ title: 'AI Suggestion', description: `Message for ${festivalName} has been generated!` });
-    }
-  }
-
 
   async function onSubmit(values: z.infer<typeof broadcastFormSchema>) {
     setIsLoading(true);
@@ -175,13 +164,9 @@ export default function BroadcastPage() {
       toast({ variant: 'destructive', title: 'No message to schedule', description: 'Please generate a message first.' });
       return;
     }
-    if (!date) {
-      toast({ variant: 'destructive', title: 'No date selected', description: 'Please select a date from the calendar to schedule the broadcast.' });
-      return;
-    }
     toast({
       title: 'Broadcast Scheduled',
-      description: `Your message is scheduled to be sent on ${format(date, 'PPP')}.`,
+      description: `Your message is scheduled to be sent on ${format(selectedDate, 'PPP')}.`,
     });
   }
 
@@ -193,30 +178,121 @@ export default function BroadcastPage() {
      toast({ title: 'Broadcast Sent', description: 'Your message has been sent successfully.' });
   }
 
+  // --- Calendar Rendering Logic ---
+  const renderCalendar = () => {
+    const monthStart = startOfMonth(displayDate);
+    const daysInMonth = getDaysInMonth(displayDate);
+    const startDayOfWeek = getDay(monthStart);
+
+    const days = [];
+    for (let i = 0; i < startDayOfWeek; i++) {
+      days.push(<div key={`empty-${i}`} className="border-r border-b border-amber-200"></div>);
+    }
+    for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(displayDate.getFullYear(), displayDate.getMonth(), day);
+        const dateKey = format(date, 'yyyy-MM-dd');
+        const festivals = festivalsByDate.get(dateKey);
+        const isSun = getDay(date) === 0;
+
+        days.push(
+            <div 
+                key={day}
+                onClick={() => handleDateClick(day)}
+                className={cn(
+                    "p-1 text-center border-r border-b border-amber-200 relative cursor-pointer hover:bg-amber-100",
+                    isSun && "text-red-600",
+                    isToday(date) && "bg-rose-200",
+                    isSameDay(date, selectedDate) && "bg-amber-300",
+                )}
+            >
+                <span className="text-lg font-bold">{day}</span>
+                <div className="absolute bottom-0.5 left-0.5 flex gap-0.5">
+                    {festivals?.map(f => <div key={f.name}>{React.cloneElement(categoryIcons[f.type] as React.ReactElement, { className: 'h-2 w-2'})}</div>)}
+                </div>
+            </div>
+        );
+    }
+    while (days.length % 7 !== 0) {
+        days.push(<div key={`empty-end-${days.length}`} className="border-r border-b border-amber-200"></div>);
+    }
+    if (days.length === 35) {
+       for (let i = 0; i < 7; i++) {
+        days.push(<div key={`empty-extra-${i}`} className="border-r border-b border-amber-200"></div>);
+       }
+    }
+
+
+    const weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+
+    return (
+        <Card className="mt-8 bg-amber-50/50 border-amber-200 shadow-lg">
+            <CardContent className="p-4 md:p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Left Column: Calendar */}
+                    <div className="border border-amber-200 rounded-lg p-3 bg-white/50">
+                       <div className="flex items-center justify-between mb-4">
+                           <Button variant="ghost" size="icon" onClick={() => setDisplayDate(subMonths(displayDate, 1))}>
+                               <ChevronLeft />
+                           </Button>
+                           <h2 className="text-3xl font-bold font-headline text-red-700 uppercase tracking-widest">
+                               {format(displayDate, 'MMMM yyyy')}
+                           </h2>
+                           <Button variant="ghost" size="icon" onClick={() => setDisplayDate(addMonths(displayDate, 1))}>
+                               <ChevronRight />
+                           </Button>
+                       </div>
+                       <div className="grid grid-cols-7 text-center font-bold text-amber-800">
+                           {weekdays.map(day => <div key={day} className="py-2 border-b-2 border-r border-amber-200">{day}</div>)}
+                       </div>
+                       <div className="grid grid-cols-7 h-[28rem]">
+                           {days}
+                       </div>
+                    </div>
+                    {/* Right Column: Festivals List */}
+                    <div className="space-y-4">
+                        <div className="bg-red-700 text-white p-2 rounded-md text-center shadow-md">
+                           <h3 className="font-bold font-headline text-xl">Festivals</h3>
+                        </div>
+                        <ul className="space-y-2">
+                           {monthlyFestivals.map(f => (
+                               <li key={f.name} className="flex items-center gap-3 text-sm">
+                                   {React.cloneElement(categoryIcons[f.type] as React.ReactElement, { className: 'h-5 w-5' })}
+                                   <span>{format(parseISO(f.date), 'd MMM')}: {f.name} ({f.type.replace(' Festival', '')})</span>
+                               </li>
+                           ))}
+                        </ul>
+
+                        <div className="bg-green-700 text-white p-2 rounded-md text-center shadow-md mt-6">
+                           <h3 className="font-bold font-headline text-xl">Important Days</h3>
+                        </div>
+                         <ul className="space-y-2">
+                           {monthlyImportantDays.map(f => (
+                               <li key={f.name} className="flex items-center gap-3 text-sm">
+                                   {React.cloneElement(categoryIcons[f.type] as React.ReactElement, { className: 'h-5 w-5' })}
+                                   <span>{format(parseISO(f.date), 'd MMM')}: {f.name}</span>
+                               </li>
+                           ))}
+                        </ul>
+                    </div>
+                </div>
+            </CardContent>
+            <div className="border-t-2 border-amber-200 bg-amber-100/50 p-3 rounded-b-lg">
+                 <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                    {Object.entries(categoryIcons).map(([type, icon]) => (
+                        <div key={type} className="flex items-center gap-2">
+                            {React.cloneElement(icon as React.ReactElement, {className: 'h-4 w-4'})}
+                            <span>{type.replace(' Festival', '').replace(' Holiday', '')}</span>
+                        </div>
+                    ))}
+                 </div>
+            </div>
+        </Card>
+    );
+  }
+
+
   return (
     <>
-      <Dialog open={!!viewingFestival} onOpenChange={(open) => !open && setViewingFestival(null)}>
-        {viewingFestival && (
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="font-headline">{viewingFestival.name}</DialogTitle>
-              <DialogDescription>{viewingFestival.type}</DialogDescription>
-            </DialogHeader>
-            <div className="py-4">
-              <p className="text-sm text-muted-foreground">{viewingFestival.description}</p>
-            </div>
-            <DialogFooter className="sm:justify-between gap-2">
-              <DialogClose asChild>
-                <Button type="button" variant="secondary">Close</Button>
-              </DialogClose>
-              <Button onClick={handleGenerateFromDialog}>
-                Generate Greeting
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        )}
-      </Dialog>
-
       <PageHeader title="Broadcast System" />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-8">
@@ -336,7 +412,7 @@ export default function BroadcastPage() {
             <CardHeader>
               <CardTitle>Schedule & Send</CardTitle>
               <CardDescription>
-                Send your broadcast immediately or schedule it for a future date using the calendar below.
+                Send your broadcast immediately or schedule it for a future date by selecting a date on the calendar.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -347,7 +423,7 @@ export default function BroadcastPage() {
                 </Button>
                 <Button className="w-full" onClick={handleSchedule} disabled={!generatedMessage || isLoading}>
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  Schedule
+                  Schedule for {format(selectedDate, 'd MMM')}
                 </Button>
               </div>
             </CardContent>
@@ -355,99 +431,7 @@ export default function BroadcastPage() {
 
         </div>
       </div>
-       <Card className="mt-8">
-          <CardHeader>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="flex items-center gap-3">
-                    <CalendarIcon className="h-8 w-8 text-primary" />
-                    <CardTitle className="text-2xl font-bold font-headline">
-                        {new Date().getFullYear()} Annual Multi-Faith Planner
-                    </CardTitle>
-                </div>
-              </div>
-          </CardHeader>
-          <CardContent className="p-4 bg-muted/50">
-                <TooltipProvider>
-                    <Calendar
-                      fromYear={new Date().getFullYear()}
-                      toYear={new Date().getFullYear()}
-                      month={startOfYear}
-                      mode="single"
-                      selected={date}
-                      onSelect={handleDateSelect}
-                      className="p-0"
-                      numberOfMonths={12}
-                      formatters={{ 
-                        formatCaption: (month, options) => format(month, 'LLLL', { locale: options?.locale }).toUpperCase(),
-                        formatDay: (date) => <DayContentWithTooltip date={date} />
-                      }}
-                      classNames={{
-                          months: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6",
-                          month: "space-y-4 rounded-xl bg-card p-4 shadow-lg border",
-                          caption: "flex justify-center text-center relative items-center mb-2",
-                          caption_label: "text-2xl font-bold font-headline text-primary",
-                          nav_button: "hidden",
-                          head_row: "flex border-b",
-                          head_cell: "text-muted-foreground rounded-md w-full font-bold text-sm uppercase pb-2",
-                          row: "flex w-full mt-2",
-                          cell: "h-9 w-9 text-center text-sm p-0 relative focus-within:relative focus-within:z-20 border",
-                          day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 flex items-center justify-center",
-                          day_selected: "bg-primary text-primary-foreground hover:bg-primary/90 focus:bg-primary focus:text-primary-foreground rounded-full",
-                          day_today: "bg-accent text-accent-foreground rounded-full",
-                          day_outside: "text-muted-foreground opacity-50",
-                          day_disabled: "text-muted-foreground opacity-50",
-                          day_hidden: "invisible",
-                          day_sunday: "text-destructive",
-                          day_nationalHoliday: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-1 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
-                          day_hinduFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-2 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
-                          day_muslimFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-3 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
-                          day_sikhFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-4 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
-                          day_christianFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-5 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
-                          day_jainFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-6 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
-                          day_buddhistFestival: 'relative after:content-[""] after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-chart-6 after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2',
-                      }}
-                      modifiers={{
-                        nationalHoliday: nationalHolidays,
-                        hinduFestival: hinduFestivals,
-                        muslimFestival: muslimFestivals,
-                        sikhFestival: sikhFestivals,
-                        christianFestival: christianFestivals,
-                        jainFestival: jainFestivals,
-                        buddhistFestival: buddhistFestivals,
-                        sunday: { dayOfWeek: [0] },
-                      }}
-                     />
-                 </TooltipProvider>
-                 <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-muted-foreground mt-6 border-t pt-4">
-                    <div className="flex items-center gap-2">
-                        <div className="h-2.5 w-2.5 rounded-full bg-chart-2"></div>
-                        <span>Hindu</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="h-2.5 w-2.5 rounded-full bg-chart-3"></div>
-                        <span>Muslim</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="h-2.5 w-2.5 rounded-full bg-chart-5"></div>
-                        <span>Christian</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="h-2.5 w-2.5 rounded-full bg-chart-4"></div>
-                        <span>Sikh</span>
-                    </div>
-                     <div className="flex items-center gap-2">
-                        <div className="h-2.5 w-2.5 rounded-full bg-chart-6"></div>
-                        <span>Jain/Buddhist</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="h-2.5 w-2.5 rounded-full bg-chart-1"></div>
-                        <span>National</span>
-                    </div>
-                </div>
-          </CardContent>
-        </Card>
+      {renderCalendar()}
     </>
   );
 }
-
-    
