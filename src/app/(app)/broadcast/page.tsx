@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Send } from 'lucide-react';
 import { generateBroadcastAction, generateFestivalMessageAction } from './actions';
-import { GenerateBroadcastMessageInputSchema, type GenerateBroadcastMessageOutput } from '@/ai/flows/generate-broadcast-message';
+import { type GenerateBroadcastMessageOutput } from '@/ai/flows/generate-broadcast-message';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Calendar } from '@/components/ui/calendar';
@@ -24,6 +25,13 @@ type Festival = {
   name: string;
   type: string;
 };
+
+const formSchema = z.object({
+  broadcastType: z.enum(['Product Update', 'Special Discount', 'General Announcement', 'Event Invitation', 'Festival Greeting']),
+  targetAudience: z.enum(['All Customers', 'VIP Customers', 'Wholesale Partners', 'New Subscribers']),
+  channel: z.enum(['Email', 'SMS', 'Social Media Post']),
+  messageDetails: z.string().min(1, 'Message details cannot be empty.'),
+});
 
 const festivalDays = festivalData.map(f => parseISO(f.date));
 const festivalMap: Map<string, Festival> = new Map(
@@ -37,8 +45,8 @@ export default function BroadcastPage() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const { toast } = useToast();
 
-  const form = useForm<import('zod').infer<typeof GenerateBroadcastMessageInputSchema>>({
-    resolver: zodResolver(GenerateBroadcastMessageInputSchema),
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       broadcastType: 'General Announcement',
       targetAudience: 'All Customers',
@@ -69,7 +77,7 @@ export default function BroadcastPage() {
     }
   }
 
-  async function onSubmit(values: import('zod').infer<typeof GenerateBroadcastMessageInputSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     setGeneratedMessage(null);
     const result = await generateBroadcastAction(values);

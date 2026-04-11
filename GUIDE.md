@@ -179,6 +179,7 @@ Now, let's create the page where a user can interact with this new AI flow.
     import { useState } from 'react';
     import { useForm } from 'react-hook-form';
     import { zodResolver } from '@hookform/resolvers/zod';
+    import { z } from 'zod';
     import { PageHeader } from '@/components/page-header';
     import { Button } from '@/components/ui/button';
     import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -188,14 +189,20 @@ Now, let's create the page where a user can interact with this new AI flow.
     import { useToast } from '@/hooks/use-toast';
     import { Loader2, Sparkles } from 'lucide-react';
     import { generateDescriptionAction } from './actions';
-    import { GenerateProductDescriptionInputSchema, type GenerateProductDescriptionOutput } from '@/ai/flows/generate-product-description';
+    import { type GenerateProductDescriptionOutput } from '@/ai/flows/generate-product-description';
+
+    const GenerateProductDescriptionInputSchema = z.object({
+      productName: z.string().min(1, 'Product name is required'),
+      flavorProfile: z.string().min(1, 'Flavor profile is required'),
+      ingredients: z.string().min(1, 'Ingredients are required'),
+    });
 
     export default function ProductDescriptionPage() {
       const [generatedDesc, setGeneratedDesc] = useState<GenerateProductDescriptionOutput | null>(null);
       const [isLoading, setIsLoading] = useState(false);
       const { toast } = useToast();
 
-      const form = useForm<import('zod').infer<typeof GenerateProductDescriptionInputSchema>>({
+      const form = useForm<z.infer<typeof GenerateProductDescriptionInputSchema>>({
         resolver: zodResolver(GenerateProductDescriptionInputSchema),
         defaultValues: {
           productName: '',
@@ -204,7 +211,7 @@ Now, let's create the page where a user can interact with this new AI flow.
         },
       });
 
-      async function onSubmit(values: import('zod').infer<typeof GenerateProductDescriptionInputSchema>) {
+      async function onSubmit(values: z.infer<typeof GenerateProductDescriptionInputSchema>) {
         setIsLoading(true);
         setGeneratedDesc(null);
         const result = await generateDescriptionAction(values);
