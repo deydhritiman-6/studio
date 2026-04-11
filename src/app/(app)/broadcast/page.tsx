@@ -111,10 +111,9 @@ export default function BroadcastPage() {
 
   const { monthlyFestivals, monthlyImportantDays } = useMemo(() => {
     const currentMonth = displayDate.getMonth();
-    const currentYear = displayDate.getFullYear();
     const festivals = festivalData.filter(f => {
         const festivalDate = parseISO(f.date);
-        return festivalDate.getMonth() === currentMonth && festivalDate.getFullYear() === currentYear;
+        return festivalDate.getMonth() === currentMonth;
     });
     
     return {
@@ -215,8 +214,9 @@ export default function BroadcastPage() {
     while (days.length % 7 !== 0) {
         days.push(<div key={`empty-end-${days.length}`} className="border-r border-b border-amber-200"></div>);
     }
-    if (days.length === 35) {
-       for (let i = 0; i < 7; i++) {
+    if (days.length < 42) {
+       const remaining = 42 - days.length;
+       for (let i = 0; i < remaining; i++) {
         days.push(<div key={`empty-extra-${i}`} className="border-r border-b border-amber-200"></div>);
        }
     }
@@ -277,7 +277,7 @@ export default function BroadcastPage() {
                 </div>
             </CardContent>
             <div className="border-t-2 border-amber-200 bg-amber-100/50 p-3 rounded-b-lg">
-                 <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                 <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm font-semibold text-amber-800">
                     {Object.entries(categoryIcons).map(([type, icon]) => (
                         <div key={type} className="flex items-center gap-2">
                             {React.cloneElement(icon as React.ReactElement, {className: 'h-4 w-4'})}
@@ -435,3 +435,4 @@ export default function BroadcastPage() {
     </>
   );
 }
+
