@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Send, Calendar as CalendarIcon, Clock, Info } from 'lucide-react';
+import { Loader2, Send, Calendar as CalendarIcon, Clock } from 'lucide-react';
 import { generateBroadcastAction, generateFestivalMessageAction } from './actions';
 import { type GenerateBroadcastMessageOutput } from '@/ai/flows/generate-broadcast-message';
 import { Input } from '@/components/ui/input';
@@ -77,6 +77,8 @@ export default function BroadcastPage() {
 
   const { toast } = useToast();
 
+  const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -95,23 +97,37 @@ export default function BroadcastPage() {
   const jainFestivals = festivalData.filter(f => f.type === 'Jain Festival').map(f => parseISO(f.date));
   const buddhistFestivals = festivalData.filter(f => f.type === 'Buddhist Festival').map(f => parseISO(f.date));
 
+  const broadcastType = form.watch('broadcastType');
+  const channel = form.watch('channel');
 
-  function handleDateSelect(selectedDate: Date | undefined) {
+  async function handleDateSelect(selectedDate: Date | undefined) {
     setDate(selectedDate);
     if (!selectedDate) return;
 
     const formattedDate = format(selectedDate, 'yyyy-MM-dd');
     const festival = festivalMap.get(formattedDate);
-
+    
     if (festival) {
-      setViewingFestival(festival);
+        if (broadcastType !== 'Festival Greeting') {
+            setViewingFestival(festival);
+        } else {
+            setIsGeneratingForFestival(true);
+            const result = await generateFestivalMessageAction({ festivalName: festival.name });
+            setIsGeneratingForFestival(false);
+
+            if ('error' in result) {
+                toast({ variant: 'destructive', title: 'AI Error', description: result.error });
+            } else {
+                form.setValue('messageDetails', result.greeting);
+                toast({ title: 'AI Suggestion', description: `Message for ${festival.name} has been generated!` });
+            }
+        }
     }
   }
   
   async function handleGenerateFromDialog() {
     if (!viewingFestival) return;
 
-    const broadcastType = form.getValues('broadcastType');
     if (broadcastType !== 'Festival Greeting') {
       toast({
         title: 'Set Broadcast Type First',
@@ -172,8 +188,6 @@ export default function BroadcastPage() {
     }
      toast({ title: 'Broadcast Sent', description: 'Your message has been sent successfully.' });
   }
-  
-  const channel = form.watch('channel');
 
   return (
     <>
@@ -377,6 +391,7 @@ export default function BroadcastPage() {
           <CardContent className="p-4 bg-muted/50">
                 <TooltipProvider>
                     <Calendar
+                      month={startOfYear}
                       mode="single"
                       selected={date}
                       onSelect={handleDateSelect}
