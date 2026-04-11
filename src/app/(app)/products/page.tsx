@@ -181,16 +181,15 @@ export default function ProductsPage() {
       return;
     }
 
-    if (files.length > 4) {
+    let fileArray = Array.from(files);
+
+    if (fileArray.length > 4) {
       toast({
-        variant: "destructive",
         title: "Maximum 4 images",
-        description: "You can select up to 4 images.",
+        description: "Only the first 4 images have been selected.",
       });
-      return;
+      fileArray = fileArray.slice(0, 4);
     }
-    
-    const fileArray = Array.from(files);
     
     if (fileArray.some(file => !file.type.startsWith('image/'))) {
         toast({ variant: 'destructive', title: 'Invalid File Type', description: 'Please select only image files.' });
@@ -229,34 +228,32 @@ export default function ProductsPage() {
     <>
       <Dialog open={!!viewingProduct} onOpenChange={(open) => !open && setViewingProduct(null)}>
         <DialogContent className="sm:max-w-4xl p-0 border-0 bg-transparent shadow-none">
+          <DialogHeader className="sr-only">
+            <DialogTitle>{viewingProduct ? `${viewingProduct.productName} Image Gallery` : 'Image Gallery'}</DialogTitle>
+            <DialogDescription>
+              {viewingProduct ? `Use the arrow buttons to navigate through images of ${viewingProduct.productName}.` : 'Navigate through product images.'}
+            </DialogDescription>
+          </DialogHeader>
           {viewingProduct && (
-            <>
-              <DialogHeader className="sr-only">
-                <DialogTitle>{`${viewingProduct.productName} Image Gallery`}</DialogTitle>
-                <DialogDescription>
-                  Use the arrow buttons to navigate through images of {viewingProduct.productName}.
-                </DialogDescription>
-              </DialogHeader>
-              <Carousel
-                opts={{
-                  startIndex: viewingProduct.startIndex,
-                  loop: true,
-                }}
-                className="w-full"
-              >
-                <CarouselContent>
-                  {viewingProduct.images.map((url, index) => (
-                    <CarouselItem key={index}>
-                      <div className="aspect-video relative">
-                        <Image src={url} alt={`Enlarged product image ${index + 1}`} fill className="object-contain" />
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/80" />
-                <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/80" />
-              </Carousel>
-            </>
+            <Carousel
+              opts={{
+                startIndex: viewingProduct.startIndex,
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent>
+                {viewingProduct.images.map((url, index) => (
+                  <CarouselItem key={index}>
+                    <div className="aspect-video relative">
+                      <Image src={url} alt={`Enlarged product image ${index + 1}`} fill className="object-contain" />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/80" />
+              <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/80" />
+            </Carousel>
           )}
         </DialogContent>
       </Dialog>
