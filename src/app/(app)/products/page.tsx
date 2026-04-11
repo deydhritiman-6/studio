@@ -32,7 +32,7 @@ const productFormSchema = z.object({
   price: z.coerce.number().positive('Price must be a positive number.'),
   wholesalePrice: z.coerce.number().positive('Wholesale price must be a positive number.'),
   availabilityStatus: z.enum(['In Stock', 'Out of Stock']),
-  imageUrl: z.string().url('Please select an image.'),
+  imageUrl: z.string().min(1, 'Please select an image.'),
   imageHint: z.string().min(1, 'Image hint is required.'),
 });
 
@@ -156,6 +156,29 @@ export default function ProductsPage() {
     }
   };
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast({
+          variant: 'destructive',
+          title: 'Invalid File Type',
+          description: 'Please select an image file.',
+        });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (loadEvent) => {
+        const dataUrl = loadEvent.target?.result as string;
+        if (dataUrl) {
+          form.setValue('imageUrl', dataUrl, { shouldValidate: true });
+          form.setValue('imageHint', 'uploaded image');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
 
   const activeDialog = editingProduct ? 'edit' : (isAddDialogOpen ? 'add' : null);
   const onDialogSubmit = editingProduct ? form.handleSubmit(onEditSubmit) : form.handleSubmit(onAddSubmit);
@@ -248,10 +271,11 @@ export default function ProductsPage() {
                           </div>
                         )}
                         <Tabs defaultValue="gallery" className="w-full" onValueChange={(tab) => { if (tab !== 'camera') stopCamera(); }}>
-                            <TabsList className="grid w-full grid-cols-3">
+                            <TabsList className="grid w-full grid-cols-4">
                                 <TabsTrigger value="gallery">Gallery</TabsTrigger>
                                 <TabsTrigger value="camera">Camera</TabsTrigger>
                                 <TabsTrigger value="url">URL</TabsTrigger>
+                                <TabsTrigger value="upload">Upload</TabsTrigger>
                             </TabsList>
                             <TabsContent value="gallery">
                                 <FormControl>
@@ -325,6 +349,20 @@ export default function ProductsPage() {
                                     />
                                     <p className="text-xs text-muted-foreground">
                                         Paste a link to an image from the web.
+                                    </p>
+                                </div>
+                            </TabsContent>
+                            <TabsContent value="upload">
+                                <div className="space-y-2 pt-4">
+                                    <Label htmlFor="file-upload">Upload from device</Label>
+                                    <Input
+                                        id="file-upload"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleFileChange}
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        Select an image file from your device gallery.
                                     </p>
                                 </div>
                             </TabsContent>

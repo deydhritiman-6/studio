@@ -95,12 +95,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     setIsClient(true);
     try {
       const storedUser = localStorage.getItem('user');
-      if (storedUser) {
+      if (storedUser && storedUser !== 'undefined' && storedUser !== '') {
         setUser(JSON.parse(storedUser));
       } else {
         router.replace('/login');
       }
     } catch (error) {
+      console.error('Failed to parse user from localStorage:', error);
       router.replace('/login');
     }
   }, [router]);
