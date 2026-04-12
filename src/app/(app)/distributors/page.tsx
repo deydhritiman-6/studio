@@ -54,7 +54,10 @@ export default function DistributorsPage() {
     }
     try {
       const savedDistributors = localStorage.getItem('roseberry-distributors');
-      return savedDistributors ? JSON.parse(savedDistributors) : initialDistributors;
+      if (savedDistributors) {
+        return JSON.parse(savedDistributors);
+      }
+      return initialDistributors;
     } catch (error) {
       console.error("Failed to read distributors from localStorage", error);
       return initialDistributors;

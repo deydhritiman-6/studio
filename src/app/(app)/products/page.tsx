@@ -40,7 +40,32 @@ const productFormSchema = z.object({
 type ProductFormValues = z.infer<typeof productFormSchema>;
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [products, setProducts] = useState<Product[]>(() => {
+    if (typeof window === 'undefined') {
+      return initialProducts;
+    }
+    try {
+      const savedProducts = localStorage.getItem('roseberry-products');
+      if (savedProducts) {
+        return JSON.parse(savedProducts);
+      }
+      return initialProducts;
+    } catch (error) {
+      console.error("Failed to read products from localStorage", error);
+      return initialProducts;
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('roseberry-products', JSON.stringify(products));
+      } catch (error) {
+        console.error("Failed to save products to localStorage", error);
+      }
+    }
+  }, [products]);
+  
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const { toast } = useToast();

@@ -62,7 +62,10 @@ export default function CustomersPage() {
     }
     try {
       const savedCustomers = localStorage.getItem('roseberry-customers');
-      return savedCustomers ? JSON.parse(savedCustomers) : initialCustomers;
+      if (savedCustomers) {
+        return JSON.parse(savedCustomers);
+      }
+      return initialCustomers;
     } catch (error) {
       console.error("Failed to read customers from localStorage", error);
       return initialCustomers;

@@ -50,7 +50,10 @@ export default function OrdersPage() {
     }
     try {
       const savedOrders = localStorage.getItem('roseberry-orders');
-      return savedOrders ? JSON.parse(savedOrders) : initialOrders;
+      if (savedOrders) {
+        return JSON.parse(savedOrders);
+      }
+      return initialOrders;
     } catch (error) {
       console.error("Failed to read orders from localStorage", error);
       return initialOrders;
