@@ -287,13 +287,13 @@ export default function BroadcastPage() {
                     <div className="border border-amber-200 rounded-lg p-3 bg-white/50">
                        <div className="flex items-center justify-between mb-4">
                            <Button variant="ghost" size="icon" onClick={() => setDisplayDate(subMonths(displayDate, 1))} className="hover:bg-amber-100">
-                               <ChevronLeft className="h-8 w-8 text-red-700" />
+                               <ChevronLeft className="h-10 w-10 text-accent" />
                            </Button>
                            <h2 className="text-3xl font-bold font-headline text-red-700 uppercase tracking-widest">
                                {format(displayDate, 'MMMM yyyy')}
                            </h2>
                            <Button variant="ghost" size="icon" onClick={() => setDisplayDate(addMonths(displayDate, 1))} className="hover:bg-amber-100">
-                               <ChevronRight className="h-8 w-8 text-red-700" />
+                               <ChevronRight className="h-10 w-10 text-accent" />
                            </Button>
                        </div>
                        <div className="grid grid-cols-7 text-center font-bold text-amber-800">
