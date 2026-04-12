@@ -50,41 +50,6 @@ export async function generateGstInvoice(input: GenerateGstInvoiceInput): Promis
   return generateGstInvoiceFlow(input);
 }
 
-const gstInvoicePrompt = ai.definePrompt({
-  name: 'gstInvoicePrompt',
-  input: { schema: GenerateGstInvoiceInputSchema },
-  output: { schema: GenerateGstInvoiceOutputSchema },
-  prompt: `You are an accounting expert for 'Roseberry Chocolate', a luxury artisan chocolate brand in India.
-Your task is to generate a complete and accurate GST invoice based on the provided details.
-
-**Invoice Details:**
-- Customer Name: {{{customerName}}}
-- Billing Address: {{{customerBillingAddress}}}
-{{#if customerShippingAddress}}- Shipping Address: {{{customerShippingAddress}}}{{/if}}
-{{#if customerGst}}- Customer GSTIN: {{{customerGst}}}{{/if}}
-
-**Items:**
-{{#each items}}
-- Product: {{{productName}}}, Quantity: {{{quantity}}}, Price/Unit: {{{pricePerUnit}}}
-{{/each}}
-
-- GST Rate: {{{gstRate}}}%
-
-**Instructions:**
-1.  **Generate a unique Invoice Number**: Use the format 'INV-' followed by the current timestamp (e.g., INV-20240726-153000).
-2.  **Set the Invoice Date**: Use today's date in YYYY-MM-DD format.
-3.  **Calculate Item Totals**: For each item, calculate the total price (quantity * pricePerUnit).
-4.  **Calculate Subtotal**: Sum up the total price for all items.
-5.  **Calculate GST**:
-    -   Total GST = Subtotal * (GST Rate / 100).
-    -   CGST = Total GST / 2.
-    -   SGST = Total GST / 2.
-6.  **Calculate Grand Total**: Grand Total = Subtotal + Total GST.
-7.  **Fill Company Details**: Use the default company name, address, and GSTIN.
-8.  **Return the final invoice object** in the specified JSON format. Ensure all calculations are precise to two decimal places.
-`,
-});
-
 const generateGstInvoiceFlow = ai.defineFlow(
   {
     name: 'generateGstInvoiceFlow',
@@ -92,7 +57,46 @@ const generateGstInvoiceFlow = ai.defineFlow(
     outputSchema: GenerateGstInvoiceOutputSchema,
   },
   async (input) => {
-    const { output } = await gstInvoicePrompt(input);
-    return output!;
+    // 1. Generate Invoice Number and Date
+    const now = new Date();
+    const invoiceNumber = `INV-${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}-${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}${now.getSeconds().toString().padStart(2, '0')}`;
+    const invoiceDate = now.toISOString().split('T')[0];
+
+    // 2. Calculate Item Totals and Subtotal
+    let subtotal = 0;
+    const itemsWithTotals = input.items.map(item => {
+      const total = item.quantity * item.pricePerUnit;
+      subtotal += total;
+      return {
+        ...item,
+        total: parseFloat(total.toFixed(2)),
+      };
+    });
+    subtotal = parseFloat(subtotal.toFixed(2));
+    
+    // 3. Calculate GST
+    const totalGst = parseFloat((subtotal * (input.gstRate / 100)).toFixed(2));
+    const cgst = parseFloat((totalGst / 2).toFixed(2));
+    const sgst = totalGst - cgst; // To avoid rounding issues
+    
+    // 4. Calculate Grand Total
+    const grandTotal = parseFloat((subtotal + totalGst).toFixed(2));
+
+    const output: z.infer<typeof GenerateGstInvoiceOutputSchema> = {
+      invoiceNumber,
+      invoiceDate,
+      subtotal,
+      cgst: parseFloat(cgst.toFixed(2)),
+      sgst: parseFloat(sgst.toFixed(2)),
+      totalGst,
+      grandTotal,
+      items: itemsWithTotals,
+      companyName: "Roseberry Chocolate",
+      companyAddress: "123, Chocolate Lane, Puducherry, India",
+      companyGst: "22AAAAA0000A1Z5",
+    };
+
+    // This is important to ensure the output matches the schema, especially with floating point numbers.
+    return GenerateGstInvoiceOutputSchema.parse(output);
   }
 );
