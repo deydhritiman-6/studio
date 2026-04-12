@@ -238,8 +238,8 @@ export default function BroadcastPage() {
                 )}
             >
                 <span className="text-lg font-bold">{day}</span>
-                <div className="absolute bottom-0.5 left-0.5 flex gap-0.5">
-                    {festivals?.map(f => <div key={f.name}>{React.cloneElement(categoryIcons[f.type] as React.ReactElement, { className: 'h-2 w-2'})}</div>)}
+                <div className="absolute bottom-1 left-1 flex gap-1">
+                    {festivals?.map((f, i) => <div key={`${f.name}-${i}`}>{React.cloneElement(categoryIcons[f.type] as React.ReactElement, { className: 'h-3 w-3'})}</div>)}
                 </div>
             </div>
         );
@@ -254,7 +254,7 @@ export default function BroadcastPage() {
                         <ul className="space-y-1 p-2">
                            {festivals.map(f => (
                                 <li key={f.name} className="flex items-center gap-2">
-                                     {React.cloneElement(categoryIcons[f.type] as React.ReactElement, { className: 'h-4 w-4' })}
+                                     {React.cloneElement(categoryIcons[f.type] as React.ReactElement, { className: 'h-5 w-5' })}
                                      <span>{f.name}</span>
                                 </li>
                             ))}
@@ -351,7 +351,7 @@ export default function BroadcastPage() {
                  <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm font-bold text-amber-950">
                     {Object.entries(categoryIcons).map(([type, icon]) => (
                         <div key={type} className="flex items-center gap-2">
-                            {React.cloneElement(icon as React.ReactElement, {className: 'h-4 w-4'})}
+                            {React.cloneElement(icon as React.ReactElement, {className: 'h-5 w-5'})}
                             <span>{type.replace(' Festival', '').replace(' Holiday', '')}</span>
                         </div>
                     ))}
