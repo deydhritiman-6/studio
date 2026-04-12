@@ -62,20 +62,20 @@ const broadcastFormSchema = z.object({
 
 // --- Custom Icons ---
 
-const SikhIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 256 256" className="h-5 w-5">
+const SikhIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 256 256" {...props} className={cn("h-5 w-5", props.className)}>
     <path fill="currentColor" d="M224 56a8 8 0 0 1-8 8h-46.9a88.1 88.1 0 0 1-138.2 0H8a8 8 0 0 1 0-16h208a8 8 0 0 1 8 8M71.42 80h113.16a72.11 72.11 0 0 0-113.16 0M120 120.47V216a8 8 0 0 0 16 0V120.47a40 40 0 1 0-16 0m0 64a24 24 0 1 1 24-24a24 24 0 0 1-24 24"/>
   </svg>
 );
 
-const BuddhistJainIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" className="h-5 w-5">
+const BuddhistJainIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...props} className={cn("h-5 w-5", props.className)}>
     <path fill="currentColor" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2m0 18a8 8 0 1 1 8-8a8 8 0 0 1-8 8m4-7h-3v-3a1 1 0 0 0-2 0v3H8a1 1 0 0 0 0 2h3v3a1 1 0 0 0 2 0v-3h3a1 1 0 0 0 0-2"/>
   </svg>
 );
 
-const ChristianIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" className="h-5 w-5">
+const ChristianIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...props} className={cn("h-5 w-5", props.className)}>
         <path fill="currentColor" d="M10.5 10.5V4.5a1.5 1.5 0 0 1 3 0v6h6a1.5 1.5 0 0 1 0 3h-6v6a1.5 1.5 0 0 1-3 0v-6h-6a1.5 1.5 0 0 1 0-3h6Z" />
     </svg>
 )
@@ -131,11 +131,12 @@ export default function BroadcastPage() {
   }, []);
 
   const { monthlyFestivals, monthlyImportantDays } = useMemo(() => {
+    const currentYear = displayDate.getFullYear();
     const currentMonth = displayDate.getMonth();
     
     const festivals = festivalData.filter(f => {
         const festivalDate = parseISO(f.date);
-        return festivalDate.getMonth() === currentMonth;
+        return festivalDate.getFullYear() === currentYear && festivalDate.getMonth() === currentMonth;
     });
     
     return {
@@ -149,7 +150,6 @@ export default function BroadcastPage() {
     const newSelectedDate = new Date(displayDate.getFullYear(), displayDate.getMonth(), day);
     setSelectedDate(newSelectedDate);
     
-    // Construct a key that includes the month and day, but not the year
     const dateKey = format(newSelectedDate, 'MM-dd');
     const festivalsOnDate = festivalsByDate.get(dateKey);
 
@@ -231,7 +231,7 @@ export default function BroadcastPage() {
              <div 
                 onClick={() => handleDateClick(day)}
                 className={cn(
-                    "p-2 text-center border-r border-b border-amber-200 relative cursor-pointer hover:bg-amber-100 h-20 flex flex-col items-center justify-start",
+                    "p-2 text-center border-r border-b border-amber-200 relative cursor-pointer hover:bg-amber-100 h-24 flex flex-col items-center justify-start",
                     isSun && "text-red-600",
                     isToday(date) && "bg-rose-200",
                     isSameDay(date, selectedDate) && "bg-amber-300",
@@ -239,7 +239,14 @@ export default function BroadcastPage() {
             >
                 <span className="text-lg font-bold">{day}</span>
                 <div className="absolute bottom-1 left-1 flex gap-1">
-                    {festivals?.map((f, i) => <div key={`${f.name}-${i}`}>{React.cloneElement(categoryIcons[f.type] as React.ReactElement, { className: 'h-5 w-5'})}</div>)}
+                    {festivals?.map((f, i) => {
+                      const iconElement = categoryIcons[f.type] as React.ReactElement;
+                      return (
+                        <div key={`${f.name}-${i}`}>
+                            {React.cloneElement(iconElement, { className: cn(iconElement.props.className, 'h-5 w-5 text-stone-800')})}
+                        </div>
+                      )
+                    })}
                 </div>
             </div>
         );
@@ -252,12 +259,15 @@ export default function BroadcastPage() {
                     </TooltipTrigger>
                     <TooltipContent>
                         <ul className="space-y-1 p-2">
-                           {festivals.map(f => (
-                                <li key={f.name} className="flex items-center gap-2">
-                                     {React.cloneElement(categoryIcons[f.type] as React.ReactElement, { className: 'h-5 w-5' })}
-                                     <span>{f.name}</span>
-                                </li>
-                            ))}
+                           {festivals.map(f => {
+                                const iconElement = categoryIcons[f.type] as React.ReactElement;
+                                return (
+                                   <li key={f.name} className="flex items-center gap-2">
+                                         {React.cloneElement(iconElement, { className: cn(iconElement.props.className, 'h-5 w-5') })}
+                                         <span>{f.name}</span>
+                                   </li>
+                                )
+                            })}
                         </ul>
                     </TooltipContent>
                 </Tooltip>
@@ -287,13 +297,13 @@ export default function BroadcastPage() {
                     <div className="border border-amber-200 rounded-lg p-3 bg-white/50">
                        <div className="flex items-center justify-between mb-4">
                            <Button variant="ghost" size="icon" onClick={() => setDisplayDate(subMonths(displayDate, 1))} className="hover:bg-amber-100">
-                               <ChevronLeft className="h-10 w-10 text-accent" />
+                               <ChevronLeft className="h-10 w-10 text-amber-500" />
                            </Button>
                            <h2 className="text-3xl font-bold font-headline text-red-700 uppercase tracking-widest">
                                {format(displayDate, 'MMMM yyyy')}
                            </h2>
                            <Button variant="ghost" size="icon" onClick={() => setDisplayDate(addMonths(displayDate, 1))} className="hover:bg-amber-100">
-                               <ChevronRight className="h-10 w-10 text-accent" />
+                               <ChevronRight className="h-10 w-10 text-amber-500" />
                            </Button>
                        </div>
                        <div className="grid grid-cols-7 text-center font-bold text-amber-800">
@@ -312,12 +322,15 @@ export default function BroadcastPage() {
                             <ScrollArea className="h-48 rounded-md border p-4">
                                {monthlyFestivals.length > 0 ? (
                                    <ul className="space-y-2">
-                                       {monthlyFestivals.map(f => (
-                                           <li key={f.name} className="flex items-center gap-3 text-sm">
-                                               {React.cloneElement(categoryIcons[f.type] as React.ReactElement, { className: 'h-5 w-5' })}
-                                               <span>{format(parseISO(f.date), 'd MMM')}: {f.name} ({f.type.replace(' Festival', '')})</span>
-                                           </li>
-                                       ))}
+                                       {monthlyFestivals.map(f => {
+                                           const iconElement = categoryIcons[f.type] as React.ReactElement;
+                                           return (
+                                              <li key={f.name} className="flex items-center gap-3 text-sm">
+                                                  {React.cloneElement(iconElement, { className: cn(iconElement.props.className, 'h-5 w-5') })}
+                                                  <span>{format(parseISO(f.date), 'd MMM')}: {f.name} ({f.type.replace(' Festival', '')})</span>
+                                              </li>
+                                           )
+                                       })}
                                    </ul>
                                ) : (
                                    <p className="text-sm text-muted-foreground text-center flex items-center justify-center h-full">No festivals this month.</p>
@@ -332,12 +345,15 @@ export default function BroadcastPage() {
                              <ScrollArea className="h-48 rounded-md border p-4">
                                {monthlyImportantDays.length > 0 ? (
                                    <ul className="space-y-2">
-                                       {monthlyImportantDays.map(f => (
-                                           <li key={f.name} className="flex items-center gap-3 text-sm">
-                                               {React.cloneElement(categoryIcons[f.type] as React.ReactElement, { className: 'h-5 w-5' })}
-                                               <span>{format(parseISO(f.date), 'd MMM')}: {f.name}</span>
-                                           </li>
-                                       ))}
+                                       {monthlyImportantDays.map(f => {
+                                           const iconElement = categoryIcons[f.type] as React.ReactElement;
+                                           return (
+                                             <li key={f.name} className="flex items-center gap-3 text-sm">
+                                                 {React.cloneElement(iconElement, { className: cn(iconElement.props.className, 'h-5 w-5') })}
+                                                 <span>{format(parseISO(f.date), 'd MMM')}: {f.name}</span>
+                                             </li>
+                                           )
+                                       })}
                                    </ul>
                                ) : (
                                    <p className="text-sm text-muted-foreground text-center flex items-center justify-center h-full">No important days this month.</p>
@@ -349,12 +365,15 @@ export default function BroadcastPage() {
             </CardContent>
             <div className="border-t-2 border-amber-200 bg-amber-100/50 p-3 rounded-b-lg">
                  <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm font-bold text-amber-950/80">
-                    {Object.entries(categoryIcons).map(([type, icon]) => (
-                        <div key={type} className="flex items-center gap-2">
-                            {React.cloneElement(icon as React.ReactElement, {className: 'h-5 w-5'})}
-                            <span>{type.replace(' Festival', '').replace(' Holiday', '')}</span>
-                        </div>
-                    ))}
+                    {Object.entries(categoryIcons).map(([type, icon]) => {
+                        const iconElement = icon as React.ReactElement;
+                        return (
+                            <div key={type} className="flex items-center gap-2">
+                                {React.cloneElement(iconElement, {className: cn(iconElement.props.className, 'h-5 w-5')})}
+                                <span>{type.replace(' Festival', '').replace(' Holiday', '')}</span>
+                            </div>
+                        )
+                    })}
                  </div>
             </div>
         </Card>
@@ -370,7 +389,10 @@ export default function BroadcastPage() {
           <DialogContent>
             <DialogHeader>
               <div className="flex items-center gap-3">
-                 {React.cloneElement(categoryIcons[viewingFestival.type] as React.ReactElement, { className: 'h-8 w-8' })}
+                 {(() => {
+                    const iconElement = categoryIcons[viewingFestival.type] as React.ReactElement;
+                    return React.cloneElement(iconElement, { className: cn(iconElement.props.className, 'h-8 w-8') });
+                 })()}
                 <DialogTitle className="text-2xl font-headline">{viewingFestival.name}</DialogTitle>
               </div>
               <DialogDescription className="pt-2">{viewingFestival.type}</DialogDescription>
