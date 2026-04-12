@@ -33,6 +33,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 
 type Festival = {
@@ -117,9 +118,10 @@ export default function BroadcastPage() {
   const broadcastType = form.watch('broadcastType');
   const channel = form.watch('channel');
 
-  const festivalsByDate = useMemo(() => {
+ const festivalsByDate = useMemo(() => {
     const map = new Map<string, Festival[]>();
     festivalData.forEach(f => {
+      // Use a year-agnostic key
       const dateKey = format(parseISO(f.date), 'MM-dd');
       if (!map.has(dateKey)) {
         map.set(dateKey, []);
@@ -280,8 +282,8 @@ export default function BroadcastPage() {
     return (
         <Card className="mt-8 bg-amber-50/50 border-amber-200 shadow-lg">
             <CardContent className="p-4 md:p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Left Column: Calendar */}
+                <div className="flex flex-col gap-6">
+                    {/* Calendar */}
                     <div className="border border-amber-200 rounded-lg p-3 bg-white/50">
                        <div className="flex items-center justify-between mb-4">
                            <Button variant="ghost" size="icon" onClick={() => setDisplayDate(subMonths(displayDate, 1))}>
@@ -301,36 +303,52 @@ export default function BroadcastPage() {
                            {days}
                        </div>
                     </div>
-                    {/* Right Column: Festivals List */}
-                    <div className="space-y-4">
-                        <div className="bg-red-700 text-white p-2 rounded-md text-center shadow-md">
-                           <h3 className="font-bold font-headline text-xl">Festivals</h3>
+                    {/* Festivals List */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                            <div className="bg-red-700 text-white p-2 rounded-md text-center shadow-md">
+                               <h3 className="font-bold font-headline text-xl">Festive Days</h3>
+                            </div>
+                            <ScrollArea className="h-48 rounded-md border p-4">
+                               {monthlyFestivals.length > 0 ? (
+                                   <ul className="space-y-2">
+                                       {monthlyFestivals.map(f => (
+                                           <li key={f.name} className="flex items-center gap-3 text-sm">
+                                               {React.cloneElement(categoryIcons[f.type] as React.ReactElement, { className: 'h-5 w-5' })}
+                                               <span>{format(parseISO(f.date), 'd MMM')}: {f.name} ({f.type.replace(' Festival', '')})</span>
+                                           </li>
+                                       ))}
+                                   </ul>
+                               ) : (
+                                   <p className="text-sm text-muted-foreground text-center flex items-center justify-center h-full">No festivals this month.</p>
+                               )}
+                           </ScrollArea>
                         </div>
-                        <ul className="space-y-2">
-                           {monthlyFestivals.map(f => (
-                               <li key={f.name} className="flex items-center gap-3 text-sm">
-                                   {React.cloneElement(categoryIcons[f.type] as React.ReactElement, { className: 'h-5 w-5' })}
-                                   <span>{format(parseISO(f.date), 'd MMM')}: {f.name} ({f.type.replace(' Festival', '')})</span>
-                               </li>
-                           ))}
-                        </ul>
 
-                        <div className="bg-green-700 text-white p-2 rounded-md text-center shadow-md mt-6">
-                           <h3 className="font-bold font-headline text-xl">Important Days</h3>
+                        <div className="space-y-4">
+                            <div className="bg-green-700 text-white p-2 rounded-md text-center shadow-md">
+                               <h3 className="font-bold font-headline text-xl">Important Days</h3>
+                            </div>
+                             <ScrollArea className="h-48 rounded-md border p-4">
+                               {monthlyImportantDays.length > 0 ? (
+                                   <ul className="space-y-2">
+                                       {monthlyImportantDays.map(f => (
+                                           <li key={f.name} className="flex items-center gap-3 text-sm">
+                                               {React.cloneElement(categoryIcons[f.type] as React.ReactElement, { className: 'h-5 w-5' })}
+                                               <span>{format(parseISO(f.date), 'd MMM')}: {f.name}</span>
+                                           </li>
+                                       ))}
+                                   </ul>
+                               ) : (
+                                   <p className="text-sm text-muted-foreground text-center flex items-center justify-center h-full">No important days this month.</p>
+                               )}
+                           </ScrollArea>
                         </div>
-                         <ul className="space-y-2">
-                           {monthlyImportantDays.map(f => (
-                               <li key={f.name} className="flex items-center gap-3 text-sm">
-                                   {React.cloneElement(categoryIcons[f.type] as React.ReactElement, { className: 'h-5 w-5' })}
-                                   <span>{format(parseISO(f.date), 'd MMM')}: {f.name}</span>
-                               </li>
-                           ))}
-                        </ul>
                     </div>
                 </div>
             </CardContent>
             <div className="border-t-2 border-amber-200 bg-amber-100/50 p-3 rounded-b-lg">
-                 <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm font-bold text-amber-900">
+                 <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm font-bold text-amber-950">
                     {Object.entries(categoryIcons).map(([type, icon]) => (
                         <div key={type} className="flex items-center gap-2">
                             {React.cloneElement(icon as React.ReactElement, {className: 'h-4 w-4'})}
