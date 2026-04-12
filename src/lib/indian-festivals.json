@@ -31,7 +31,7 @@
     { "date": "2024-10-02", "name": "Gandhi Jayanti", "type": "National Holiday", "category": "Important Day", "description": "Celebrates the birthday of Mahatma Gandhi, the 'Father of the Nation'." },
     { "date": "2024-10-03", "name": "Navratri", "type": "Hindu Festival", "category": "Festival", "description": "A nine-night Hindu festival, celebrated in the autumn." },
     { "date": "2024-10-12", "name": "Dussehra", "type": "Hindu Festival", "category": "Festival", "description": "A major Hindu festival celebrated at the end of Navratri every year." },
-    { "date": "2024-10-31", "name": "Diwali", "type": "Hindu Festival", "category": "Festival", "description": "The festival of lights, one of the major festivals celebrated by Hindus, Jains, and Sikhs." },
+    { "date": "2024-11-01", "name": "Diwali", "type": "Hindu Festival", "category": "Festival", "description": "The festival of lights, one of the major festivals celebrated by Hindus, Jains, and Sikhs." },
     { "date": "2024-11-15", "name": "Guru Nanak Jayanti", "type": "Sikh Festival", "category": "Festival", "description": "Celebrates the birth of the first Sikh Guru, Guru Nanak." },
     { "date": "2024-12-25", "name": "Christmas", "type": "Christian Festival", "category": "Festival", "description": "An annual festival commemorating the birth of Jesus Christ." }
   ]
