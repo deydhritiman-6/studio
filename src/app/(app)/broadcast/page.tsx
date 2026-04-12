@@ -82,14 +82,14 @@ const ChristianIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 
 const categoryIcons: { [key: string]: React.ReactNode } = {
-    'Hindu Festival': <Flame className="text-orange-500" />,
-    'Muslim Festival': <Moon className="text-green-500" />,
-    'Christian Festival': <ChristianIcon className="text-blue-500" />,
-    'Sikh Festival': <SikhIcon className="text-yellow-500" />,
-    'Buddhist Festival': <BuddhistJainIcon className="text-purple-500" />,
-    'Jain Festival': <BuddhistJainIcon className="text-purple-500" />,
-    'National Holiday': <Flag className="text-red-500" />,
-    'Observance': <Star className="text-sky-500" />,
+    'Hindu Festival': <Flame className="text-orange-500 h-6 w-6" />,
+    'Muslim Festival': <Moon className="text-green-500 h-6 w-6" />,
+    'Christian Festival': <ChristianIcon className="text-blue-500 h-6 w-6" />,
+    'Sikh Festival': <SikhIcon className="text-yellow-500 h-6 w-6" />,
+    'Buddhist Festival': <BuddhistJainIcon className="text-purple-500 h-6 w-6" />,
+    'Jain Festival': <BuddhistJainIcon className="text-purple-500 h-6 w-6" />,
+    'National Holiday': <Flag className="text-red-500 h-6 w-6" />,
+    'Observance': <Star className="text-sky-500 h-6 w-6" />,
 };
 
 
@@ -231,7 +231,7 @@ export default function BroadcastPage() {
              <div 
                 onClick={() => handleDateClick(day)}
                 className={cn(
-                    "p-2 text-center border-r border-b border-amber-200 relative cursor-pointer hover:bg-amber-100 h-24 flex flex-col items-center justify-start",
+                    "p-2 text-center border-r border-b border-amber-200 relative cursor-pointer hover:bg-amber-100 h-28 flex flex-col items-center justify-start",
                     isSun && "text-red-600",
                     isToday(date) && "bg-rose-200",
                     isSameDay(date, selectedDate) && "bg-amber-300",
@@ -243,7 +243,7 @@ export default function BroadcastPage() {
                       const iconElement = categoryIcons[f.type] as React.ReactElement;
                       return (
                         <div key={`${f.name}-${i}`}>
-                            {React.cloneElement(iconElement, { className: cn(iconElement.props.className, 'h-5 w-5 text-stone-800')})}
+                            {React.cloneElement(iconElement, { className: cn(iconElement.props.className, 'h-6 w-6 text-stone-800')})}
                         </div>
                       )
                     })}
@@ -263,7 +263,7 @@ export default function BroadcastPage() {
                                 const iconElement = categoryIcons[f.type] as React.ReactElement;
                                 return (
                                    <li key={f.name} className="flex items-center gap-2">
-                                         {React.cloneElement(iconElement, { className: cn(iconElement.props.className, 'h-5 w-5') })}
+                                         {iconElement}
                                          <span>{f.name}</span>
                                    </li>
                                 )
@@ -297,13 +297,13 @@ export default function BroadcastPage() {
                     <div className="border border-amber-200 rounded-lg p-3 bg-white/50">
                        <div className="flex items-center justify-between mb-4">
                            <Button variant="ghost" size="icon" onClick={() => setDisplayDate(subMonths(displayDate, 1))} className="hover:bg-amber-100">
-                               <ChevronLeft className="h-10 w-10 text-amber-500" />
+                               <ChevronLeft className="h-12 w-12 text-stone-900" strokeWidth={2.5} />
                            </Button>
                            <h2 className="text-3xl font-bold font-headline text-red-700 uppercase tracking-widest">
                                {format(displayDate, 'MMMM yyyy')}
                            </h2>
                            <Button variant="ghost" size="icon" onClick={() => setDisplayDate(addMonths(displayDate, 1))} className="hover:bg-amber-100">
-                               <ChevronRight className="h-10 w-10 text-amber-500" />
+                               <ChevronRight className="h-12 w-12 text-stone-900" strokeWidth={2.5} />
                            </Button>
                        </div>
                        <div className="grid grid-cols-7 text-center font-bold text-amber-800">
@@ -326,7 +326,7 @@ export default function BroadcastPage() {
                                            const iconElement = categoryIcons[f.type] as React.ReactElement;
                                            return (
                                               <li key={f.name} className="flex items-center gap-3 text-sm">
-                                                  {React.cloneElement(iconElement, { className: cn(iconElement.props.className, 'h-5 w-5') })}
+                                                  {iconElement}
                                                   <span>{format(parseISO(f.date), 'd MMM')}: {f.name} ({f.type.replace(' Festival', '')})</span>
                                               </li>
                                            )
@@ -349,7 +349,7 @@ export default function BroadcastPage() {
                                            const iconElement = categoryIcons[f.type] as React.ReactElement;
                                            return (
                                              <li key={f.name} className="flex items-center gap-3 text-sm">
-                                                 {React.cloneElement(iconElement, { className: cn(iconElement.props.className, 'h-5 w-5') })}
+                                                 {iconElement}
                                                  <span>{format(parseISO(f.date), 'd MMM')}: {f.name}</span>
                                              </li>
                                            )
@@ -364,12 +364,12 @@ export default function BroadcastPage() {
                 </div>
             </CardContent>
             <div className="border-t-2 border-amber-200 bg-amber-100/50 p-3 rounded-b-lg">
-                 <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm font-bold text-amber-950/80">
+                 <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm font-bold text-amber-950">
                     {Object.entries(categoryIcons).map(([type, icon]) => {
                         const iconElement = icon as React.ReactElement;
                         return (
                             <div key={type} className="flex items-center gap-2">
-                                {React.cloneElement(iconElement, {className: cn(iconElement.props.className, 'h-5 w-5')})}
+                                {React.cloneElement(iconElement, {className: cn(iconElement.props.className, 'h-6 w-6')})}
                                 <span>{type.replace(' Festival', '').replace(' Holiday', '')}</span>
                             </div>
                         )
