@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Send, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Flame, Moon, Flag, Star } from 'lucide-react';
+import { Loader2, Send, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Flame, Moon, Flag, Star, MoreHorizontal } from 'lucide-react';
 import { generateBroadcastAction, generateFestivalMessageAction } from './actions';
 import { type GenerateBroadcastMessageOutput } from '@/ai/flows/generate-broadcast-message';
 import { Input } from '@/components/ui/input';
@@ -35,6 +35,21 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from '@/components/ui/badge';
 
 
 type Festival = {
@@ -58,6 +73,50 @@ const broadcastFormSchema = z.object({
     .string()
     .min(1, 'Message details are required.'),
 });
+
+type RoadmapItem = {
+  id: string;
+  targetCycle: string;
+  channels: ('Email' | 'SMS' | 'Social Media')[];
+  messageIntelligence: string;
+  batchSize: number;
+  status: 'Scheduled' | 'Running' | 'Completed' | 'Failed';
+};
+
+const roadmapData: RoadmapItem[] = [
+  {
+    id: 'RDM001',
+    targetCycle: 'Diwali 2026',
+    channels: ['Email', 'SMS'],
+    messageIntelligence: 'Festival Greeting',
+    batchSize: 1245,
+    status: 'Scheduled',
+  },
+  {
+    id: 'RDM002',
+    targetCycle: 'Weekly VIP Offers',
+    channels: ['Email', 'Social Media'],
+    messageIntelligence: 'VIP Offer',
+    batchSize: 48,
+    status: 'Running',
+  },
+  {
+    id: 'RDM003',
+    targetCycle: 'New Product Launch',
+    channels: ['Email', 'SMS', 'Social Media'],
+    messageIntelligence: 'Product Launch',
+    batchSize: 1800,
+    status: 'Completed',
+  },
+   {
+    id: 'RDM004',
+    targetCycle: 'Re-engagement Campaign',
+    channels: ['Email'],
+    messageIntelligence: 'Re-engagement',
+    batchSize: 350,
+    status: 'Scheduled',
+  },
+];
 
 
 // --- Custom Icons ---
@@ -199,6 +258,16 @@ export default function BroadcastPage() {
      toast({ title: 'Broadcast Sent', description: 'Your message has been sent successfully.' });
   }
 
+  const getStatusBadgeClassName = (status: RoadmapItem['status']) => {
+      switch (status) {
+          case 'Scheduled': return 'bg-yellow-500 text-black hover:bg-yellow-600';
+          case 'Running': return 'bg-blue-500 text-white hover:bg-blue-600';
+          case 'Completed': return 'bg-green-700 hover:bg-green-800';
+          case 'Failed': return 'bg-destructive text-destructive-foreground';
+          default: return 'bg-muted text-muted-foreground';
+      }
+  }
+
   // --- Calendar Rendering Logic ---
   const renderCalendar = (dateToRender: Date, isMain: boolean) => {
     const monthStart = startOfMonth(dateToRender);
@@ -252,7 +321,7 @@ export default function BroadcastPage() {
                           const iconElement = categoryIcons[f.type] as React.ReactElement;
                           return (
                             <div key={`${f.name}-${i}`}>
-                                {React.cloneElement(iconElement, { className: cn(iconElement.props.className, 'h-8 w-8', 'text-gray-800')})}
+                                {React.cloneElement(iconElement, { className: cn(iconElement.props.className, 'h-8 w-8')})}
                             </div>
                           )
                         })}
@@ -581,6 +650,64 @@ export default function BroadcastPage() {
         >
           {renderCalendar(addMonths(displayDate, 1), false)}
         </div>
+      </div>
+      <div className="mt-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Automatic Execution Roadmap</CardTitle>
+            <CardDescription>
+              Overview of scheduled and automated broadcast cycles.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Target Cycle</TableHead>
+                  <TableHead>Channels</TableHead>
+                  <TableHead>Message Intelligence</TableHead>
+                  <TableHead>Batch Size</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead><span className="sr-only">Actions</span></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {roadmapData.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="font-medium">{item.targetCycle}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {item.channels.map(channel => <Badge key={channel} variant="secondary">{channel}</Badge>)}
+                      </div>
+                    </TableCell>
+                    <TableCell>{item.messageIntelligence}</TableCell>
+                    <TableCell>{item.batchSize.toLocaleString()}</TableCell>
+                    <TableCell>
+                      <Badge className={getStatusBadgeClassName(item.status)}>
+                        {item.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>View</DropdownMenuItem>
+                          <DropdownMenuItem disabled={item.status !== 'Running' && item.status !== 'Scheduled'}>Pause</DropdownMenuItem>
+                          <DropdownMenuItem className="text-destructive" disabled={item.status !== 'Running' && item.status !== 'Scheduled'}>Abort</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       </div>
     </TooltipProvider>
   );
