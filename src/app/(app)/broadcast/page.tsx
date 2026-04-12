@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Send, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Flame, Moon, Flag, Star } from 'lucide-react';
 import { generateBroadcastAction, generateFestivalMessageAction } from './actions';
-import { type GenerateBroadcastMessageOutput } from '@/ai/flows/generate-broadcast-message';
+import { type GenerateBroadcastMessageOutput, GenerateBroadcastMessageInputSchema, GenerateBroadcastMessageOutputSchema } from '@/ai/flows/generate-broadcast-message';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import festivalJsonData from '@/lib/indian-festivals.json';
@@ -60,17 +60,16 @@ const broadcastFormSchema = z.object({
 
 
 // --- Custom Icons ---
-
 const SikhIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 256 256" {...props} className={cn("h-8 w-8", props.className)}>
-    <path fill="currentColor" d="M224 56a8 8 0 0 1-8 8h-46.9a88.1 88.1 0 0 1-138.2 0H8a8 8 0 0 1 0-16h208a8 8 0 0 1 8 8M71.42 80h113.16a72.11 72.11 0 0 0-113.16 0M120 120.47V216a8 8 0 0 0 16 0V120.47a40 40 0 1 0-16 0m0 64a24 24 0 1 1 24-24a24 24 0 0 1-24 24"/>
-  </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 256 256" {...props} className={cn("h-8 w-8", props.className)}>
+        <path fill="currentColor" d="M224 56a8 8 0 0 1-8 8h-46.9a88.1 88.1 0 0 1-138.2 0H8a8 8 0 0 1 0-16h208a8 8 0 0 1 8 8M71.42 80h113.16a72.11 72.11 0 0 0-113.16 0M120 120.47V216a8 8 0 0 0 16 0V120.47a40 40 0 1 0-16 0m0 64a24 24 0 1 1 24-24a24 24 0 0 1-24 24"/>
+    </svg>
 );
 
 const BuddhistJainIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...props} className={cn("h-8 w-8", props.className)}>
-    <path fill="currentColor" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2m0 18a8 8 0 1 1 8-8a8 8 0 0 1-8 8m4-7h-3v-3a1 1 0 0 0-2 0v3H8a1 1 0 0 0 0 2h3v3a1 1 0 0 0 2 0v-3h3a1 1 0 0 0 0-2"/>
-  </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...props} className={cn("h-8 w-8", props.className)}>
+        <path fill="currentColor" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2m0 18a8 8 0 1 1 8-8a8 8 0 0 1-8 8m4-7h-3v-3a1 1 0 0 0-2 0v3H8a1 1 0 0 0 0 2h3v3a1 1 0 0 0 2 0v-3h3a1 1 0 0 0 0-2"/>
+    </svg>
 );
 
 const ChristianIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -78,7 +77,6 @@ const ChristianIcon = (props: React.SVGProps<SVGSVGElement>) => (
         <path fill="currentColor" d="M10.5 10.5V4.5a1.5 1.5 0 0 1 3 0v6h6a1.5 1.5 0 0 1 0 3h-6v6a1.5 1.5 0 0 1-3 0v-6h-6a1.5 1.5 0 0 1 0-3h6Z" />
     </svg>
 )
-
 
 const categoryIcons: { [key: string]: React.ReactNode } = {
     'Hindu Festival': <Flame className="text-orange-500 h-8 w-8" />,
@@ -120,7 +118,6 @@ export default function BroadcastPage() {
   const festivalsByDate = useMemo(() => {
     const map = new Map<string, Festival[]>();
     festivalData.forEach(f => {
-      // Use a year-agnostic key
       const dateKey = format(parseISO(f.date), 'MM-dd');
       if (!map.has(dateKey)) {
         map.set(dateKey, []);
@@ -130,24 +127,11 @@ export default function BroadcastPage() {
     return map;
   }, []);
 
-  const { monthlyFestivals, monthlyImportantDays } = useMemo(() => {
-    const currentMonth = displayDate.getMonth();
-    
-    const festivals: Festival[] = [];
-    festivalsByDate.forEach((dayFestivals) => {
-        dayFestivals.forEach(f => {
-            if (parseISO(f.date).getMonth() === currentMonth) {
-                festivals.push(f);
-            }
-        });
+  const handleMonthChange = (direction: 'prev' | 'next') => {
+    setDisplayDate(currentDate => {
+        return direction === 'next' ? addMonths(currentDate, 1) : subMonths(currentDate, 1);
     });
-    
-    return {
-        monthlyFestivals: festivals.filter(f => f.type.includes('Festival')),
-        monthlyImportantDays: festivals.filter(f => !f.type.includes('Festival')),
-    };
-  }, [displayDate, festivalsByDate]);
-
+  };
 
   async function handleDateClick(day: number) {
     const newSelectedDate = new Date(displayDate.getFullYear(), displayDate.getMonth(), day);
@@ -156,7 +140,7 @@ export default function BroadcastPage() {
     const dateKey = format(newSelectedDate, 'MM-dd');
     const festivalsOnDate = festivalsByDate.get(dateKey);
 
-    if (festivalsOnDate) {
+    if (festivalsOnDate && festivalsOnDate.length > 0) {
         setViewingFestival(festivalsOnDate[0]);
     }
 
@@ -215,46 +199,76 @@ export default function BroadcastPage() {
   }
 
   // --- Calendar Rendering Logic ---
-  const renderCalendar = () => {
-    const monthStart = startOfMonth(displayDate);
-    const daysInMonth = getDaysInMonth(displayDate);
+  const renderCalendar = (dateToRender: Date, isMain: boolean) => {
+    const monthStart = startOfMonth(dateToRender);
+    const daysInMonth = getDaysInMonth(dateToRender);
     const startDayOfWeek = getDay(monthStart);
+
+    const { monthlyFestivals, monthlyImportantDays } = useMemo(() => {
+        const currentMonth = dateToRender.getMonth();
+        
+        const festivals: Festival[] = [];
+        festivalsByDate.forEach((dayFestivals) => {
+            dayFestivals.forEach(f => {
+                if (parseISO(f.date).getMonth() === currentMonth) {
+                    festivals.push(f);
+                }
+            });
+        });
+        
+        return {
+            monthlyFestivals: festivals.filter(f => f.type.includes('Festival')),
+            monthlyImportantDays: festivals.filter(f => !f.type.includes('Festival')),
+        };
+      }, [dateToRender, festivalsByDate]);
 
     const days = [];
     for (let i = 0; i < startDayOfWeek; i++) {
-      days.push(<div key={`empty-${i}`} className="border-r border-b border-amber-200"></div>);
+      days.push(<div key={`empty-${i}`} className={isMain ? "border-r border-b border-amber-200" : "border-b"}></div>);
     }
+
     for (let day = 1; day <= daysInMonth; day++) {
-        const date = new Date(displayDate.getFullYear(), displayDate.getMonth(), day);
+        const date = new Date(dateToRender.getFullYear(), dateToRender.getMonth(), day);
         const dateKey = format(date, 'MM-dd');
         const festivals = festivalsByDate.get(dateKey);
         const isSun = getDay(date) === 0;
 
         const dayCell = (
              <div 
-                onClick={() => handleDateClick(day)}
+                onClick={() => isMain && handleDateClick(day)}
                 className={cn(
-                    "p-2 text-center border-r border-b border-amber-200 relative cursor-pointer hover:bg-amber-100 h-28 flex flex-col items-center justify-start",
+                    "text-center relative",
+                    isMain ? "p-2 border-r border-b border-amber-200 h-28 flex flex-col items-center justify-start cursor-pointer hover:bg-amber-100" : "p-1 h-12 flex flex-col items-center justify-start text-xs",
                     isSun ? "text-red-700" : "text-green-800",
                     isToday(date) && "bg-rose-200",
-                    isSameDay(date, selectedDate) && "bg-amber-300",
+                    isSameDay(date, selectedDate) && isMain && "bg-amber-300",
                 )}
             >
-                <span className="text-lg font-bold">{day}</span>
-                <div className="absolute bottom-1 left-1 flex gap-1">
-                    {festivals?.map((f, i) => {
-                      const iconElement = categoryIcons[f.type] as React.ReactElement;
-                      return (
-                        <div key={`${f.name}-${i}`}>
-                            {React.cloneElement(iconElement, { className: cn(iconElement.props.className, 'h-8 w-8')})}
-                        </div>
-                      )
-                    })}
-                </div>
+                <span className={cn(isMain ? "text-lg" : "text-sm", "font-bold")}>{day}</span>
+                {isMain && (
+                    <div className="absolute bottom-1 left-1 flex gap-1">
+                        {festivals?.map((f, i) => {
+                          const iconElement = categoryIcons[f.type] as React.ReactElement;
+                          return (
+                            <div key={`${f.name}-${i}`}>
+                                {React.cloneElement(iconElement, { className: cn(iconElement.props.className, 'h-8 w-8')})}
+                            </div>
+                          )
+                        })}
+                    </div>
+                )}
+                {!isMain && festivals && (
+                    <div className="flex justify-center mt-1">
+                        {festivals.slice(0, 2).map((f, i) => {
+                             const iconElement = categoryIcons[f.type] as React.ReactElement;
+                             return React.cloneElement(iconElement, { key: i, className: cn(iconElement.props.className, 'h-3 w-3 mx-px')});
+                        })}
+                    </div>
+                )}
             </div>
         );
 
-        if (festivals && festivals.length > 0) {
+        if (isMain && festivals && festivals.length > 0) {
             days.push(
                 <Tooltip key={day} delayDuration={100}>
                     <TooltipTrigger asChild>
@@ -280,105 +294,105 @@ export default function BroadcastPage() {
         }
     }
     while (days.length % 7 !== 0) {
-        days.push(<div key={`empty-end-${days.length}`} className="border-r border-b border-amber-200"></div>);
+        days.push(<div key={`empty-end-${days.length}`} className={isMain ? "border-r border-b border-amber-200" : "border-b"}></div>);
     }
-    if (days.length < 42) {
+    if (isMain && days.length < 42) {
        const remaining = 42 - days.length;
        for (let i = 0; i < remaining; i++) {
         days.push(<div key={`empty-extra-${i}`} className="border-r border-b border-amber-200"></div>);
        }
     }
 
-
-    const weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    const weekdays = isMain ? ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'] : ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
     return (
-        <Card className="mt-8 bg-amber-50/50 border-amber-200 shadow-lg">
-            <CardContent className="p-4 md:p-6">
-                <div className="flex flex-col gap-6">
-                    {/* Calendar */}
-                    <div className="border border-amber-200 rounded-lg p-3 bg-white/50">
+        <Card className={cn("border-amber-200 shadow-lg", isMain ? "bg-amber-50/50" : "bg-amber-50/20")}>
+            <CardContent className={isMain ? "p-4 md:p-6" : "p-2"}>
+                <div className="flex flex-col gap-4">
+                    <div className={cn("border border-amber-200 rounded-lg bg-white/50", isMain ? "p-3" : "p-2")}>
                        <div className="flex items-center justify-between mb-4">
-                           <Button variant="ghost" size="icon" onClick={() => setDisplayDate(subMonths(displayDate, 1))} className="hover:bg-blue-100">
+                           {isMain && <Button variant="ghost" size="icon" onClick={() => handleMonthChange('prev')} className="hover:bg-blue-100">
                                <ChevronLeft className="h-16 w-16 text-blue-600" strokeWidth={3} />
-                           </Button>
-                           <h2 className="text-3xl font-bold font-headline text-orange-600 uppercase tracking-widest">
-                               {format(displayDate, 'MMMM yyyy')}
+                           </Button>}
+                           <h2 className={cn("font-bold font-headline text-orange-600 uppercase tracking-widest text-center", isMain ? "text-3xl" : "text-lg", !isMain && "flex-1")}>
+                               {format(dateToRender, 'MMMM yyyy')}
                            </h2>
-                           <Button variant="ghost" size="icon" onClick={() => setDisplayDate(addMonths(displayDate, 1))} className="hover:bg-blue-100">
+                           {isMain && <Button variant="ghost" size="icon" onClick={() => handleMonthChange('next')} className="hover:bg-blue-100">
                                <ChevronRight className="h-16 w-16 text-blue-600" strokeWidth={3} />
-                           </Button>
+                           </Button>}
                        </div>
                        <div className="grid grid-cols-7 text-center font-bold">
-                           {weekdays.map(day => <div key={day} className={cn("py-2 border-b-2 border-r border-amber-200", day === 'SUN' ? "text-red-700" : "text-green-800")}>{day}</div>)}
+                           {weekdays.map(day => <div key={day} className={cn("py-2 border-r border-amber-200", day === 'SUN' || day === 'S' ? "text-red-700" : "text-green-800", isMain ? "" : "text-xs")}>{day}</div>)}
                        </div>
                        <div className="grid grid-cols-7">
                            {days}
                        </div>
                     </div>
-                    {/* Festivals List */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-4">
-                            <div className="bg-red-700 text-white p-2 rounded-md text-center shadow-md">
-                               <h3 className="font-bold font-headline text-xl">Festive Days</h3>
+                    {isMain && (
+                        <>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-4">
+                                    <div className="bg-red-700 text-white p-2 rounded-md text-center shadow-md">
+                                      <h3 className="font-bold font-headline text-xl">Festive Days</h3>
+                                    </div>
+                                    <ScrollArea className="h-48 rounded-md border p-4">
+                                      {monthlyFestivals.length > 0 ? (
+                                          <ul className="space-y-2">
+                                              {monthlyFestivals.map(f => {
+                                                  const iconElement = categoryIcons[f.type] as React.ReactElement;
+                                                  return (
+                                                    <li key={f.name} className="flex items-center gap-3 text-sm">
+                                                        {iconElement}
+                                                        <span>{format(parseISO(f.date), 'd MMM')}: {f.name} ({f.type.replace(' Festival', '')})</span>
+                                                    </li>
+                                                  )
+                                              })}
+                                          </ul>
+                                      ) : (
+                                          <p className="text-sm text-muted-foreground text-center flex items-center justify-center h-full">No festivals this month.</p>
+                                      )}
+                                  </ScrollArea>
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="bg-green-700 text-white p-2 rounded-md text-center shadow-md">
+                                      <h3 className="font-bold font-headline text-xl">Important Days</h3>
+                                    </div>
+                                    <ScrollArea className="h-48 rounded-md border p-4">
+                                      {monthlyImportantDays.length > 0 ? (
+                                          <ul className="space-y-2">
+                                              {monthlyImportantDays.map(f => {
+                                                  const iconElement = categoryIcons[f.type] as React.ReactElement;
+                                                  return (
+                                                    <li key={f.name} className="flex items-center gap-3 text-sm">
+                                                        {iconElement}
+                                                        <span>{format(parseISO(f.date), 'd MMM')}: {f.name}</span>
+                                                    </li>
+                                                  )
+                                              })}
+                                          </ul>
+                                      ) : (
+                                          <p className="text-sm text-muted-foreground text-center flex items-center justify-center h-full">No important days this month.</p>
+                                      )}
+                                  </ScrollArea>
+                                </div>
                             </div>
-                            <ScrollArea className="h-48 rounded-md border p-4">
-                               {monthlyFestivals.length > 0 ? (
-                                   <ul className="space-y-2">
-                                       {monthlyFestivals.map(f => {
-                                           const iconElement = categoryIcons[f.type] as React.ReactElement;
-                                           return (
-                                              <li key={f.name} className="flex items-center gap-3 text-sm">
-                                                  {iconElement}
-                                                  <span>{format(parseISO(f.date), 'd MMM')}: {f.name} ({f.type.replace(' Festival', '')})</span>
-                                              </li>
-                                           )
-                                       })}
-                                   </ul>
-                               ) : (
-                                   <p className="text-sm text-muted-foreground text-center flex items-center justify-center h-full">No festivals this month.</p>
-                               )}
-                           </ScrollArea>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div className="bg-green-700 text-white p-2 rounded-md text-center shadow-md">
-                               <h3 className="font-bold font-headline text-xl">Important Days</h3>
+                            <div className="border-t-2 border-amber-200 bg-amber-100/50 p-3 rounded-b-lg">
+                                <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm font-bold text-amber-950">
+                                    {Object.entries(categoryIcons).map(([type, icon]) => {
+                                        const iconElement = icon as React.ReactElement;
+                                        return (
+                                            <div key={type} className="flex items-center gap-2">
+                                                {React.cloneElement(iconElement, {className: cn(iconElement.props.className, 'h-8 w-8')})}
+                                                <span>{type.replace(' Festival', '').replace(' Holiday', '')}</span>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
                             </div>
-                             <ScrollArea className="h-48 rounded-md border p-4">
-                               {monthlyImportantDays.length > 0 ? (
-                                   <ul className="space-y-2">
-                                       {monthlyImportantDays.map(f => {
-                                           const iconElement = categoryIcons[f.type] as React.ReactElement;
-                                           return (
-                                             <li key={f.name} className="flex items-center gap-3 text-sm">
-                                                 {iconElement}
-                                                 <span>{format(parseISO(f.date), 'd MMM')}: {f.name}</span>
-                                             </li>
-                                           )
-                                       })}
-                                   </ul>
-                               ) : (
-                                   <p className="text-sm text-muted-foreground text-center flex items-center justify-center h-full">No important days this month.</p>
-                               )}
-                           </ScrollArea>
-                        </div>
-                    </div>
+                        </>
+                    )}
                 </div>
             </CardContent>
-            <div className="border-t-2 border-amber-200 bg-amber-100/50 p-3 rounded-b-lg">
-                 <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm font-bold text-amber-950">
-                    {Object.entries(categoryIcons).map(([type, icon]) => {
-                        const iconElement = icon as React.ReactElement;
-                        return (
-                            <div key={type} className="flex items-center gap-2">
-                                {React.cloneElement(iconElement, {className: cn(iconElement.props.className, 'h-8 w-8')})}
-                                <span>{type.replace(' Festival', '').replace(' Holiday', '')}</span>
-                            </div>
-                        )
-                    })}
-                 </div>
-            </div>
         </Card>
     );
   }
@@ -550,7 +564,23 @@ export default function BroadcastPage() {
 
         </div>
       </div>
-      {renderCalendar()}
+      <div className="flex justify-center items-start gap-2 mt-8">
+        <div 
+          onClick={() => handleMonthChange('prev')} 
+          className="cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105 opacity-70 hover:opacity-100 scale-90"
+        >
+          {renderCalendar(subMonths(displayDate, 1), false)}
+        </div>
+        <div className="transition-all duration-300 ease-in-out">
+          {renderCalendar(displayDate, true)}
+        </div>
+        <div 
+          onClick={() => handleMonthChange('next')} 
+          className="cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105 opacity-70 hover:opacity-100 scale-90"
+        >
+          {renderCalendar(addMonths(displayDate, 1), false)}
+        </div>
+      </div>
     </TooltipProvider>
   );
 }
