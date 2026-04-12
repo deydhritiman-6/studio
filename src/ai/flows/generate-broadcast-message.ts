@@ -10,7 +10,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
-export const GenerateBroadcastMessageInputSchema = z.object({
+const GenerateBroadcastMessageInputSchema = z.object({
   broadcastType: z
     .enum(['Product Update', 'Special Discount', 'General Announcement', 'Event Invitation', 'Festival Greeting'])
     .describe('The type of broadcast being sent.'),
@@ -26,7 +26,7 @@ export const GenerateBroadcastMessageInputSchema = z.object({
 });
 export type GenerateBroadcastMessageInput = z.infer<typeof GenerateBroadcastMessageInputSchema>;
 
-export const GenerateBroadcastMessageOutputSchema = z.object({
+const GenerateBroadcastMessageOutputSchema = z.object({
   subjectLine: z.string().optional().describe('The generated subject line, applicable for Email channel.'),
   messageBody: z.string().describe('The main body content of the broadcast message, tailored for the specified channel.'),
 });

@@ -10,12 +10,12 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
-export const GenerateFestivalGreetingInputSchema = z.object({
+const GenerateFestivalGreetingInputSchema = z.object({
   festivalName: z.string().describe('The name of the festival or special occasion.'),
 });
 export type GenerateFestivalGreetingInput = z.infer<typeof GenerateFestivalGreetingInputSchema>;
 
-export const GenerateFestivalGreetingOutputSchema = z.object({
+const GenerateFestivalGreetingOutputSchema = z.object({
   greeting: z.string().describe('The generated greeting message suitable for a broadcast.'),
 });
 export type GenerateFestivalGreetingOutput = z.infer<typeof GenerateFestivalGreetingOutputSchema>;
