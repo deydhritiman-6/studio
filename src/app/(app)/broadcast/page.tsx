@@ -11,7 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Send, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Flame, Moon, Cross, Flag, Plus, Star } from 'lucide-react';
+import { Loader2, Send, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Flame, Moon, Flag, Star } from 'lucide-react';
 import { generateBroadcastAction, generateFestivalMessageAction } from './actions';
 import { type GenerateBroadcastMessageOutput } from '@/ai/flows/generate-broadcast-message';
 import { Input } from '@/components/ui/input';
@@ -73,11 +73,17 @@ const BuddhistJainIcon = () => (
   </svg>
 );
 
+const ChristianIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" className="h-4 w-4">
+        <path fill="currentColor" d="M10.5 10.5V4.5a1.5 1.5 0 0 1 3 0v6h6a1.5 1.5 0 0 1 0 3h-6v6a1.5 1.5 0 0 1-3 0v-6h-6a1.5 1.5 0 0 1 0-3h6Z" />
+    </svg>
+)
+
 
 const categoryIcons: { [key: string]: React.ReactNode } = {
     'Hindu Festival': <Flame className="text-orange-500" />,
     'Muslim Festival': <Moon className="text-green-500" />,
-    'Christian Festival': <Cross className="text-blue-500" />,
+    'Christian Festival': <ChristianIcon className="text-blue-500" />,
     'Sikh Festival': <SikhIcon className="text-yellow-500" />,
     'Buddhist Festival': <BuddhistJainIcon className="text-purple-500" />,
     'Jain Festival': <BuddhistJainIcon className="text-purple-500" />,
@@ -114,7 +120,7 @@ export default function BroadcastPage() {
   const festivalsByDate = useMemo(() => {
     const map = new Map<string, Festival[]>();
     festivalData.forEach(f => {
-      const dateKey = format(parseISO(f.date), 'yyyy-MM-dd');
+      const dateKey = format(parseISO(f.date), 'MM-dd');
       if (!map.has(dateKey)) {
         map.set(dateKey, []);
       }
@@ -125,16 +131,15 @@ export default function BroadcastPage() {
 
   const { monthlyFestivals, monthlyImportantDays } = useMemo(() => {
     const currentMonth = displayDate.getMonth();
-    const currentYear = displayDate.getFullYear();
-
+    
     const festivals = festivalData.filter(f => {
         const festivalDate = parseISO(f.date);
-        return festivalDate.getMonth() === currentMonth && festivalDate.getFullYear() === currentYear;
+        return festivalDate.getMonth() === currentMonth;
     });
     
     return {
-        monthlyFestivals: festivals.filter(f => f.category === 'Festival'),
-        monthlyImportantDays: festivals.filter(f => f.category === 'Important Day'),
+        monthlyFestivals: festivals.filter(f => f.type.includes('Festival')),
+        monthlyImportantDays: festivals.filter(f => !f.type.includes('Festival')),
     };
   }, [displayDate]);
 
@@ -143,33 +148,30 @@ export default function BroadcastPage() {
     const newSelectedDate = new Date(displayDate.getFullYear(), displayDate.getMonth(), day);
     setSelectedDate(newSelectedDate);
     
-    const dateKey = format(newSelectedDate, 'yyyy-MM-dd');
+    const dateKey = format(newSelectedDate, 'MM-dd');
     const festivalsOnDate = festivalsByDate.get(dateKey);
 
     if (festivalsOnDate) {
-      if (festivalsOnDate.length === 1) {
         setViewingFestival(festivalsOnDate[0]);
-      } else {
-        // If there are multiple, just show the first one for now.
-        // A more complex UI could let the user choose.
-        setViewingFestival(festivalsOnDate[0]);
-      }
+    }
+
+    if (broadcastType === 'Festival Greeting' && festivalsOnDate) {
+        generateGreetingForFestival(festivalsOnDate[0]);
     }
   }
   
-  async function generateGreetingForViewingFestival() {
-    if (!viewingFestival) return;
+  async function generateGreetingForFestival(festival: Festival) {
+    if (!festival) return;
     
     setIsGeneratingForFestival(true);
-    const result = await generateFestivalMessageAction({ festivalName: viewingFestival.name });
+    const result = await generateFestivalMessageAction({ festivalName: festival.name });
     setIsGeneratingForFestival(false);
 
     if ('error' in result) {
       toast({ variant: 'destructive', title: 'AI Error', description: result.error });
     } else {
-      form.setValue('broadcastType', 'Festival Greeting');
       form.setValue('messageDetails', result.greeting);
-      toast({ title: 'AI Suggestion', description: `Message for ${viewingFestival.name} has been generated!` });
+      toast({ title: 'AI Suggestion', description: `Message for ${festival.name} has been generated!` });
       setViewingFestival(null); // Close the dialog
     }
   }
@@ -219,7 +221,7 @@ export default function BroadcastPage() {
     }
     for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(displayDate.getFullYear(), displayDate.getMonth(), day);
-        const dateKey = format(date, 'yyyy-MM-dd');
+        const dateKey = format(date, 'MM-dd');
         const festivals = festivalsByDate.get(dateKey);
         const isSun = getDay(date) === 0;
 
@@ -227,7 +229,7 @@ export default function BroadcastPage() {
              <div 
                 onClick={() => handleDateClick(day)}
                 className={cn(
-                    "p-1 text-center border-r border-b border-amber-200 relative cursor-pointer hover:bg-amber-100",
+                    "p-1 text-center border-r border-b border-amber-200 relative cursor-pointer hover:bg-amber-100 h-16 flex items-center justify-center",
                     isSun && "text-red-600",
                     isToday(date) && "bg-rose-200",
                     isSameDay(date, selectedDate) && "bg-amber-300",
@@ -295,7 +297,7 @@ export default function BroadcastPage() {
                        <div className="grid grid-cols-7 text-center font-bold text-amber-800">
                            {weekdays.map(day => <div key={day} className="py-2 border-b-2 border-r border-amber-200">{day}</div>)}
                        </div>
-                       <div className="grid grid-cols-7 h-[28rem]">
+                       <div className="grid grid-cols-7">
                            {days}
                        </div>
                     </div>
@@ -328,7 +330,7 @@ export default function BroadcastPage() {
                 </div>
             </CardContent>
             <div className="border-t-2 border-amber-200 bg-amber-100/50 p-3 rounded-b-lg">
-                 <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm font-semibold text-amber-900">
+                 <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm font-bold text-amber-900">
                     {Object.entries(categoryIcons).map(([type, icon]) => (
                         <div key={type} className="flex items-center gap-2">
                             {React.cloneElement(icon as React.ReactElement, {className: 'h-4 w-4'})}
@@ -360,7 +362,7 @@ export default function BroadcastPage() {
             </div>
             <DialogFooter>
                <Button variant="outline" onClick={() => setViewingFestival(null)}>Close</Button>
-               <Button onClick={generateGreetingForViewingFestival} disabled={isGeneratingForFestival}>
+               <Button onClick={() => generateGreetingForFestival(viewingFestival)} disabled={isGeneratingForFestival}>
                  {isGeneratingForFestival ? <Loader2 className="animate-spin" /> : 'Generate Greeting'}
                </Button>
             </DialogFooter>
