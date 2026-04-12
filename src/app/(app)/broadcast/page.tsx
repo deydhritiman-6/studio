@@ -46,7 +46,6 @@ type Festival = {
 
 const festivalData: Festival[] = festivalJsonData.festivals;
 
-
 const broadcastFormSchema = z.object({
   broadcastType: z
     .enum(['Product Update', 'Special Discount', 'General Announcement', 'Event Invitation', 'Festival Greeting']),
@@ -63,19 +62,19 @@ const broadcastFormSchema = z.object({
 // --- Custom Icons ---
 
 const SikhIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 256 256" {...props} className={cn("h-5 w-5", props.className)}>
+  <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 256 256" {...props} className={cn("h-6 w-6", props.className)}>
     <path fill="currentColor" d="M224 56a8 8 0 0 1-8 8h-46.9a88.1 88.1 0 0 1-138.2 0H8a8 8 0 0 1 0-16h208a8 8 0 0 1 8 8M71.42 80h113.16a72.11 72.11 0 0 0-113.16 0M120 120.47V216a8 8 0 0 0 16 0V120.47a40 40 0 1 0-16 0m0 64a24 24 0 1 1 24-24a24 24 0 0 1-24 24"/>
   </svg>
 );
 
 const BuddhistJainIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...props} className={cn("h-5 w-5", props.className)}>
+  <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...props} className={cn("h-6 w-6", props.className)}>
     <path fill="currentColor" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2m0 18a8 8 0 1 1 8-8a8 8 0 0 1-8 8m4-7h-3v-3a1 1 0 0 0-2 0v3H8a1 1 0 0 0 0 2h3v3a1 1 0 0 0 2 0v-3h3a1 1 0 0 0 0-2"/>
   </svg>
 );
 
 const ChristianIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...props} className={cn("h-5 w-5", props.className)}>
+    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...props} className={cn("h-6 w-6", props.className)}>
         <path fill="currentColor" d="M10.5 10.5V4.5a1.5 1.5 0 0 1 3 0v6h6a1.5 1.5 0 0 1 0 3h-6v6a1.5 1.5 0 0 1-3 0v-6h-6a1.5 1.5 0 0 1 0-3h6Z" />
     </svg>
 )
@@ -118,9 +117,10 @@ export default function BroadcastPage() {
   const broadcastType = form.watch('broadcastType');
   const channel = form.watch('channel');
 
- const festivalsByDate = useMemo(() => {
+  const festivalsByDate = useMemo(() => {
     const map = new Map<string, Festival[]>();
     festivalData.forEach(f => {
+      // Use a year-agnostic key
       const dateKey = format(parseISO(f.date), 'MM-dd');
       if (!map.has(dateKey)) {
         map.set(dateKey, []);
@@ -131,19 +131,22 @@ export default function BroadcastPage() {
   }, []);
 
   const { monthlyFestivals, monthlyImportantDays } = useMemo(() => {
-    const currentYear = displayDate.getFullYear();
     const currentMonth = displayDate.getMonth();
     
-    const festivals = festivalData.filter(f => {
-        const festivalDate = parseISO(f.date);
-        return festivalDate.getFullYear() === currentYear && festivalDate.getMonth() === currentMonth;
+    const festivals: Festival[] = [];
+    festivalsByDate.forEach((dayFestivals) => {
+        dayFestivals.forEach(f => {
+            if (parseISO(f.date).getMonth() === currentMonth) {
+                festivals.push(f);
+            }
+        });
     });
     
     return {
         monthlyFestivals: festivals.filter(f => f.type.includes('Festival')),
         monthlyImportantDays: festivals.filter(f => !f.type.includes('Festival')),
     };
-  }, [displayDate]);
+  }, [displayDate, festivalsByDate]);
 
 
   async function handleDateClick(day: number) {
@@ -263,7 +266,7 @@ export default function BroadcastPage() {
                                 const iconElement = categoryIcons[f.type] as React.ReactElement;
                                 return (
                                    <li key={f.name} className="flex items-center gap-2">
-                                         {iconElement}
+                                         {React.cloneElement(iconElement, { className: cn(iconElement.props.className, 'h-6 w-6')})}
                                          <span>{f.name}</span>
                                    </li>
                                 )
@@ -297,13 +300,13 @@ export default function BroadcastPage() {
                     <div className="border border-amber-200 rounded-lg p-3 bg-white/50">
                        <div className="flex items-center justify-between mb-4">
                            <Button variant="ghost" size="icon" onClick={() => setDisplayDate(subMonths(displayDate, 1))} className="hover:bg-amber-100">
-                               <ChevronLeft className="h-12 w-12 text-stone-900" strokeWidth={2.5} />
+                               <ChevronLeft className="h-14 w-14 text-amber-500" strokeWidth={3} />
                            </Button>
-                           <h2 className="text-3xl font-bold font-headline text-red-700 uppercase tracking-widest">
+                           <h2 className="text-3xl font-bold font-headline text-orange-600 uppercase tracking-widest">
                                {format(displayDate, 'MMMM yyyy')}
                            </h2>
                            <Button variant="ghost" size="icon" onClick={() => setDisplayDate(addMonths(displayDate, 1))} className="hover:bg-amber-100">
-                               <ChevronRight className="h-12 w-12 text-stone-900" strokeWidth={2.5} />
+                               <ChevronRight className="h-14 w-14 text-amber-500" strokeWidth={3} />
                            </Button>
                        </div>
                        <div className="grid grid-cols-7 text-center font-bold">
