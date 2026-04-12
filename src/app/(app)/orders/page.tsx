@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -44,9 +44,32 @@ const getStatusBadgeClassName = (status: Order['deliveryStatus']) => {
 
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<Order[]>(initialOrders);
+  const [orders, setOrders] = useState<Order[]>(() => {
+    if (typeof window === 'undefined') {
+      return initialOrders;
+    }
+    try {
+      const savedOrders = localStorage.getItem('roseberry-orders');
+      return savedOrders ? JSON.parse(savedOrders) : initialOrders;
+    } catch (error) {
+      console.error("Failed to read orders from localStorage", error);
+      return initialOrders;
+    }
+  });
+
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('roseberry-orders', JSON.stringify(orders));
+      } catch (error) {
+        console.error("Failed to save orders to localStorage", error);
+      }
+    }
+  }, [orders]);
+
 
   const allStatuses: Order['deliveryStatus'][] = ['Pending', 'Confirmed', 'Preparing', 'Packed', 'Shipped', 'Delivered'];
 
