@@ -246,7 +246,7 @@ export default function BroadcastPage() {
                       const iconElement = categoryIcons[f.type] as React.ReactElement;
                       return (
                         <div key={`${f.name}-${i}`}>
-                            {React.cloneElement(iconElement, { className: cn(iconElement.props.className, 'h-6 w-6 text-stone-800')})}
+                            {React.cloneElement(iconElement, { className: cn(iconElement.props.className, 'h-6 w-6')})}
                         </div>
                       )
                     })}
