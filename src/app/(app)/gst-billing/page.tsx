@@ -199,68 +199,95 @@ export default function GstBillingPage() {
       <html>
         <head>
           <title>Invoice - ${generatedInvoice.invoiceNumber}</title>
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+          <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
           <style>
-            body { font-family: sans-serif; margin: 20px; }
+            body { font-family: 'PT Sans', sans-serif; color: #333; background-color: #fff; margin: 0; padding: 20px; -webkit-print-color-adjust: exact; }
             .invoice-box { max-width: 800px; margin: auto; padding: 30px; border: 1px solid #eee; box-shadow: 0 0 10px rgba(0, 0, 0, .15); font-size: 16px; line-height: 24px; }
-            .invoice-box table { width: 100%; line-height: inherit; text-align: left; border-collapse: collapse; }
-            .invoice-box table td { padding: 5px; vertical-align: top; }
-            .invoice-box table tr.top table td { padding-bottom: 20px; }
-            .invoice-box table tr.information table td { padding-bottom: 40px; }
-            .invoice-box table tr.heading td { background: #eee; border-bottom: 1px solid #ddd; font-weight: bold; }
-            .invoice-box table tr.item td { border-bottom: 1px solid #eee; }
-            .invoice-box table tr.total td:last-child { font-weight: bold; }
+            h1, h2, h3, h4 { font-family: 'Playfair Display', serif; }
+            .header { display: flex; justify-content: space-between; align-items: flex-start; }
+            .company-name { font-size: 2em; font-weight: bold; color: #000; font-family: 'Playfair Display', serif; }
+            .invoice-title { font-size: 2.5em; font-weight: bold; color: #888; text-transform: uppercase; }
+            .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; margin-bottom: 50px; }
+            .details-box { line-height: 1.6; }
+            .details-box strong { font-weight: bold; color: #000; }
             .text-right { text-align: right; }
+            table.items-table { width: 100%; border-collapse: collapse; }
+            table.items-table thead th { background-color: #f2f2f2; border-bottom: 2px solid #ddd; padding: 12px; text-align: left; font-weight: bold; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+            table.items-table tbody td { padding: 12px; border-bottom: 1px solid #eee; }
+            .totals { margin-top: 30px; width: 50%; margin-left: 50%; }
+            .totals table { width: 100%; }
+            .totals table td { padding: 10px; }
+            .grand-total { font-weight: bold; font-size: 1.3em; border-top: 2px solid #333; padding-top: 10px !important; }
+            .grand-total-row td { border-bottom: 2px solid #333; padding-bottom: 10px !important; }
+            .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 20px; }
           </style>
         </head>
         <body>
           <div class="invoice-box">
-            <table>
-              <tr class="top">
-                <td colspan="4">
-                  <table>
-                    <tr>
-                      <td class="title">
-                        <h2>${generatedInvoice.companyName}</h2>
-                        ${generatedInvoice.companyAddress.replace(/\n/g, '<br>')}<br>
-                        GSTIN: ${generatedInvoice.companyGst}
-                      </td>
-                      <td class="text-right">
-                        <b>Invoice #: ${generatedInvoice.invoiceNumber}</b><br>
-                        Created: ${generatedInvoice.invoiceDate}
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-              <tr class="information">
-                <td colspan="4">
-                  <table>
-                    <tr>
-                      <td>
-                        <b>Bill To:</b><br>
+            <div class="header">
+                <div>
+                    <div class="company-name">${generatedInvoice.companyName}</div>
+                </div>
+                <div class="text-right">
+                    <div class="invoice-title">Invoice</div>
+                    <div><strong>Invoice #:</strong> ${generatedInvoice.invoiceNumber}</div>
+                    <div><strong>Date:</strong> ${generatedInvoice.invoiceDate}</div>
+                </div>
+            </div>
+            
+            <hr style="border: 1px solid #333; margin: 20px 0;" />
+
+            <div class="details-grid">
+                <div class="details-box">
+                    <strong>From:</strong><br>
+                    ${generatedInvoice.companyName}<br>
+                    ${generatedInvoice.companyAddress.replace(/\n/g, '<br>')}<br>
+                    <strong>GSTIN:</strong> ${generatedInvoice.companyGst}
+                </div>
+                 <div class="details-box text-right">
+                    <strong>Bill To:</strong><br>
+                    ${gstForm.getValues('customerName')}<br>
+                    ${gstForm.getValues('customerBillingAddress').replace(/\n/g, '<br>')}
+                    ${gstForm.getValues('customerGst') ? `<br><strong>GSTIN:</strong> ${gstForm.getValues('customerGst')}` : ''}
+                </div>
+                 ${!gstForm.getValues('isShippingSameAsBilling') && gstForm.getValues('customerShippingAddress') ?
+                    `<div class="details-box"></div><div class="details-box text-right" style="margin-top: 20px;">
+                        <strong>Ship To:</strong><br>
                         ${gstForm.getValues('customerName')}<br>
-                        ${gstForm.getValues('customerBillingAddress').replace(/\n/g, '<br>')}
-                        ${gstForm.getValues('customerGst') ? `<br>GSTIN: ${gstForm.getValues('customerGst')}` : ''}
-                      </td>
-                      <td class="text-right">
-                        ${!gstForm.getValues('isShippingSameAsBilling') && gstForm.getValues('customerShippingAddress') ?
-                            `<b>Ship To:</b><br>
-                             ${gstForm.getValues('customerName')}<br>
-                             ${gstForm.getValues('customerShippingAddress')?.replace(/\n/g, '<br>') || ''}`
-                            : ''
-                        }
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-              <tr class="heading"><td>Item</td><td class="text-right">Price</td><td class="text-right">Qty</td><td class="text-right">Total</td></tr>
-              ${generatedInvoice.items.map(item => `<tr class="item"><td>${item.productName}</td><td class="text-right">₹${item.pricePerUnit.toFixed(2)}</td><td class="text-right">${item.quantity}</td><td class="text-right">₹${item.total.toFixed(2)}</td></tr>`).join('')}
-              <tr class="total"><td colspan="3" class="text-right">Subtotal</td><td class="text-right">₹${generatedInvoice.subtotal.toFixed(2)}</td></tr>
-              <tr class="total"><td colspan="3" class="text-right">CGST (${(gstForm.getValues('gstRate') / 2).toFixed(1)}%)</td><td class="text-right">₹${generatedInvoice.cgst.toFixed(2)}</td></tr>
-              <tr class="total"><td colspan="3" class="text-right">SGST (${(gstForm.getValues('gstRate') / 2).toFixed(1)}%)</td><td class="text-right">₹${generatedInvoice.sgst.toFixed(2)}</td></tr>
-              <tr class="total"><td colspan="3" class="text-right"><b>Grand Total</b></td><td class="text-right"><b>₹${generatedInvoice.grandTotal.toFixed(2)}</b></td></tr>
+                        ${gstForm.getValues('customerShippingAddress')?.replace(/\n/g, '<br>') || ''}
+                    </div>`
+                    : ''
+                 }
+            </div>
+
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th class="text-right">Price</th>
+                  <th class="text-right">Qty</th>
+                  <th class="text-right">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${generatedInvoice.items.map(item => `<tr><td>${item.productName}</td><td class="text-right">₹${item.pricePerUnit.toFixed(2)}</td><td class="text-right">${item.quantity}</td><td class="text-right">₹${item.total.toFixed(2)}</td></tr>`).join('')}
+              </tbody>
             </table>
+
+            <div class="totals">
+              <table>
+                <tr><td>Subtotal</td><td class="text-right">₹${generatedInvoice.subtotal.toFixed(2)}</td></tr>
+                <tr><td>CGST (${(gstForm.getValues('gstRate') / 2).toFixed(1)}%)</td><td class="text-right">₹${generatedInvoice.cgst.toFixed(2)}</td></tr>
+                <tr><td>SGST (${(gstForm.getValues('gstRate') / 2).toFixed(1)}%)</td><td class="text-right">₹${generatedInvoice.sgst.toFixed(2)}</td></tr>
+                <tr class="grand-total-row"><td class="grand-total">Grand Total</td><td class="grand-total text-right">₹${generatedInvoice.grandTotal.toFixed(2)}</td></tr>
+              </table>
+            </div>
+            
+            <div class="footer">
+              Thank you for your business!
+            </div>
           </div>
         </body>
       </html>
