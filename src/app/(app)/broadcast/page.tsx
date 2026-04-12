@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -20,6 +19,20 @@ import { Label } from '@/components/ui/label';
 import festivalJsonData from '@/lib/indian-festivals.json';
 import { format, parseISO, startOfMonth, getDaysInMonth, getDay, addMonths, subMonths, isSameDay, isToday } from 'date-fns';
 import { cn } from '@/lib/utils';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 
 type Festival = {
@@ -78,9 +91,10 @@ export default function BroadcastPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingForFestival, setIsGeneratingForFestival] = useState(false);
   
-  // State for the new calendar
   const [displayDate, setDisplayDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
+
+  const [viewingFestival, setViewingFestival] = useState<Festival | null>(null);
 
   const { toast } = useToast();
 
@@ -132,20 +146,34 @@ export default function BroadcastPage() {
     const dateKey = format(newSelectedDate, 'yyyy-MM-dd');
     const festivalsOnDate = festivalsByDate.get(dateKey);
 
-    if (festivalsOnDate && broadcastType === 'Festival Greeting') {
-      setIsGeneratingForFestival(true);
-      const festivalName = festivalsOnDate[0].name;
-      const result = await generateFestivalMessageAction({ festivalName });
-      setIsGeneratingForFestival(false);
-
-      if ('error' in result) {
-        toast({ variant: 'destructive', title: 'AI Error', description: result.error });
+    if (festivalsOnDate) {
+      if (festivalsOnDate.length === 1) {
+        setViewingFestival(festivalsOnDate[0]);
       } else {
-        form.setValue('messageDetails', result.greeting);
-        toast({ title: 'AI Suggestion', description: `Message for ${festivalName} has been generated!` });
+        // If there are multiple, just show the first one for now.
+        // A more complex UI could let the user choose.
+        setViewingFestival(festivalsOnDate[0]);
       }
     }
   }
+  
+  async function generateGreetingForViewingFestival() {
+    if (!viewingFestival) return;
+    
+    setIsGeneratingForFestival(true);
+    const result = await generateFestivalMessageAction({ festivalName: viewingFestival.name });
+    setIsGeneratingForFestival(false);
+
+    if ('error' in result) {
+      toast({ variant: 'destructive', title: 'AI Error', description: result.error });
+    } else {
+      form.setValue('broadcastType', 'Festival Greeting');
+      form.setValue('messageDetails', result.greeting);
+      toast({ title: 'AI Suggestion', description: `Message for ${viewingFestival.name} has been generated!` });
+      setViewingFestival(null); // Close the dialog
+    }
+  }
+
 
   async function onSubmit(values: z.infer<typeof broadcastFormSchema>) {
     setIsLoading(true);
@@ -195,9 +223,8 @@ export default function BroadcastPage() {
         const festivals = festivalsByDate.get(dateKey);
         const isSun = getDay(date) === 0;
 
-        days.push(
-            <div 
-                key={day}
+        const dayCell = (
+             <div 
                 onClick={() => handleDateClick(day)}
                 className={cn(
                     "p-1 text-center border-r border-b border-amber-200 relative cursor-pointer hover:bg-amber-100",
@@ -212,6 +239,28 @@ export default function BroadcastPage() {
                 </div>
             </div>
         );
+
+        if (festivals && festivals.length > 0) {
+            days.push(
+                <Tooltip key={day} delayDuration={100}>
+                    <TooltipTrigger asChild>
+                        {dayCell}
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <ul className="space-y-1 p-2">
+                           {festivals.map(f => (
+                                <li key={f.name} className="flex items-center gap-2">
+                                     {React.cloneElement(categoryIcons[f.type] as React.ReactElement, { className: 'h-4 w-4' })}
+                                     <span>{f.name}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </TooltipContent>
+                </Tooltip>
+            );
+        } else {
+            days.push(React.cloneElement(dayCell, { key: day }));
+        }
     }
     while (days.length % 7 !== 0) {
         days.push(<div key={`empty-end-${days.length}`} className="border-r border-b border-amber-200"></div>);
@@ -279,7 +328,7 @@ export default function BroadcastPage() {
                 </div>
             </CardContent>
             <div className="border-t-2 border-amber-200 bg-amber-100/50 p-3 rounded-b-lg">
-                 <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm font-semibold text-amber-900/80">
+                 <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm font-semibold text-amber-900">
                     {Object.entries(categoryIcons).map(([type, icon]) => (
                         <div key={type} className="flex items-center gap-2">
                             {React.cloneElement(icon as React.ReactElement, {className: 'h-4 w-4'})}
@@ -294,8 +343,31 @@ export default function BroadcastPage() {
 
 
   return (
-    <>
+    <TooltipProvider>
       <PageHeader title="Broadcast System" />
+       <Dialog open={!!viewingFestival} onOpenChange={(open) => !open && setViewingFestival(null)}>
+        {viewingFestival && (
+          <DialogContent>
+            <DialogHeader>
+              <div className="flex items-center gap-3">
+                 {React.cloneElement(categoryIcons[viewingFestival.type] as React.ReactElement, { className: 'h-8 w-8' })}
+                <DialogTitle className="text-2xl font-headline">{viewingFestival.name}</DialogTitle>
+              </div>
+              <DialogDescription className="pt-2">{viewingFestival.type}</DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <p className="text-muted-foreground">{viewingFestival.description}</p>
+            </div>
+            <DialogFooter>
+               <Button variant="outline" onClick={() => setViewingFestival(null)}>Close</Button>
+               <Button onClick={generateGreetingForViewingFestival} disabled={isGeneratingForFestival}>
+                 {isGeneratingForFestival ? <Loader2 className="animate-spin" /> : 'Generate Greeting'}
+               </Button>
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-8">
             <Card>
@@ -434,6 +506,6 @@ export default function BroadcastPage() {
         </div>
       </div>
       {renderCalendar()}
-    </>
+    </TooltipProvider>
   );
 }
