@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Logo } from '@/components/logo';
 
 const itemSchema = z.object({
   productId: z.string().min(1, "Product is required."),
@@ -201,92 +202,221 @@ export default function GstBillingPage() {
           <title>Invoice - ${generatedInvoice.invoiceNumber}</title>
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-          <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
+          <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
           <style>
-            body { font-family: 'PT Sans', sans-serif; color: #333; background-color: #fff; margin: 0; padding: 20px; -webkit-print-color-adjust: exact; }
-            .invoice-box { max-width: 800px; margin: auto; padding: 30px; border: 1px solid #eee; box-shadow: 0 0 10px rgba(0, 0, 0, .15); font-size: 16px; line-height: 24px; }
-            h1, h2, h3, h4 { font-family: 'Playfair Display', serif; }
-            .header { display: flex; justify-content: space-between; align-items: flex-start; }
-            .company-name { font-size: 2em; font-weight: bold; color: #000; font-family: 'Playfair Display', serif; }
-            .invoice-title { font-size: 2.5em; font-weight: bold; color: #888; text-transform: uppercase; }
-            .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; margin-bottom: 50px; }
-            .details-box { line-height: 1.6; }
-            .details-box strong { font-weight: bold; color: #000; }
-            .text-right { text-align: right; }
-            table.items-table { width: 100%; border-collapse: collapse; }
-            table.items-table thead th { background-color: #f2f2f2; border-bottom: 2px solid #ddd; padding: 12px; text-align: left; font-weight: bold; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
-            table.items-table tbody td { padding: 12px; border-bottom: 1px solid #eee; }
-            .totals { margin-top: 30px; width: 50%; margin-left: 50%; }
-            .totals table { width: 100%; }
-            .totals table td { padding: 10px; }
-            .grand-total { font-weight: bold; font-size: 1.3em; border-top: 2px solid #333; padding-top: 10px !important; }
-            .grand-total-row td { border-bottom: 2px solid #333; padding-bottom: 10px !important; }
-            .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 20px; }
+            body { 
+              font-family: 'PT Sans', sans-serif; 
+              color: #333; 
+              background-color: #fff; 
+              margin: 0; 
+              padding: 0;
+              font-size: 10px;
+              -webkit-print-color-adjust: exact; 
+            }
+            .invoice-container { 
+              width: 800px; 
+              margin: 20px auto; 
+              padding: 20px;
+              border: 1px solid #eee;
+            }
+            .invoice-header {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 20px;
+            }
+            .company-logo {
+                font-family: 'Playfair Display', serif;
+                font-size: 24px;
+                font-weight: bold;
+                color: #29526D;
+            }
+            .invoice-header-details {
+              text-align: right;
+            }
+            .invoice-header-details h2 {
+              font-size: 28px;
+              color: #29526D;
+              margin: 0;
+            }
+            .invoice-header-details p {
+              margin: 2px 0;
+            }
+            .party-details {
+              display: grid;
+              grid-template-columns: 1fr 1fr 1fr;
+              gap: 20px;
+              padding: 10px;
+              border-top: 2px solid #29526D;
+              border-bottom: 2px solid #29526D;
+              margin-bottom: 20px;
+              font-size: 11px;
+            }
+            .party-details h4 {
+              font-weight: bold;
+              color: #29526D;
+              margin: 0 0 5px 0;
+            }
+            .party-details p {
+              margin: 0;
+              line-height: 1.4;
+            }
+            .items-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 20px;
+            }
+            .items-table th, .items-table td {
+              border-bottom: 1px solid #ccc;
+              padding: 8px;
+              text-align: right;
+            }
+            .items-table th {
+              background-color: #f2f2f2;
+              font-weight: bold;
+              color: #333;
+            }
+            .items-table th:first-child, .items-table td:first-child {
+              text-align: left;
+            }
+            .items-table .item-name {
+              text-align: left;
+            }
+            .invoice-footer {
+              display: flex;
+              justify-content: space-between;
+              margin-top: 20px;
+            }
+            .notes-and-signature {
+              width: 60%;
+            }
+            .totals-summary {
+              width: 35%;
+              font-size: 11px;
+            }
+            .totals-summary table {
+              width: 100%;
+            }
+            .totals-summary td {
+              padding: 5px;
+            }
+            .totals-summary .label {
+              text-align: right;
+              font-weight: bold;
+            }
+            .totals-summary .value {
+              text-align: right;
+            }
+            .totals-summary .amount-due td {
+              font-weight: bold;
+              font-size: 14px;
+              border-top: 2px solid #333;
+              padding-top: 8px;
+            }
+            .authorized-signatory {
+              margin-top: 40px;
+              border-top: 1px solid #333;
+              padding-top: 5px;
+              width: 150px;
+              text-align: center;
+              font-size: 10px;
+            }
+            .note {
+              font-size: 9px;
+              color: #555;
+              margin-top: 20px;
+            }
           </style>
         </head>
         <body>
-          <div class="invoice-box">
-            <div class="header">
-                <div>
-                    <div class="company-name">${generatedInvoice.companyName}</div>
-                </div>
-                <div class="text-right">
-                    <div class="invoice-title">Invoice</div>
-                    <div><strong>Invoice #:</strong> ${generatedInvoice.invoiceNumber}</div>
-                    <div><strong>Date:</strong> ${generatedInvoice.invoiceDate}</div>
-                </div>
-            </div>
-            
-            <hr style="border: 1px solid #333; margin: 20px 0;" />
+          <div class="invoice-container">
+            <header class="invoice-header">
+              <div>
+                <div class="company-logo">Roseberry Ops</div>
+              </div>
+              <div class="invoice-header-details">
+                <h2>INVOICE</h2>
+                <p><strong>Original for Recipient</strong></p>
+                <p><strong>Invoice No:</strong> ${generatedInvoice.invoiceNumber}</p>
+                <p><strong>Date:</strong> ${new Date(generatedInvoice.invoiceDate).toLocaleDateString('en-GB')}</p>
+              </div>
+            </header>
 
-            <div class="details-grid">
-                <div class="details-box">
-                    <strong>From:</strong><br>
-                    ${generatedInvoice.companyName}<br>
-                    ${generatedInvoice.companyAddress.replace(/\n/g, '<br>')}<br>
-                    <strong>GSTIN:</strong> ${generatedInvoice.companyGst}
-                </div>
-                 <div class="details-box text-right">
-                    <strong>Bill To:</strong><br>
-                    ${gstForm.getValues('customerName')}<br>
-                    ${gstForm.getValues('customerBillingAddress').replace(/\n/g, '<br>')}
-                    ${gstForm.getValues('customerGst') ? `<br><strong>GSTIN:</strong> ${gstForm.getValues('customerGst')}` : ''}
-                </div>
-                 ${!gstForm.getValues('isShippingSameAsBilling') && gstForm.getValues('customerShippingAddress') ?
-                    `<div class="details-box"></div><div class="details-box text-right" style="margin-top: 20px;">
-                        <strong>Ship To:</strong><br>
-                        ${gstForm.getValues('customerName')}<br>
-                        ${gstForm.getValues('customerShippingAddress')?.replace(/\n/g, '<br>') || ''}
-                    </div>`
-                    : ''
-                 }
-            </div>
+            <section class="party-details">
+              <div>
+                <h4>${generatedInvoice.companyName}</h4>
+                <p>${generatedInvoice.companyAddress.replace(/, /g, '<br>')}</p>
+                <p><strong>GSTIN:</strong> ${generatedInvoice.companyGst}</p>
+              </div>
+              <div>
+                <h4>Bill To:</h4>
+                <p><strong>${gstForm.getValues('customerName')}</strong></p>
+                <p>${gstForm.getValues('customerBillingAddress').replace(/\n/g, '<br>')}</p>
+                ${gstForm.getValues('customerGst') ? `<p><strong>GSTIN:</strong> ${gstForm.getValues('customerGst')}</p>` : ''}
+              </div>
+              <div>
+                <h4>Ship To:</h4>
+                 <p><strong>${gstForm.getValues('customerName')}</strong></p>
+                <p>${(gstForm.getValues('isShippingSameAsBilling') ? gstForm.getValues('customerBillingAddress') : gstForm.getValues('customerShippingAddress') || '').replace(/\n/g, '<br>')}</p>
+              </div>
+            </section>
 
             <table class="items-table">
               <thead>
                 <tr>
-                  <th>Item</th>
-                  <th class="text-right">Price</th>
-                  <th class="text-right">Qty</th>
-                  <th class="text-right">Total</th>
+                  <th class="item-name">PRODUCT/SERVICE NAME</th>
+                  <th>HSN/SAC</th>
+                  <th>QTY</th>
+                  <th>UNIT PRICE</th>
+                  <th>AMOUNT</th>
                 </tr>
               </thead>
               <tbody>
-                ${generatedInvoice.items.map(item => `<tr><td>${item.productName}</td><td class="text-right">₹${item.pricePerUnit.toFixed(2)}</td><td class="text-right">${item.quantity}</td><td class="text-right">₹${item.total.toFixed(2)}</td></tr>`).join('')}
+                ${generatedInvoice.items.map(item => `
+                  <tr>
+                    <td class="item-name">${item.productName}</td>
+                    <td>-</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.pricePerUnit.toFixed(2)}</td>
+                    <td>${item.total.toFixed(2)}</td>
+                  </tr>
+                `).join('')}
               </tbody>
             </table>
 
-            <div class="totals">
-              <table>
-                <tr><td>Subtotal</td><td class="text-right">₹${generatedInvoice.subtotal.toFixed(2)}</td></tr>
-                <tr><td>CGST (${(gstForm.getValues('gstRate') / 2).toFixed(1)}%)</td><td class="text-right">₹${generatedInvoice.cgst.toFixed(2)}</td></tr>
-                <tr><td>SGST (${(gstForm.getValues('gstRate') / 2).toFixed(1)}%)</td><td class="text-right">₹${generatedInvoice.sgst.toFixed(2)}</td></tr>
-                <tr class="grand-total-row"><td class="grand-total">Grand Total</td><td class="grand-total text-right">₹${generatedInvoice.grandTotal.toFixed(2)}</td></tr>
-              </table>
-            </div>
-            
-            <div class="footer">
-              Thank you for your business!
+            <div class="invoice-footer">
+              <div class="notes-and-signature">
+                <div class="authorized-signatory">
+                  AUTHORIZED SIGNATORY
+                </div>
+                 <div class="note">
+                  <strong>NOTE:</strong><br>
+                  Please note that all products are fragile and need to be transported with caution.
+                </div>
+              </div>
+              <div class="totals-summary">
+                <table>
+                  <tr>
+                    <td class="label">TOTAL BEFORE TAX:</td>
+                    <td class="value">₹${generatedInvoice.subtotal.toFixed(2)}</td>
+                  </tr>
+                  <tr>
+                    <td class="label">CGST (${(gstForm.getValues('gstRate') / 2).toFixed(1)}%):</td>
+                    <td class="value">₹${generatedInvoice.cgst.toFixed(2)}</td>
+                  </tr>
+                   <tr>
+                    <td class="label">SGST (${(gstForm.getValues('gstRate') / 2).toFixed(1)}%):</td>
+                    <td class="value">₹${generatedInvoice.sgst.toFixed(2)}</td>
+                  </tr>
+                  <tr>
+                    <td class="label">TOTAL TAX AMOUNT:</td>
+                    <td class="value">₹${generatedInvoice.totalGst.toFixed(2)}</td>
+                  </tr>
+                  <tr class="amount-due">
+                    <td class="label">AMOUNT DUE:</td>
+                    <td class="value">₹${generatedInvoice.grandTotal.toFixed(2)}</td>
+                  </tr>
+                </table>
+              </div>
             </div>
           </div>
         </body>
