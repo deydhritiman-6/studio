@@ -232,7 +232,7 @@ export default function BroadcastPage() {
                 onClick={() => handleDateClick(day)}
                 className={cn(
                     "p-2 text-center border-r border-b border-amber-200 relative cursor-pointer hover:bg-amber-100 h-28 flex flex-col items-center justify-start",
-                    isSun && "text-red-600",
+                    isSun ? "text-red-700" : "text-green-800",
                     isToday(date) && "bg-rose-200",
                     isSameDay(date, selectedDate) && "bg-amber-300",
                 )}
@@ -306,8 +306,8 @@ export default function BroadcastPage() {
                                <ChevronRight className="h-12 w-12 text-stone-900" strokeWidth={2.5} />
                            </Button>
                        </div>
-                       <div className="grid grid-cols-7 text-center font-bold text-amber-800">
-                           {weekdays.map(day => <div key={day} className="py-2 border-b-2 border-r border-amber-200">{day}</div>)}
+                       <div className="grid grid-cols-7 text-center font-bold">
+                           {weekdays.map(day => <div key={day} className={cn("py-2 border-b-2 border-r border-amber-200", day === 'SUN' ? "text-red-700" : "text-green-800")}>{day}</div>)}
                        </div>
                        <div className="grid grid-cols-7">
                            {days}
