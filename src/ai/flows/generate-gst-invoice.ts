@@ -12,7 +12,8 @@ import { z } from 'genkit';
 
 const GenerateGstInvoiceInputSchema = z.object({
   customerName: z.string().describe("The full name of the customer."),
-  customerAddress: z.string().describe("The full address of the customer."),
+  customerBillingAddress: z.string().describe("The billing address of the customer."),
+  customerShippingAddress: z.string().optional().describe("The shipping address of the customer, if different from billing."),
   customerGst: z.string().optional().describe("The customer's GSTIN, if available."),
   items: z.array(z.object({
     productName: z.string().describe("Name of the product."),
@@ -58,7 +59,8 @@ Your task is to generate a complete and accurate GST invoice based on the provid
 
 **Invoice Details:**
 - Customer Name: {{{customerName}}}
-- Customer Address: {{{customerAddress}}}
+- Billing Address: {{{customerBillingAddress}}}
+{{#if customerShippingAddress}}- Shipping Address: {{{customerShippingAddress}}}{{/if}}
 {{#if customerGst}}- Customer GSTIN: {{{customerGst}}}{{/if}}
 
 **Items:**

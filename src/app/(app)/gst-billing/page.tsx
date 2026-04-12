@@ -18,6 +18,7 @@ import { products } from '@/lib/data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const itemSchema = z.object({
   productId: z.string().min(1, "Product is required."),
@@ -27,11 +28,22 @@ const itemSchema = z.object({
 
 const gstBillingFormSchema = z.object({
   customerName: z.string().min(1, 'Customer name is required'),
-  customerAddress: z.string().min(1, 'Customer address is required'),
+  customerBillingAddress: z.string().min(1, 'Billing address is required'),
+  isShippingSameAsBilling: z.boolean().default(true),
+  customerShippingAddress: z.string().optional(),
   customerGst: z.string().optional(),
   items: z.array(itemSchema).min(1, "At least one item is required."),
   gstRate: z.coerce.number().min(0, "GST rate cannot be negative.").default(18),
+}).refine(data => {
+    if (!data.isShippingSameAsBilling && !data.customerShippingAddress) {
+        return false;
+    }
+    return true;
+}, {
+    message: "Shipping address is required when different from billing.",
+    path: ["customerShippingAddress"],
 });
+
 
 type GstBillingFormValues = z.infer<typeof gstBillingFormSchema>;
 
@@ -66,7 +78,9 @@ export default function GstBillingPage() {
     resolver: zodResolver(gstBillingFormSchema),
     defaultValues: {
       customerName: '',
-      customerAddress: '',
+      customerBillingAddress: '',
+      customerShippingAddress: '',
+      isShippingSameAsBilling: true,
       customerGst: '',
       items: [{ productId: '', quantity: 1, pricePerUnit: 0 }],
       gstRate: 18,
@@ -77,6 +91,7 @@ export default function GstBillingPage() {
     control: gstForm.control,
     name: 'items',
   });
+  const isShippingSameAsBilling = gstForm.watch('isShippingSameAsBilling');
 
   const cashBillForm = useForm<CashBillFormValues>({
     resolver: zodResolver(cashBillFormSchema),
@@ -97,6 +112,7 @@ export default function GstBillingPage() {
     
     const invoiceInput = {
       ...values,
+      customerShippingAddress: values.isShippingSameAsBilling ? undefined : values.customerShippingAddress,
       items: values.items.map(item => ({
         productName: products.find(p => p.id === item.productId)?.name || 'Unknown Product',
         quantity: item.quantity,
@@ -150,8 +166,15 @@ export default function GstBillingPage() {
 
     message += `*Bill To:*\n`;
     message += `${gstForm.getValues('customerName')}\n`;
-    message += `${gstForm.getValues('customerAddress')}\n`;
-    if (gstForm.getValues('customerGst')) message += `GSTIN: ${gstForm.getValues('customerGst')}\n\n`;
+    message += `${gstForm.getValues('customerBillingAddress')}\n`;
+    if (gstForm.getValues('customerGst')) message += `GSTIN: ${gstForm.getValues('customerGst')}\n`;
+
+     if (!gstForm.getValues('isShippingSameAsBilling') && gstForm.getValues('customerShippingAddress')) {
+        message += `\n*Ship To:*\n`;
+        message += `${gstForm.getValues('customerName')}\n`;
+        message += `${gstForm.getValues('customerShippingAddress')}\n`;
+    }
+    message += '\n';
 
     message += `*Items:*\n`;
     generatedInvoice.items.forEach(item => {
@@ -196,9 +219,13 @@ export default function GstBillingPage() {
                 <td colspan="4">
                   <table>
                     <tr>
-                      <td class="title"><h2>${generatedInvoice.companyName}</h2></td>
+                      <td class="title">
+                        <h2>${generatedInvoice.companyName}</h2>
+                        ${generatedInvoice.companyAddress.replace(/\n/g, '<br>')}<br>
+                        GSTIN: ${generatedInvoice.companyGst}
+                      </td>
                       <td class="text-right">
-                        Invoice #: ${generatedInvoice.invoiceNumber}<br>
+                        <b>Invoice #: ${generatedInvoice.invoiceNumber}</b><br>
                         Created: ${generatedInvoice.invoiceDate}
                       </td>
                     </tr>
@@ -210,14 +237,18 @@ export default function GstBillingPage() {
                   <table>
                     <tr>
                       <td>
-                        ${generatedInvoice.companyAddress.replace(/\n/g, '<br>')}<br>
-                        GSTIN: ${generatedInvoice.companyGst}
-                      </td>
-                      <td class="text-right">
                         <b>Bill To:</b><br>
                         ${gstForm.getValues('customerName')}<br>
-                        ${gstForm.getValues('customerAddress').replace(/\n/g, '<br>')}
+                        ${gstForm.getValues('customerBillingAddress').replace(/\n/g, '<br>')}
                         ${gstForm.getValues('customerGst') ? `<br>GSTIN: ${gstForm.getValues('customerGst')}` : ''}
+                      </td>
+                      <td class="text-right">
+                        ${!gstForm.getValues('isShippingSameAsBilling') && gstForm.getValues('customerShippingAddress') ?
+                            `<b>Ship To:</b><br>
+                             ${gstForm.getValues('customerName')}<br>
+                             ${gstForm.getValues('customerShippingAddress')?.replace(/\n/g, '<br>') || ''}`
+                            : ''
+                        }
                       </td>
                     </tr>
                   </table>
@@ -308,13 +339,41 @@ export default function GstBillingPage() {
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField control={gstForm.control} name="customerAddress" render={({ field }) => (
+                    <FormField control={gstForm.control} name="customerBillingAddress" render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Customer Address</FormLabel>
+                        <FormLabel>Billing Address</FormLabel>
                         <FormControl><Textarea placeholder="e.g., 123 Main St, Bengaluru, KA" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
+                     <FormField
+                      control={gstForm.control}
+                      name="isShippingSameAsBilling"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel>
+                              Shipping address is the same as billing address
+                            </FormLabel>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                    {!isShippingSameAsBilling && (
+                       <FormField control={gstForm.control} name="customerShippingAddress" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Shipping Address</FormLabel>
+                          <FormControl><Textarea placeholder="e.g., 456 Park Ave, Mumbai, MH" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                    )}
                     <FormField control={gstForm.control} name="customerGst" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Customer GSTIN (Optional)</FormLabel>
