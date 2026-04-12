@@ -49,6 +49,30 @@ export default function ProductionPage() {
     });
   };
 
+  const handleStartBatch = () => {
+    let updatedCount = 0;
+    const updatedOrders = orders.map(order => {
+      if (order.deliveryStatus === 'Confirmed') {
+        updatedCount++;
+        return { ...order, deliveryStatus: 'Preparing' };
+      }
+      return order;
+    });
+
+    if (updatedCount > 0) {
+      setOrders(updatedOrders);
+      toast({
+        title: 'Production Batch Started',
+        description: `${updatedCount} confirmed orders have been moved to 'Preparing'.`,
+      });
+    } else {
+      toast({
+        title: 'No Orders to Start',
+        description: 'There are no "Confirmed" orders to move into production.',
+      });
+    }
+  };
+
   return (
     <>
        <Dialog open={!!viewingOrder} onOpenChange={(open) => !open && setViewingOrder(null)}>
@@ -105,7 +129,7 @@ export default function ProductionPage() {
       </Dialog>
 
       <PageHeader title="Production Schedule" actions={
-        <Button>
+        <Button onClick={handleStartBatch}>
           <PlayCircle className="mr-2 h-4 w-4" />
           Start Daily Production Batch
         </Button>
