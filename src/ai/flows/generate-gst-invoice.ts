@@ -10,7 +10,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
-export const GenerateGstInvoiceInputSchema = z.object({
+const GenerateGstInvoiceInputSchema = z.object({
   customerName: z.string().describe("The full name of the customer."),
   customerAddress: z.string().describe("The full address of the customer."),
   customerGst: z.string().optional().describe("The customer's GSTIN, if available."),
@@ -30,7 +30,7 @@ const itemTotalSchema = z.object({
   total: z.number().describe("Total price for this item (quantity * pricePerUnit)."),
 });
 
-export const GenerateGstInvoiceOutputSchema = z.object({
+const GenerateGstInvoiceOutputSchema = z.object({
   invoiceNumber: z.string().describe("A unique invoice number (e.g., INV-YYYYMMDD-HHMMSS)."),
   invoiceDate: z.string().describe("The date of the invoice in YYYY-MM-DD format."),
   subtotal: z.number().describe("The sum of all item totals before tax."),
