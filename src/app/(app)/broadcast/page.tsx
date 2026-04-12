@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Send, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Flame, Moon, Flag, Star } from 'lucide-react';
 import { generateBroadcastAction, generateFestivalMessageAction } from './actions';
-import { type GenerateBroadcastMessageOutput, GenerateBroadcastMessageInputSchema, GenerateBroadcastMessageOutputSchema } from '@/ai/flows/generate-broadcast-message';
+import { type GenerateBroadcastMessageOutput } from '@/ai/flows/generate-broadcast-message';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import festivalJsonData from '@/lib/indian-festivals.json';
@@ -224,7 +224,7 @@ export default function BroadcastPage() {
 
     const days = [];
     for (let i = 0; i < startDayOfWeek; i++) {
-      days.push(<div key={`empty-${i}`} className={isMain ? "border-r border-b border-amber-200" : "border-b"}></div>);
+      days.push(<div key={`empty-${i}`} className={isMain ? "border-r border-b border-blue-600/50" : "border-b"}></div>);
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
@@ -238,7 +238,7 @@ export default function BroadcastPage() {
                 onClick={() => isMain && handleDateClick(day)}
                 className={cn(
                     "text-center relative",
-                    isMain ? "p-2 border-r border-b border-amber-200 h-28 flex flex-col items-center justify-start cursor-pointer hover:bg-amber-100" : "p-1 h-12 flex flex-col items-center justify-start text-xs",
+                    isMain ? "p-2 border-r border-b border-blue-600/50 h-28 flex flex-col items-center justify-start cursor-pointer hover:bg-amber-100" : "p-1 h-12 flex flex-col items-center justify-start text-xs",
                     isSun ? "text-red-700" : "text-green-800",
                     isToday(date) && "bg-rose-200",
                     isSameDay(date, selectedDate) && isMain && "bg-amber-300",
@@ -294,22 +294,22 @@ export default function BroadcastPage() {
         }
     }
     while (days.length % 7 !== 0) {
-        days.push(<div key={`empty-end-${days.length}`} className={isMain ? "border-r border-b border-amber-200" : "border-b"}></div>);
+        days.push(<div key={`empty-end-${days.length}`} className={isMain ? "border-r border-b border-blue-600/50" : "border-b"}></div>);
     }
     if (isMain && days.length < 42) {
        const remaining = 42 - days.length;
        for (let i = 0; i < remaining; i++) {
-        days.push(<div key={`empty-extra-${i}`} className="border-r border-b border-amber-200"></div>);
+        days.push(<div key={`empty-extra-${i}`} className="border-r border-b border-blue-600/50"></div>);
        }
     }
 
     const weekdays = isMain ? ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'] : ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
     return (
-        <Card className={cn("border-amber-200 shadow-lg", isMain ? "bg-amber-50/50" : "bg-amber-50/20")}>
+        <Card className={cn("border-blue-600/50 shadow-lg", isMain ? "bg-amber-50/50" : "bg-amber-50/20")}>
             <CardContent className={isMain ? "p-4 md:p-6" : "p-2"}>
                 <div className="flex flex-col gap-4">
-                    <div className={cn("border border-amber-200 rounded-lg bg-white/50", isMain ? "p-3" : "p-2")}>
+                    <div className={cn("border border-blue-600/50 rounded-lg bg-white/50", isMain ? "p-3" : "p-2")}>
                        <div className="flex items-center justify-between mb-4">
                            {isMain && <Button variant="ghost" size="icon" onClick={() => handleMonthChange('prev')} className="hover:bg-blue-100">
                                <ChevronLeft className="h-16 w-16 text-blue-600" strokeWidth={3} />
@@ -322,7 +322,7 @@ export default function BroadcastPage() {
                            </Button>}
                        </div>
                        <div className="grid grid-cols-7 text-center font-bold">
-                           {weekdays.map(day => <div key={day} className={cn("py-2 border-r border-amber-200", day === 'SUN' || day === 'S' ? "text-red-700" : "text-green-800", isMain ? "" : "text-xs")}>{day}</div>)}
+                           {weekdays.map((day, index) => <div key={`${day}-${index}`} className={cn("py-2 border-r border-blue-600/50", day === 'SUN' || day === 'S' ? "text-red-700" : "text-green-800", isMain ? "" : "text-xs")}>{day}</div>)}
                        </div>
                        <div className="grid grid-cols-7">
                            {days}
@@ -376,7 +376,7 @@ export default function BroadcastPage() {
                                   </ScrollArea>
                                 </div>
                             </div>
-                            <div className="border-t-2 border-amber-200 bg-amber-100/50 p-3 rounded-b-lg">
+                            <div className="border-t-2 border-blue-600/50 bg-amber-100/50 p-3 rounded-b-lg">
                                 <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm font-bold text-amber-950">
                                     {Object.entries(categoryIcons).map(([type, icon]) => {
                                         const iconElement = icon as React.ReactElement;
