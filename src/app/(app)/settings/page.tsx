@@ -111,11 +111,9 @@ export default function SettingsPage() {
                 onValueChange={(value: any) => setTheme(value)}
                 className="grid max-w-md grid-cols-2 gap-8 pt-2"
               >
-                <FormItem>
+                <div>
                   <Label className="[&:has([data-state=checked])>div]:border-primary">
-                    <FormControl>
-                      <RadioGroupItem value="light" className="sr-only" />
-                    </FormControl>
+                    <RadioGroupItem value="light" className="sr-only" />
                     <div className="items-center rounded-md border-2 border-muted p-1 hover:border-accent">
                       <div className="space-y-2 rounded-sm bg-[#ecedef] p-2">
                         <div className="space-y-2 rounded-md bg-white p-2 shadow-sm">
@@ -136,12 +134,10 @@ export default function SettingsPage() {
                       Light
                     </span>
                   </Label>
-                </FormItem>
-                <FormItem>
+                </div>
+                <div>
                   <Label className="[&:has([data-state=checked])>div]:border-primary">
-                    <FormControl>
-                      <RadioGroupItem value="dark" className="sr-only" />
-                    </FormControl>
+                    <RadioGroupItem value="dark" className="sr-only" />
                     <div className="items-center rounded-md border-2 border-muted bg-popover p-1 hover:border-accent">
                       <div className="space-y-2 rounded-sm bg-slate-950 p-2">
                         <div className="space-y-2 rounded-md bg-slate-800 p-2 shadow-sm">
@@ -162,12 +158,10 @@ export default function SettingsPage() {
                       Dark
                     </span>
                   </Label>
-                </FormItem>
-                <FormItem>
+                </div>
+                <div>
                   <Label className="[&:has([data-state=checked])>div]:border-primary">
-                    <FormControl>
-                      <RadioGroupItem value="rose" className="sr-only" />
-                    </FormControl>
+                    <RadioGroupItem value="rose" className="sr-only" />
                     <div className="items-center rounded-md border-2 border-muted bg-popover p-1 hover:border-accent">
                       <div className="space-y-2 rounded-sm bg-[hsl(350,25%,12%)] p-2">
                         <div className="space-y-2 rounded-md bg-[hsl(350,25%,17%)] p-2 shadow-sm">
@@ -188,12 +182,10 @@ export default function SettingsPage() {
                       Rose
                     </span>
                   </Label>
-                </FormItem>
-                <FormItem>
+                </div>
+                <div>
                   <Label className="[&:has([data-state=checked])>div]:border-primary">
-                    <FormControl>
-                      <RadioGroupItem value="ocean" className="sr-only" />
-                    </FormControl>
+                    <RadioGroupItem value="ocean" className="sr-only" />
                     <div className="items-center rounded-md border-2 border-muted bg-popover p-1 hover:border-accent">
                       <div className="space-y-2 rounded-sm bg-[hsl(210,25%,10%)] p-2">
                         <div className="space-y-2 rounded-md bg-[hsl(210,25%,14%)] p-2 shadow-sm">
@@ -214,7 +206,7 @@ export default function SettingsPage() {
                       Ocean
                     </span>
                   </Label>
-                </FormItem>
+                </div>
               </RadioGroup>
             </CardContent>
           </Card>
