@@ -7,3 +7,4 @@ import '@/ai/flows/recommend-chocolate.ts';
 import '@/ai/flows/analyze-vip-customer-behavior.ts';
 import '@/ai/flows/generate-broadcast-message.ts';
 import '@/ai/flows/generate-festival-greeting.ts';
+import '@/ai/flows/generate-gst-invoice.ts';

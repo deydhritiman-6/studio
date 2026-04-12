@@ -64,6 +64,7 @@ const navItems = [
   { href: '/products', icon: Package, label: 'Products' },
   { href: '/inventory', icon: Boxes, label: 'Inventory' },
   { href: '/invoices', icon: FileText, label: 'Invoices' },
+  { href: '/gst-billing', icon: FileText, label: 'GST Billing' },
   { href: '/distributors', icon: Truck, label: 'Distributors' },
   { href: '/broadcast', icon: Radio, label: 'Broadcasts' },
   {
