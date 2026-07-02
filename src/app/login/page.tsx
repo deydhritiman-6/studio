@@ -8,10 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ShieldAlert } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useAuth } from '@/firebase';
 import { signInAnonymously } from 'firebase/auth';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const userCredentials = {
   'Super Admin': {
@@ -30,23 +31,21 @@ export default function LoginPage() {
   const auth = useAuth();
   const [role, setRole] = useState<'Super Admin' | 'Staff'>('Super Admin');
   const [isLoading, setIsLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthError(null);
+
     if (!auth) {
-      toast({
-        variant: 'destructive',
-        title: 'Configuration Error',
-        description: 'Firebase Authentication is not initialized. Check your Firebase config.',
-      });
+      setAuthError('Firebase Authentication is not initialized. Please verify your configuration in src/firebase/config.ts.');
       return;
     }
     
     setIsLoading(true);
 
     try {
-      // For the prototype, we sign in anonymously to ensure Firestore security rules 
-      // (which usually check if auth != null) are satisfied.
+      // Sign in anonymously to satisfy Firestore security rules (auth != null)
       await signInAnonymously(auth);
       
       const userToLogin = userCredentials[role];
@@ -54,24 +53,28 @@ export default function LoginPage() {
       
       toast({
         title: 'Access Granted',
-        description: `Welcome back to the Roseberry Ops command center.`,
+        description: `Welcome to the Roseberry Ops command center.`,
       });
       
       router.push('/dashboard');
     } catch (error: any) {
       console.error('Login error:', error);
       
-      let errorMessage = 'Unable to establish a secure connection to the database.';
+      let message = 'An unexpected error occurred during authentication.';
+      
       if (error.code === 'auth/api-key-not-valid') {
-        errorMessage = 'The Firebase API key is invalid. Please update src/firebase/config.ts.';
+        message = 'The Firebase API key is invalid. Please update the apiKey in src/firebase/config.ts with the value from your Firebase Console.';
       } else if (error.code === 'auth/operation-not-allowed') {
-        errorMessage = 'Anonymous sign-in is not enabled in your Firebase project settings.';
+        message = 'Anonymous sign-in is disabled. Please enable it in the Firebase Console (Authentication > Sign-in method).';
+      } else if (error.code === 'auth/network-request-failed') {
+        message = 'Network error. Please check your internet connection.';
       }
 
+      setAuthError(message);
       toast({
         variant: 'destructive',
         title: 'Authentication Failed',
-        description: errorMessage,
+        description: error.code || 'Secure connection failed.',
       });
     } finally {
       setIsLoading(false);
@@ -89,6 +92,16 @@ export default function LoginPage() {
           <CardDescription className="text-stone-400 font-light">Select your role to access the Roseberry ecosystem.</CardDescription>
         </CardHeader>
         <CardContent className="p-8 pt-2">
+          {authError && (
+            <Alert variant="destructive" className="mb-6 rounded-xl border-2">
+              <ShieldAlert className="h-4 w-4" />
+              <AlertTitle className="text-xs font-bold uppercase tracking-wider">Connection Blocked</AlertTitle>
+              <AlertDescription className="text-xs mt-1 leading-relaxed">
+                {authError}
+              </AlertDescription>
+            </Alert>
+          )}
+
           <form onSubmit={handleLogin} className="space-y-8">
             <RadioGroup value={role} onValueChange={(value: any) => setRole(value)} className="grid grid-cols-2 gap-4">
               <div>
@@ -119,8 +132,8 @@ export default function LoginPage() {
                   type="email"
                   required
                   value={userCredentials[role].email}
-                  disabled
-                  className="bg-stone-50 border-stone-100 h-12 rounded-xl"
+                  readOnly
+                  className="bg-stone-50 border-stone-100 h-12 rounded-xl cursor-not-allowed"
                 />
               </div>
               <div className="space-y-1.5">
@@ -129,13 +142,17 @@ export default function LoginPage() {
                   id="password"
                   type="password"
                   required
-                  value="password"
-                  disabled
-                  className="bg-stone-50 border-stone-100 h-12 rounded-xl"
+                  value="••••••••"
+                  readOnly
+                  className="bg-stone-50 border-stone-100 h-12 rounded-xl cursor-not-allowed"
                 />
               </div>
             </div>
-            <Button type="submit" className="w-full h-14 text-lg font-bold rounded-2xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95" disabled={isLoading}>
+            <Button 
+              type="submit" 
+              className="w-full h-14 text-lg font-bold rounded-2xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95" 
+              disabled={isLoading}
+            >
               {isLoading ? <Loader2 className="animate-spin" /> : `Enter Workspace`}
             </Button>
           </form>
