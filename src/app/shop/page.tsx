@@ -1,32 +1,22 @@
+
 'use client';
 
-import { useState, useEffect } from 'react';
-import { products as initialProducts } from '@/lib/data';
+import { useState, useEffect, useMemo } from 'react';
 import type { Product } from '@/lib/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
-import { ShoppingCart, Eye, Sparkles } from 'lucide-react';
+import { ShoppingCart, Eye, Sparkles, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection } from 'firebase/firestore';
 
 export default function ShopPage() {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const firestore = useFirestore();
+  const productsQuery = useMemo(() => firestore ? collection(firestore, 'products') : null, [firestore]);
+  const { data: products, loading } = useCollection<Product>(productsQuery);
   const { toast } = useToast();
-
-  useEffect(() => {
-    const saved = localStorage.getItem('roseberry-products');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setProducts(parsed);
-        }
-      } catch (e) {
-        console.error("Failed to parse products from localStorage", e);
-      }
-    }
-  }, []);
 
   const addToCart = (product: Product) => {
     const cart = JSON.parse(localStorage.getItem('roseberry-cart') || '[]');
@@ -48,6 +38,14 @@ export default function ShopPage() {
     window.dispatchEvent(new Event('cart-updated'));
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-32">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-16 animate-in fade-in duration-1000">
       <div className="text-center space-y-6 py-12">
@@ -60,11 +58,11 @@ export default function ShopPage() {
       </div>
 
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {products.filter(p => p.availabilityStatus === 'In Stock').map((product) => (
+        {products?.filter(p => p.availabilityStatus === 'In Stock').map((product) => (
           <Card key={product.id} className="group overflow-hidden flex flex-col border-stone-200 shadow-sm hover:shadow-2xl transition-all duration-500 rounded-2xl bg-white">
             <div className="aspect-[4/3] relative overflow-hidden bg-stone-100">
               <Image 
-                src={product.imageUrls[0]} 
+                src={product.imageUrls?.[0] || 'https://picsum.photos/seed/default/400/300'} 
                 alt={product.name} 
                 fill 
                 className="object-cover group-hover:scale-110 transition-transform duration-[1.5s] ease-in-out"

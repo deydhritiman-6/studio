@@ -1,0 +1,143 @@
+
+{
+  "entities": {
+    "Customer": {
+      "title": "Customer",
+      "description": "A customer profile.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "customerType": { "type": "string", "enum": ["VIP", "Regular", "Corporate", "Wholesale"] },
+        "vipLevel": { "type": "string", "enum": ["Gold", "Platinum", "Diamond", "Silver"] },
+        "totalPurchaseValue": { "type": "number" },
+        "joinedDate": { "type": "string", "format": "date" }
+      },
+      "required": ["name", "email", "customerType"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "A customer order.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerId": { "type": "string" },
+        "customerName": { "type": "string" },
+        "orderDate": { "type": "string", "format": "date" },
+        "totalAmount": { "type": "number" },
+        "products": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "productId": { "type": "string" },
+              "quantity": { "type": "number" }
+            }
+          }
+        },
+        "paymentStatus": { "type": "string", "enum": ["Paid", "Pending", "Failed"] },
+        "deliveryStatus": { "type": "string", "enum": ["Pending", "Confirmed", "Preparing", "Packed", "Shipped", "Delivered"] }
+      },
+      "required": ["customerId", "customerName", "orderDate", "totalAmount", "products", "paymentStatus", "deliveryStatus"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "A chocolate product.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "flavor": { "type": "string" },
+        "price": { "type": "number" },
+        "wholesalePrice": { "type": "number" },
+        "availabilityStatus": { "type": "string", "enum": ["In Stock", "Out of Stock"] },
+        "imageUrls": { "type": "array", "items": { "type": "string" } },
+        "imageHint": { "type": "string" }
+      },
+      "required": ["name", "flavor", "price", "wholesalePrice", "availabilityStatus", "imageUrls"]
+    },
+    "Recipe": {
+      "title": "Recipe",
+      "description": "A product recipe.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "associatedProduct": { "type": "string" },
+        "ingredients": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "quantity": { "type": "string" }
+            }
+          }
+        }
+      },
+      "required": ["name", "associatedProduct", "ingredients"]
+    },
+    "InventoryItem": {
+      "title": "Inventory Item",
+      "description": "An item in inventory.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string", "enum": ["Raw Materials", "Packaging Materials", "Finished Products"] },
+        "stockLevel": { "type": "number" },
+        "status": { "type": "string", "enum": ["In Stock", "Low Stock", "Out of Stock"] }
+      },
+      "required": ["name", "category", "stockLevel", "status"]
+    },
+    "Distributor": {
+      "title": "Distributor",
+      "description": "A distribution partner.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "contactPerson": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "region": { "type": "string" },
+        "state": { "type": "string" },
+        "district": { "type": "string" },
+        "status": { "type": "string", "enum": ["Active", "Inactive"] },
+        "lastOrderDate": { "type": "string", "format": "date" }
+      },
+      "required": ["name", "contactPerson", "email", "phone", "region", "state", "district", "status"]
+    }
+  },
+  "auth": {
+    "providers": ["password"]
+  },
+  "firestore": {
+    "/customers/{customerId}": {
+      "schema": "#/backend/entities/Customer",
+      "description": "Collection of customer profiles."
+    },
+    "/orders/{orderId}": {
+      "schema": "#/backend/entities/Order",
+      "description": "Collection of customer orders."
+    },
+    "/products/{productId}": {
+      "schema": "#/backend/entities/Product",
+      "description": "Collection of chocolate products."
+    },
+    "/recipes/{recipeId}": {
+      "schema": "#/backend/entities/Recipe",
+      "description": "Collection of product recipes."
+    },
+    "/inventory/{itemId}": {
+      "schema": "#/backend/entities/InventoryItem",
+      "description": "Collection of inventory items."
+    },
+    "/distributors/{distributorId}": {
+      "schema": "#/backend/entities/Distributor",
+      "description": "Collection of distributors."
+    }
+  }
+}

@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -14,6 +15,10 @@ import { Loader2, CreditCard, ShieldCheck, Lock, Sparkles, MapPin } from 'lucide
 import { useRouter } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
+import { useFirestore } from '@/firebase';
+import { collection, doc, setDoc } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const checkoutSchema = z.object({
   name: z.string().min(2, 'Full name is required'),
@@ -32,6 +37,7 @@ export default function CheckoutPage() {
   const [isClient, setIsClient] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+  const firestore = useFirestore();
 
   const form = useForm<z.infer<typeof checkoutSchema>>({
     resolver: zodResolver(checkoutSchema),
@@ -68,42 +74,40 @@ export default function CheckoutPage() {
       return;
     }
     
+    if (!firestore) return;
+
     setIsLoading(true);
     
-    // Simulate high-security processing
-    setTimeout(() => {
-      try {
-        const existingOrdersRaw = localStorage.getItem('roseberry-orders');
-        let existingOrders = [];
-        try {
-            existingOrders = existingOrdersRaw ? JSON.parse(existingOrdersRaw) : [];
-            if (!Array.isArray(existingOrders)) existingOrders = [];
-        } catch (e) {
-            existingOrders = [];
-        }
+    const orderId = `ORD-WEB-${Date.now().toString().slice(-4)}`;
+    const newOrder = {
+      id: orderId,
+      customerId: `WEB-${values.email.split('@')[0].toUpperCase()}`,
+      customerName: values.name,
+      orderDate: new Date().toISOString().split('T')[0],
+      totalAmount: total,
+      products: cart.map(item => ({ productId: item.id, quantity: item.quantity })),
+      paymentStatus: 'Paid',
+      deliveryStatus: 'Confirmed',
+    };
 
-        const newOrder = {
-          id: `ORD-WEB-${Date.now().toString().slice(-4)}`,
-          customerId: `WEB-${values.email.split('@')[0].toUpperCase()}`,
-          customerName: values.name,
-          orderDate: new Date().toISOString().split('T')[0],
-          totalAmount: total,
-          products: cart.map(item => ({ productId: item.id, quantity: item.quantity })),
-          paymentStatus: 'Paid',
-          deliveryStatus: 'Confirmed',
-        };
-        
-        localStorage.setItem('roseberry-orders', JSON.stringify([newOrder, ...existingOrders]));
+    const orderRef = doc(firestore, 'orders', orderId);
+
+    setDoc(orderRef, newOrder)
+      .then(() => {
         localStorage.removeItem('roseberry-cart');
         window.dispatchEvent(new Event('cart-updated'));
-        
         setIsLoading(false);
         router.push('/shop/success');
-      } catch (error) {
+      })
+      .catch(async (error) => {
         setIsLoading(false);
-        toast({ variant: 'destructive', title: 'System Error', description: 'Payment processing failed. Please try again.' });
-      }
-    }, 3000);
+        const permissionError = new FirestorePermissionError({
+          path: orderRef.path,
+          operation: 'create',
+          requestResourceData: newOrder,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
   }
 
   return (
@@ -232,7 +236,7 @@ export default function CheckoutPage() {
                       <div key={item.id} className="flex justify-between items-center group">
                          <div className="flex items-center gap-4">
                             <div className="h-12 w-12 relative rounded-xl overflow-hidden flex-shrink-0 bg-white/5 border border-white/10 group-hover:border-primary/50 transition-colors">
-                                <Image src={item.imageUrls[0]} alt="" fill className="object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                                <Image src={item.imageUrls?.[0] || 'https://picsum.photos/seed/default/400/300'} alt="" fill className="object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
                             </div>
                             <div className="space-y-0.5">
                                 <p className="text-sm font-bold text-stone-200 group-hover:text-primary transition-colors">{item.name}</p>
