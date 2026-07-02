@@ -10,6 +10,7 @@ import { ShoppingCart, Eye, Sparkles, Loader2, PackageSearch } from 'lucide-reac
 import Link from 'next/link';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
+import { Badge } from '@/components/ui/badge';
 
 export default function ShopPage() {
   const firestore = useFirestore();
@@ -18,6 +19,15 @@ export default function ShopPage() {
   const { toast } = useToast();
 
   const addToCart = (product: Product) => {
+    if (product.availabilityStatus === 'Out of Stock') {
+      toast({
+        variant: "destructive",
+        title: "Currently Unavailable",
+        description: `${product.name} is currently out of stock.`,
+      });
+      return;
+    }
+
     const cart = JSON.parse(localStorage.getItem('roseberry-cart') || '[]');
     const existingIndex = Array.isArray(cart) ? cart.findIndex((item: any) => item.id === product.id) : -1;
     
@@ -37,7 +47,6 @@ export default function ShopPage() {
     window.dispatchEvent(new Event('cart-updated'));
   };
 
-  // Ensure we are in a loading state until firestore is ready and the collection is fetched
   if (loading || !firestore) {
     return (
       <div className="flex items-center justify-center py-32">
@@ -46,7 +55,8 @@ export default function ShopPage() {
     );
   }
 
-  const availableProducts = products?.filter(p => p.availabilityStatus === 'In Stock') || [];
+  // Show all products but mark those that are out of stock
+  const allProducts = products || [];
 
   return (
     <div className="space-y-16 animate-in fade-in duration-1000">
@@ -59,25 +69,37 @@ export default function ShopPage() {
         <div className="h-px w-24 bg-primary/30 mx-auto mt-8"></div>
       </div>
 
-      {availableProducts.length > 0 ? (
+      {allProducts.length > 0 ? (
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {availableProducts.map((product) => (
+          {allProducts.map((product) => (
             <Card key={product.id} className="group overflow-hidden flex flex-col border-stone-200 shadow-sm hover:shadow-2xl transition-all duration-500 rounded-2xl bg-white">
               <div className="aspect-[4/3] relative overflow-hidden bg-stone-100">
                 <Image 
                   src={product.imageUrls?.[0] || 'https://picsum.photos/seed/default/400/300'} 
                   alt={product.name} 
                   fill 
-                  className="object-cover group-hover:scale-110 transition-transform duration-[1.5s] ease-in-out"
+                  className={`object-cover transition-transform duration-[1.5s] ease-in-out ${product.availabilityStatus === 'Out of Stock' ? 'grayscale opacity-60' : 'group-hover:scale-110'}`}
                   data-ai-hint={product.imageHint}
                 />
+                
+                {product.availabilityStatus === 'Out of Stock' && (
+                  <div className="absolute top-4 right-4 z-20">
+                    <Badge variant="destructive" className="uppercase tracking-widest text-[9px] py-1 px-3 shadow-lg">Out of Stock</Badge>
+                  </div>
+                )}
+
                 <div className="absolute inset-0 bg-stone-900/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col items-center justify-center gap-3">
-                   <Button size="lg" className="bg-white text-stone-900 hover:bg-stone-100 rounded-full px-8 shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500" onClick={() => addToCart(product)}>
-                      <ShoppingCart className="h-4 w-4 mr-2" /> Add to Basket
+                   <Button 
+                    size="lg" 
+                    className="bg-white text-stone-900 hover:bg-stone-100 rounded-full px-8 shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500" 
+                    onClick={() => addToCart(product)}
+                    disabled={product.availabilityStatus === 'Out of Stock'}
+                   >
+                      <ShoppingCart className="h-4 w-4 mr-2" /> {product.availabilityStatus === 'Out of Stock' ? 'Unavailable' : 'Add to Basket'}
                    </Button>
                    <Button variant="ghost" asChild className="text-white hover:text-white hover:bg-white/20 rounded-full transform translate-y-8 group-hover:translate-y-0 transition-transform duration-700">
                      <Link href={`/shop/product/${product.id}`}>
-                        <Eye className="h-4 w-4 mr-2" /> Quick View
+                        <Eye className="h-4 w-4 mr-2" /> View Details
                      </Link>
                    </Button>
                 </div>
@@ -88,14 +110,14 @@ export default function ShopPage() {
               </CardHeader>
               <CardContent className="p-6 pt-0 flex-grow">
                  <div className="flex items-baseline gap-2 mt-4">
-                   <span className="text-2xl font-bold text-primary">₹{product.price}</span>
+                   <span className={`text-2xl font-bold ${product.availabilityStatus === 'Out of Stock' ? 'text-stone-400 line-through' : 'text-primary'}`}>₹{product.price}</span>
                    <span className="text-[10px] text-stone-400 font-medium">Inclusive of all taxes</span>
                  </div>
               </CardContent>
               <CardFooter className="p-6 pt-0">
                  <Button variant="outline" className="w-full border-stone-200 hover:bg-stone-50 text-stone-600 rounded-xl h-12 transition-all hover:border-primary/50 group-hover:bg-primary group-hover:text-white group-hover:border-primary" asChild>
                     <Link href={`/shop/product/${product.id}`}>
-                      Explore Details
+                      {product.availabilityStatus === 'Out of Stock' ? 'Check Availability' : 'Explore Details'}
                     </Link>
                  </Button>
               </CardFooter>

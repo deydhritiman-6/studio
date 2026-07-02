@@ -117,6 +117,7 @@ export default function InventoryPage() {
           description: `${values.name} has been saved to inventory.`,
         });
 
+        // Sync with products collection if it's a finished product
         if (values.category === 'Finished Products') {
           const productsRef = collection(firestore, 'products');
           const q = query(productsRef, where('name', '==', values.name));
@@ -150,6 +151,17 @@ export default function InventoryPage() {
           title: 'Item Deleted',
           description: `${item.name} has been removed from inventory.`,
         });
+
+        // If it was a finished product, mark it as out of stock in products
+        if (item.category === 'Finished Products') {
+           const productsRef = collection(firestore, 'products');
+           const q = query(productsRef, where('name', '==', item.name));
+           getDocs(q).then(snapshot => {
+              snapshot.forEach(productDoc => {
+                updateDoc(productDoc.ref, { availabilityStatus: 'Out of Stock' });
+              });
+           });
+        }
       })
       .catch(async (error) => {
         const permissionError = new FirestorePermissionError({
