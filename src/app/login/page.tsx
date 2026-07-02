@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -10,6 +11,8 @@ import { Logo } from '@/components/logo';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useAuth } from '@/firebase';
+import { signInAnonymously } from 'firebase/auth';
 
 const userCredentials = {
   'Super Admin': {
@@ -25,43 +28,60 @@ const userCredentials = {
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const auth = useAuth();
   const [role, setRole] = useState<'Super Admin' | 'Staff'>('Super Admin');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!auth) return;
+    
     setIsLoading(true);
 
-    // Mock login logic
-    setTimeout(() => {
+    try {
+      // For the prototype, we sign in anonymously to ensure Firestore security rules 
+      // (which usually check if auth != null) are satisfied.
+      await signInAnonymously(auth);
+      
       const userToLogin = userCredentials[role];
       localStorage.setItem('user', JSON.stringify({ name: userToLogin.name, email: userToLogin.email, role: role }));
+      
       toast({
-        title: 'Login Successful',
-        description: 'Welcome back!',
+        title: 'Access Granted',
+        description: `Welcome back to the Roseberry Ops command center.`,
       });
+      
       router.push('/dashboard');
-    }, 1000);
+    } catch (error: any) {
+      console.error('Login error:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Authentication Failed',
+        description: 'Unable to establish a secure connection to the database.',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
-          <div className="mb-4 flex justify-center">
-             <Logo />
+    <div className="flex items-center justify-center min-h-screen bg-background p-4 bg-stone-50">
+      <Card className="w-full max-w-sm shadow-2xl border-stone-100 rounded-[2rem]">
+        <CardHeader className="text-center space-y-4 pt-10">
+          <div className="flex justify-center">
+             <Logo className="h-12" />
           </div>
-          <CardTitle className="font-headline text-2xl">Welcome Back</CardTitle>
-          <CardDescription>Select a user role to log in.</CardDescription>
+          <CardTitle className="font-headline text-3xl text-stone-900 tracking-tight leading-tight">Master Control</CardTitle>
+          <CardDescription className="text-stone-400 font-light">Select your role to access the Roseberry ecosystem.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin} className="space-y-6">
+        <CardContent className="p-8 pt-2">
+          <form onSubmit={handleLogin} className="space-y-8">
             <RadioGroup value={role} onValueChange={(value: any) => setRole(value)} className="grid grid-cols-2 gap-4">
               <div>
                 <RadioGroupItem value="Super Admin" id="super-admin" className="peer sr-only" />
                 <Label
                   htmlFor="super-admin"
-                  className="flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                  className="flex cursor-pointer flex-col items-center justify-between rounded-2xl border-2 border-muted bg-popover p-4 text-xs font-bold uppercase tracking-widest hover:bg-stone-50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:text-primary transition-all [&:has([data-state=checked])]:border-primary"
                 >
                   Super Admin
                 </Label>
@@ -70,35 +90,39 @@ export default function LoginPage() {
                 <RadioGroupItem value="Staff" id="staff" className="peer sr-only" />
                 <Label
                   htmlFor="staff"
-                  className="flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                  className="flex cursor-pointer flex-col items-center justify-between rounded-2xl border-2 border-muted bg-popover p-4 text-xs font-bold uppercase tracking-widest hover:bg-stone-50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:text-primary transition-all [&:has([data-state=checked])]:border-primary"
                 >
-                  Staff
+                  Kitchen Staff
                 </Label>
               </div>
             </RadioGroup>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                required
-                value={userCredentials[role].email}
-                disabled
-              />
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-stone-400 ml-1">Identity</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  required
+                  value={userCredentials[role].email}
+                  disabled
+                  className="bg-stone-50 border-stone-100 h-12 rounded-xl"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest text-stone-400 ml-1">Access Key</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  value="password"
+                  disabled
+                  className="bg-stone-50 border-stone-100 h-12 rounded-xl"
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                required
-                value="password"
-                disabled
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? <Loader2 className="animate-spin" /> : `Login as ${role}`}
+            <Button type="submit" className="w-full h-14 text-lg font-bold rounded-2xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95" disabled={isLoading}>
+              {isLoading ? <Loader2 className="animate-spin" /> : `Enter Workspace`}
             </Button>
           </form>
         </CardContent>
