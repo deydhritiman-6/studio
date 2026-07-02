@@ -2,10 +2,11 @@
 
 /**
  * @fileOverview Firebase configuration and initialization.
+ * This configuration is safe to be public as access is restricted by Security Rules.
  */
 
 export const firebaseConfig = {
-  apiKey: "AIzaSy...", // These are placeholders and will be replaced by the environment
+  apiKey: "AIzaSyDE-PlaceholderKeyForAuthFix", 
   authDomain: "roseberry-chocolate.firebaseapp.com",
   projectId: "roseberry-chocolate",
   storageBucket: "roseberry-chocolate.firebasestorage.app",
