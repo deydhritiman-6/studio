@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -34,7 +33,14 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth) return;
+    if (!auth) {
+      toast({
+        variant: 'destructive',
+        title: 'Configuration Error',
+        description: 'Firebase Authentication is not initialized. Check your Firebase config.',
+      });
+      return;
+    }
     
     setIsLoading(true);
 
@@ -54,10 +60,18 @@ export default function LoginPage() {
       router.push('/dashboard');
     } catch (error: any) {
       console.error('Login error:', error);
+      
+      let errorMessage = 'Unable to establish a secure connection to the database.';
+      if (error.code === 'auth/api-key-not-valid') {
+        errorMessage = 'The Firebase API key is invalid. Please update src/firebase/config.ts.';
+      } else if (error.code === 'auth/operation-not-allowed') {
+        errorMessage = 'Anonymous sign-in is not enabled in your Firebase project settings.';
+      }
+
       toast({
         variant: 'destructive',
         title: 'Authentication Failed',
-        description: 'Unable to establish a secure connection to the database.',
+        description: errorMessage,
       });
     } finally {
       setIsLoading(false);
