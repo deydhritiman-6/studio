@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
@@ -9,7 +8,7 @@ import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Product } from '@/lib/types';
-import { Camera, PlusCircle, Loader2 } from 'lucide-react';
+import { Camera, PlusCircle, Loader2, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
@@ -22,11 +21,10 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { collection, doc, setDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -49,6 +47,7 @@ export default function ProductsPage() {
   
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
   
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
@@ -61,7 +60,7 @@ export default function ProductsPage() {
     defaultValues: {
       name: '',
       flavor: '',
-      price: '' as unknown as number, // Using empty string to avoid "uncontrolled" warning
+      price: '' as unknown as number,
       wholesalePrice: '' as unknown as number,
       availabilityStatus: 'In Stock',
       imageUrls: [],
@@ -104,6 +103,7 @@ export default function ProductsPage() {
 
   const saveProduct = (values: ProductFormValues, id?: string) => {
     if (!firestore) return;
+    setIsSaving(true);
     const productId = id || `P${Date.now()}`;
     const productRef = doc(firestore, 'products', productId);
     const productData = { ...values, id: productId };
@@ -112,9 +112,16 @@ export default function ProductsPage() {
       .then(() => {
         setIsAddDialogOpen(false);
         setEditingProduct(null);
+        setIsSaving(false);
         toast({ title: id ? 'Product Updated' : 'Product Added', description: `${values.name} has been successfully saved.` });
       })
       .catch(async (error) => {
+        setIsSaving(false);
+        toast({
+          variant: 'destructive',
+          title: 'Save Failed',
+          description: 'Could not save the product. The data size (including high-res photos) might exceed the database limit.',
+        });
         const permissionError = new FirestorePermissionError({
           path: productRef.path,
           operation: id ? 'update' : 'create',
@@ -160,7 +167,7 @@ export default function ProductsPage() {
       const context = canvas.getContext('2d');
       if (context) {
         context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-        const dataUrl = canvas.toDataURL('image/jpeg');
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7); // Compress slightly to stay within Firestore limits
         form.setValue('imageUrls', [dataUrl, dataUrl, dataUrl, dataUrl], { shouldValidate: true });
         form.setValue('imageHint', 'custom photo');
         stopCamera();
@@ -198,7 +205,6 @@ export default function ProductsPage() {
 
   const activeDialog = editingProduct ? 'edit' : (isAddDialogOpen ? 'add' : null);
   const onDialogSubmit = editingProduct ? form.handleSubmit(onEditSubmit) : form.handleSubmit(onAddSubmit);
-  const imageUrls = form.watch('imageUrls');
 
   return (
     <>
@@ -288,38 +294,65 @@ export default function ProductsPage() {
                   <canvas ref={canvasRef} className="hidden" />
                 </div>
               </ScrollArea>
-              <DialogFooter className="mt-6 pt-4 border-t"><DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose><Button type="submit">Save Changes</Button></DialogFooter>
+              <DialogFooter className="mt-6 pt-4 border-t">
+                <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
+                <Button type="submit" disabled={isSaving}>
+                  {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                  Save Changes
+                </Button>
+              </DialogFooter>
             </form>
           </Form>
         </DialogContent>
       </Dialog>
       
       <PageHeader title="Products" actions={<Button onClick={() => setIsAddDialogOpen(true)}><PlusCircle className="mr-2 h-4 w-4" />Add Product</Button>} />
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {products?.map((product) => (
-          <Card key={product.id} className="flex flex-col">
-            <CardHeader className="p-0 relative">
-               <button type="button" className="block w-full aspect-[4/3] relative rounded-t-lg overflow-hidden" onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: 0, productName: product.name })}>
-                  <Image src={product.imageUrls?.[0] || 'https://picsum.photos/seed/default/400/300'} alt={product.name} fill className="object-cover" data-ai-hint={product.imageHint} />
-                </button>
-            </CardHeader>
-            <CardContent className="p-4 flex-grow">
-              <div className="grid grid-cols-3 gap-2 mb-4">
-                {product.imageUrls?.slice(1, 4).map((url, index) => (
-                   <button key={index} type="button" className="block w-full aspect-[4/3] relative rounded-md overflow-hidden" onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: index + 1, productName: product.name })}><Image src={url} alt={`Thumbnail ${index + 1}`} fill className="object-cover" data-ai-hint={product.imageHint} /></button>
-                ))}
-              </div>
-              <CardTitle className="font-headline text-lg mb-1">{product.name}</CardTitle>
-              <p className="text-sm text-muted-foreground">{product.flavor}</p>
-              <div className="flex justify-between items-center mt-4">
-                <p className="text-lg font-semibold">₹{product.price}</p>
-                 <Badge variant={product.availabilityStatus === 'In Stock' ? 'default' : 'destructive'} className={product.availabilityStatus === 'In Stock' ? 'bg-green-700 hover:bg-green-800' : ''}>{product.availabilityStatus}</Badge>
-              </div>
-            </CardContent>
-            <CardFooter className="p-4 pt-0"><Button variant="outline" className="w-full" onClick={() => setEditingProduct(product)}>Edit Product</Button></CardFooter>
-          </Card>
-        ))}
-      </div>
+      
+      {products?.length === 0 ? (
+        <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed rounded-lg">
+           <PackageSearch className="h-12 w-12 text-muted-foreground mb-4" />
+           <p className="text-muted-foreground">No products found. Start by adding your first creation.</p>
+        </div>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {products?.map((product) => (
+            <Card key={product.id} className="flex flex-col">
+              <CardHeader className="p-0 relative">
+                 <button type="button" className="block w-full aspect-[4/3] relative rounded-t-lg overflow-hidden" onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: 0, productName: product.name })}>
+                    <Image src={product.imageUrls?.[0] || 'https://picsum.photos/seed/default/400/300'} alt={product.name} fill className="object-cover" data-ai-hint={product.imageHint} />
+                  </button>
+              </CardHeader>
+              <CardContent className="p-4 flex-grow">
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  {product.imageUrls?.slice(1, 4).map((url, index) => (
+                     <button key={index} type="button" className="block w-full aspect-[4/3] relative rounded-md overflow-hidden" onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: index + 1, productName: product.name })}><Image src={url} alt={`Thumbnail ${index + 1}`} fill className="object-cover" data-ai-hint={product.imageHint} /></button>
+                  ))}
+                </div>
+                <CardTitle className="font-headline text-lg mb-1">{product.name}</CardTitle>
+                <p className="text-sm text-muted-foreground">{product.flavor}</p>
+                <div className="flex justify-between items-center mt-4">
+                  <p className="text-lg font-semibold">₹{product.price}</p>
+                   <Badge variant={product.availabilityStatus === 'In Stock' ? 'default' : 'destructive'} className={product.availabilityStatus === 'In Stock' ? 'bg-green-700 hover:bg-green-800' : ''}>{product.availabilityStatus}</Badge>
+                </div>
+              </CardContent>
+              <CardFooter className="p-4 pt-0"><Button variant="outline" className="w-full" onClick={() => setEditingProduct(product)}>Edit Product</Button></CardFooter>
+            </Card>
+          ))}
+        </div>
+      )}
     </>
+  );
+}
+
+function PackageSearch({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14" />
+      <path d="M16.5 9.4 7.55 4.24" />
+      <polyline points="3.29 7 12 12 20.71 7" />
+      <line x1="12" y1="22" x2="12" y2="12" />
+      <circle cx="18.5" cy="15.5" r="2.5" />
+      <path d="M20.27 17.27 22 19" />
+    </svg>
   );
 }
