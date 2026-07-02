@@ -64,6 +64,9 @@ export default function InventoryPage() {
   const inventoryQuery = useMemo(() => (firestore ? collection(firestore, 'inventory') : null), [firestore]);
   const { data: inventory, loading } = useCollection<InventoryItem>(inventoryQuery);
 
+  const productsQuery = useMemo(() => (firestore ? collection(firestore, 'products') : null), [firestore]);
+  const { data: products } = useCollection<Product>(productsQuery);
+
   const [isAddOrEditDialogOpen, setIsAddOrEditDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
   const { toast } = useToast();
@@ -77,6 +80,8 @@ export default function InventoryPage() {
       status: 'In Stock',
     },
   });
+
+  const selectedCategory = form.watch('category');
 
   useEffect(() => {
     if (editingItem) {
@@ -103,7 +108,6 @@ export default function InventoryPage() {
     const itemRef = doc(firestore, 'inventory', id);
     const itemData = { ...values, id };
 
-    // 1. Update the inventory item
     setDoc(itemRef, itemData)
       .then(() => {
         setIsAddOrEditDialogOpen(false);
@@ -113,7 +117,6 @@ export default function InventoryPage() {
           description: `${values.name} has been saved to inventory.`,
         });
 
-        // 2. If it's a Finished Product, sync with the Shop catalog
         if (values.category === 'Finished Products') {
           const productsRef = collection(firestore, 'products');
           const q = query(productsRef, where('name', '==', values.name));
@@ -253,19 +256,6 @@ export default function InventoryPage() {
             <form onSubmit={form.handleSubmit(onDialogSubmit)} className="space-y-4 py-4">
               <FormField
                 control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Item Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., Organic Cocoa Butter" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
                 name="category"
                 render={({ field }) => (
                   <FormItem>
@@ -282,6 +272,36 @@ export default function InventoryPage() {
                         <SelectItem value="Finished Products">Finished Products</SelectItem>
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Item Name</FormLabel>
+                    {selectedCategory === 'Finished Products' ? (
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a product" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {products?.map((p) => (
+                            <SelectItem key={p.id} value={p.name}>
+                              {p.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <FormControl>
+                        <Input placeholder="e.g., Organic Cocoa Butter" {...field} />
+                      </FormControl>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
