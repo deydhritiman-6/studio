@@ -1,19 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { orders as initialOrders, products } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, PlayCircle } from 'lucide-react';
-import type { Order } from '@/lib/types';
+import { MoreHorizontal, PlayCircle, Loader2 } from 'lucide-react';
+import type { Order, Product } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
-
+import { useCollection, useFirestore } from '@/firebase';
+import { collection, doc, updateDoc } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const getStatusBadgeClassName = (status: Order['deliveryStatus']) => {
     switch (status) {
@@ -27,69 +29,64 @@ const getStatusBadgeClassName = (status: Order['deliveryStatus']) => {
 }
 
 export default function ProductionPage() {
-    const [orders, setOrders] = useState<Order[]>(() => {
-    if (typeof window === 'undefined') {
-      return initialOrders;
-    }
-    try {
-      const savedOrders = localStorage.getItem('roseberry-orders');
-      if (savedOrders) {
-        return JSON.parse(savedOrders);
-      }
-      return initialOrders;
-    } catch (error) {
-      console.error("Failed to read orders from localStorage", error);
-      return initialOrders;
-    }
-  });
+  const firestore = useFirestore();
+  const ordersQuery = useMemo(() => firestore ? collection(firestore, 'orders') : null, [firestore]);
+  const productsQuery = useMemo(() => firestore ? collection(firestore, 'products') : null, [firestore]);
   
+  const { data: orders, loading: ordersLoading } = useCollection<Order>(ordersQuery as any);
+  const { data: products } = useCollection<Product>(productsQuery as any);
+
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem('roseberry-orders', JSON.stringify(orders));
-      } catch (error) {
-        console.error("Failed to save orders to localStorage", error);
-      }
-    }
-  }, [orders]);
-
-
-  const productionOrders = orders.filter(
+  const productionOrders = orders?.filter(
     (order) => order.deliveryStatus === 'Confirmed' || order.deliveryStatus === 'Preparing'
-  );
+  ) || [];
 
   const getProductName = (productId: string) => {
-    return products.find(p => p.id === productId)?.name || 'Unknown Product';
+    return products?.find(p => p.id === productId)?.name || 'Unknown Product';
   }
 
   const handleUpdateStatus = (orderId: string, status: Order['deliveryStatus']) => {
-    setOrders(prevOrders => prevOrders.map(order => 
-      order.id === orderId ? { ...order, deliveryStatus: status } : order
-    ));
-    toast({
-      title: 'Order Status Updated',
-      description: `Order ${orderId} has been marked as '${status}'.`,
-    });
+    if (!firestore) return;
+    const orderRef = doc(firestore, 'orders', orderId);
+    
+    updateDoc(orderRef, { deliveryStatus: status })
+      .then(() => {
+        toast({ title: 'Order Status Updated', description: `Order ${orderId} has been marked as '${status}'.` });
+      })
+      .catch(async (error) => {
+        const permissionError = new FirestorePermissionError({
+          path: orderRef.path,
+          operation: 'update',
+          requestResourceData: { deliveryStatus: status },
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   const handleStartBatch = () => {
-    let updatedCount = 0;
-    const updatedOrders = orders.map(order => {
-      if (order.deliveryStatus === 'Confirmed') {
-        updatedCount++;
-        return { ...order, deliveryStatus: 'Preparing' };
-      }
-      return order;
-    });
+    if (!firestore || !orders) return;
+    
+    const confirmedOrders = orders.filter(o => o.deliveryStatus === 'Confirmed');
 
-    if (updatedCount > 0) {
-      setOrders(updatedOrders);
+    if (confirmedOrders.length > 0) {
+      confirmedOrders.forEach(order => {
+        const orderRef = doc(firestore, 'orders', order.id);
+        updateDoc(orderRef, { deliveryStatus: 'Preparing' })
+          .catch(async (error) => {
+            const permissionError = new FirestorePermissionError({
+              path: orderRef.path,
+              operation: 'update',
+              requestResourceData: { deliveryStatus: 'Preparing' },
+            });
+            errorEmitter.emit('permission-error', permissionError);
+          });
+      });
+
       toast({
         title: 'Production Batch Started',
-        description: `${updatedCount} confirmed orders have been moved to 'Preparing'.`,
+        description: `${confirmedOrders.length} confirmed orders have been moved to 'Preparing'.`,
       });
     } else {
       toast({
@@ -98,6 +95,8 @@ export default function ProductionPage() {
       });
     }
   };
+
+  if (ordersLoading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin" /></div>;
 
   return (
     <>
@@ -155,7 +154,7 @@ export default function ProductionPage() {
       </Dialog>
 
       <PageHeader title="Production Schedule" actions={
-        <Button onClick={handleStartBatch}>
+        <Button onClick={handleStartBatch} disabled={ordersLoading}>
           <PlayCircle className="mr-2 h-4 w-4" />
           Start Daily Production Batch
         </Button>

@@ -1,38 +1,41 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { products as initialProducts } from '@/lib/data';
+import { useState, useEffect, useMemo } from 'react';
 import type { Product } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
-import { ShoppingCart, ArrowLeft, CheckCircle2, Star, ShieldCheck } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, CheckCircle2, Star, ShieldCheck, Loader2 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
+import { useDoc, useFirestore } from '@/firebase';
+import { doc } from 'firebase/firestore';
 
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
   const productId = params.id as string;
-  const [product, setProduct] = useState<Product | null>(null);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  const firestore = useFirestore();
+  const productRef = useMemo(() => firestore ? doc(firestore, 'products', productId) : null, [firestore, productId]);
+  const { data: product, loading } = useDoc<Product>(productRef as any);
+
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem('roseberry-products');
-    let source = initialProducts;
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) source = parsed;
-      } catch (e) {}
+    if (product && !selectedImage && product.imageUrls && product.imageUrls.length > 0) {
+      setSelectedImage(product.imageUrls[0]);
     }
-    const found = source.find((p: Product) => p.id === productId);
-    if (found) {
-      setProduct(found);
-      setSelectedImage(found.imageUrls[0]);
-    }
-  }, [productId]);
+  }, [product, selectedImage]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-32">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -77,7 +80,7 @@ export default function ProductDetailPage() {
           <div className="aspect-square relative rounded-[2.5rem] overflow-hidden shadow-2xl bg-white border border-stone-100 p-8">
             <div className="relative w-full h-full rounded-[1.5rem] overflow-hidden group">
               <Image 
-                src={selectedImage || product.imageUrls[0]} 
+                src={selectedImage || product.imageUrls?.[0] || 'https://picsum.photos/seed/default/400/300'} 
                 alt={product.name} 
                 fill 
                 className="object-cover transition-all duration-[1s] group-hover:scale-110" 
@@ -87,7 +90,7 @@ export default function ProductDetailPage() {
             </div>
           </div>
           <div className="grid grid-cols-4 gap-6 px-4">
-             {product.imageUrls.map((url, i) => (
+             {product.imageUrls?.map((url, i) => (
                 <button 
                   key={i} 
                   onClick={() => setSelectedImage(url)}
