@@ -1,22 +1,22 @@
 'use client';
 
-import React, { ReactNode } from 'react';
-import { FirebaseApp } from 'firebase/app';
-import { Firestore } from 'firebase/firestore';
-import { Auth } from 'firebase/auth';
+import React, { ReactNode, useMemo } from 'react';
 import { FirebaseProvider } from './provider';
+import { initializeFirebase } from './index';
+
+/**
+ * @fileOverview A client-side wrapper that initializes Firebase and provides it to the application.
+ */
 
 export function FirebaseClientProvider({
   children,
-  firebaseApp,
-  firestore,
-  auth,
 }: {
   children: ReactNode;
-  firebaseApp: FirebaseApp;
-  firestore: Firestore;
-  auth: Auth;
 }) {
+  // Initialize Firebase once on the client. 
+  // initializeFirebase is idempotent and safe to call in useMemo.
+  const { firebaseApp, firestore, auth } = useMemo(() => initializeFirebase(), []);
+
   return (
     <FirebaseProvider firebaseApp={firebaseApp} firestore={firestore} auth={auth}>
       {children}
