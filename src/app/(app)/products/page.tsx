@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -61,6 +61,8 @@ export default function ProductsPage() {
     defaultValues: {
       name: '',
       flavor: '',
+      price: '' as unknown as number, // Using empty string to avoid "uncontrolled" warning
+      wholesalePrice: '' as unknown as number,
       availabilityStatus: 'In Stock',
       imageUrls: [],
       imageHint: '',
@@ -76,7 +78,7 @@ export default function ProductsPage() {
     }
   };
 
-  useMemo(() => {
+  useEffect(() => {
     if (editingProduct) {
       form.reset({
         name: editingProduct.name,
@@ -91,8 +93,8 @@ export default function ProductsPage() {
       form.reset({
         name: '',
         flavor: '',
-        price: undefined,
-        wholesalePrice: undefined,
+        price: '' as unknown as number,
+        wholesalePrice: '' as unknown as number,
         availabilityStatus: 'In Stock',
         imageUrls: [],
         imageHint: '',
