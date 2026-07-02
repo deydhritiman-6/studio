@@ -3,13 +3,13 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { z } from 'z permissions/zod';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { InventoryItem } from '@/lib/types';
+import type { InventoryItem, Product } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { PlusCircle, MoreHorizontal, Loader2, Trash2, Edit } from 'lucide-react';
 import {
@@ -46,7 +46,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, deleteDoc, query, where, getDocs, updateDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -103,6 +103,7 @@ export default function InventoryPage() {
     const itemRef = doc(firestore, 'inventory', id);
     const itemData = { ...values, id };
 
+    // 1. Update the inventory item
     setDoc(itemRef, itemData)
       .then(() => {
         setIsAddOrEditDialogOpen(false);
@@ -111,6 +112,20 @@ export default function InventoryPage() {
           title: editingItem ? 'Item Updated' : 'Item Added',
           description: `${values.name} has been saved to inventory.`,
         });
+
+        // 2. If it's a Finished Product, sync with the Shop catalog
+        if (values.category === 'Finished Products') {
+          const productsRef = collection(firestore, 'products');
+          const q = query(productsRef, where('name', '==', values.name));
+          
+          getDocs(q).then((snapshot) => {
+            snapshot.forEach((productDoc) => {
+              updateDoc(productDoc.ref, { 
+                availabilityStatus: values.status === 'Out of Stock' ? 'Out of Stock' : 'In Stock' 
+              });
+            });
+          });
+        }
       })
       .catch(async (error) => {
         const permissionError = new FirestorePermissionError({
