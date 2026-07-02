@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ShoppingCart, User } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
@@ -31,16 +31,23 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <div className="min-h-screen flex flex-col bg-stone-50 font-body">
-      <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md px-6 h-20 flex items-center justify-between">
-        <Link href="/shop" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
-          <Logo className="h-8 w-auto" />
+      <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-xl px-6 h-24 flex items-center justify-between animate-in fade-in slide-in-from-top-4 duration-1000 overflow-hidden shadow-sm">
+        {/* Elegant top accent line with pulsing animation */}
+        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary via-accent to-primary animate-pulse"></div>
+        
+        {/* Subtle decorative glow effect */}
+        <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-1/3 h-20 bg-primary/10 blur-[60px] rounded-full pointer-events-none animate-pulse"></div>
+
+        <Link href="/shop" className="flex items-center gap-2 hover:scale-105 transition-transform duration-500 relative z-10">
+          <Logo className="h-10 w-auto" />
         </Link>
-        <div className="flex items-center gap-2 sm:gap-6">
-          <Button variant="ghost" asChild className="relative hover:bg-stone-100 rounded-full h-12 w-12 p-0">
+        
+        <div className="flex items-center gap-2 sm:gap-6 relative z-10">
+          <Button variant="ghost" asChild className="relative hover:bg-primary/10 hover:text-primary rounded-full h-14 w-14 p-0 transition-all duration-300 group">
              <Link href="/shop/cart" aria-label="View shopping basket">
-                <ShoppingCart className="h-5 w-5 text-stone-700" />
+                <ShoppingCart className="h-6 w-6 text-stone-700 group-hover:scale-110 transition-transform" />
                 {cartCount > 0 && (
-                  <span className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white border-2 border-white">
+                  <span className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-white border-2 border-white shadow-lg animate-in zoom-in-50">
                     {cartCount}
                   </span>
                 )}
