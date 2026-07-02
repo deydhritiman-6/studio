@@ -51,11 +51,15 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
           
           {/* Right Column (Actions) */}
           <div className="flex justify-end items-center gap-2 sm:gap-6 relative z-10">
-            <Button variant="ghost" asChild className="relative hover:bg-primary/10 hover:text-primary rounded-full h-16 w-16 p-0 transition-all duration-300 group">
+            <Button 
+              variant="ghost" 
+              asChild 
+              className="relative hover:bg-primary/10 hover:text-primary rounded-full h-20 w-20 p-0 transition-all duration-300 group shadow-sm hover:shadow-md"
+            >
                <Link href="/shop/cart" aria-label="View shopping basket">
-                  <ShoppingCart className="h-10 w-10 text-stone-700 group-hover:scale-110 transition-transform" />
+                  <ShoppingCart className="h-12 w-12 text-stone-700 group-hover:scale-110 transition-transform duration-300" />
                   {cartCount > 0 && (
-                    <span className="absolute top-3 right-3 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-white border-2 border-white shadow-lg animate-in zoom-in-50">
+                    <span className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[12px] font-bold text-white border-2 border-white shadow-lg animate-in zoom-in-50 duration-500">
                       {cartCount}
                     </span>
                   )}
