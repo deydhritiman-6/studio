@@ -4,9 +4,9 @@ export function Logo(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 320 50"
-      width="180"
-      height="30"
+      viewBox="0 0 450 60"
+      width="240"
+      height="40"
       aria-label="Roseberry Chocolate Logo"
       {...props}
     >
@@ -20,17 +20,20 @@ export function Logo(props: SVGProps<SVGSVGElement>) {
           </stop>
         </linearGradient>
       </defs>
-      <text
-        x="10"
-        y="35"
-        fontFamily="var(--font-playfair-display), serif"
-        fontSize="30"
-        fontWeight="bold"
-        fill="url(#vibrant-gradient)"
-        className="font-headline"
-      >
-        Roseberry Chocolate
-      </text>
+      <g className="animate-logo-float">
+        <text
+          x="50%"
+          y="45"
+          textAnchor="middle"
+          fontFamily="var(--font-playfair-display), serif"
+          fontSize="46"
+          fontWeight="bold"
+          fill="url(#vibrant-gradient)"
+          className="font-headline"
+        >
+          Roseberry Chocolate
+        </text>
+      </g>
     </svg>
   );
 }
