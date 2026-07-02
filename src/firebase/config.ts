@@ -6,9 +6,9 @@
  */
 
 export const firebaseConfig = {
-  // IMPORTANT: Replace this placeholder with your actual API key from the Firebase Console 
-  // (Project Settings > General > Your apps).
-  apiKey: "AIzaSyC6_G7_V0X1_Y2Z3_A4B5_C6D7_E8F9_G0H1", 
+  // IMPORTANT: You must replace this placeholder with your actual Web API Key 
+  // from the Firebase Console (Project Settings > General).
+  apiKey: "REPLACE_WITH_YOUR_ACTUAL_API_KEY_FROM_CONSOLE", 
   authDomain: "roseberry-chocolate.firebaseapp.com",
   projectId: "roseberry-chocolate",
   storageBucket: "roseberry-chocolate.firebasestorage.app",
