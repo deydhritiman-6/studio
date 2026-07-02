@@ -8,11 +8,11 @@ import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Product } from '@/lib/types';
-import { Camera, PlusCircle, Loader2, AlertCircle } from 'lucide-react';
+import { Camera, PlusCircle, Loader2, Link as LinkIcon, Upload, Image as ImageIcon, PackageSearch, Trash2, Edit } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -54,6 +54,8 @@ export default function ProductsPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [viewingProduct, setViewingProduct] = useState<{images: string[], startIndex: number, productName: string} | null>(null);
+
+  const [remoteUrl, setRemoteUrl] = useState('');
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -120,7 +122,7 @@ export default function ProductsPage() {
         toast({
           variant: 'destructive',
           title: 'Save Failed',
-          description: 'Could not save the product. The data size (including high-res photos) might exceed the database limit.',
+          description: 'Could not save the product. Ensure images are within size limits.',
         });
         const permissionError = new FirestorePermissionError({
           path: productRef.path,
@@ -167,10 +169,11 @@ export default function ProductsPage() {
       const context = canvas.getContext('2d');
       if (context) {
         context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.7); // Compress slightly to stay within Firestore limits
-        form.setValue('imageUrls', [dataUrl, dataUrl, dataUrl, dataUrl], { shouldValidate: true });
-        form.setValue('imageHint', 'custom photo');
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.6); // Compress slightly
+        form.setValue('imageUrls', [dataUrl], { shouldValidate: true });
+        form.setValue('imageHint', 'custom photo', { shouldValidate: true });
         stopCamera();
+        toast({ title: "Photo Captured", description: "Artisan photo added to product." });
       }
     }
   };
@@ -190,13 +193,22 @@ export default function ProductsPage() {
     });
 
     Promise.all(fileToUrlPromises).then(urls => {
-        const finalUrls = [...urls];
-        while (finalUrls.length > 0 && finalUrls.length < 4) {
-            finalUrls.push(finalUrls[finalUrls.length - 1]);
-        }
-        form.setValue('imageUrls', finalUrls, { shouldValidate: true });
-        form.setValue('imageHint', 'uploaded image');
+        form.setValue('imageUrls', urls, { shouldValidate: true });
+        form.setValue('imageHint', 'uploaded image', { shouldValidate: true });
+        toast({ title: "Images Uploaded", description: `${urls.length} images added to collection.` });
     });
+  };
+
+  const handleAddRemoteUrl = () => {
+    if (!remoteUrl) return;
+    const currentUrls = form.getValues('imageUrls') || [];
+    if (currentUrls.length >= 4) {
+      toast({ variant: 'destructive', title: 'Limit Reached', description: 'Maximum of 4 images allowed.' });
+      return;
+    }
+    form.setValue('imageUrls', [...currentUrls, remoteUrl], { shouldValidate: true });
+    form.setValue('imageHint', 'remote image', { shouldValidate: true });
+    setRemoteUrl('');
   };
 
   if (loading) {
@@ -204,7 +216,6 @@ export default function ProductsPage() {
   }
 
   const activeDialog = editingProduct ? 'edit' : (isAddDialogOpen ? 'add' : null);
-  const onDialogSubmit = editingProduct ? form.handleSubmit(onEditSubmit) : form.handleSubmit(onAddSubmit);
 
   return (
     <>
@@ -241,11 +252,12 @@ export default function ProductsPage() {
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>{activeDialog === 'edit' ? 'Edit Product' : 'Add New Product'}</DialogTitle>
+            <DialogDescription>Enter the details for your artisan chocolate creation.</DialogDescription>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={onDialogSubmit}>
+            <form onSubmit={form.handleSubmit(activeDialog === 'edit' ? onEditSubmit : onAddSubmit)}>
               <ScrollArea className="h-[60vh] pr-6">
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <FormField control={form.control} name="name" render={({ field }) => (
                     <FormItem><FormLabel>Product Name</FormLabel><FormControl><Input placeholder="e.g., Velvet Noir 85%" {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
@@ -263,34 +275,86 @@ export default function ProductsPage() {
                   <FormField control={form.control} name="availabilityStatus" render={({ field }) => (
                     <FormItem><FormLabel>Availability</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select availability" /></SelectTrigger></FormControl><SelectContent><SelectItem value="In Stock">In Stock</SelectItem><SelectItem value="Out of Stock">Out of Stock</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                   )} />
-                  <FormField control={form.control} name="imageUrls" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Product Images</FormLabel>
-                      <Tabs defaultValue="gallery" className="w-full" onValueChange={(tab) => { if (tab !== 'camera') stopCamera(); }}>
-                        <TabsList className="grid w-full grid-cols-4"><TabsTrigger value="gallery">Gallery</TabsTrigger><TabsTrigger value="camera">Camera</TabsTrigger><TabsTrigger value="url">URL</TabsTrigger><TabsTrigger value="upload">Upload</TabsTrigger></TabsList>
-                        <TabsContent value="gallery">
-                          <div className="pt-4">
-                            <RadioGroup onValueChange={(value) => {
-                              const selectedImage = PlaceHolderImages.find(img => img.imageUrl === value);
-                              if (selectedImage) {
-                                const seed = selectedImage.imageUrl.split('/seed/')[1].split('/')[0];
-                                field.onChange([selectedImage.imageUrl, `https://picsum.photos/seed/${seed}_a/400/300`, `https://picsum.photos/seed/${seed}_b/400/300`, `https://picsum.photos/seed/${seed}_c/400/300`]);
-                                form.setValue('imageHint', selectedImage.imageHint, { shouldValidate: true });
-                              }
-                            }} value={field.value?.[0]} className="grid grid-cols-3 gap-4">
-                              {PlaceHolderImages.map((image) => (
-                                <FormItem key={image.id}><RadioGroupItem value={image.imageUrl} id={image.id} className="peer sr-only" /><Label htmlFor={image.id} className="block cursor-pointer rounded-md border-2 border-muted bg-popover hover:border-accent peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><Image src={image.imageUrl} alt={image.description} width={200} height={150} className="rounded-md object-cover aspect-[4/3] w-full" /></Label></FormItem>
-                              ))}
-                            </RadioGroup>
-                          </div>
-                        </TabsContent>
-                        <TabsContent value="camera">
-                          <div className="space-y-4 pt-4"><div className="w-full aspect-video bg-muted rounded-md flex items-center justify-center overflow-hidden"><video ref={videoRef} className={cn("w-full h-full object-cover", hasCameraPermission === true ? 'block' : 'hidden')} autoPlay muted playsInline />{hasCameraPermission !== true && <Camera className="h-16 w-16 text-muted-foreground" />}</div><div className="flex gap-2">{hasCameraPermission !== true ? <Button type="button" onClick={enableCamera}>Enable Camera</Button> : <Button type="button" onClick={capturePhoto}>Capture Photo</Button>}</div></div>
-                        </TabsContent>
-                      </Tabs>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                  
+                  <div className="space-y-4">
+                    <FormLabel>Product Visuals</FormLabel>
+                    <Tabs defaultValue="gallery" className="w-full" onValueChange={(tab) => { if (tab !== 'camera') stopCamera(); }}>
+                      <TabsList className="grid w-full grid-cols-4">
+                        <TabsTrigger value="gallery"><ImageIcon className="h-4 w-4 mr-2" /> Gallery</TabsTrigger>
+                        <TabsTrigger value="camera"><Camera className="h-4 w-4 mr-2" /> Camera</TabsTrigger>
+                        <TabsTrigger value="url"><LinkIcon className="h-4 w-4 mr-2" /> URL</TabsTrigger>
+                        <TabsTrigger value="upload"><Upload className="h-4 w-4 mr-2" /> Upload</TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="gallery" className="pt-4">
+                        <RadioGroup onValueChange={(value) => {
+                          const selectedImage = PlaceHolderImages.find(img => img.imageUrl === value);
+                          if (selectedImage) {
+                            form.setValue('imageUrls', [selectedImage.imageUrl], { shouldValidate: true });
+                            form.setValue('imageHint', selectedImage.imageHint, { shouldValidate: true });
+                          }
+                        }} value={form.watch('imageUrls')?.[0]} className="grid grid-cols-3 gap-4">
+                          {PlaceHolderImages.map((image) => (
+                            <div key={image.id} className="relative">
+                              <RadioGroupItem value={image.imageUrl} id={image.id} className="peer sr-only" />
+                              <Label htmlFor={image.id} className="block cursor-pointer rounded-md border-2 border-muted bg-popover hover:border-accent peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary overflow-hidden">
+                                <Image src={image.imageUrl} alt={image.description} width={200} height={150} className="object-cover aspect-[4/3] w-full" />
+                              </Label>
+                            </div>
+                          ))}
+                        </RadioGroup>
+                      </TabsContent>
+                      
+                      <TabsContent value="camera" className="pt-4 space-y-4">
+                        <div className="w-full aspect-video bg-muted rounded-md flex items-center justify-center overflow-hidden border-2 border-dashed">
+                          <video ref={videoRef} className={cn("w-full h-full object-cover", hasCameraPermission === true ? 'block' : 'hidden')} autoPlay muted playsInline />
+                          {hasCameraPermission !== true && <Camera className="h-16 w-16 text-muted-foreground opacity-20" />}
+                        </div>
+                        <div className="flex justify-center gap-2">
+                          {hasCameraPermission !== true ? (
+                            <Button type="button" onClick={enableCamera} variant="outline">Enable Camera Access</Button>
+                          ) : (
+                            <Button type="button" onClick={capturePhoto}>Capture Artisanal Shot</Button>
+                          )}
+                        </div>
+                      </TabsContent>
+
+                      <TabsContent value="url" className="pt-4 space-y-4">
+                        <div className="flex gap-2">
+                          <Input placeholder="Enter remote image URL..." value={remoteUrl} onChange={(e) => setRemoteUrl(e.target.value)} />
+                          <Button type="button" onClick={handleAddRemoteUrl}>Add URL</Button>
+                        </div>
+                        <FormDescription>Link to professional photography hosted elsewhere.</FormDescription>
+                      </TabsContent>
+
+                      <TabsContent value="upload" className="pt-4 space-y-4">
+                        <div className="grid w-full items-center gap-1.5">
+                          <Label htmlFor="picture">Select Files</Label>
+                          <Input id="picture" type="file" multiple accept="image/*" onChange={handleFileChange} className="cursor-pointer" />
+                        </div>
+                        <FormDescription>Upload up to 4 high-resolution JPG/PNG images.</FormDescription>
+                      </TabsContent>
+                    </Tabs>
+                    
+                    {form.watch('imageUrls')?.length > 0 && (
+                      <div className="mt-4 space-y-2">
+                        <Label className="text-xs text-muted-foreground uppercase tracking-wider">Active Selection ({form.watch('imageUrls').length})</Label>
+                        <div className="flex gap-2 overflow-x-auto pb-2">
+                          {form.watch('imageUrls').map((url, i) => (
+                            <div key={i} className="relative h-16 w-20 shrink-0 rounded-md overflow-hidden border">
+                              <Image src={url} alt="" fill className="object-cover" />
+                              <button type="button" className="absolute top-0 right-0 bg-black/50 text-white p-0.5" onClick={() => {
+                                const newUrls = [...form.getValues('imageUrls')];
+                                newUrls.splice(i, 1);
+                                form.setValue('imageUrls', newUrls, { shouldValidate: true });
+                              }}><Trash2 className="h-3 w-3" /></button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <FormField control={form.control} name="imageUrls" render={() => <FormMessage />} />
+                  </div>
                   <canvas ref={canvasRef} className="hidden" />
                 </div>
               </ScrollArea>
@@ -298,7 +362,7 @@ export default function ProductsPage() {
                 <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
                 <Button type="submit" disabled={isSaving}>
                   {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  Save Changes
+                  {activeDialog === 'edit' ? 'Update Creation' : 'Save New Creation'}
                 </Button>
               </DialogFooter>
             </form>
@@ -309,50 +373,42 @@ export default function ProductsPage() {
       <PageHeader title="Products" actions={<Button onClick={() => setIsAddDialogOpen(true)}><PlusCircle className="mr-2 h-4 w-4" />Add Product</Button>} />
       
       {products?.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed rounded-lg">
-           <PackageSearch className="h-12 w-12 text-muted-foreground mb-4" />
-           <p className="text-muted-foreground">No products found. Start by adding your first creation.</p>
+        <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed rounded-lg bg-stone-50/50">
+           <PackageSearch className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
+           <p className="text-muted-foreground italic">No products found in the database. Start adding your collection.</p>
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {products?.map((product) => (
-            <Card key={product.id} className="flex flex-col">
+            <Card key={product.id} className="flex flex-col group overflow-hidden border-stone-100 hover:shadow-xl transition-all duration-500">
               <CardHeader className="p-0 relative">
-                 <button type="button" className="block w-full aspect-[4/3] relative rounded-t-lg overflow-hidden" onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: 0, productName: product.name })}>
-                    <Image src={product.imageUrls?.[0] || 'https://picsum.photos/seed/default/400/300'} alt={product.name} fill className="object-cover" data-ai-hint={product.imageHint} />
+                 <button type="button" className="block w-full aspect-[4/3] relative overflow-hidden" onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: 0, productName: product.name })}>
+                    <Image src={product.imageUrls?.[0] || 'https://picsum.photos/seed/default/400/300'} alt={product.name} fill className="object-cover transition-transform duration-700 group-hover:scale-110" data-ai-hint={product.imageHint} />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500 flex items-center justify-center">
+                        <ImageIcon className="text-white opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8" />
+                    </div>
                   </button>
               </CardHeader>
-              <CardContent className="p-4 flex-grow">
-                <div className="grid grid-cols-3 gap-2 mb-4">
+              <CardContent className="p-5 flex-grow space-y-4">
+                <div className="grid grid-cols-3 gap-2">
                   {product.imageUrls?.slice(1, 4).map((url, index) => (
-                     <button key={index} type="button" className="block w-full aspect-[4/3] relative rounded-md overflow-hidden" onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: index + 1, productName: product.name })}><Image src={url} alt={`Thumbnail ${index + 1}`} fill className="object-cover" data-ai-hint={product.imageHint} /></button>
+                     <button key={index} type="button" className="block w-full aspect-square relative rounded-md overflow-hidden border border-stone-50" onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: index + 1, productName: product.name })}><Image src={url} alt="" fill className="object-cover" /></button>
                   ))}
                 </div>
-                <CardTitle className="font-headline text-lg mb-1">{product.name}</CardTitle>
-                <p className="text-sm text-muted-foreground">{product.flavor}</p>
-                <div className="flex justify-between items-center mt-4">
-                  <p className="text-lg font-semibold">₹{product.price}</p>
-                   <Badge variant={product.availabilityStatus === 'In Stock' ? 'default' : 'destructive'} className={product.availabilityStatus === 'In Stock' ? 'bg-green-700 hover:bg-green-800' : ''}>{product.availabilityStatus}</Badge>
+                <div>
+                    <CardTitle className="font-headline text-xl mb-1 group-hover:text-primary transition-colors">{product.name}</CardTitle>
+                    <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold">{product.flavor}</p>
+                </div>
+                <div className="flex justify-between items-center pt-2">
+                  <p className="text-xl font-bold text-primary">₹{product.price.toLocaleString()}</p>
+                   <Badge variant={product.availabilityStatus === 'In Stock' ? 'default' : 'destructive'} className={cn(product.availabilityStatus === 'In Stock' ? 'bg-green-700 hover:bg-green-800' : '', "uppercase tracking-tighter text-[9px]")}>{product.availabilityStatus}</Badge>
                 </div>
               </CardContent>
-              <CardFooter className="p-4 pt-0"><Button variant="outline" className="w-full" onClick={() => setEditingProduct(product)}>Edit Product</Button></CardFooter>
+              <CardFooter className="p-5 pt-0"><Button variant="outline" className="w-full rounded-xl border-stone-200" onClick={() => setEditingProduct(product)}><Edit className="h-3 w-3 mr-2" /> Edit Details</Button></CardFooter>
             </Card>
           ))}
         </div>
       )}
     </>
-  );
-}
-
-function PackageSearch({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14" />
-      <path d="M16.5 9.4 7.55 4.24" />
-      <polyline points="3.29 7 12 12 20.71 7" />
-      <line x1="12" y1="22" x2="12" y2="12" />
-      <circle cx="18.5" cy="15.5" r="2.5" />
-      <path d="M20.27 17.27 22 19" />
-    </svg>
   );
 }
