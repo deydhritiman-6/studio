@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, CreditCard, ShieldCheck, Lock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
+import Image from 'next/image';
 
 const checkoutSchema = z.object({
   name: z.string().min(2, 'Full name is required'),
