@@ -46,12 +46,6 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
                 )}
              </Link>
           </Button>
-          <div className="h-8 w-px bg-stone-200 hidden sm:block"></div>
-          <Button variant="outline" asChild className="hidden sm:flex border-stone-200 hover:bg-stone-50 text-stone-600 font-bold uppercase text-[10px] tracking-widest">
-            <Link href="/login">
-              <User className="mr-2 h-3 w-3" /> Staff Portal
-            </Link>
-          </Button>
         </div>
       </header>
       <main className="flex-1 container mx-auto py-12 px-4 md:px-6 max-w-7xl">
