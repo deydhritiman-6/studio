@@ -9,10 +9,9 @@ import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { distributors as initialDistributors } from '@/lib/data';
 import indianStates from '@/lib/indian-states.json';
 import type { Distributor } from '@/lib/types';
-import { MoreHorizontal, PlusCircle } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
@@ -22,6 +21,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection, doc, setDoc } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const distributorFormSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -48,31 +51,9 @@ const getStatusBadgeClassName = (status: Distributor['status']) => {
 const indianRegions = ['North India', 'South India', 'East India', 'West India', 'Central India', 'North-East India'];
 
 export default function DistributorsPage() {
-  const [distributors, setDistributors] = useState<Distributor[]>(() => {
-    if (typeof window === 'undefined') {
-      return initialDistributors;
-    }
-    try {
-      const savedDistributors = localStorage.getItem('roseberry-distributors');
-      if (savedDistributors) {
-        return JSON.parse(savedDistributors);
-      }
-      return initialDistributors;
-    } catch (error) {
-      console.error("Failed to read distributors from localStorage", error);
-      return initialDistributors;
-    }
-  });
-  
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem('roseberry-distributors', JSON.stringify(distributors));
-      } catch (error) {
-        console.error("Failed to save distributors to localStorage", error);
-      }
-    }
-  }, [distributors]);
+  const firestore = useFirestore();
+  const distributorsQuery = useMemo(() => firestore ? collection(firestore, 'distributors') : null, [firestore]);
+  const { data: distributors, loading } = useCollection<Distributor>(distributorsQuery);
 
   const [isAddOrEditDialogOpen, setIsAddOrEditDialogOpen] = useState(false);
   const [editingDistributor, setEditingDistributor] = useState<Distributor | null>(null);
@@ -82,6 +63,9 @@ export default function DistributorsPage() {
 
   const form = useForm<DistributorFormValues>({
     resolver: zodResolver(distributorFormSchema),
+    defaultValues: {
+      status: 'Active',
+    }
   });
 
   const selectedRegion = form.watch('region');
@@ -101,7 +85,16 @@ export default function DistributorsPage() {
 
   useEffect(() => {
     if (editingDistributor) {
-      form.reset(editingDistributor);
+      form.reset({
+        name: editingDistributor.name,
+        contactPerson: editingDistributor.contactPerson,
+        email: editingDistributor.email,
+        phone: editingDistributor.phone,
+        region: editingDistributor.region,
+        state: editingDistributor.state,
+        district: editingDistributor.district,
+        status: editingDistributor.status,
+      });
     } else {
       form.reset({
         name: '',
@@ -117,7 +110,6 @@ export default function DistributorsPage() {
   }, [editingDistributor, form]);
   
   useEffect(() => {
-    // When the region changes, reset state and district
     if (form.getValues('state') && !statesForSelectedRegion.some(s => s.name === form.getValues('state'))) {
       form.setValue('state', '');
       form.setValue('district', '');
@@ -125,45 +117,40 @@ export default function DistributorsPage() {
   }, [selectedRegion, statesForSelectedRegion, form]);
 
   useEffect(() => {
-    // When the state changes, reset the district field
     if (form.getValues('district') && !districtsForSelectedState.includes(form.getValues('district'))) {
       form.setValue('district', '');
     }
   }, [selectedState, districtsForSelectedState, form]);
 
   const onDialogSubmit = (values: DistributorFormValues) => {
-    if (editingDistributor) {
-      const updatedDistributor: Distributor = {
-        ...editingDistributor,
-        ...values,
-      };
-      setDistributors(distributors.map(d => d.id === editingDistributor.id ? updatedDistributor : d));
-      toast({ title: 'Distributor Updated', description: `${values.name}'s details have been updated.` });
-    } else {
-      const newDistributor: Distributor = {
-        id: `D${String(distributors.length + 10).padStart(3, '0')}`,
-        lastOrderDate: new Date().toISOString().split('T')[0],
-        ...values,
-      };
-      setDistributors([newDistributor, ...distributors]);
-      toast({ title: 'Distributor Added', description: `${values.name} has been added.` });
-    }
-    setIsAddOrEditDialogOpen(false);
-    setEditingDistributor(null);
+    if (!firestore) return;
+
+    const id = editingDistributor?.id || `D${Date.now()}`;
+    const distributorRef = doc(firestore, 'distributors', id);
+    const distributorData = {
+      ...values,
+      id,
+      lastOrderDate: editingDistributor?.lastOrderDate || new Date().toISOString().split('T')[0],
+    };
+
+    setDoc(distributorRef, distributorData)
+      .then(() => {
+        setIsAddOrEditDialogOpen(false);
+        setEditingDistributor(null);
+        toast({ title: editingDistributor ? 'Distributor Updated' : 'Distributor Added', description: `${values.name} has been saved.` });
+      })
+      .catch(async (error) => {
+        const permissionError = new FirestorePermissionError({
+          path: distributorRef.path,
+          operation: editingDistributor ? 'update' : 'create',
+          requestResourceData: distributorData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
   
   const handleOpenAddDialog = () => {
     setEditingDistributor(null);
-    form.reset({
-        name: '',
-        contactPerson: '',
-        email: '',
-        phone: '',
-        region: '',
-        state: '',
-        district: '',
-        status: 'Active',
-    });
     setIsAddOrEditDialogOpen(true);
   };
   
@@ -171,6 +158,8 @@ export default function DistributorsPage() {
     setEditingDistributor(distributor);
     setIsAddOrEditDialogOpen(true);
   };
+
+  if (loading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin" /></div>;
 
   return (
     <>
@@ -181,7 +170,6 @@ export default function DistributorsPage() {
         </Button>
       } />
       
-      {/* View Details Dialog */}
       <Dialog open={!!viewingDistributor} onOpenChange={(open) => !open && setViewingDistributor(null)}>
         {viewingDistributor && (
           <DialogContent>
@@ -240,14 +228,10 @@ export default function DistributorsPage() {
         )}
       </Dialog>
       
-      {/* Add/Edit Dialog */}
       <Dialog open={isAddOrEditDialogOpen} onOpenChange={setIsAddOrEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>{editingDistributor ? 'Edit Distributor' : 'Add New Distributor'}</DialogTitle>
-            <DialogDescription>
-              {editingDistributor ? "Update the distributor's details." : "Fill in the details for the new distributor."}
-            </DialogDescription>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onDialogSubmit)}>
@@ -284,7 +268,7 @@ export default function DistributorsPage() {
                   <FormField control={form.control} name="region" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Region</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a region" />
@@ -338,7 +322,7 @@ export default function DistributorsPage() {
                   <FormField control={form.control} name="status" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Status</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a status" />
@@ -381,7 +365,7 @@ export default function DistributorsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {distributors.map((distributor) => (
+              {distributors?.map((distributor) => (
                 <TableRow key={distributor.id}>
                   <TableCell className="font-medium">{distributor.name}</TableCell>
                   <TableCell>{distributor.contactPerson}</TableCell>

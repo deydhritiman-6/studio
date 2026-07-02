@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -14,16 +14,18 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogClose,
 } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { recipes as initialRecipes } from '@/lib/data';
 import type { Recipe } from '@/lib/types';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection, doc, setDoc } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const recipeFormSchema = z.object({
   name: z.string().min(1, 'Recipe name is required'),
@@ -32,7 +34,10 @@ const recipeFormSchema = z.object({
 });
 
 export default function RecipesPage() {
-  const [recipes, setRecipes] = useState<Recipe[]>(initialRecipes);
+  const firestore = useFirestore();
+  const recipesQuery = useMemo(() => firestore ? collection(firestore, 'recipes') : null, [firestore]);
+  const { data: recipes, loading } = useCollection<Recipe>(recipesQuery);
+
   const [viewRecipe, setViewRecipe] = useState<Recipe | null>(null);
   const [isAddRecipeOpen, setIsAddRecipeOpen] = useState(false);
   const { toast } = useToast();
@@ -47,29 +52,45 @@ export default function RecipesPage() {
   });
 
   function onAddSubmit(values: z.infer<typeof recipeFormSchema>) {
-    const newRecipe: Recipe = {
-      id: `R${String(recipes.length + 1).padStart(3, '0')}`,
+    if (!firestore) return;
+    
+    const id = `R${Date.now()}`;
+    const recipeRef = doc(firestore, 'recipes', id);
+    
+    const ingredients = values.ingredients.split(',').map(item => {
+      const parts = item.trim().split('(');
+      const name = parts[0].trim();
+      const quantity = parts.length > 1 ? parts[1].replace(')', '').trim() : '';
+      return { name, quantity };
+    }).filter(ing => ing.name);
+
+    const recipeData = {
+      id,
       name: values.name,
       associatedProduct: values.associatedProduct,
-      ingredients: values.ingredients.split(',').map(item => {
-        const parts = item.trim().split('(');
-        const name = parts[0].trim();
-        const quantity = parts.length > 1 ? parts[1].replace(')', '').trim() : '';
-        return { name, quantity };
-      }).filter(ing => ing.name), // Ensure we don't add empty ingredients
+      ingredients,
     };
-    setRecipes([newRecipe, ...recipes]);
-    setIsAddRecipeOpen(false);
-    form.reset();
-    toast({
-      title: 'Recipe Added',
-      description: `${newRecipe.name} has been added to your recipes.`,
-    });
+
+    setDoc(recipeRef, recipeData)
+      .then(() => {
+        setIsAddRecipeOpen(false);
+        form.reset();
+        toast({ title: 'Recipe Added', description: `${values.name} has been added to your recipes.` });
+      })
+      .catch(async (error) => {
+        const permissionError = new FirestorePermissionError({
+          path: recipeRef.path,
+          operation: 'create',
+          requestResourceData: recipeData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
   }
+
+  if (loading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin" /></div>;
 
   return (
     <>
-      {/* --- ADD RECIPE DIALOG --- */}
       <Dialog open={isAddRecipeOpen} onOpenChange={setIsAddRecipeOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -130,7 +151,6 @@ export default function RecipesPage() {
         </DialogContent>
       </Dialog>
       
-      {/* --- VIEW RECIPE DIALOG --- */}
       <Dialog open={!!viewRecipe} onOpenChange={(open) => !open && setViewRecipe(null)}>
         {viewRecipe && (
           <DialogContent className="sm:max-w-md">
@@ -141,8 +161,8 @@ export default function RecipesPage() {
             <div className="py-4">
               <h4 className="font-semibold mb-2 text-foreground">Full Ingredient List:</h4>
               <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                {viewRecipe.ingredients.map((ingredient) => (
-                  <li key={ingredient.name}>{ingredient.name} <span className="text-xs">({ingredient.quantity})</span></li>
+                {viewRecipe.ingredients.map((ingredient, i) => (
+                  <li key={i}>{ingredient.name} <span className="text-xs">({ingredient.quantity})</span></li>
                 ))}
               </ul>
             </div>
@@ -160,7 +180,7 @@ export default function RecipesPage() {
         </Button>
       } />
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {recipes.map((recipe) => (
+        {recipes?.map((recipe) => (
           <Card key={recipe.id} className="flex flex-col">
             <CardHeader>
               <CardTitle className="font-headline">{recipe.name}</CardTitle>
@@ -169,8 +189,8 @@ export default function RecipesPage() {
             <CardContent className="flex-grow">
               <h4 className="font-semibold mb-2">Key Ingredients:</h4>
               <ul className="list-disc list-inside text-sm text-muted-foreground">
-                {recipe.ingredients.slice(0, 3).map((ingredient) => (
-                  <li key={ingredient.name}>{ingredient.name} ({ingredient.quantity})</li>
+                {recipe.ingredients.slice(0, 3).map((ingredient, i) => (
+                  <li key={i}>{ingredient.name} ({ingredient.quantity})</li>
                 ))}
                 {recipe.ingredients.length > 3 && <li>...and more</li>}
               </ul>

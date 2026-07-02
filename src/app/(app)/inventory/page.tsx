@@ -171,7 +171,7 @@ export default function InventoryPage() {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {items.length > 0 ? (
+        {items && items.length > 0 ? (
           items.map((item) => (
             <TableRow key={item.id}>
               <TableCell className="font-medium">{item.name}</TableCell>

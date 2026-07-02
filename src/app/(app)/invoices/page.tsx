@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -9,17 +9,20 @@ import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { orders as initialOrders, customers, products } from '@/lib/data';
-import { MoreHorizontal, PlusCircle } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import type { Order } from '@/lib/types';
+import type { Order, Product, Customer } from '@/lib/types';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection, doc, setDoc, updateDoc } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const getStatusBadgeVariant = (status: Order['paymentStatus']) => {
   switch (status) {
@@ -54,7 +57,15 @@ const invoiceFormSchema = z.object({
 type InvoiceFormValues = z.infer<typeof invoiceFormSchema>;
 
 export default function InvoicesPage() {
-  const [invoices, setInvoices] = useState<Order[]>(initialOrders);
+  const firestore = useFirestore();
+  const ordersQuery = useMemo(() => firestore ? collection(firestore, 'orders') : null, [firestore]);
+  const customersQuery = useMemo(() => firestore ? collection(firestore, 'customers') : null, [firestore]);
+  const productsQuery = useMemo(() => firestore ? collection(firestore, 'products') : null, [firestore]);
+
+  const { data: invoices, loading: ordersLoading } = useCollection<Order>(ordersQuery);
+  const { data: customers } = useCollection<Customer>(customersQuery);
+  const { data: products } = useCollection<Product>(productsQuery);
+
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [viewingInvoice, setViewingInvoice] = useState<Order | null>(null);
   const { toast } = useToast();
@@ -63,57 +74,76 @@ export default function InvoicesPage() {
     resolver: zodResolver(invoiceFormSchema),
     defaultValues: {
       customerId: '',
-      totalAmount: undefined,
       paymentStatus: 'Pending',
     },
   });
 
   function handleCreateInvoice(values: InvoiceFormValues) {
-    const customer = customers.find(c => c.id === values.customerId);
+    if (!firestore) return;
+    
+    const customer = customers?.find(c => c.id === values.customerId);
     if (!customer) {
       toast({ variant: 'destructive', title: 'Error', description: 'Selected customer not found.' });
       return;
     }
 
-    const newInvoice: Order = {
-      id: `INV-${String(invoices.length + 100).padStart(3, '0')}`,
+    const orderId = `ORD-${Date.now()}`;
+    const invoiceRef = doc(firestore, 'orders', orderId);
+    
+    const newInvoice = {
+      id: orderId,
       customerId: values.customerId,
       customerName: customer.name,
       orderDate: new Date().toISOString().split('T')[0],
       totalAmount: values.totalAmount,
-      products: [], // Simplified for this form
+      products: [],
       paymentStatus: values.paymentStatus,
-      deliveryStatus: 'Pending', // Default status for new invoices
+      deliveryStatus: 'Pending',
     };
 
-    setInvoices([newInvoice, ...invoices]);
-    setIsCreateOpen(false);
-    form.reset();
-    toast({
-      title: 'Invoice Created',
-      description: `Invoice for ${customer.name} has been created successfully.`,
-    });
+    setDoc(invoiceRef, newInvoice)
+      .then(() => {
+        setIsCreateOpen(false);
+        form.reset();
+        toast({ title: 'Invoice Created', description: `Invoice for ${customer.name} has been created successfully.` });
+      })
+      .catch(async (error) => {
+        const permissionError = new FirestorePermissionError({
+          path: invoiceRef.path,
+          operation: 'create',
+          requestResourceData: newInvoice,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
   }
 
   function handleMarkAsPaid(invoiceId: string) {
-    setInvoices(invoices.map(inv => inv.id === invoiceId ? { ...inv, paymentStatus: 'Paid' } : inv));
-    toast({
-      title: 'Invoice Updated',
-      description: `Invoice ${invoiceId} has been marked as Paid.`,
-    });
+    if (!firestore) return;
+    const invoiceRef = doc(firestore, 'orders', invoiceId);
+    
+    updateDoc(invoiceRef, { paymentStatus: 'Paid' })
+      .then(() => {
+        toast({ title: 'Invoice Updated', description: `Invoice ${invoiceId} has been marked as Paid.` });
+      })
+      .catch(async (error) => {
+        const permissionError = new FirestorePermissionError({
+          path: invoiceRef.path,
+          operation: 'update',
+          requestResourceData: { paymentStatus: 'Paid' },
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
   }
 
   function handleDownloadPdf(invoiceId: string) {
-    toast({
-      title: 'Downloading PDF',
-      description: `Preparing to download PDF for invoice ${invoiceId}.`,
-    });
-    // In a real app, you would trigger a PDF generation and download here.
+    toast({ title: 'Downloading PDF', description: `Preparing to download PDF for invoice ${invoiceId}.` });
   }
   
   const getProductName = (productId: string) => {
-    return products.find(p => p.id === productId)?.name || `Product ${productId}`;
+    return products?.find(p => p.id === productId)?.name || `Product ${productId}`;
   };
+
+  if (ordersLoading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin" /></div>;
 
   return (
     <>
@@ -124,7 +154,6 @@ export default function InvoicesPage() {
         </Button>
       }/>
 
-      {/* Create Invoice Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
           <DialogHeader>
@@ -146,7 +175,7 @@ export default function InvoicesPage() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {customers.map(customer => (
+                        {customers?.map(customer => (
                           <SelectItem key={customer.id} value={customer.id}>{customer.name}</SelectItem>
                         ))}
                       </SelectContent>
@@ -197,7 +226,6 @@ export default function InvoicesPage() {
         </DialogContent>
       </Dialog>
       
-      {/* View Invoice Dialog */}
       <Dialog open={!!viewingInvoice} onOpenChange={() => setViewingInvoice(null)}>
         {viewingInvoice && (
           <DialogContent>
@@ -215,12 +243,12 @@ export default function InvoicesPage() {
                 <p className="text-sm font-semibold">{viewingInvoice.orderDate}</p>
               </div>
               <Separator />
-               {viewingInvoice.products.length > 0 && (
+               {viewingInvoice.products && viewingInvoice.products.length > 0 && (
                 <div>
                     <h4 className="text-sm font-medium text-muted-foreground mb-2">Products</h4>
                     <ul className="list-disc list-inside text-sm text-muted-foreground">
-                        {viewingInvoice.products.map(p => (
-                            <li key={p.productId}>{getProductName(p.productId)} x {p.quantity}</li>
+                        {viewingInvoice.products.map((p, i) => (
+                            <li key={i}>{getProductName(p.productId)} x {p.quantity}</li>
                         ))}
                     </ul>
                 </div>
@@ -258,7 +286,7 @@ export default function InvoicesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {invoices.map((invoice) => (
+              {invoices?.map((invoice) => (
                 <TableRow key={invoice.id}>
                   <TableCell className="font-medium">{invoice.id.replace('ORD', 'INV')}</TableCell>
                   <TableCell>{invoice.customerName}</TableCell>
