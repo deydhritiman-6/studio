@@ -38,14 +38,14 @@ export default function LoginPage() {
     setAuthError(null);
 
     if (!auth) {
-      setAuthError('Firebase Authentication is not initialized. Please verify your configuration in src/firebase/config.ts.');
+      setAuthError('Firebase Authentication is not initialized.');
       return;
     }
     
     setIsLoading(true);
 
     try {
-      // Sign in anonymously to satisfy Firestore security rules (auth != null)
+      // Sign in anonymously to satisfy Firestore security rules
       await signInAnonymously(auth);
       
       const userToLogin = userCredentials[role];
@@ -63,9 +63,9 @@ export default function LoginPage() {
       let message = 'An unexpected error occurred during authentication.';
       
       if (error.code === 'auth/api-key-not-valid') {
-        message = 'The Firebase API key is invalid. Please update the apiKey in src/firebase/config.ts with the value from your Firebase Console.';
+        message = 'The Firebase API key is invalid. Please update src/firebase/config.ts with your real API key from the Firebase Console.';
       } else if (error.code === 'auth/operation-not-allowed') {
-        message = 'Anonymous sign-in is disabled. Please enable it in the Firebase Console (Authentication > Sign-in method).';
+        message = 'Anonymous sign-in is disabled. Enable it in the Firebase Console (Authentication > Sign-in method).';
       } else if (error.code === 'auth/network-request-failed') {
         message = 'Network error. Please check your internet connection.';
       }
@@ -95,8 +95,8 @@ export default function LoginPage() {
           {authError && (
             <Alert variant="destructive" className="mb-6 rounded-xl border-2">
               <ShieldAlert className="h-4 w-4" />
-              <AlertTitle className="text-xs font-bold uppercase tracking-wider">Connection Blocked</AlertTitle>
-              <AlertDescription className="text-xs mt-1 leading-relaxed">
+              <AlertTitle className="text-xs font-bold uppercase tracking-wider text-left">Connection Blocked</AlertTitle>
+              <AlertDescription className="text-xs mt-1 leading-relaxed text-left">
                 {authError}
               </AlertDescription>
             </Alert>
@@ -108,7 +108,7 @@ export default function LoginPage() {
                 <RadioGroupItem value="Super Admin" id="super-admin" className="peer sr-only" />
                 <Label
                   htmlFor="super-admin"
-                  className="flex cursor-pointer flex-col items-center justify-between rounded-2xl border-2 border-muted bg-popover p-4 text-xs font-bold uppercase tracking-widest hover:bg-stone-50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:text-primary transition-all [&:has([data-state=checked])]:border-primary"
+                  className="flex cursor-pointer flex-col items-center justify-between rounded-2xl border-2 border-muted bg-popover p-4 text-xs font-bold uppercase tracking-widest hover:bg-stone-50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:text-primary transition-all"
                 >
                   Super Admin
                 </Label>
@@ -117,7 +117,7 @@ export default function LoginPage() {
                 <RadioGroupItem value="Staff" id="staff" className="peer sr-only" />
                 <Label
                   htmlFor="staff"
-                  className="flex cursor-pointer flex-col items-center justify-between rounded-2xl border-2 border-muted bg-popover p-4 text-xs font-bold uppercase tracking-widest hover:bg-stone-50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:text-primary transition-all [&:has([data-state=checked])]:border-primary"
+                  className="flex cursor-pointer flex-col items-center justify-between rounded-2xl border-2 border-muted bg-popover p-4 text-xs font-bold uppercase tracking-widest hover:bg-stone-50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:text-primary transition-all"
                 >
                   Kitchen Staff
                 </Label>
