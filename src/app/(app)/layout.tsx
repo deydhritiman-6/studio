@@ -267,21 +267,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </header>
         <main className="flex-1 bg-background overflow-y-auto">
             <div className="p-6 lg:p-8">
-              {/* If Firebase Auth is still initializing, we show a minor loading state for the content only */}
-              {authLoading ? (
-                <div className="space-y-6">
-                  <Skeleton className="h-10 w-48" />
-                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                    <Skeleton className="h-28" />
-                    <Skeleton className="h-28" />
-                    <Skeleton className="h-28" />
-                    <Skeleton className="h-28" />
-                  </div>
-                  <Skeleton className="h-96 w-full" />
-                </div>
-              ) : (
-                children
-              )}
+              {/* Individual pages handle their own data-loading states. Rendering immediately improves perceived refresh speed. */}
+              {children}
             </div>
         </main>
       </div>
