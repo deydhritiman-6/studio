@@ -237,8 +237,8 @@ export default function ProductsPage() {
         <PageHeader title="Artisan Portfolio" />
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {[...Array(8)].map((_, i) => (
-            <Card key={i} className="rounded-[2rem] overflow-hidden border-none shadow-sm">
-               <Skeleton className="aspect-[4/3] w-full rounded-none" />
+            <Card key={i} className="animate-pulse rounded-[2rem] overflow-hidden border-none shadow-sm">
+               <div className="aspect-[4/3] bg-muted" />
                <CardContent className="p-6 space-y-4">
                   <Skeleton className="h-6 w-3/4" />
                   <Skeleton className="h-3 w-1/4" />

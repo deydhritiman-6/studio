@@ -10,7 +10,7 @@ import { Line, LineChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { Order, Customer } from '@/lib/types';
-import { format, subMonths, isWithinInterval, startOfMonth, endOfMonth } from 'date-fns';
+import { startOfMonth, endOfMonth } from 'date-fns';
 
 export default function PerformancePage() {
   const [metric, setMetric] = useState<'Revenue' | 'Sales' | 'Orders' | 'Customers'>('Revenue');
@@ -22,7 +22,6 @@ export default function PerformancePage() {
   const { data: orders } = useCollection<Order>(ordersQuery);
   const { data: customers } = useCollection<Customer>(customersQuery);
 
-  // Compute live data for current metrics to supplement the historical trends
   const livePerformanceData = useMemo(() => {
     if (!orders || !customers) return performanceData;
 
@@ -42,7 +41,6 @@ export default function PerformancePage() {
       };
     };
 
-    // Replace the most recent data point with real computed data if available
     const now = new Date();
     const currentMetrics = computeMetricsForMonth(now);
 
@@ -129,7 +127,7 @@ export default function PerformancePage() {
                       indicator="dot"
                       formatter={(value, name, item) => {
                         const itemConfig = performanceChartConfig[name as keyof typeof performanceChartConfig];
-                        const monthLabel = name === "previous" ? item.payload.previousMonthName : item.payload.currentMonthName;
+                        const monthLabel = name === "previous" ? (item.payload as any).previousMonthName : (item.payload as any).currentMonthName;
 
                         return (
                            <div className="flex w-full items-stretch justify-between gap-4">
