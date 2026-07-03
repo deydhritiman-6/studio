@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,12 +11,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, CreditCard, ShieldCheck, Lock, Sparkles, MapPin } from 'lucide-react';
+import { Loader2, CreditCard, Lock, Sparkles, MapPin, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import { useFirestore } from '@/firebase';
-import { collection, doc, setDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, query, where, getDocs, updateDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -74,7 +74,7 @@ export default function CheckoutPage() {
       return;
     }
     
-    if (!firestore) return;
+    if (!firestore || isLoading) return;
 
     setIsLoading(true);
     
@@ -92,8 +92,45 @@ export default function CheckoutPage() {
 
     const orderRef = doc(firestore, 'orders', orderId);
 
+    // 1. Create the order
     setDoc(orderRef, newOrder)
-      .then(() => {
+      .then(async () => {
+        // 2. Deduct inventory stock and sync product status
+        for (const item of cart) {
+          const invQuery = query(
+            collection(firestore, 'inventory'),
+            where('category', '==', 'Finished Products'),
+            where('name', '==', item.name)
+          );
+          
+          try {
+            const snapshot = await getDocs(invQuery);
+            if (!snapshot.empty) {
+              const invDoc = snapshot.docs[0];
+              const currentStock = invDoc.data().stockLevel || 0;
+              const newStock = Math.max(0, currentStock - item.quantity);
+              
+              let newStatus = 'In Stock';
+              if (newStock === 0) newStatus = 'Out of Stock';
+              else if (newStock <= 10) newStatus = 'Low Stock';
+
+              // Update inventory
+              updateDoc(invDoc.ref, { 
+                stockLevel: newStock,
+                status: newStatus
+              });
+
+              // Sync back to Product catalog if it's out of stock
+              if (newStatus === 'Out of Stock') {
+                const productRef = doc(firestore, 'products', item.id);
+                updateDoc(productRef, { availabilityStatus: 'Out of Stock' });
+              }
+            }
+          } catch (e) {
+            console.error('Inventory sync error:', e);
+          }
+        }
+
         localStorage.removeItem('roseberry-cart');
         window.dispatchEvent(new Event('cart-updated'));
         setIsLoading(false);
@@ -136,14 +173,14 @@ export default function CheckoutPage() {
                   <FormField control={form.control} name="name" render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-stone-400 uppercase text-[9px] tracking-[0.3em] font-black">Recipient Full Name</FormLabel>
-                      <FormControl><Input placeholder="E.g., Priya Kumar" className="bg-stone-50 border-stone-100 rounded-xl h-12 focus:ring-primary/20" {...field} /></FormControl>
+                      <FormControl><Input placeholder="E.g., Priya Kumar" className="rounded-xl h-12 focus:ring-primary/20" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
                   <FormField control={form.control} name="email" render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-stone-400 uppercase text-[9px] tracking-[0.3em] font-black">Confirmation Email</FormLabel>
-                      <FormControl><Input type="email" placeholder="priya@luxury.com" className="bg-stone-50 border-stone-100 rounded-xl h-12 focus:ring-primary/20" {...field} /></FormControl>
+                      <FormControl><Input type="email" placeholder="priya@luxury.com" className="rounded-xl h-12 focus:ring-primary/20" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
@@ -153,7 +190,7 @@ export default function CheckoutPage() {
                         <FormLabel className="text-stone-400 uppercase text-[9px] tracking-[0.3em] font-black">Delivery Address</FormLabel>
                         <MapPin className="h-3 w-3 text-stone-200" />
                       </div>
-                      <FormControl><Textarea placeholder="Residence Name, Street, Landmark" className="bg-stone-50 border-stone-100 rounded-xl min-h-[120px] focus:ring-primary/20 resize-none" {...field} /></FormControl>
+                      <FormControl><Textarea placeholder="Residence Name, Street, Landmark" className="rounded-xl min-h-[120px] focus:ring-primary/20 resize-none" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
@@ -161,14 +198,14 @@ export default function CheckoutPage() {
                      <FormField control={form.control} name="city" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-stone-400 uppercase text-[9px] tracking-[0.3em] font-black">City</FormLabel>
-                        <FormControl><Input placeholder="Bengaluru" className="bg-stone-50 border-stone-100 rounded-xl h-12 focus:ring-primary/20" {...field} /></FormControl>
+                        <FormControl><Input placeholder="Bengaluru" className="rounded-xl h-12 focus:ring-primary/20" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                      <FormField control={form.control} name="zip" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-stone-400 uppercase text-[9px] tracking-[0.3em] font-black">Pincode</FormLabel>
-                        <FormControl><Input placeholder="560001" className="bg-stone-50 border-stone-100 rounded-xl h-12 focus:ring-primary/20" {...field} /></FormControl>
+                        <FormControl><Input placeholder="560001" className="rounded-xl h-12 focus:ring-primary/20" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
@@ -196,7 +233,7 @@ export default function CheckoutPage() {
                    <FormField control={form.control} name="cardNumber" render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-stone-400 uppercase text-[9px] tracking-[0.3em] font-black">Card Number</FormLabel>
-                      <FormControl><Input placeholder="•••• •••• •••• ••••" className="bg-stone-50 border-stone-100 rounded-xl h-12 text-center tracking-[0.4em] font-mono text-lg focus:ring-primary/20" maxLength={16} {...field} /></FormControl>
+                      <FormControl><Input placeholder="•••• •••• •••• ••••" className="rounded-xl h-12 text-center tracking-[0.4em] font-mono text-lg focus:ring-primary/20" maxLength={16} {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
@@ -204,14 +241,14 @@ export default function CheckoutPage() {
                      <FormField control={form.control} name="expiry" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-stone-400 uppercase text-[9px] tracking-[0.3em] font-black">Expiry Date</FormLabel>
-                        <FormControl><Input placeholder="MM / YY" className="bg-stone-50 border-stone-100 rounded-xl h-12 text-center focus:ring-primary/20" maxLength={5} {...field} /></FormControl>
+                        <FormControl><Input placeholder="MM / YY" className="rounded-xl h-12 text-center focus:ring-primary/20" maxLength={5} {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                      <FormField control={form.control} name="cvv" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-stone-400 uppercase text-[9px] tracking-[0.3em] font-black">Security Code</FormLabel>
-                        <FormControl><Input type="password" placeholder="•••" className="bg-stone-50 border-stone-100 rounded-xl h-12 text-center focus:ring-primary/20" maxLength={3} {...field} /></FormControl>
+                        <FormControl><Input type="password" placeholder="•••" className="rounded-xl h-12 text-center focus:ring-primary/20" maxLength={3} {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
