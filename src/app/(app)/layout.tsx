@@ -156,7 +156,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <SidebarTrigger className="hidden md:flex" />
         </SidebarHeader>
         <SidebarContent className="flex-1 overflow-y-auto">
-          <SidebarMenu className="px-2">
+          <SidebarMenu className="px-2 pt-4">
             {navItems.map((item) =>
               item.subItems ? (
                 <SidebarMenuItem key={item.label}>
