@@ -71,7 +71,7 @@ const navItems = [
   { href: '/gst-billing', icon: FileText, label: 'Create Invoice' },
   { href: '/invoices', icon: FileText, label: 'View Invoices' },
   { href: '/billing/shipping-status', icon: Truck, label: 'Dispatch Control' },
-  { href: '/billing/tracking-visibility', icon: Eye, label: 'Visibility Control' },
+  { href: '/billing/tracking-visibility', icon: Eye, label: 'Customer Visibility Control' },
   { href: '/distributors', icon: Truck, label: 'Distributors' },
   { href: '/broadcast', icon: Radio, label: 'Broadcasts' },
   {
@@ -262,7 +262,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
         </header>
         <div className="flex-1 bg-background overflow-y-auto">
-            <div className="p-6 lg:p-8 pt-10 lg:pt-14">
+            <div className="p-6 lg:p-8 pt-12 lg:pt-20">
               {isAuthReady && user ? children : (
                 <div className="space-y-6">
                   <Skeleton className="h-10 w-64" />
