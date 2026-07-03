@@ -1,10 +1,19 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, ShoppingBag, Truck } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SuccessPage() {
+  const [orderRef, setOrderRef] = useState<string>('');
+
+  useEffect(() => {
+    // Generate order reference only on client to avoid hydration mismatch
+    const randomRef = `RB-S${Math.floor(Math.random() * 1000000)}`;
+    setOrderRef(randomRef);
+  }, []);
+
   return (
     <div className="flex flex-col items-center justify-center py-24 space-y-8 text-center animate-in fade-in slide-in-from-top-4 duration-1000">
       <div className="relative">
@@ -26,14 +35,16 @@ export default function SuccessPage() {
           <Link href="/shop">Continue Browsing</Link>
         </Button>
         <Button asChild className="h-16 px-12 shadow-lg shadow-primary/20">
-          <Link href="/shop">
+          <Link href="/shop/my-orders">
             <ShoppingBag className="mr-3 h-5 w-5" /> View Order Status
           </Link>
         </Button>
       </div>
 
       <div className="pt-20 opacity-30">
-        <p className="text-[10px] font-bold tracking-[0.4em] uppercase text-stone-400">Order Ref: RB-S{Math.floor(Math.random() * 1000000)}</p>
+        <p className="text-[10px] font-bold tracking-[0.4em] uppercase text-stone-400">
+          Order Ref: {orderRef || '...'}
+        </p>
       </div>
     </div>
   );

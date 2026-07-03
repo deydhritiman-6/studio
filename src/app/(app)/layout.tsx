@@ -218,6 +218,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { user: firebaseUser, loading: authLoading } = useUser();
   const auth = useAuth();
   const firestore = useFirestore();
@@ -229,6 +230,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const hasLowStock = lowStockItems.length > 0;
 
   useEffect(() => {
+    setMounted(true);
     setIsClient(true);
     try {
       const storedUser = localStorage.getItem('user');
@@ -267,7 +269,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b bg-background px-6">
             <SidebarTrigger className="md:hidden" />
             <div className="flex flex-1 items-center justify-end gap-4">
-                {hasLowStock && (
+                {mounted && hasLowStock && (
                   <Button asChild variant="ghost" size="icon" className="relative">
                       <Link href="/inventory" aria-label="View low stock items">
                           <Bell className="h-6 w-6 animate-bell-shake text-yellow-500" />
@@ -277,8 +279,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       </Link>
                   </Button>
                 )}
-                {user?.role && <Badge variant="secondary">{user.role}</Badge>}
-                <DropdownMenu>
+                {mounted && user?.role && <Badge variant="secondary">{user.role}</Badge>}
+                {mounted ? (
+                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="relative h-10 w-10 rounded-full" disabled={!user}>
                         <Avatar className="h-10 w-10">
@@ -303,6 +306,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       </DropdownMenuContent>
                     )}
                   </DropdownMenu>
+                ) : (
+                  <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />
+                )}
             </div>
         </header>
         <div className="flex-1 bg-background overflow-y-auto">
