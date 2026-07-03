@@ -82,14 +82,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background p-4 bg-stone-50">
-      <Card className="w-full max-w-sm shadow-2xl border-stone-100 rounded-[2rem]">
+    <div className="flex items-center justify-center min-h-screen bg-background p-4">
+      <Card className="w-full max-w-sm shadow-2xl border-border rounded-[2rem]">
         <CardHeader className="text-center space-y-4 pt-10">
           <div className="flex justify-center">
              <Logo className="h-12" />
           </div>
-          <CardTitle className="font-headline text-3xl text-stone-900 tracking-tight leading-tight">Master Control</CardTitle>
-          <CardDescription className="text-stone-400 font-light">Select your role to access the Roseberry ecosystem.</CardDescription>
+          <CardTitle className="font-headline text-3xl tracking-tight leading-tight">Master Control</CardTitle>
+          <CardDescription className="text-muted-foreground font-light">Select your role to access the Roseberry ecosystem.</CardDescription>
         </CardHeader>
         <CardContent className="p-8 pt-2">
           {authError && (
@@ -108,7 +108,7 @@ export default function LoginPage() {
                 <RadioGroupItem value="Super Admin" id="super-admin" className="peer sr-only" />
                 <Label
                   htmlFor="super-admin"
-                  className="flex cursor-pointer flex-col items-center justify-between rounded-2xl border-2 border-muted bg-popover p-4 text-xs font-bold uppercase tracking-widest hover:bg-stone-50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:text-primary transition-all"
+                  className="flex cursor-pointer flex-col items-center justify-between rounded-2xl border-2 border-muted bg-popover p-4 text-xs font-bold uppercase tracking-widest hover:bg-muted peer-data-[state=checked]:border-primary peer-data-[state=checked]:text-primary transition-all"
                 >
                   Super Admin
                 </Label>
@@ -117,7 +117,7 @@ export default function LoginPage() {
                 <RadioGroupItem value="Staff" id="staff" className="peer sr-only" />
                 <Label
                   htmlFor="staff"
-                  className="flex cursor-pointer flex-col items-center justify-between rounded-2xl border-2 border-muted bg-popover p-4 text-xs font-bold uppercase tracking-widest hover:bg-stone-50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:text-primary transition-all"
+                  className="flex cursor-pointer flex-col items-center justify-between rounded-2xl border-2 border-muted bg-popover p-4 text-xs font-bold uppercase tracking-widest hover:bg-muted peer-data-[state=checked]:border-primary peer-data-[state=checked]:text-primary transition-all"
                 >
                   Kitchen Staff
                 </Label>
@@ -126,25 +126,25 @@ export default function LoginPage() {
 
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-stone-400 ml-1">Identity</Label>
+                <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Identity</Label>
                 <Input
                   id="email"
                   type="email"
                   required
                   value={userCredentials[role].email}
                   readOnly
-                  className="bg-stone-50 border-stone-100 h-12 rounded-xl cursor-not-allowed"
+                  className="h-12 rounded-xl cursor-not-allowed opacity-70"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest text-stone-400 ml-1">Access Key</Label>
+                <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Access Key</Label>
                 <Input
                   id="password"
                   type="password"
                   required
                   value="••••••••"
                   readOnly
-                  className="bg-stone-50 border-stone-100 h-12 rounded-xl cursor-not-allowed"
+                  className="h-12 rounded-xl cursor-not-allowed opacity-70"
                 />
               </div>
             </div>
