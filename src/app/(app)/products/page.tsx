@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
@@ -383,7 +382,7 @@ export default function ProductsPage() {
       
       <PageHeader title="Artisan Portfolio" actions={<Button onClick={() => setIsAddDialogOpen(true)} className="rounded-xl h-11 px-6 shadow-lg shadow-primary/10"><PlusCircle className="mr-2 h-4 w-4" />New Creation</Button>} />
       
-      {products?.length === 0 ? (
+      {(!products || products.length === 0) && !loading ? (
         <div className="flex flex-col items-center justify-center h-80 border-2 border-dashed rounded-[2.5rem] bg-stone-50/50 border-stone-200">
            <PackageSearch className="h-16 w-16 text-stone-200 mb-6" />
            <p className="text-stone-400 font-headline text-2xl italic">The collection is currently awaiting its first creation.</p>

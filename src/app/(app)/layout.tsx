@@ -53,6 +53,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { inventory } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
+import { useUser } from '@/firebase';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -90,6 +91,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const { user: firebaseUser, loading: authLoading } = useUser();
 
   const lowStockItems = inventory.filter(item => item.status === 'Low Stock');
   const hasLowStock = lowStockItems.length > 0;
@@ -115,7 +117,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     router.push('/login');
   };
 
-  if (!isClient || !user) {
+  // Wait for both the component to mount (isClient) AND the Firebase Auth session to be checked
+  if (!isClient || authLoading || !user) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background p-2">
         <div className="flex h-full w-full">
