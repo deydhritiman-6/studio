@@ -70,14 +70,8 @@ const navItems = [
   { href: '/inventory', icon: Boxes, label: 'Inventory' },
   { href: '/gst-billing', icon: FileText, label: 'Create Invoice' },
   { href: '/invoices', icon: FileText, label: 'View Invoices' },
-  {
-    icon: Truck,
-    label: 'Shipping Status',
-    subItems: [
-      { href: '/billing/shipping-status', icon: Truck, label: 'Live Dispatch' },
-      { href: '/billing/tracking-visibility', icon: Eye, label: 'Visibility Control' },
-    ],
-  },
+  { href: '/billing/shipping-status', icon: Truck, label: 'Live Dispatch' },
+  { href: '/billing/tracking-visibility', icon: Eye, label: 'Visibility Control' },
   { href: '/distributors', icon: Truck, label: 'Distributors' },
   { href: '/broadcast', icon: Radio, label: 'Broadcasts' },
   {
@@ -186,7 +180,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               ) : (
                 <SidebarMenuItem key={item.href}>
                    <SidebarMenuButton isActive={pathname === item.href} asChild>
-                    <Link href={item.href}>
+                    <Link href={item.href!}>
                       <item.icon />
                       <span>{item.label}</span>
                     </Link>
