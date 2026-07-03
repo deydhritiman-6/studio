@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import { useAuth, useUser } from '@/firebase';
 import { signInAnonymously } from 'firebase/auth';
+import Image from 'next/image';
 
 const DeliveryIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -34,54 +35,6 @@ const DeliveryIcon = (props: React.SVGProps<SVGSVGElement>) => (
     
     {/* Subtle Floor indicator */}
     <path d="M12 58h40" strokeWidth="1.5" opacity="0.2" />
-  </svg>
-);
-
-const RoseberryCartIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 64 64"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    {/* Cart Frame - Grey/Blue wireframe style */}
-    <path d="M12 44h34l6-22H18l-6 22z" fill="none" stroke="#64748b" strokeWidth="2.5" />
-    <path d="M52 22l4 18" stroke="#64748b" strokeWidth="2.5" />
-    <path d="M12 44l-4 8h45l4-8" stroke="#64748b" strokeWidth="2.5" fill="none" />
-    <path d="M52 22c3 0 5 1 5 4v2" stroke="#64748b" strokeWidth="2.5" fill="none" />
-    
-    {/* Wheels */}
-    <circle cx="16" cy="56" r="3.5" fill="#334155" stroke="none" />
-    <circle cx="48" cy="56" r="3.5" fill="#334155" stroke="none" />
-
-    {/* Chocolate Boxes stacked inside with vibrant colors */}
-    <g stroke="none">
-      {/* 1. Dark Navy Box (Top Left) */}
-      <rect x="18" y="10" width="12" height="18" rx="1" fill="#1e293b" transform="rotate(-15 24 19)" />
-      {/* 2. Sky Blue Box (Top Center) */}
-      <rect x="30" y="8" width="12" height="18" rx="1" fill="#7dd3fc" transform="rotate(-5 36 17)" />
-      {/* 3. Dark Brown (Top Right) */}
-      <rect x="42" y="6" width="12" height="22" rx="1" fill="#7c2d12" transform="rotate(12 48 17)" />
-      {/* 4. Cream (Front Left) */}
-      <rect x="16" y="24" width="12" height="16" rx="1" fill="#fef3c7" transform="rotate(-10 22 32)" />
-      {/* 5. Roseberry Pink (Front Center) */}
-      <rect x="26" y="20" width="15" height="19" rx="1" fill="#db2777" />
-      {/* 6. Gold/Tan (Front Right) */}
-      <rect x="41" y="22" width="13" height="18" rx="1" fill="#b45309" transform="rotate(5 47.5 31)" />
-    </g>
-
-    {/* Circular Badge with Heart on the side */}
-    <circle cx="50" cy="42" r="8" fill="#e7e5e4" stroke="#d6d3d1" strokeWidth="1" />
-    <path d="M50 45s-3-1.5-3-3.5 1.5-2 3-2 3 0.5 3 2-3 3.5-3 3.5z" fill="#f472b6" stroke="none" />
-
-    {/* Sparkles */}
-    <circle cx="58" cy="12" r="0.8" fill="#facc15" />
-    <circle cx="10" cy="8" r="1" fill="#facc15" />
-    <path d="M5 18l0.5 0.5-0.5 0.5-0.5-0.5 0.5-0.5z" fill="#facc15" stroke="none" opacity="0.4" />
   </svg>
 );
 
@@ -164,7 +117,15 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
               className="relative hover:bg-primary/10 hover:text-primary rounded-full h-16 w-16 md:h-24 md:w-24 p-0 transition-all duration-300 group shadow-sm hover:shadow-md border border-stone-100/50"
             >
                <Link href="/shop/cart" aria-label="View shopping basket">
-                  <RoseberryCartIcon className="h-10 w-10 md:h-16 md:w-16 text-stone-700 group-hover:scale-110 transition-transform duration-300" />
+                  <div className="relative h-10 w-10 md:h-16 md:w-16 flex items-center justify-center">
+                    <Image 
+                      src="/cart2.jpeg" 
+                      alt="Basket" 
+                      width={64} 
+                      height={64} 
+                      className="object-contain transition-transform duration-300 group-hover:scale-110"
+                    />
+                  </div>
                   {cartCount > 0 && (
                     <span className="absolute top-1 right-1 md:top-2 md:right-2 flex h-7 w-7 md:h-10 md:w-10 items-center justify-center rounded-full bg-gradient-to-tr from-primary to-orange-500 text-[10px] md:text-[14px] font-bold text-white border-2 border-white shadow-lg animate-in zoom-in-50 duration-500 pulse-glow">
                       {cartCount}
