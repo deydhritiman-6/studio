@@ -63,8 +63,8 @@ export default function ProductsPage() {
     defaultValues: {
       name: '',
       flavor: '',
-      price: '' as unknown as number,
-      wholesalePrice: '' as unknown as number,
+      price: 0,
+      wholesalePrice: 0,
       availabilityStatus: 'In Stock',
       imageUrls: [],
       imageHint: '',
@@ -95,8 +95,8 @@ export default function ProductsPage() {
       form.reset({
         name: '',
         flavor: '',
-        price: '' as unknown as number,
-        wholesalePrice: '' as unknown as number,
+        price: 0,
+        wholesalePrice: 0,
         availabilityStatus: 'In Stock',
         imageUrls: [],
         imageHint: '',
@@ -115,7 +115,7 @@ export default function ProductsPage() {
         canvas.height = img.height * scale;
         const ctx = canvas.getContext('2d');
         ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL('image/jpeg', 0.6)); // Quality 0.6 to stay under Firestore limits
+        resolve(canvas.toDataURL('image/jpeg', 0.6)); 
       };
       img.src = dataUrl;
     });

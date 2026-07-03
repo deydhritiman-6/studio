@@ -132,7 +132,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     router.push('/login');
   };
 
-  const isAuthReady = isClient && !authLoading;
+  // Crucial: Wait for Firebase Auth to settle and restore the user session before showing protected data pages
+  // This prevents race conditions where Firestore listeners start before the auth token is available.
+  const isAuthReady = isClient && !authLoading && (!user || !!firebaseUser);
 
   return (
     <SidebarProvider>

@@ -5,21 +5,23 @@ import { ShoppingCart, Loader2 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/firebase';
+import { useAuth, useUser } from '@/firebase';
 import { signInAnonymously } from 'firebase/auth';
 
 export default function ShopLayout({ children }: { children: React.ReactNode }) {
   const [cartCount, setCartCount] = useState(0);
   const [isAuthInitializing, setIsAuthInitializing] = useState(true);
   const auth = useAuth();
+  const { user: firebaseUser, loading: authLoading } = useUser();
 
   useEffect(() => {
-    if (!auth) return;
+    if (!auth || authLoading) return;
 
     // Ensure guests have a valid anonymous session for real-time Firestore sync
     const initAuth = async () => {
       try {
-        if (!auth.currentUser) {
+        if (!firebaseUser) {
+          setIsAuthInitializing(true);
           await signInAnonymously(auth);
         }
       } catch (error) {
@@ -30,7 +32,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
     };
 
     initAuth();
-  }, [auth]);
+  }, [auth, authLoading, firebaseUser]);
 
   const updateCount = () => {
     try {
@@ -51,6 +53,8 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
       window.removeEventListener('storage', updateCount);
     };
   }, []);
+
+  const isReady = !authLoading && !isAuthInitializing && !!firebaseUser;
 
   return (
     <div className="min-h-screen flex flex-col bg-stone-50 font-body">
@@ -84,7 +88,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
         </div>
       </header>
       <main className="flex-1 container mx-auto py-12 px-4 md:px-6 max-w-7xl">
-        {isAuthInitializing ? (
+        {!isReady ? (
           <div className="flex items-center justify-center py-32">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
           </div>
