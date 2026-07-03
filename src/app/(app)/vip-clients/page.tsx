@@ -1,16 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { customers } from '@/lib/data';
 import { analyzeCustomerAction } from './actions';
-import type { AnalyzeVIPCustomerBehaviorOutput } from '@/ai/flows/analyze-vip-customer-behavior';
+import type { AnalyzeVIPCustomerBehaviorOutput, AnalyzeVIPCustomerBehaviorInput } from '@/ai/flows/analyze-vip-customer-behavior';
 import { BrainCircuit, Loader2, List, BarChart3, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import type { Customer, Order, Product } from '@/lib/types';
 
 export default function VipClientsPage() {
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
@@ -18,10 +20,19 @@ export default function VipClientsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const vipCustomers = customers.filter(c => c.customerType === 'VIP');
+  const firestore = useFirestore();
+  const customersQuery = useMemo(() => (firestore ? collection(firestore, 'customers') : null), [firestore]);
+  const ordersQuery = useMemo(() => (firestore ? collection(firestore, 'orders') : null), [firestore]);
+  const productsQuery = useMemo(() => (firestore ? collection(firestore, 'products') : null), [firestore]);
+
+  const { data: customers } = useCollection<Customer>(customersQuery);
+  const { data: orders } = useCollection<Order>(ordersQuery);
+  const { data: products } = useCollection<Product>(productsQuery);
+
+  const vipCustomers = customers?.filter(c => c.customerType === 'VIP') || [];
 
   async function handleAnalyze() {
-    if (!selectedCustomerId) {
+    if (!selectedCustomerId || !customers || !orders || !products) {
       toast({
         variant: 'destructive',
         title: 'Error',
@@ -29,9 +40,36 @@ export default function VipClientsPage() {
       });
       return;
     }
+
+    const customer = customers.find(c => c.id === selectedCustomerId);
+    if (!customer) return;
+
     setIsLoading(true);
     setAnalysis(null);
-    const result = await analyzeCustomerAction(selectedCustomerId);
+
+    const customerOrders = orders.filter((o) => o.customerId === selectedCustomerId);
+    const purchaseHistory = customerOrders.map(order => ({
+        orderId: order.id,
+        orderDate: order.orderDate,
+        totalAmount: order.totalAmount,
+        products: order.products.map(p => products.find(prod => prod.id === p.productId)?.name || 'Unknown Product'),
+    }));
+
+    const input: AnalyzeVIPCustomerBehaviorInput = {
+        customerId: customer.id,
+        customerProfile: {
+            name: customer.name,
+            email: customer.email,
+            vipLevel: customer.vipLevel,
+            customerType: customer.customerType,
+            totalPurchaseValue: customer.totalPurchaseValue,
+        },
+        purchaseHistory,
+        interactionLogs: [], // Could be expanded later
+        feedback: [], // Could be expanded later
+    };
+
+    const result = await analyzeCustomerAction(input);
     setIsLoading(false);
 
     if ('error' in result) {
@@ -45,7 +83,7 @@ export default function VipClientsPage() {
     }
   }
   
-  const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
+  const selectedCustomer = customers?.find(c => c.id === selectedCustomerId);
 
   return (
     <>

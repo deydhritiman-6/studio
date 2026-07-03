@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -9,11 +9,13 @@ import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { getChocolateRecommendations } from './actions';
+import { getChocolateRecommendationsAction } from './actions';
 import type { RecommendChocolateOutput } from '@/ai/flows/recommend-chocolate';
 import { Lightbulb, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { products, customers } from '@/lib/data';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import type { Customer, Order, Product } from '@/lib/types';
 import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -26,6 +28,15 @@ export default function RecommendationsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  const firestore = useFirestore();
+  const customersQuery = useMemo(() => (firestore ? collection(firestore, 'customers') : null), [firestore]);
+  const ordersQuery = useMemo(() => (firestore ? collection(firestore, 'orders') : null), [firestore]);
+  const productsQuery = useMemo(() => (firestore ? collection(firestore, 'products') : null), [firestore]);
+
+  const { data: customers } = useCollection<Customer>(customersQuery);
+  const { data: orders } = useCollection<Order>(ordersQuery);
+  const { data: products } = useCollection<Product>(productsQuery);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -34,9 +45,25 @@ export default function RecommendationsPage() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!customers || !orders || !products) return;
+
     setIsLoading(true);
     setRecommendations(null);
-    const result = await getChocolateRecommendations(values.customerId);
+
+    const customerOrders = orders.filter((o) => o.customerId === values.customerId);
+    const purchaseHistory = customerOrders.flatMap((order) =>
+      order.products.map((p) => {
+        const productDetails = products.find((prod) => prod.id === p.productId);
+        return {
+          productId: p.productId,
+          productName: productDetails?.name || 'Unknown',
+          flavor: productDetails?.flavor || 'Unknown',
+          quantity: p.quantity,
+        };
+      })
+    );
+
+    const result = await getChocolateRecommendationsAction(values.customerId, purchaseHistory);
     setIsLoading(false);
 
     if ('error' in result) {
@@ -51,15 +78,14 @@ export default function RecommendationsPage() {
   }
 
   const getProductImage = (productId: string) => {
-    return products.find(p => p.id === productId)?.imageUrl || 'https://picsum.photos/seed/default/400/300';
+    return products?.find(p => p.id === productId)?.imageUrls?.[0] || 'https://picsum.photos/seed/default/400/300';
   }
 
-   const getProductImageHint = (productId: string) => {
-    return products.find(p => p.id === productId)?.imageHint || 'chocolate';
+  const getProductImageHint = (productId: string) => {
+    return products?.find(p => p.id === productId)?.imageHint || 'chocolate';
   }
   
-  const selectedCustomerName = customers.find(c => c.id === form.getValues('customerId'))?.name;
-
+  const selectedCustomerName = customers?.find(c => c.id === form.getValues('customerId'))?.name;
 
   return (
     <>
@@ -86,7 +112,7 @@ export default function RecommendationsPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                           {customers.map((customer) => (
+                           {customers?.map((customer) => (
                             <SelectItem key={customer.id} value={customer.id}>{customer.name}</SelectItem>
                           ))}
                         </SelectContent>
@@ -135,7 +161,9 @@ export default function RecommendationsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {recommendations.recommendations.map((rec) => (
                 <Card key={rec.productId}>
-                    <Image src={getProductImage(rec.productId)} alt={rec.productName} width={400} height={300} className="rounded-t-lg aspect-[4/3] object-cover" data-ai-hint={getProductImageHint(rec.productId)} />
+                    <div className="aspect-[4/3] relative">
+                        <Image src={getProductImage(rec.productId)} alt={rec.productName} fill className="rounded-t-lg object-cover" data-ai-hint={getProductImageHint(rec.productId)} />
+                    </div>
                   <CardHeader>
                     <CardTitle className="font-headline">{rec.productName}</CardTitle>
                   </CardHeader>

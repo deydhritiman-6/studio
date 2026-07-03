@@ -94,7 +94,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user: firebaseUser, loading: authLoading } = useUser();
   const firestore = useFirestore();
 
-  // Fetch real-time inventory for the notification bell
   const inventoryQuery = useMemo(() => (firestore ? collection(firestore, 'inventory') : null), [firestore]);
   const { data: inventoryData } = useCollection<InventoryItem>(inventoryQuery);
 
@@ -122,32 +121,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     router.push('/login');
   };
 
-  if (!isClient) {
-    return (
-      <div className="flex h-screen w-full bg-background animate-pulse">
-         <div className="hidden md:block w-[16rem] h-full border-r border-sidebar-border bg-sidebar" />
-         <div className="flex-1 flex flex-col">
-            <header className="h-16 border-b bg-background px-6 flex items-center justify-between">
-               <Skeleton className="h-6 w-32" />
-               <div className="flex gap-4">
-                  <Skeleton className="h-10 w-10 rounded-full" />
-                  <Skeleton className="h-10 w-10 rounded-full" />
-               </div>
-            </header>
-            <div className="p-8 space-y-6">
-               <Skeleton className="h-10 w-64" />
-               <div className="grid grid-cols-4 gap-6">
-                  <Skeleton className="h-32" />
-                  <Skeleton className="h-32" />
-                  <Skeleton className="h-32" />
-                  <Skeleton className="h-32" />
-               </div>
-               <Skeleton className="h-80 w-full" />
-            </div>
-         </div>
-      </div>
-    );
-  }
+  const isAuthReady = isClient && !authLoading;
 
   return (
     <SidebarProvider>
@@ -277,7 +251,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </header>
         <div className="flex-1 bg-background overflow-y-auto">
             <div className="p-6 lg:p-8">
-              {user ? children : <div className="space-y-6"><Skeleton className="h-10 w-64" /><Skeleton className="h-[400px] w-full" /></div>}
+              {isAuthReady && user ? children : (
+                <div className="space-y-6">
+                  <Skeleton className="h-10 w-64" />
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <Skeleton className="h-32" />
+                    <Skeleton className="h-32" />
+                    <Skeleton className="h-32" />
+                    <Skeleton className="h-32" />
+                  </div>
+                  <Skeleton className="h-80 w-full" />
+                </div>
+              )}
             </div>
         </div>
       </div>

@@ -104,6 +104,23 @@ export default function ProductsPage() {
     }
   }, [editingProduct, form, isAddDialogOpen]);
 
+  const optimizeImage = (dataUrl: string): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 800;
+        const scale = MAX_WIDTH / img.width;
+        canvas.width = MAX_WIDTH;
+        canvas.height = img.height * scale;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.6)); // Quality 0.6 to stay under Firestore limits
+      };
+      img.src = dataUrl;
+    });
+  }
+
   const saveProduct = (values: ProductFormValues, id?: string) => {
     if (!firestore) return;
     
@@ -156,7 +173,7 @@ export default function ProductsPage() {
     }
   };
   
-  const capturePhoto = () => {
+  const capturePhoto = async () => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
@@ -168,8 +185,9 @@ export default function ProductsPage() {
       const context = canvas.getContext('2d');
       if (context) {
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.6); 
-        form.setValue('imageUrls', [dataUrl], { shouldValidate: true });
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        const optimizedUrl = await optimizeImage(dataUrl);
+        form.setValue('imageUrls', [optimizedUrl], { shouldValidate: true });
         form.setValue('imageHint', 'custom photo', { shouldValidate: true });
         stopCamera();
         toast({ title: "Artisan Shot Captured", description: "Photo successfully optimized and added." });
@@ -185,19 +203,9 @@ export default function ProductsPage() {
     const fileToUrlPromises = fileArray.map(file => {
       return new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = e => {
-          const img = new window.Image();
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const MAX_WIDTH = 800;
-            const scale = MAX_WIDTH / img.width;
-            canvas.width = MAX_WIDTH;
-            canvas.height = img.height * scale;
-            const ctx = canvas.getContext('2d');
-            ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-            resolve(canvas.toDataURL('image/jpeg', 0.6));
-          };
-          img.src = e.target!.result as string;
+        reader.onload = async e => {
+          const optimized = await optimizeImage(e.target!.result as string);
+          resolve(optimized);
         };
         reader.onerror = e => reject(e);
         reader.readAsDataURL(file);

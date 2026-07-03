@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,13 +10,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { products } from '@/lib/data';
 import { getDemandForecastAction } from './actions';
 import type { DemandForecastOutput } from '@/ai/flows/forecast-chocolate-demand';
 import { Bot, Loader2, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import type { Product, Order } from '@/lib/types';
 
 const formSchema = z.object({
   productId: z.string().min(1, { message: 'Please select a product.' }),
@@ -29,6 +31,13 @@ export default function AnalyticsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  const firestore = useFirestore();
+  const productsQuery = useMemo(() => (firestore ? collection(firestore, 'products') : null), [firestore]);
+  const ordersQuery = useMemo(() => (firestore ? collection(firestore, 'orders') : null), [firestore]);
+  
+  const { data: products } = useCollection<Product>(productsQuery);
+  const { data: orders } = useCollection<Order>(ordersQuery);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -39,9 +48,31 @@ export default function AnalyticsPage() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!products || !orders) return;
+
+    const product = products.find(p => p.id === values.productId);
+    if (!product) return;
+
     setIsLoading(true);
     setForecast(null);
-    const result = await getDemandForecastAction(values);
+
+    // Filter orders to get historical sales for this product
+    const historicalSalesData = orders
+      .filter(order => order.products.some(p => p.productId === product.id))
+      .map(order => ({
+        date: order.orderDate,
+        salesCount: order.products.find(p => p.productId === product.id)?.quantity || 0
+      }))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    const result = await getDemandForecastAction({
+      productId: product.id,
+      productName: product.name,
+      historicalSalesData,
+      seasonalTrends: values.seasonalTrends,
+      upcomingEvents: values.upcomingEvents,
+    });
+    
     setIsLoading(false);
 
     if ('error' in result) {
@@ -55,7 +86,7 @@ export default function AnalyticsPage() {
     }
   }
   
-  const selectedProductName = products.find(p => p.id === form.getValues('productId'))?.name;
+  const selectedProductName = products?.find(p => p.id === form.getValues('productId'))?.name;
 
   return (
     <>
@@ -82,7 +113,7 @@ export default function AnalyticsPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {products.map((product) => (
+                          {products?.map((product) => (
                             <SelectItem key={product.id} value={product.id}>{product.name}</SelectItem>
                           ))}
                         </SelectContent>
