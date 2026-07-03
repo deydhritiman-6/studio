@@ -109,7 +109,7 @@ function NavSidebar({ pathname }: { pathname: string }) {
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
       setOpen(false);
-    }, 10000); // 10 seconds auto-collapse
+    }, 8000); // 8 seconds auto-collapse when not hovered
   }, [isMobile, setOpen]);
 
   const stopCollapseTimer = useCallback(() => {
@@ -120,16 +120,19 @@ function NavSidebar({ pathname }: { pathname: string }) {
   }, []);
 
   useEffect(() => {
+    // Initialize state
     startCollapseTimer();
     return () => stopCollapseTimer();
   }, [startCollapseTimer, stopCollapseTimer]);
 
   const handleMouseEnter = () => {
+    // Crucial: Stop any pending collapse when mouse enters
     stopCollapseTimer();
     setOpen(true);
   };
 
   const handleMouseLeave = () => {
+    // Resume auto-collapse logic when mouse leaves
     startCollapseTimer();
   };
 
