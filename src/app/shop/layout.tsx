@@ -1,13 +1,36 @@
 'use client';
 
 import Link from 'next/link';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Loader2 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/firebase';
+import { signInAnonymously } from 'firebase/auth';
 
 export default function ShopLayout({ children }: { children: React.ReactNode }) {
   const [cartCount, setCartCount] = useState(0);
+  const [isAuthInitializing, setIsAuthInitializing] = useState(true);
+  const auth = useAuth();
+
+  useEffect(() => {
+    if (!auth) return;
+
+    // Ensure guests have a valid anonymous session for real-time Firestore sync
+    const initAuth = async () => {
+      try {
+        if (!auth.currentUser) {
+          await signInAnonymously(auth);
+        }
+      } catch (error) {
+        console.error('Anonymous auth failed:', error);
+      } finally {
+        setIsAuthInitializing(false);
+      }
+    };
+
+    initAuth();
+  }, [auth]);
 
   const updateCount = () => {
     try {
@@ -32,24 +55,16 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="min-h-screen flex flex-col bg-stone-50 font-body">
       <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-xl px-6 h-32 flex items-center animate-in fade-in slide-in-from-top-4 duration-1000 overflow-hidden shadow-sm">
-        {/* Elegant top accent line with pulsing animation */}
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary via-accent to-primary animate-pulse"></div>
-        
-        {/* Subtle decorative glow effect */}
         <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-1/3 h-20 bg-primary/10 blur-[60px] rounded-full pointer-events-none animate-pulse"></div>
 
         <div className="grid grid-cols-3 w-full items-center">
-          {/* Left Column (Spacer) */}
           <div className="flex justify-start"></div>
-
-          {/* Center Column (Logo) */}
           <div className="flex justify-center">
             <Link href="/shop" className="hover:scale-105 transition-transform duration-500 relative z-10 block">
               <Logo className="h-20 w-auto" />
             </Link>
           </div>
-          
-          {/* Right Column (Actions) */}
           <div className="flex justify-end items-center gap-2 sm:gap-6 relative z-10">
             <Button 
               variant="ghost" 
@@ -69,7 +84,11 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
         </div>
       </header>
       <main className="flex-1 container mx-auto py-12 px-4 md:px-6 max-w-7xl">
-        {children}
+        {isAuthInitializing ? (
+          <div className="flex items-center justify-center py-32">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          </div>
+        ) : children}
       </main>
       <footer className="border-t bg-white py-16 px-6 text-center text-muted-foreground text-sm mt-auto">
         <div className="mb-8 flex justify-center">
