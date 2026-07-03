@@ -27,6 +27,7 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection, doc, setDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const productFormSchema = z.object({
   name: z.string().min(1, 'Product name is required.'),
@@ -111,7 +112,6 @@ export default function ProductsPage() {
     const productRef = doc(firestore, 'products', productId);
     const productData = { ...values, id: productId };
 
-    // Optimized mutation pattern: No await, chain catch for contextual errors
     setDoc(productRef, productData, { merge: true })
       .then(() => {
         setIsAddDialogOpen(false);
@@ -160,7 +160,6 @@ export default function ProductsPage() {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      // Resize for Firestore persistence (staying under 1MB limit)
       const MAX_WIDTH = 800;
       const scale = MAX_WIDTH / video.videoWidth;
       canvas.width = MAX_WIDTH;
@@ -225,7 +224,29 @@ export default function ProductsPage() {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>;
+    return (
+      <>
+        <PageHeader title="Artisan Portfolio" />
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {[...Array(8)].map((_, i) => (
+            <Card key={i} className="animate-pulse rounded-[2rem] overflow-hidden border-none shadow-sm">
+               <div className="aspect-[4/3] bg-muted" />
+               <CardContent className="p-6 space-y-4">
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-3 w-1/4" />
+                  <div className="flex justify-between items-end pt-4">
+                     <div className="space-y-2">
+                        <Skeleton className="h-8 w-24" />
+                        <Skeleton className="h-3 w-16" />
+                     </div>
+                     <Skeleton className="h-6 w-20 rounded-full" />
+                  </div>
+               </CardContent>
+            </Card>
+          ))}
+        </div>
+      </>
+    );
   }
 
   const activeDialog = editingProduct ? 'edit' : (isAddDialogOpen ? 'add' : null);

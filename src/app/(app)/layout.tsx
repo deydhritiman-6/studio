@@ -116,27 +116,31 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     router.push('/login');
   };
 
-  // Immediate check for basic hydration and existence of a local user session
-  // This allows the Sidebar and Shell to render instantly while Firebase Auth finishes in the background
-  if (!isClient || !user) {
+  // Instant Shell Rendering: We always render the frame after hydration.
+  // Content blocks specifically if the user session is verified as missing.
+  if (!isClient) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-background p-2">
-        <div className="flex h-full w-full">
-            <Skeleton className="hidden md:block md:w-[16rem] h-full" />
-            <div className="flex-1 p-6 lg:p-8">
-                <Skeleton className="h-10 w-64 mb-6" />
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                  <Skeleton className="h-28" />
-                  <Skeleton className="h-28" />
-                  <Skeleton className="h-28" />
-                  <Skeleton className="h-28" />
-                </div>
-                 <div className="grid gap-6 mt-6 md:grid-cols-2 lg:grid-cols-7">
-                    <Skeleton className="lg:col-span-4 h-80" />
-                    <Skeleton className="lg:col-span-3 h-80" />
-                 </div>
+      <div className="flex h-screen w-full bg-background animate-pulse">
+         <div className="hidden md:block w-[16rem] h-full border-r border-sidebar-border bg-sidebar" />
+         <div className="flex-1 flex flex-col">
+            <header className="h-16 border-b bg-background px-6 flex items-center justify-between">
+               <Skeleton className="h-6 w-32" />
+               <div className="flex gap-4">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <Skeleton className="h-10 w-10 rounded-full" />
+               </div>
+            </header>
+            <div className="p-8 space-y-6">
+               <Skeleton className="h-10 w-64" />
+               <div className="grid grid-cols-4 gap-6">
+                  <Skeleton className="h-32" />
+                  <Skeleton className="h-32" />
+                  <Skeleton className="h-32" />
+                  <Skeleton className="h-32" />
+               </div>
+               <Skeleton className="h-80 w-full" />
             </div>
-        </div>
+         </div>
       </div>
     );
   }
@@ -239,36 +243,37 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       </Link>
                   </Button>
                 )}
-                {user.role && <Badge variant="secondary">{user.role}</Badge>}
+                {user?.role && <Badge variant="secondary">{user.role}</Badge>}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                      <Button variant="ghost" className="relative h-10 w-10 rounded-full" disabled={!user}>
                         <Avatar className="h-10 w-10">
                             <AvatarImage src="https://picsum.photos/seed/avatar/100/100" />
-                            <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+                            <AvatarFallback>{user?.name?.charAt(0).toUpperCase() || '?'}</AvatarFallback>
                         </Avatar>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56" align="end" forceMount>
-                      <DropdownMenuLabel className="font-normal">
-                        <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-medium leading-none">{user.name}</p>
-                          <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-                        </div>
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleLogout}>
-                        <LogOut className="mr-2 h-4 w-4" />
-                        <span>Log out</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
+                    {user && (
+                      <DropdownMenuContent className="w-56" align="end" forceMount>
+                        <DropdownMenuLabel className="font-normal">
+                          <div className="flex flex-col space-y-1">
+                            <p className="text-sm font-medium leading-none">{user.name}</p>
+                            <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                          </div>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleLogout}>
+                          <LogOut className="mr-2 h-4 w-4" />
+                          <span>Log out</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    )}
                   </DropdownMenu>
             </div>
         </header>
         <main className="flex-1 bg-background overflow-y-auto">
             <div className="p-6 lg:p-8">
-              {/* Individual pages handle their own data-loading states. Rendering immediately improves perceived refresh speed. */}
-              {children}
+              {user ? children : <div className="space-y-6"><Skeleton className="h-10 w-64" /><Skeleton className="h-[400px] w-full" /></div>}
             </div>
         </main>
       </div>
