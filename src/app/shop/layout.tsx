@@ -37,6 +37,42 @@ const DeliveryIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+const RoseberryCartIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 64 64"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    {/* Cart Structure */}
+    <path d="M8 12h10l4 28h28" strokeWidth="3" />
+    <path d="M18 16h34l-3 18H22" strokeWidth="2.5" />
+    <circle cx="26" cy="52" r="4" fill="currentColor" />
+    <circle cx="46" cy="52" r="4" fill="currentColor" />
+    
+    {/* Heart Emblem on Cart side (Circular button with heart) */}
+    <circle cx="48" cy="30" r="8" fill="white" stroke="currentColor" strokeWidth="1" />
+    <path d="M48 33s-3-1.8-3-3.5 1.5-1.8 3-0.8c1.5-1 3-1 3 0.8s-3 3.5-3 3.5z" fill="#f43f5e" stroke="none" />
+
+    {/* Chocolate Boxes stacked inside with vibrant colors */}
+    <g stroke="none">
+      <rect x="22" y="6" width="10" height="18" rx="1" fill="#7c2d12" transform="rotate(-12 27 15)" /> {/* Deep Dark */}
+      <rect x="34" y="4" width="10" height="20" rx="1" fill="#0e7490" transform="rotate(8 39 14)" />  {/* Artisan Teal */}
+      <rect x="28" y="16" width="14" height="16" rx="1" fill="#9f1239" /> {/* Luxury Rose */}
+      <rect x="42" y="10" width="8" height="18" rx="1" fill="#b45309" transform="rotate(15 46 19)" /> {/* Cacao Gold */}
+    </g>
+    
+    {/* Sparkles of quality */}
+    <path d="M58 10l1 1-1 1-1-1 1-1z" fill="#facc15" stroke="none" />
+    <path d="M12 6l0.5 0.5-0.5 0.5-0.5-0.5 0.5-0.5z" fill="#facc15" stroke="none" />
+    <path d="M4 22l0.5 0.5-0.5 0.5-0.5-0.5 0.5-0.5z" fill="#facc15" stroke="none" opacity="0.4" />
+  </svg>
+);
+
 export default function ShopLayout({ children }: { children: React.ReactNode }) {
   const [cartCount, setCartCount] = useState(0);
   const [isAuthInitializing, setIsAuthInitializing] = useState(true);
@@ -94,7 +130,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
           <div className="flex-1 flex justify-start">
             <Button variant="ghost" asChild className="rounded-full px-2 sm:px-6 py-8 md:py-10 font-bold uppercase text-[9px] sm:text-[10px] tracking-widest text-stone-500 hover:text-primary transition-all duration-300 group">
               <Link href="/shop/my-orders">
-                <DeliveryIcon className="mr-1 sm:mr-3 h-7 w-7 md:h-8 md:w-8 transition-transform duration-300 group-hover:scale-110" /> <span className="hidden xs:inline">My Orders</span>
+                <DeliveryIcon className="mr-1 sm:mr-3 h-7 w-7 md:h-9 md:w-9 transition-transform duration-300 group-hover:scale-110" /> <span className="hidden xs:inline">My Orders</span>
               </Link>
             </Button>
           </div>
@@ -112,7 +148,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
               className="relative hover:bg-primary/10 hover:text-primary rounded-full h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 p-0 transition-all duration-300 group shadow-sm hover:shadow-md border border-stone-100/50"
             >
                <Link href="/shop/cart" aria-label="View shopping basket">
-                  <ShoppingCart className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 text-stone-700 group-hover:scale-110 transition-transform duration-300 group-hover:text-primary" />
+                  <RoseberryCartIcon className="h-7 w-7 sm:h-9 sm:w-9 md:h-12 md:w-12 text-stone-700 group-hover:scale-110 transition-transform duration-300" />
                   {cartCount > 0 && (
                     <span className="absolute top-1 right-1 sm:top-2 sm:right-2 flex h-5 w-5 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-gradient-to-tr from-primary to-orange-500 text-[10px] sm:text-[12px] font-bold text-white border-2 border-white shadow-lg animate-in zoom-in-50 duration-500 pulse-glow">
                       {cartCount}
