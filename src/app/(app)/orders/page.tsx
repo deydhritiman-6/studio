@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -46,14 +45,25 @@ export default function OrdersPage() {
     if (!firestore) return;
     const orderRef = doc(firestore, 'orders', orderId);
     
-    const adminUser = JSON.parse(localStorage.getItem('user') || '{"name": "Admin"}');
+    let adminName = 'Admin';
+    try {
+      const stored = localStorage.getItem('user');
+      if (stored) {
+        const user = JSON.parse(stored);
+        adminName = user.name || 'Admin';
+      }
+    } catch (e) {}
     
-    const historyItem: OrderHistoryItem = {
+    // Fix: Avoid 'undefined' in Firestore data by conditionally adding the reason field
+    const historyItem: any = {
       status,
       timestamp: new Date().toISOString(),
-      adminName: adminUser.name,
-      reason: reason || undefined,
+      adminName: adminName,
     };
+
+    if (reason) {
+      historyItem.reason = reason;
+    }
 
     const updateData: any = { 
       deliveryStatus: status,

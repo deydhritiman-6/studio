@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Search, Truck, Package, CheckCircle2, Clock, Ban, PauseCircle, Send } from 'lucide-react';
+import { Loader2, Search, Truck, Package, CheckCircle2, Clock, Send } from 'lucide-react';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, doc, updateDoc } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
@@ -100,23 +100,31 @@ export default function ShippingStatusPage() {
     if (!firestore || !selectedOrder) return;
 
     setIsUpdating(true);
-    const adminUser = JSON.parse(localStorage.getItem('user') || '{}');
+    let adminName = 'Admin';
+    try {
+      const stored = localStorage.getItem('user');
+      if (stored) adminName = JSON.parse(stored).name || 'Admin';
+    } catch (e) {}
     
     const orderRef = doc(firestore, 'orders', selectedOrder.id);
+    
+    // Fix: Cleanse update data of undefined values
+    const dispatchDetails: any = {
+      updatedBy: adminName,
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (values.status === 'Dispatched') {
+      if (values.dispatchDescription) dispatchDetails.description = values.dispatchDescription;
+      if (values.courierName) dispatchDetails.courierName = values.courierName;
+      if (values.trackingNumber) dispatchDetails.trackingNumber = values.trackingNumber;
+      if (values.dispatchDate) dispatchDetails.dispatchDate = values.dispatchDate;
+      if (values.expectedDeliveryDate) dispatchDetails.expectedDeliveryDate = values.expectedDeliveryDate;
+    }
+
     const updateData = {
       shippingStatus: values.status,
-      dispatchDetails: values.status === 'Dispatched' ? {
-        description: values.dispatchDescription,
-        courierName: values.courierName,
-        trackingNumber: values.trackingNumber,
-        dispatchDate: values.dispatchDate,
-        expectedDeliveryDate: values.expectedDeliveryDate,
-        updatedBy: adminUser.name || 'Admin',
-        updatedAt: new Date().toISOString(),
-      } : {
-        updatedBy: adminUser.name || 'Admin',
-        updatedAt: new Date().toISOString(),
-      }
+      dispatchDetails: dispatchDetails
     };
 
     updateDoc(orderRef, updateData)
