@@ -262,7 +262,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
         </header>
         <div className="flex-1 bg-background overflow-y-auto">
-            <div className="p-6 lg:p-8">
+            <div className="p-6 lg:p-8 pt-10 lg:pt-14">
               {isAuthReady && user ? children : (
                 <div className="space-y-6">
                   <Skeleton className="h-10 w-64" />
