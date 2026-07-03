@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -414,7 +415,7 @@ export default function GstBillingPage() {
 
   return (
     <>
-      <PageHeader title="Billing" />
+      <PageHeader title="Create Invoice" />
       <Tabs defaultValue="gst-invoice" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="gst-invoice">GST Invoice</TabsTrigger>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -147,7 +148,7 @@ export default function InvoicesPage() {
 
   return (
     <>
-      <PageHeader title="Invoices" actions={
+      <PageHeader title="View Invoices" actions={
         <Button onClick={() => setIsCreateOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Create Invoice

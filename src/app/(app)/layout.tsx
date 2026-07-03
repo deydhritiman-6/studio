@@ -72,8 +72,8 @@ const navItems = [
     icon: FileText,
     label: 'Billing',
     subItems: [
-      { href: '/invoices', icon: FileText, label: 'Invoices' },
-      { href: '/gst-billing', icon: FileText, label: 'Standard Billing' },
+      { href: '/gst-billing', icon: FileText, label: 'Create Invoice' },
+      { href: '/invoices', icon: FileText, label: 'View Invoices' },
       { href: '/billing/shipping-status', icon: Truck, label: 'Shipping Status' },
     ],
   },
