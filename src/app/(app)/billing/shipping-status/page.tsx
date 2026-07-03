@@ -28,14 +28,27 @@ const shippingFormSchema = z.object({
   trackingNumber: z.string().optional(),
   dispatchDate: z.string().optional(),
   expectedDeliveryDate: z.string().optional(),
-}).refine((data) => {
+}).superRefine((data, ctx) => {
   if (data.status === 'Dispatched') {
-    return !!data.courierName && !!data.trackingNumber && !!data.dispatchDate;
+    if (!data.courierName) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Courier name is required for dispatched orders.", path: ['courierName'] });
+    }
+    if (!data.trackingNumber) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Tracking number is required.", path: ['trackingNumber'] });
+    }
+    if (!data.dispatchDate) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Dispatch date is required.", path: ['dispatchDate'] });
+    }
   }
-  return true;
-}, {
-  message: "Dispatch details are required when marking as Dispatched.",
-  path: ["courierName"],
+  if (data.status === 'Cancelled' || data.status === 'On Hold') {
+    if (!data.dispatchDescription || data.dispatchDescription.trim().length === 0) {
+      ctx.addIssue({ 
+        code: z.ZodIssueCode.custom, 
+        message: `A reason is required when marking an order as ${data.status}.`, 
+        path: ['dispatchDescription'] 
+      });
+    }
+  }
 });
 
 type ShippingFormValues = z.infer<typeof shippingFormSchema>;
@@ -119,8 +132,12 @@ export default function ShippingStatusPage() {
       updatedAt: new Date().toISOString(),
     };
 
-    if (values.status === 'Dispatched') {
+    // Description is saved for Dispatched (notes) and for Cancelled/On Hold (reason)
+    if (['Dispatched', 'Cancelled', 'On Hold'].includes(values.status)) {
       if (values.dispatchDescription) dispatchDetails.description = values.dispatchDescription;
+    }
+
+    if (values.status === 'Dispatched') {
       if (values.courierName) dispatchDetails.courierName = values.courierName;
       if (values.trackingNumber) dispatchDetails.trackingNumber = values.trackingNumber;
       if (values.dispatchDate) dispatchDetails.dispatchDate = values.dispatchDate;
@@ -291,49 +308,61 @@ export default function ShippingStatusPage() {
                 </FormItem>
               )} />
 
-              {currentStatus === 'Dispatched' && (
+              {['Dispatched', 'Cancelled', 'On Hold'].includes(currentStatus) && (
                 <div className="space-y-6 pt-4 border-t-2 border-dashed animate-in slide-in-from-top-4 duration-300">
                   <FormField control={form.control} name="dispatchDescription" render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Transit Notes</FormLabel>
-                      <FormControl><Textarea placeholder="e.g., Packed in insulated containers for summer travel." className="rounded-xl min-h-[80px]" {...field} /></FormControl>
+                      <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">
+                        {currentStatus === 'Dispatched' ? 'Transit Notes' : 'Reason for Status Change'}
+                      </FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder={currentStatus === 'Dispatched' ? "e.g., Packed in insulated containers for summer travel." : "e.g., Delivery address unreachable, customer requested cancellation..."} 
+                          className="rounded-xl min-h-[80px]" 
+                          {...field} 
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
                   
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField control={form.control} name="courierName" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Courier Service</FormLabel>
-                        <FormControl><Input placeholder="e.g., Blue Dart" className="rounded-xl h-12" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <FormField control={form.control} name="trackingNumber" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Consignment #</FormLabel>
-                        <FormControl><Input placeholder="e.g., 7823-1102" className="rounded-xl h-12" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                  </div>
+                  {currentStatus === 'Dispatched' && (
+                    <>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField control={form.control} name="courierName" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Courier Service</FormLabel>
+                            <FormControl><Input placeholder="e.g., Blue Dart" className="rounded-xl h-12" {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="trackingNumber" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Consignment #</FormLabel>
+                            <FormControl><Input placeholder="e.g., 7823-1102" className="rounded-xl h-12" {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField control={form.control} name="dispatchDate" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Dispatch Date</FormLabel>
-                        <FormControl><Input type="date" className="rounded-xl h-12" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <FormField control={form.control} name="expectedDeliveryDate" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Expected Arrival</FormLabel>
-                        <FormControl><Input type="date" className="rounded-xl h-12" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                  </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField control={form.control} name="dispatchDate" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Dispatch Date</FormLabel>
+                            <FormControl><Input type="date" className="rounded-xl h-12" {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="expectedDeliveryDate" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Expected Arrival</FormLabel>
+                            <FormControl><Input type="date" className="rounded-xl h-12" {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
