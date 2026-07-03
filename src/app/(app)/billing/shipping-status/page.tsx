@@ -63,7 +63,7 @@ const statusColorMap: Record<string, string> = {
   'On Hold': 'bg-slate-500/10 text-slate-500 border-slate-500/20',
 };
 
-export default function ShippingStatusPage() {
+export default function DispatchControlPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -132,7 +132,6 @@ export default function ShippingStatusPage() {
       updatedAt: new Date().toISOString(),
     };
 
-    // Description is saved for Dispatched (notes) and for Cancelled/On Hold (reason)
     if (['Dispatched', 'Cancelled', 'On Hold'].includes(values.status)) {
       if (values.dispatchDescription) dispatchDetails.description = values.dispatchDescription;
     }
@@ -219,52 +218,54 @@ export default function ShippingStatusPage() {
             {loading ? (
               <div className="p-12 flex justify-center"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>
             ) : filteredOrders.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent bg-muted/10">
-                    <TableHead className="font-black uppercase text-[10px] tracking-widest p-6">Identity</TableHead>
-                    <TableHead className="font-black uppercase text-[10px] tracking-widest p-6">Customer</TableHead>
-                    <TableHead className="font-black uppercase text-[10px] tracking-widest p-6">Progress</TableHead>
-                    <TableHead className="font-black uppercase text-[10px] tracking-widest p-6">Status Indicator</TableHead>
-                    <TableHead className="font-black uppercase text-[10px] tracking-widest p-6 text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredOrders.map((order) => (
-                    <TableRow key={order.id} className="group hover:bg-muted/5 transition-colors">
-                      <TableCell className="p-6">
-                        <div className="font-bold text-sm">{order.id.replace('ORD', 'INV')}</div>
-                        <div className="text-[10px] text-muted-foreground font-mono">{order.id}</div>
-                      </TableCell>
-                      <TableCell className="p-6">
-                        <div className="font-medium">{order.customerName}</div>
-                        <div className="text-xs text-muted-foreground">Placed: {order.orderDate}</div>
-                      </TableCell>
-                      <TableCell className="p-6">
-                         <StatusTimeline status={order.shippingStatus} />
-                      </TableCell>
-                      <TableCell className="p-6">
-                        <Badge variant="outline" className={cn(
-                          "rounded-full px-4 py-1 text-[10px] font-bold uppercase tracking-widest border-2",
-                          statusColorMap[order.shippingStatus || 'Order Received'] || 'bg-muted text-muted-foreground border-muted'
-                        )}>
-                          {order.shippingStatus || 'Order Received'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="p-6 text-right">
-                        <Button 
-                          variant="secondary" 
-                          size="sm" 
-                          className="rounded-xl px-6 h-10 hover:bg-primary hover:text-white transition-all shadow-sm"
-                          onClick={() => setSelectedOrder(order)}
-                        >
-                          Update Log
-                        </Button>
-                      </TableCell>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent bg-muted/10">
+                      <TableHead className="font-black uppercase text-[10px] tracking-widest p-6">Identity</TableHead>
+                      <TableHead className="font-black uppercase text-[10px] tracking-widest p-6">Customer</TableHead>
+                      <TableHead className="font-black uppercase text-[10px] tracking-widest p-6">Progress</TableHead>
+                      <TableHead className="font-black uppercase text-[10px] tracking-widest p-6">Status Indicator</TableHead>
+                      <TableHead className="font-black uppercase text-[10px] tracking-widest p-6 text-right">Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredOrders.map((order) => (
+                      <TableRow key={order.id} className="group hover:bg-muted/5 transition-colors">
+                        <TableCell className="p-6">
+                          <div className="font-bold text-sm">{order.id.replace('ORD', 'INV')}</div>
+                          <div className="text-[10px] text-muted-foreground font-mono">{order.id}</div>
+                        </TableCell>
+                        <TableCell className="p-6">
+                          <div className="font-medium">{order.customerName}</div>
+                          <div className="text-xs text-muted-foreground">Placed: {order.orderDate}</div>
+                        </TableCell>
+                        <TableCell className="p-6">
+                          <StatusTimeline status={order.shippingStatus} />
+                        </TableCell>
+                        <TableCell className="p-6">
+                          <Badge variant="outline" className={cn(
+                            "rounded-full px-4 py-1 text-[10px] font-bold uppercase tracking-widest border-2",
+                            statusColorMap[order.shippingStatus || 'Order Received'] || 'bg-muted text-muted-foreground border-muted'
+                          )}>
+                            {order.shippingStatus || 'Order Received'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="p-6 text-right">
+                          <Button 
+                            variant="secondary" 
+                            size="sm" 
+                            className="rounded-xl px-6 h-10 hover:bg-primary hover:text-white transition-all shadow-sm"
+                            onClick={() => setSelectedOrder(order)}
+                          >
+                            Update Log
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-80 text-center space-y-4">
                  <PackageSearch className="h-12 w-12 text-muted-foreground/30" />

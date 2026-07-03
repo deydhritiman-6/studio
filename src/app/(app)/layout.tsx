@@ -72,7 +72,7 @@ const navItems = [
   { href: '/gst-billing', icon: FileText, label: 'Create Invoice' },
   { href: '/invoices', icon: FileText, label: 'View Invoices' },
   { href: '/billing/shipping-status', icon: Truck, label: 'Dispatch Control' },
-  { href: '/billing/tracking-visibility', icon: Eye, label: 'Visibility Policy' },
+  { href: '/billing/tracking-visibility', icon: Eye, label: 'Visibility Control' },
   { href: '/distributors', icon: Truck, label: 'Distributors' },
   { href: '/broadcast', icon: Radio, label: 'Broadcasts' },
   {
@@ -100,7 +100,7 @@ type User = {
   role: string;
 };
 
-function NavSidebar({ pathname, lowStockItems, hasLowStock }: { pathname: string, lowStockItems: any[], hasLowStock: boolean }) {
+function NavSidebar({ pathname }: { pathname: string }) {
   const { setOpen, isMobile } = useSidebar();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -109,7 +109,7 @@ function NavSidebar({ pathname, lowStockItems, hasLowStock }: { pathname: string
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
       setOpen(false);
-    }, 10000); 
+    }, 10000); // 10 seconds auto-collapse
   }, [isMobile, setOpen]);
 
   const stopCollapseTimer = useCallback(() => {
@@ -264,7 +264,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <NavSidebar pathname={pathname} lowStockItems={lowStockItems} hasLowStock={hasLowStock} />
+      <NavSidebar pathname={pathname} />
       <div className="flex flex-1 flex-col">
         <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b bg-background px-4 md:px-6">
             <SidebarTrigger className="md:hidden" />
@@ -317,7 +317,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
         </header>
         <div className="flex-1 bg-background overflow-y-auto">
-            <div className="p-4 sm:p-6 lg:p-8 pt-8 md:pt-12 lg:pt-20">
+            <div className="p-4 sm:p-6 lg:p-8 pt-12 md:pt-16 lg:pt-20">
               {isAuthReady && user ? children : (
                 <div className="space-y-6">
                   <Skeleton className="h-10 w-64" />

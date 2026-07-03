@@ -102,7 +102,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="flex-1 pb-6 flex items-center justify-center">
              {topProductsData.length > 0 ? (
-                <ChartContainer config={topProductsChartConfig} className="mx-auto aspect-square w-full max-h-[300px]">
+                <ChartContainer config={topProductsChartConfig} className="mx-auto aspect-square w-full max-h-[300px] flex items-center justify-center">
                   <PieChart>
                     <ChartTooltip
                         cursor={true}
@@ -144,45 +144,47 @@ export default function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {ordersLoading ? (
-                    [...Array(5)].map((_, i) => (
-                      <TableRow key={i}>
-                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                        <TableCell className="text-right"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
-                      </TableRow>
-                    ))
-                  ) : recentOrders.length > 0 ? (
-                    recentOrders.map((order) => (
-                      <TableRow key={order.id}>
-                        <TableCell>
-                          <div className="font-medium">{order.customerName}</div>
-                          <div className="hidden text-sm text-muted-foreground md:inline">
-                            {order.id}
-                          </div>
-                        </TableCell>
-                         <TableCell>{order.deliveryStatus}</TableCell>
-                        <TableCell className="text-right">₹{order.totalAmount.toLocaleString('en-IN')}</TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
+               <div className="overflow-x-auto">
+                 <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
-                        No orders recorded yet.
-                      </TableCell>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {ordersLoading ? (
+                      [...Array(5)].map((_, i) => (
+                        <TableRow key={i}>
+                          <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                          <TableCell className="text-right"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
+                        </TableRow>
+                      ))
+                    ) : recentOrders.length > 0 ? (
+                      recentOrders.map((order) => (
+                        <TableRow key={order.id}>
+                          <TableCell>
+                            <div className="font-medium">{order.customerName}</div>
+                            <div className="hidden text-sm text-muted-foreground md:inline">
+                              {order.id}
+                            </div>
+                          </TableCell>
+                           <TableCell>{order.deliveryStatus}</TableCell>
+                          <TableCell className="text-right">₹{order.totalAmount.toLocaleString('en-IN')}</TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
+                          No orders recorded yet.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+               </div>
             </CardContent>
         </Card>
       </div>
@@ -204,44 +206,46 @@ export default function DashboardPage() {
             </Button>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Item Name</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead className="text-right">Level</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {inventoryLoading ? (
-                  [...Array(3)].map((_, i) => (
-                    <TableRow key={i}>
-                      <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                      <TableCell className="text-right"><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
-                    </TableRow>
-                  ))
-                ) : lowStockItems.length > 0 ? (
-                  lowStockItems.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-medium">{item.name}</TableCell>
-                      <TableCell>{item.category}</TableCell>
-                      <TableCell className="text-right">
-                        <span className="inline-block animate-bell-shake text-lg font-bold text-yellow-500">
-                          {item.stockLevel}
-                        </span>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Item Name</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead className="text-right">Level</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {inventoryLoading ? (
+                    [...Array(3)].map((_, i) => (
+                      <TableRow key={i}>
+                        <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                        <TableCell className="text-right"><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
+                      </TableRow>
+                    ))
+                  ) : lowStockItems.length > 0 ? (
+                    lowStockItems.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-medium">{item.name}</TableCell>
+                        <TableCell>{item.category}</TableCell>
+                        <TableCell className="text-right">
+                          <span className="inline-block animate-bell-shake text-lg font-bold text-yellow-500">
+                            {item.stockLevel}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={3} className="h-24 text-center">
+                        All kitchen stores are currently at optimal levels.
                       </TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={3} className="h-24 text-center">
-                      All kitchen stores are currently at optimal levels.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       </div>
