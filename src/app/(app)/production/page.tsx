@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -7,13 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Loader2, BookOpen } from 'lucide-react';
+import { MoreHorizontal, Loader2, BookOpen, Sparkles } from 'lucide-react';
 import type { Order, Product, Recipe, OrderHistoryItem } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { collection, doc, updateDoc, arrayUnion, setDoc, query, where, getDocs } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -93,6 +94,11 @@ export default function ProductionPage() {
 
     updateDoc(orderRef, updateData)
       .then(() => {
+        // Automation: When status is "Product Ready", sync with Products and Inventory
+        if (status === 'Product Ready') {
+          syncProductionToProducts(order, recipe);
+        }
+        
         toast({ title: 'Stage Updated', description: `Order ${order.id} is now in '${status}' stage.` });
         setRecipeSelectionOrder(null);
         setSelectedRecipeId('');
@@ -105,6 +111,52 @@ export default function ProductionPage() {
         });
         errorEmitter.emit('permission-error', permissionError);
       });
+  };
+
+  const syncProductionToProducts = async (order: Order, readyRecipe?: Recipe) => {
+    if (!firestore) return;
+
+    const now = new Date().toISOString();
+    const packagingDate = order.history?.find(h => h.status === 'Product Packaging Complete')?.timestamp || now;
+    const recipeUsed = readyRecipe?.name || order.history?.find(h => h.status === 'Production Started')?.recipeName || 'Artisan Secret Formulation';
+
+    for (const item of order.products) {
+      const productRef = doc(firestore, 'products', item.productId);
+      
+      // 1. Update Product Master with Traceability Data
+      const productUpdate: Partial<Product> = {
+        productionStatus: 'Product Ready',
+        sku: `RB-BATCH-${order.id.split('-').pop()}`,
+        recipeUsed: recipeUsed,
+        productionDate: now.split('T')[0],
+        packagingDate: packagingDate.split('T')[0],
+        quantityProduced: item.quantity,
+        unitOfMeasurement: 'Units',
+        originalOrderId: order.id,
+        availabilityStatus: 'In Stock'
+      };
+
+      setDoc(productRef, productUpdate, { merge: true });
+
+      // 2. Sync Stock Level in Inventory
+      const productName = getProductName(item.productId);
+      const inventoryRef = collection(firestore, 'inventory');
+      const q = query(inventoryRef, where('name', '==', productName), where('category', '==', 'Finished Products'));
+      
+      try {
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          const invDoc = querySnapshot.docs[0];
+          const currentStock = invDoc.data().stockLevel || 0;
+          updateDoc(invDoc.ref, {
+            stockLevel: currentStock + item.quantity,
+            status: 'In Stock'
+          });
+        }
+      } catch (e) {
+        console.error('Inventory auto-sync error:', e);
+      }
+    }
   };
 
   const handleProductionStarted = (order: Order) => {
@@ -279,8 +331,8 @@ export default function ProductionPage() {
                         <DropdownMenuItem onClick={() => handleUpdateStatus(order, 'Product Packaging Complete')}>
                           Product Packaging Complete
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleUpdateStatus(order, 'Product Ready')}>
-                          Product Ready
+                        <DropdownMenuItem onClick={() => handleUpdateStatus(order, 'Product Ready')} className="bg-primary/10 font-bold">
+                          <Sparkles className="mr-2 h-4 w-4 text-primary" /> Product Ready
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

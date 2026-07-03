@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
@@ -8,7 +9,7 @@ import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Product } from '@/lib/types';
-import { Camera, PlusCircle, Loader2, Link as LinkIcon, Upload, Image as ImageIcon, PackageSearch, Trash2, Edit } from 'lucide-react';
+import { Camera, PlusCircle, Loader2, Link as LinkIcon, Upload, Image as ImageIcon, PackageSearch, Trash2, Edit, History, Info } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
@@ -28,6 +29,7 @@ import { collection, doc, setDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const productFormSchema = z.object({
   name: z.string().min(1, 'Product name is required.'),
@@ -44,8 +46,13 @@ type ProductFormValues = z.infer<typeof productFormSchema>;
 export default function ProductsPage() {
   const firestore = useFirestore();
   const productsQuery = useMemo(() => firestore ? collection(firestore, 'products') : null, [firestore]);
-  const { data: products, loading } = useCollection<Product>(productsQuery);
+  const { data: allProducts, loading } = useCollection<Product>(productsQuery);
   
+  // Requirement: Only products with status "Product Ready" should appear
+  const products = useMemo(() => {
+    return allProducts?.filter(p => p.productionStatus === 'Product Ready') || [];
+  }, [allProducts]);
+
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -260,7 +267,7 @@ export default function ProductsPage() {
   const activeDialog = editingProduct ? 'edit' : (isAddDialogOpen ? 'add' : null);
 
   return (
-    <>
+    <TooltipProvider>
       <Dialog open={!!viewingProduct} onOpenChange={(open) => !open && setViewingProduct(null)}>
         <DialogContent className="sm:max-w-4xl p-0 border-0 bg-transparent shadow-none">
           <DialogHeader className="sr-only">
@@ -443,8 +450,9 @@ export default function ProductsPage() {
       {(!products || products.length === 0) && !loading ? (
         <div className="flex flex-col items-center justify-center h-80 border-2 border-dashed rounded-[2.5rem] bg-muted/50 border-border">
            <PackageSearch className="h-16 w-16 text-muted-foreground mb-6" />
-           <p className="text-muted-foreground font-headline text-2xl italic">The collection is currently awaiting its first creation.</p>
-           <Button variant="link" className="text-primary mt-2" onClick={() => setIsAddDialogOpen(true)}>Begin your first artisanal entry</Button>
+           <p className="text-muted-foreground font-headline text-2xl italic">The collection is currently awaiting its first production batch.</p>
+           <p className="text-xs uppercase tracking-widest text-muted-foreground mt-2">Only "Product Ready" items appear in this portfolio.</p>
+           <Button variant="link" className="text-primary mt-4" onClick={() => setIsAddDialogOpen(true)}>Define a prototype manually</Button>
         </div>
       ) : (
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -457,6 +465,13 @@ export default function ProductsPage() {
                         <ImageIcon className="text-white opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 transition-all duration-500 h-10 w-10 drop-shadow-2xl" />
                     </div>
                   </button>
+                  {product.sku && (
+                    <div className="absolute top-4 left-4">
+                        <Badge className="bg-stone-900/80 text-primary border-primary/20 backdrop-blur-md uppercase tracking-tighter text-[8px] px-2 py-0.5">
+                            {product.sku}
+                        </Badge>
+                    </div>
+                  )}
               </CardHeader>
               <CardContent className="p-6 flex-grow space-y-6">
                 <div className="grid grid-cols-4 gap-2">
@@ -467,16 +482,50 @@ export default function ProductsPage() {
                     <div className="bg-muted rounded-xl flex items-center justify-center text-[10px] font-black text-muted-foreground">+{product.imageUrls.length - 4}</div>
                   )}
                 </div>
-                <div>
-                    <CardTitle className="font-headline text-2xl mb-1 group-hover:text-primary transition-colors leading-tight">{product.name}</CardTitle>
-                    <p className="text-[9px] text-muted-foreground uppercase tracking-[0.3em] font-black leading-none">{product.flavor}</p>
+                
+                <div className="space-y-2">
+                    <div>
+                        <CardTitle className="font-headline text-2xl mb-1 group-hover:text-primary transition-colors leading-tight">{product.name}</CardTitle>
+                        <p className="text-[9px] text-muted-foreground uppercase tracking-[0.3em] font-black leading-none">{product.flavor}</p>
+                    </div>
+                    {product.recipeUsed && (
+                        <div className="flex items-center gap-1 text-[8px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                           <History className="h-2.5 w-2.5" /> Made with: {product.recipeUsed}
+                        </div>
+                    )}
                 </div>
-                <div className="flex justify-between items-end">
+
+                <div className="flex justify-between items-end pt-2 border-t border-border/50">
                   <div className="space-y-0.5">
                     <p className="text-2xl font-bold text-foreground tracking-tighter">₹{product.price.toLocaleString()}</p>
                     <p className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">W: ₹{product.wholesalePrice.toLocaleString()}</p>
                   </div>
-                   <Badge variant={product.availabilityStatus === 'In Stock' ? 'default' : 'destructive'} className={cn(product.availabilityStatus === 'In Stock' ? 'bg-green-700 hover:bg-green-800' : '', "rounded-full uppercase tracking-widest text-[8px] py-1 px-3 shadow-lg")}>{product.availabilityStatus}</Badge>
+                  
+                  <div className="flex flex-col items-end gap-2">
+                     <Badge variant={product.availabilityStatus === 'In Stock' ? 'default' : 'destructive'} className={cn(product.availabilityStatus === 'In Stock' ? 'bg-green-700 hover:bg-green-800' : '', "rounded-full uppercase tracking-widest text-[8px] py-1 px-3 shadow-lg")}>
+                        {product.availabilityStatus}
+                     </Badge>
+                     {product.originalOrderId && (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div className="text-[8px] font-black text-primary/40 uppercase tracking-widest cursor-help flex items-center gap-1">
+                                   <Info className="h-2 w-2" /> Traceable
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent className="bg-stone-900 border-none p-4 rounded-2xl shadow-2xl">
+                                <div className="space-y-2 text-[10px]">
+                                    <p className="text-primary font-bold uppercase">Manufacturing Audit</p>
+                                    <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                                        <span className="text-stone-500">Order Ref:</span> <span className="text-stone-300">{product.originalOrderId}</span>
+                                        <span className="text-stone-500">Production:</span> <span className="text-stone-300">{product.productionDate}</span>
+                                        <span className="text-stone-500">Packaging:</span> <span className="text-stone-300">{product.packagingDate}</span>
+                                        <span className="text-stone-500">Batch Qty:</span> <span className="text-stone-300">{product.quantityProduced} {product.unitOfMeasurement}</span>
+                                    </div>
+                                </div>
+                            </TooltipContent>
+                        </Tooltip>
+                     )}
+                  </div>
                 </div>
               </CardContent>
               <CardFooter className="p-6 pt-0"><Button variant="outline" className="w-full rounded-2xl h-12 hover:bg-muted text-foreground font-bold uppercase text-[10px] tracking-widest" onClick={() => setEditingProduct(product)}><Edit className="h-3.5 w-3.5 mr-2" /> Modify Portfolio</Button></CardFooter>
@@ -484,6 +533,6 @@ export default function ProductsPage() {
           ))}
         </div>
       )}
-    </>
+    </TooltipProvider>
   );
 }

@@ -54,6 +54,17 @@ export type Product = {
   availabilityStatus: 'In Stock' | 'Out of Stock';
   imageUrls: string[];
   imageHint: string;
+  // New Production Traceability Fields
+  sku?: string;
+  recipeUsed?: string;
+  productionDate?: string;
+  packagingDate?: string;
+  quantityProduced?: number;
+  unitOfMeasurement?: string;
+  manufacturingCost?: number;
+  expiryDate?: string;
+  productionStatus?: string;
+  originalOrderId?: string;
 };
 
 export type Recipe = {
