@@ -19,17 +19,23 @@ const userCredentials = {
     email: 'admin@roseberry.com',
     name: 'Admin User',
   },
+  'Store Manager': {
+    email: 'manager@roseberry.com',
+    name: 'Manager User',
+  },
   'Staff': {
     email: 'staff@roseberry.com',
     name: 'Staff User',
   }
 }
 
+type UserRole = 'Super Admin' | 'Store Manager' | 'Staff';
+
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const auth = useAuth();
-  const [role, setRole] = useState<'Super Admin' | 'Staff'>('Super Admin');
+  const [role, setRole] = useState<UserRole>('Super Admin');
   const [isLoading, setIsLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -120,24 +126,35 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={handleLogin} className="space-y-8">
-            <RadioGroup value={role} onValueChange={(value: any) => setRole(value)} className="grid grid-cols-2 gap-4">
-              <div>
-                <RadioGroupItem value="Super Admin" id="super-admin" className="peer sr-only" />
-                <Label
-                  htmlFor="super-admin"
-                  className="flex cursor-pointer flex-col items-center justify-between rounded-2xl border-2 border-muted bg-popover p-4 text-xs font-bold uppercase tracking-widest hover:bg-muted peer-data-[state=checked]:border-primary peer-data-[state=checked]:text-primary transition-all"
-                >
-                  Super Admin
-                </Label>
-              </div>
-              <div>
-                <RadioGroupItem value="Staff" id="staff" className="peer sr-only" />
-                <Label
-                  htmlFor="staff"
-                  className="flex cursor-pointer flex-col items-center justify-between rounded-2xl border-2 border-muted bg-popover p-4 text-xs font-bold uppercase tracking-widest hover:bg-muted peer-data-[state=checked]:border-primary peer-data-[state=checked]:text-primary transition-all"
-                >
-                  Kitchen Staff
-                </Label>
+            <RadioGroup value={role} onValueChange={(value: any) => setRole(value)} className="grid grid-cols-1 gap-3">
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <RadioGroupItem value="Super Admin" id="super-admin" className="peer sr-only" />
+                  <Label
+                    htmlFor="super-admin"
+                    className="flex h-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-muted bg-popover p-3 text-[10px] font-black uppercase tracking-tighter text-center hover:bg-muted peer-data-[state=checked]:border-primary peer-data-[state=checked]:text-primary transition-all"
+                  >
+                    Super Admin
+                  </Label>
+                </div>
+                <div>
+                  <RadioGroupItem value="Store Manager" id="store-manager" className="peer sr-only" />
+                  <Label
+                    htmlFor="store-manager"
+                    className="flex h-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-muted bg-popover p-3 text-[10px] font-black uppercase tracking-tighter text-center hover:bg-muted peer-data-[state=checked]:border-primary peer-data-[state=checked]:text-primary transition-all"
+                  >
+                    Store Manager
+                  </Label>
+                </div>
+                <div>
+                  <RadioGroupItem value="Staff" id="staff" className="peer sr-only" />
+                  <Label
+                    htmlFor="staff"
+                    className="flex h-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-muted bg-popover p-3 text-[10px] font-black uppercase tracking-tighter text-center hover:bg-muted peer-data-[state=checked]:border-primary peer-data-[state=checked]:text-primary transition-all"
+                  >
+                    Kitchen Staff
+                  </Label>
+                </div>
               </div>
             </RadioGroup>
 
