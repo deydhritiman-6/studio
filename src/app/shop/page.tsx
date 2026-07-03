@@ -58,13 +58,13 @@ export default function ShopPage() {
   const allProducts = products || [];
 
   return (
-    <div className="space-y-8 md:space-y-16 animate-in fade-in duration-1000">
-      <div className="text-center space-y-6 md:space-y-8 py-6 md:py-10 relative">
+    <div className="space-y-4 md:space-y-10 animate-in fade-in duration-1000">
+      <div className="text-center space-y-4 md:space-y-6 pt-2 pb-6 md:pt-4 md:pb-8 relative">
         <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl aspect-square bg-gradient-to-tr from-primary/5 via-rose-500/5 to-accent/5 blur-[120px] rounded-full"></div>
         </div>
 
-        <div className="flex justify-center items-center gap-2 text-primary font-bold uppercase tracking-[0.3em] text-[9px] md:text-[10px] mb-2 px-6 py-2 rounded-full bg-white border border-primary/10 w-fit mx-auto shadow-sm">
+        <div className="flex justify-center items-center gap-2 text-primary font-bold uppercase tracking-[0.3em] text-[9px] md:text-[10px] mb-1 px-6 py-2 rounded-full bg-white border border-primary/10 w-fit mx-auto shadow-sm">
           <Sparkles className="h-3 w-3 text-orange-500" /> 
           <span className="bg-gradient-to-r from-orange-600 via-primary to-rose-600 bg-clip-text text-transparent">Kolkata's Finest</span>
         </div>
@@ -77,7 +77,7 @@ export default function ShopPage() {
           Hand-crafted artisan chocolates made with single-origin cocoa, ethical values, and <span className="text-rose-500 italic font-serif">extraordinary patience</span>.
         </p>
 
-        <div className="flex justify-center items-center gap-4 mt-6 md:mt-8">
+        <div className="flex justify-center items-center gap-4 mt-4 md:mt-6">
            <div className="h-px w-12 bg-gradient-to-r from-transparent to-primary/30"></div>
            <div className="h-2 w-2 rounded-full bg-primary/40 animate-pulse"></div>
            <div className="h-px w-12 bg-gradient-to-l from-transparent to-primary/30"></div>
