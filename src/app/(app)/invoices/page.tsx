@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -10,7 +9,7 @@ import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { MoreHorizontal, PlusCircle, Loader2 } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Loader2, Truck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import type { Order, Product, Customer } from '@/lib/types';
@@ -122,7 +121,9 @@ export default function InvoicesPage() {
     if (!firestore) return;
     const invoiceRef = doc(firestore, 'orders', invoiceId);
     
-    updateDoc(invoiceRef, { paymentStatus: 'Paid' })
+    const updateData = { paymentStatus: 'Paid' };
+    
+    updateDoc(invoiceRef, updateData)
       .then(() => {
         toast({ title: 'Invoice Updated', description: `Invoice ${invoiceId} has been marked as Paid.` });
       })
@@ -130,7 +131,27 @@ export default function InvoicesPage() {
         const permissionError = new FirestorePermissionError({
           path: invoiceRef.path,
           operation: 'update',
-          requestResourceData: { paymentStatus: 'Paid' },
+          requestResourceData: updateData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
+  }
+
+  function handleMarkAsReadyForShipping(invoiceId: string) {
+    if (!firestore) return;
+    const invoiceRef = doc(firestore, 'orders', invoiceId);
+    
+    const updateData = { shippingStatus: 'Ready for Dispatch' };
+    
+    updateDoc(invoiceRef, updateData)
+      .then(() => {
+        toast({ title: 'Status Updated', description: `Order ${invoiceId} is now marked as Ready for Shipping.` });
+      })
+      .catch(async (error) => {
+        const permissionError = new FirestorePermissionError({
+          path: invoiceRef.path,
+          operation: 'update',
+          requestResourceData: updateData,
         });
         errorEmitter.emit('permission-error', permissionError);
       });
@@ -312,6 +333,9 @@ export default function InvoicesPage() {
                         <DropdownMenuItem onClick={() => setViewingInvoice(invoice)}>View invoice</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleMarkAsPaid(invoice.id)} disabled={invoice.paymentStatus === 'Paid'}>
                           Mark as paid
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleMarkAsReadyForShipping(invoice.id)} disabled={invoice.shippingStatus === 'Ready for Dispatch'}>
+                          <Truck className="mr-2 h-4 w-4" /> Ready for Shipping
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDownloadPdf(invoice.id)}>Download PDF</DropdownMenuItem>
                       </DropdownMenuContent>
