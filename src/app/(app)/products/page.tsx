@@ -54,7 +54,7 @@ export default function ProductsPage() {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [viewingProduct, setViewingProduct] = useState<{images: string[], startIndex: number, productName: string} | null>(null);
+  const [viewingProduct, setViewingProduct] = useState<{images: string[], startIndex: number, productName: string, hint: string} | null>(null);
 
   const [remoteUrl, setRemoteUrl] = useState('');
 
@@ -237,8 +237,8 @@ export default function ProductsPage() {
         <PageHeader title="Artisan Portfolio" />
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {[...Array(8)].map((_, i) => (
-            <Card key={i} className="animate-pulse rounded-[2rem] overflow-hidden border-none shadow-sm">
-               <div className="aspect-[4/3] bg-muted" />
+            <Card key={i} className="rounded-[2rem] overflow-hidden border-none shadow-sm">
+               <Skeleton className="aspect-[4/3] w-full rounded-none" />
                <CardContent className="p-6 space-y-4">
                   <Skeleton className="h-6 w-3/4" />
                   <Skeleton className="h-3 w-1/4" />
@@ -272,7 +272,7 @@ export default function ProductsPage() {
                 {viewingProduct.images.map((url, index) => (
                   <CarouselItem key={index}>
                     <div className="aspect-video relative">
-                      <Image src={url} alt={`Product perspective ${index + 1}`} fill className="object-contain" />
+                      <Image src={url} alt={`Product perspective ${index + 1}`} fill className="object-contain" data-ai-hint={viewingProduct.hint} />
                     </div>
                   </CarouselItem>
                 ))}
@@ -301,21 +301,47 @@ export default function ProductsPage() {
               <ScrollArea className="h-[60vh] pr-6">
                 <div className="space-y-8 py-4">
                   <FormField control={form.control} name="name" render={({ field }) => (
-                    <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Name of Indulgence</FormLabel><FormControl><Input placeholder="e.g., Velvet Noir 85%" className="h-12 rounded-xl" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem>
+                      <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Name of Indulgence</FormLabel>
+                      <FormControl><Input placeholder="e.g., Velvet Noir 85%" className="h-12 rounded-xl" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )} />
                   <FormField control={form.control} name="flavor" render={({ field }) => (
-                    <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Flavor Profile</FormLabel><FormControl><Input placeholder="e.g., Single-Origin Dark Cocoa" className="h-12 rounded-xl" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem>
+                      <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Flavor Profile</FormLabel>
+                      <FormControl><Input placeholder="e.g., Single-Origin Dark Cocoa" className="h-12 rounded-xl" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )} />
                   <div className="grid grid-cols-2 gap-6">
                     <FormField control={form.control} name="price" render={({ field }) => (
-                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Retail Value (₹)</FormLabel><FormControl><Input type="number" className="h-12 rounded-xl" {...field} /></FormControl><FormMessage /></FormItem>
+                      <FormItem>
+                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Retail Value (₹)</FormLabel>
+                        <FormControl><Input type="number" className="h-12 rounded-xl" {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
                     )} />
                     <FormField control={form.control} name="wholesalePrice" render={({ field }) => (
-                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Wholesale Value (₹)</FormLabel><FormControl><Input type="number" className="h-12 rounded-xl" {...field} /></FormControl><FormMessage /></FormItem>
+                      <FormItem>
+                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Wholesale Value (₹)</FormLabel>
+                        <FormControl><Input type="number" className="h-12 rounded-xl" {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
                     )} />
                   </div>
                   <FormField control={form.control} name="availabilityStatus" render={({ field }) => (
-                    <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Availability Status</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Select status" /></SelectTrigger></FormControl><SelectContent><SelectItem value="In Stock">Available for Reserve</SelectItem><SelectItem value="Out of Stock">Currently Maturing</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                    <FormItem>
+                      <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Availability Status</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Select status" /></SelectTrigger></FormControl>
+                        <SelectContent>
+                          <SelectItem value="In Stock">Available for Reserve</SelectItem>
+                          <SelectItem value="Out of Stock">Currently Maturing</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
                   )} />
                   
                   <div className="space-y-4">
@@ -340,7 +366,7 @@ export default function ProductsPage() {
                             <div key={image.id} className="relative">
                               <RadioGroupItem value={image.imageUrl} id={image.id} className="peer sr-only" />
                               <Label htmlFor={image.id} className="block cursor-pointer rounded-2xl border-2 border-muted bg-popover hover:border-accent peer-data-[state=checked]:border-primary transition-all overflow-hidden aspect-[4/3] relative">
-                                <Image src={image.imageUrl} alt={image.description} fill className="object-cover" />
+                                <Image src={image.imageUrl} alt={image.description} fill className="object-cover" data-ai-hint={image.imageHint} />
                               </Label>
                             </div>
                           ))}
@@ -425,7 +451,7 @@ export default function ProductsPage() {
           {products?.map((product) => (
             <Card key={product.id} className="flex flex-col group overflow-hidden border-none shadow-sm hover:shadow-[0_20px_50px_-20px_rgba(0,0,0,0.1)] transition-all duration-700 rounded-[2rem] bg-card">
               <CardHeader className="p-0 relative">
-                 <button type="button" className="block w-full aspect-[4/3] relative overflow-hidden" onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: 0, productName: product.name })}>
+                 <button type="button" className="block w-full aspect-[4/3] relative overflow-hidden" onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: 0, productName: product.name, hint: product.imageHint })}>
                     <Image src={product.imageUrls?.[0] || 'https://picsum.photos/seed/default/400/300'} alt={product.name} fill className="object-cover transition-transform duration-[2s] ease-in-out group-hover:scale-110" data-ai-hint={product.imageHint} />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-700 flex items-center justify-center">
                         <ImageIcon className="text-white opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 transition-all duration-500 h-10 w-10 drop-shadow-2xl" />
@@ -435,7 +461,7 @@ export default function ProductsPage() {
               <CardContent className="p-6 flex-grow space-y-6">
                 <div className="grid grid-cols-4 gap-2">
                   {product.imageUrls?.slice(1, 4).map((url, index) => (
-                     <button key={index} type="button" className="block w-full aspect-square relative rounded-xl overflow-hidden border-2 border-border hover:border-primary/30 transition-all shadow-sm" onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: index + 1, productName: product.name })}><Image src={url} alt="" fill className="object-cover" /></button>
+                     <button key={index} type="button" className="block w-full aspect-square relative rounded-xl overflow-hidden border-2 border-border hover:border-primary/30 transition-all shadow-sm" onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: index + 1, productName: product.name, hint: product.imageHint })}><Image src={url} alt="" fill className="object-cover" data-ai-hint={product.imageHint} /></button>
                   ))}
                   {product.imageUrls?.length > 4 && (
                     <div className="bg-muted rounded-xl flex items-center justify-center text-[10px] font-black text-muted-foreground">+{product.imageUrls.length - 4}</div>
