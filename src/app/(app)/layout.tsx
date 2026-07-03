@@ -37,6 +37,8 @@ import {
   Bell,
   TrendingUp,
   Radio,
+  Lock,
+  ShieldCheck,
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -77,6 +79,13 @@ const navItems = [
       { href: '/analytics', icon: BarChart, label: 'Demand Forecasting' },
       { href: '/marketing', icon: Megaphone, label: 'Marketing Copy' },
       { href: '/vip-clients', icon: Gem, label: 'VIP Insights' },
+    ],
+  },
+  {
+    icon: ShieldCheck,
+    label: 'System',
+    subItems: [
+      { href: '/settings/firestore-rules', icon: Lock, label: 'Security Rules' },
     ],
   },
 ];
@@ -133,7 +142,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   };
 
   // Crucial: Wait for Firebase Auth to settle and restore the user session before showing protected data pages
-  // This prevents race conditions where Firestore listeners start before the auth token is available.
   const isAuthReady = isClient && !authLoading && (!user || !!firebaseUser);
 
   return (

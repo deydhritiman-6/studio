@@ -126,8 +126,8 @@ export default function PerformancePage() {
                   content={<ChartTooltipContent
                       indicator="dot"
                       formatter={(value, name, item) => {
-                        const itemConfig = performanceChartConfig[name as keyof typeof performanceChartConfig];
                         const monthLabel = name === "previous" ? (item.payload as any).previousMonthName : (item.payload as any).currentMonthName;
+                        const label = name === "previous" ? "Previous 6 Months" : "Current 6 Months";
 
                         return (
                            <div className="flex w-full items-stretch justify-between gap-4">
@@ -138,7 +138,7 @@ export default function PerformancePage() {
                                   backgroundColor: item.color,
                                 }}
                               />
-                              <span className="text-muted-foreground">{monthLabel} ({itemConfig.label})</span>
+                              <span className="text-muted-foreground">{monthLabel} ({label})</span>
                             </div>
                             <span className="font-mono font-medium tabular-nums text-foreground">
                               {currentMetricConfig.tooltipFormatter(value as number)}
