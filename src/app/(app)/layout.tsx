@@ -34,7 +34,6 @@ import {
   HelpCircle,
   BookUser,
   LogOut,
-  PanelLeft,
   Bell,
   TrendingUp,
   Radio,
@@ -117,8 +116,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     router.push('/login');
   };
 
-  // Crucial: Wait for Firebase Auth session to be restored before rendering the synchronized app state
-  if (!isClient || authLoading || !user) {
+  // Immediate check for basic hydration and existence of a local user session
+  // This allows the Sidebar and Shell to render instantly while Firebase Auth finishes in the background
+  if (!isClient || !user) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background p-2">
         <div className="flex h-full w-full">
@@ -266,7 +266,23 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
         </header>
         <main className="flex-1 bg-background overflow-y-auto">
-            <div className="p-6 lg:p-8">{children}</div>
+            <div className="p-6 lg:p-8">
+              {/* If Firebase Auth is still initializing, we show a minor loading state for the content only */}
+              {authLoading ? (
+                <div className="space-y-6">
+                  <Skeleton className="h-10 w-48" />
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                    <Skeleton className="h-28" />
+                    <Skeleton className="h-28" />
+                    <Skeleton className="h-28" />
+                    <Skeleton className="h-28" />
+                  </div>
+                  <Skeleton className="h-96 w-full" />
+                </div>
+              ) : (
+                children
+              )}
+            </div>
         </main>
       </div>
     </SidebarProvider>
