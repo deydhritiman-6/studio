@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,6 +32,12 @@ export default function LoginPage() {
   const [role, setRole] = useState<'Super Admin' | 'Staff'>('Super Admin');
   const [isLoading, setIsLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  // UseEffect hook to set mounted state to true after initial hydration
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +51,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Sign in anonymously to satisfy Firestore security rules (auth != null)
+      // Sign in anonymously to satisfy Firestore security rules
       await signInAnonymously(auth);
       
       const userToLogin = userCredentials[role];
@@ -63,11 +69,11 @@ export default function LoginPage() {
       let message = 'An unexpected error occurred during authentication.';
       
       if (error.code === 'auth/api-key-not-valid') {
-        message = 'The Firebase API key is invalid. Please update src/firebase/config.ts with your real Web API Key from the Firebase Console (Project Settings > General).';
+        message = 'The Firebase API key is invalid.';
       } else if (error.code === 'auth/operation-not-allowed') {
-        message = 'Anonymous sign-in is disabled. Please enable it in the Firebase Console (Authentication > Sign-in method).';
+        message = 'Anonymous sign-in is disabled.';
       } else if (error.code === 'auth/network-request-failed') {
-        message = 'Network error. Please check your internet connection.';
+        message = 'Network error. Please check your connection.';
       }
 
       setAuthError(message);
@@ -80,6 +86,17 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+
+  // Prevent hydration mismatch by returning a skeleton or placeholder until mounted
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background p-4">
+        <Card className="w-full max-w-sm shadow-2xl border-border rounded-[2rem] animate-pulse">
+          <div className="h-[400px] w-full" />
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">

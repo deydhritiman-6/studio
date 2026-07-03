@@ -10,43 +10,26 @@ service cloud.firestore {
 
     // Security Rules for Roseberry Ops
     
-    // Products: Read access for all authenticated users (Guests + Staff)
-    // Write access for authenticated staff (Dashboard users)
+    // Products: Catalog visible to everyone (including anonymous guests)
     match /products/{productId} {
-      allow read: if isAuthenticated();
+      allow read: if true;
       allow write: if isAuthenticated();
     }
     
-    // Orders: Anyone authenticated can create an order.
-    // Only authenticated users can read/update (Staff managing orders)
+    // Orders: Creation enabled for guests, management for authenticated staff
     match /orders/{orderId} {
-      allow create: if isAuthenticated();
+      allow create: if true;
       allow read, update: if isAuthenticated();
-      allow delete: if false; // Orders should never be deleted for audit trails
+      allow delete: if false;
     }
 
-    // Customers: Staff access for management and insights
-    match /customers/{customerId} {
-      allow read, write: if isAuthenticated();
-    }
+    // Operations: Protected administrative data
+    match /customers/{customerId} { allow read, write: if isAuthenticated(); }
+    match /inventory/{itemId} { allow read, write: if isAuthenticated(); }
+    match /distributors/{distributorId} { allow read, write: if isAuthenticated(); }
+    match /recipes/{recipeId} { allow read, write: if isAuthenticated(); }
 
-    // Inventory: Real-time stock levels are read by shop and managed by staff
-    match /inventory/{itemId} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated();
-    }
-
-    // Distributors: Wholesale partner management
-    match /distributors/{distributorId} {
-      allow read, write: if isAuthenticated();
-    }
-
-    // Recipes: Confidential artisan formulas
-    match /recipes/{recipeId} {
-      allow read, write: if isAuthenticated();
-    }
-
-    // Default policy: Deny all by default unless specifically matched above
+    // Fallback: Require authentication for everything else
     match /{document=**} {
       allow read, write: if isAuthenticated();
     }
