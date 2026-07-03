@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const shippingFormSchema = z.object({
-  status: z.enum(['Order Received', 'Production in Progress', 'Ready for Dispatch', 'Dispatched', 'Delivered', 'Cancelled', 'On Hold']),
+  status: z.enum(['Ready for Dispatch', 'Dispatched', 'Delivered', 'Cancelled', 'On Hold']),
   dispatchDescription: z.string().optional(),
   courierName: z.string().optional(),
   trackingNumber: z.string().optional(),
@@ -75,7 +75,7 @@ export default function ShippingStatusPage() {
   const form = useForm<ShippingFormValues>({
     resolver: zodResolver(shippingFormSchema),
     defaultValues: {
-      status: 'Order Received',
+      status: 'Ready for Dispatch',
       dispatchDescription: '',
       courierName: '',
       trackingNumber: '',
@@ -88,8 +88,11 @@ export default function ShippingStatusPage() {
 
   useEffect(() => {
     if (selectedOrder) {
+      const orderStatus = selectedOrder.shippingStatus as any;
+      const validStatuses = ['Ready for Dispatch', 'Dispatched', 'Delivered', 'Cancelled', 'On Hold'];
+      
       form.reset({
-        status: (selectedOrder.shippingStatus as any) || 'Order Received',
+        status: validStatuses.includes(orderStatus) ? orderStatus : 'Ready for Dispatch',
         dispatchDescription: selectedOrder.dispatchDetails?.description || '',
         courierName: selectedOrder.dispatchDetails?.courierName || '',
         trackingNumber: selectedOrder.dispatchDetails?.trackingNumber || '',
@@ -277,8 +280,6 @@ export default function ShippingStatusPage() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="Order Received"><div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-blue-500" /> Order Received</div></SelectItem>
-                      <SelectItem value="Production in Progress"><div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-orange-500" /> Production in Progress</div></SelectItem>
                       <SelectItem value="Ready for Dispatch"><div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-purple-500" /> Ready for Dispatch</div></SelectItem>
                       <SelectItem value="Dispatched"><div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-green-500" /> Dispatched</div></SelectItem>
                       <SelectItem value="Delivered"><div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-emerald-800" /> Delivered</div></SelectItem>
