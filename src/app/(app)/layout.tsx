@@ -109,7 +109,7 @@ function NavSidebar({ pathname, lowStockItems, hasLowStock }: { pathname: string
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
       setOpen(false);
-    }, 30000);
+    }, 10000); // 10 seconds inactivity
   }, [isMobile, setOpen]);
 
   const stopCollapseTimer = useCallback(() => {
