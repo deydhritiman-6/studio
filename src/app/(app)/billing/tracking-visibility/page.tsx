@@ -57,7 +57,7 @@ export default function TrackingVisibilityPage() {
 
   return (
     <>
-      <PageHeader title="Customer Tracking Visibility" />
+      <PageHeader title="Customer Visibility Control" />
       
       <div className="grid grid-cols-1 gap-8">
         <Card className="rounded-[2.5rem] border-none shadow-2xl bg-stone-900 text-white overflow-hidden">
