@@ -104,35 +104,23 @@ export default function ProductsPage() {
   }, [editingProduct, form, isAddDialogOpen]);
 
   const saveProduct = (values: ProductFormValues, id?: string) => {
-    if (!firestore) {
-      toast({ variant: 'destructive', title: 'Connection Error', description: 'Real-time database is not available.' });
-      return;
-    }
+    if (!firestore) return;
     
     setIsSaving(true);
     const productId = id || `P${Date.now()}`;
     const productRef = doc(firestore, 'products', productId);
     const productData = { ...values, id: productId };
 
-    setDoc(productRef, productData)
+    // Optimized mutation pattern: No await, chain catch for contextual errors
+    setDoc(productRef, productData, { merge: true })
       .then(() => {
         setIsAddDialogOpen(false);
         setEditingProduct(null);
         setIsSaving(false);
         toast({ title: id ? 'Creation Refined' : 'Creation Added', description: `${values.name} has been synchronized with the collection.` });
       })
-      .catch(async (error) => {
+      .catch(async (serverError) => {
         setIsSaving(false);
-        console.error('Firestore Save Error:', error);
-        
-        toast({
-          variant: 'destructive',
-          title: 'Preservation Failed',
-          description: error.message.includes('permission') 
-            ? 'Unauthorized: Please ensure you are logged in correctly.' 
-            : 'The creation is too complex to save. Try a smaller image.',
-        });
-
         const permissionError = new FirestorePermissionError({
           path: productRef.path,
           operation: id ? 'update' : 'create',
@@ -159,7 +147,6 @@ export default function ProductsPage() {
         videoRef.current.srcObject = stream;
       }
     } catch (error) {
-      console.error('Error accessing camera:', error);
       setHasCameraPermission(false);
       toast({
         variant: 'destructive',
@@ -173,17 +160,20 @@ export default function ProductsPage() {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      // Resize for Firestore persistence (staying under 1MB limit)
+      const MAX_WIDTH = 800;
+      const scale = MAX_WIDTH / video.videoWidth;
+      canvas.width = MAX_WIDTH;
+      canvas.height = video.videoHeight * scale;
+      
       const context = canvas.getContext('2d');
       if (context) {
-        context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-        // Using lower quality (0.5) to stay within Firestore document limits
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.5); 
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.6); 
         form.setValue('imageUrls', [dataUrl], { shouldValidate: true });
         form.setValue('imageHint', 'custom photo', { shouldValidate: true });
         stopCamera();
-        toast({ title: "Artisan Shot Captured", description: "Photo successfully added to selection." });
+        toast({ title: "Artisan Shot Captured", description: "Photo successfully optimized and added." });
       }
     }
   };
@@ -196,7 +186,20 @@ export default function ProductsPage() {
     const fileToUrlPromises = fileArray.map(file => {
       return new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = e => resolve(e.target!.result as string);
+        reader.onload = e => {
+          const img = new window.Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 800;
+            const scale = MAX_WIDTH / img.width;
+            canvas.width = MAX_WIDTH;
+            canvas.height = img.height * scale;
+            const ctx = canvas.getContext('2d');
+            ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/jpeg', 0.6));
+          };
+          img.src = e.target!.result as string;
+        };
         reader.onerror = e => reject(e);
         reader.readAsDataURL(file);
       });
@@ -205,7 +208,7 @@ export default function ProductsPage() {
     Promise.all(fileToUrlPromises).then(urls => {
         form.setValue('imageUrls', urls, { shouldValidate: true });
         form.setValue('imageHint', 'uploaded image', { shouldValidate: true });
-        toast({ title: "Visuals Uploaded", description: `${urls.length} images added to collection.` });
+        toast({ title: "Visuals Uploaded", description: `${urls.length} optimized images added.` });
     });
   };
 
@@ -342,7 +345,7 @@ export default function ProductsPage() {
                           <Label htmlFor="picture" className="sr-only">Select Asset</Label>
                           <Input id="picture" type="file" multiple accept="image/*" onChange={handleFileChange} className="cursor-pointer bg-stone-50 border-stone-100 rounded-xl py-3 h-auto" />
                         </div>
-                        <FormDescription className="text-[10px] uppercase tracking-tighter">Upload up to 4 high-fidelity JPEG or PNG files.</FormDescription>
+                        <FormDescription className="text-[10px] uppercase tracking-tighter">Upload up to 4 high-fidelity files. They will be optimized for storage.</FormDescription>
                       </TabsContent>
                     </Tabs>
                     

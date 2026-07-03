@@ -117,7 +117,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     router.push('/login');
   };
 
-  // Wait for both the component to mount (isClient) AND the Firebase Auth session to be checked
+  // Crucial: Wait for Firebase Auth session to be restored before rendering the synchronized app state
   if (!isClient || authLoading || !user) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background p-2">
