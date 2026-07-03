@@ -45,7 +45,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Sign in anonymously to satisfy Firestore security rules
+      // Sign in anonymously to satisfy Firestore security rules (auth != null)
       await signInAnonymously(auth);
       
       const userToLogin = userCredentials[role];

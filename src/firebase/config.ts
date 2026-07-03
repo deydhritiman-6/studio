@@ -2,13 +2,16 @@
 
 /**
  * @fileOverview Firebase configuration and initialization.
- * This configuration is safe to be public as access is restricted by Security Rules.
+ * 
+ * IMPORTANT: To enable real-time synchronization and data persistence:
+ * 1. Go to the Firebase Console (https://console.firebase.google.com/)
+ * 2. Project Settings > General > Web API Key. Copy and paste it below.
+ * 3. Authentication > Sign-in method > Enable 'Anonymous'.
  */
 
 export const firebaseConfig = {
-  // IMPORTANT: You must replace this placeholder with your actual Web API Key 
-  // from the Firebase Console (Project Settings > General).
-  apiKey: "REPLACE_WITH_YOUR_ACTUAL_API_KEY_FROM_CONSOLE", 
+  // Replace this placeholder with your actual Web API Key from the Firebase Console
+  apiKey: "AIzaSyB-PLACEHOLDER-KEY-REPLACE-ME", 
   authDomain: "roseberry-chocolate.firebaseapp.com",
   projectId: "roseberry-chocolate",
   storageBucket: "roseberry-chocolate.firebasestorage.app",
