@@ -55,22 +55,21 @@ export default function ShopPage() {
     );
   }
 
-  // Show all products but mark those that are out of stock
   const allProducts = products || [];
 
   return (
-    <div className="space-y-16 animate-in fade-in duration-1000">
-      <div className="text-center space-y-6 py-12">
-        <div className="flex justify-center items-center gap-2 text-primary font-bold uppercase tracking-[0.3em] text-[10px] mb-2">
+    <div className="space-y-8 md:space-y-16 animate-in fade-in duration-1000">
+      <div className="text-center space-y-4 md:space-y-6 py-8 md:py-12">
+        <div className="flex justify-center items-center gap-2 text-primary font-bold uppercase tracking-[0.3em] text-[9px] md:text-[10px] mb-2">
           <Sparkles className="h-3 w-3" /> Puducherry's Finest
         </div>
-        <h1 className="text-5xl md:text-7xl font-bold font-headline text-stone-900 tracking-tight leading-tight">The Art of Indulgence</h1>
-        <p className="text-stone-500 max-w-2xl mx-auto text-lg md:text-xl font-light leading-relaxed">Hand-crafted artisan chocolates made with single-origin cocoa, ethical values, and extraordinary patience.</p>
-        <div className="h-px w-24 bg-primary/30 mx-auto mt-8"></div>
+        <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold font-headline text-stone-900 tracking-tight leading-tight px-4">The Art of Indulgence</h1>
+        <p className="text-stone-500 max-w-2xl mx-auto text-base md:text-xl font-light leading-relaxed px-4">Hand-crafted artisan chocolates made with single-origin cocoa, ethical values, and extraordinary patience.</p>
+        <div className="h-px w-24 bg-primary/30 mx-auto mt-6 md:mt-8"></div>
       </div>
 
       {allProducts.length > 0 ? (
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-6 md:gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {allProducts.map((product) => (
             <Card key={product.id} className="group overflow-hidden flex flex-col border-stone-200 shadow-sm hover:shadow-2xl transition-all duration-500 rounded-2xl bg-white">
               <div className="aspect-[4/3] relative overflow-hidden bg-stone-100">

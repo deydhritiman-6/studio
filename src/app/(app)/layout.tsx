@@ -72,7 +72,7 @@ const navItems = [
   { href: '/gst-billing', icon: FileText, label: 'Create Invoice' },
   { href: '/invoices', icon: FileText, label: 'View Invoices' },
   { href: '/billing/shipping-status', icon: Truck, label: 'Dispatch Control' },
-  { href: '/billing/tracking-visibility', icon: Eye, label: 'Customer Visibility Control' },
+  { href: '/billing/tracking-visibility', icon: Eye, label: 'Visibility Policy' },
   { href: '/distributors', icon: Truck, label: 'Distributors' },
   { href: '/broadcast', icon: Radio, label: 'Broadcasts' },
   {
@@ -109,7 +109,7 @@ function NavSidebar({ pathname, lowStockItems, hasLowStock }: { pathname: string
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
       setOpen(false);
-    }, 10000); // 10 seconds inactivity
+    }, 10000); 
   }, [isMobile, setOpen]);
 
   const stopCollapseTimer = useCallback(() => {
@@ -141,8 +141,8 @@ function NavSidebar({ pathname, lowStockItems, hasLowStock }: { pathname: string
       onMouseLeave={handleMouseLeave}
     >
       <SidebarHeader className="h-16 flex items-center justify-between px-4">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <Logo />
+        <Link href="/dashboard" className="flex items-center gap-2 overflow-hidden">
+          <Logo className="h-8 w-auto min-w-[120px]" />
         </Link>
         <SidebarTrigger className="hidden md:flex" />
       </SidebarHeader>
@@ -184,7 +184,7 @@ function NavSidebar({ pathname, lowStockItems, hasLowStock }: { pathname: string
       <SidebarFooter className="p-2 border-t border-sidebar-border">
          <SidebarMenu>
            <SidebarMenuItem>
-              <SidebarMenuButton isActive={pathname === '/user-guide'} asChild>
+              <SidebarMenuButton isActive={pathname === '/user-guide'} asChild tooltip="User Guide">
                 <Link href="/user-guide">
                   <BookUser />
                   <span>User Guide</span>
@@ -192,7 +192,7 @@ function NavSidebar({ pathname, lowStockItems, hasLowStock }: { pathname: string
               </SidebarMenuButton>
             </SidebarMenuItem>
            <SidebarMenuItem>
-              <SidebarMenuButton isActive={pathname === '/guide'} asChild>
+              <SidebarMenuButton isActive={pathname === '/guide'} asChild tooltip="Developer Guide">
                 <Link href="/guide">
                   <HelpCircle />
                   <span>Developer Guide</span>
@@ -200,7 +200,7 @@ function NavSidebar({ pathname, lowStockItems, hasLowStock }: { pathname: string
               </SidebarMenuButton>
             </SidebarMenuItem>
           <SidebarMenuItem>
-              <SidebarMenuButton isActive={pathname === '/settings'} asChild>
+              <SidebarMenuButton isActive={pathname === '/settings'} asChild tooltip="Settings">
                 <Link href="/settings">
                   <Settings />
                   <span>Settings</span>
@@ -266,25 +266,29 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <NavSidebar pathname={pathname} lowStockItems={lowStockItems} hasLowStock={hasLowStock} />
       <div className="flex flex-1 flex-col">
-        <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b bg-background px-6">
+        <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b bg-background px-4 md:px-6">
             <SidebarTrigger className="md:hidden" />
-            <div className="flex flex-1 items-center justify-end gap-4">
+            <div className="flex flex-1 items-center justify-end gap-2 md:gap-4">
                 {mounted && hasLowStock && (
-                  <Button asChild variant="ghost" size="icon" className="relative">
+                  <Button asChild variant="ghost" size="icon" className="relative h-9 w-9">
                       <Link href="/inventory" aria-label="View low stock items">
-                          <Bell className="h-6 w-6 animate-bell-shake text-yellow-500" />
-                          <span className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
+                          <Bell className="h-5 w-5 animate-bell-shake text-yellow-500" />
+                          <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white">
                               {lowStockItems.length}
                           </span>
                       </Link>
                   </Button>
                 )}
-                {mounted && user?.role && <Badge variant="secondary">{user.role}</Badge>}
+                {mounted && user?.role && (
+                  <Badge variant="secondary" className="hidden xs:inline-flex px-2 py-0 h-6 text-[10px] uppercase font-bold tracking-wider">
+                    {user.role}
+                  </Badge>
+                )}
                 {mounted ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="relative h-10 w-10 rounded-full" disabled={!user}>
-                        <Avatar className="h-10 w-10">
+                      <Button variant="ghost" className="relative h-9 w-9 md:h-10 md:w-10 rounded-full" disabled={!user}>
+                        <Avatar className="h-9 w-9 md:h-10 md:w-10">
                             <AvatarImage src="https://picsum.photos/seed/avatar/100/100" />
                             <AvatarFallback>{user?.name?.charAt(0).toUpperCase() || '?'}</AvatarFallback>
                         </Avatar>
@@ -296,6 +300,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                           <div className="flex flex-col space-y-1">
                             <p className="text-sm font-medium leading-none">{user.name}</p>
                             <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                            <p className="text-[10px] font-bold text-primary xs:hidden uppercase mt-1 tracking-widest">{user.role}</p>
                           </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
@@ -307,12 +312,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     )}
                   </DropdownMenu>
                 ) : (
-                  <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />
+                  <div className="h-9 w-9 md:h-10 md:w-10 rounded-full bg-muted animate-pulse" />
                 )}
             </div>
         </header>
         <div className="flex-1 bg-background overflow-y-auto">
-            <div className="p-6 lg:p-8 pt-12 lg:pt-20">
+            <div className="p-4 sm:p-6 lg:p-8 pt-8 md:pt-12 lg:pt-20">
               {isAuthReady && user ? children : (
                 <div className="space-y-6">
                   <Skeleton className="h-10 w-64" />
