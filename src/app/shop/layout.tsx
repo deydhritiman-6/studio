@@ -39,7 +39,6 @@ const DeliveryIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 export default function ShopLayout({ children }: { children: React.ReactNode }) {
-  const [cartCount, setCartCount] = useState(0);
   const [isAuthInitializing, setIsAuthInitializing] = useState(true);
   const auth = useAuth();
   const { user: firebaseUser, loading: authLoading } = useUser();
@@ -62,26 +61,6 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
 
     initAuth();
   }, [auth, authLoading, firebaseUser]);
-
-  const updateCount = () => {
-    try {
-      const cart = JSON.parse(localStorage.getItem('roseberry-cart') || '[]');
-      const count = Array.isArray(cart) ? cart.reduce((acc: number, item: any) => acc + (item.quantity || 0), 0) : 0;
-      setCartCount(count);
-    } catch (e) {
-      setCartCount(0);
-    }
-  };
-
-  useEffect(() => {
-    updateCount();
-    window.addEventListener('cart-updated', updateCount);
-    window.addEventListener('storage', updateCount);
-    return () => {
-      window.removeEventListener('cart-updated', updateCount);
-      window.removeEventListener('storage', updateCount);
-    };
-  }, []);
 
   const isReady = !authLoading && !isAuthInitializing && !!firebaseUser;
 
@@ -111,28 +90,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
           </div>
 
           <div className="flex-1 flex justify-end items-center">
-            <Button 
-              variant="ghost" 
-              asChild 
-              className="relative hover:bg-stone-50 hover:text-primary rounded-full h-16 w-16 md:h-24 md:w-24 p-0 transition-all duration-300 group shadow-sm hover:shadow-md border border-stone-100/50 overflow-visible"
-            >
-               <Link href="/shop/cart" aria-label="View shopping basket">
-                  <div className="relative h-12 w-12 md:h-20 md:w-20 flex items-center justify-center">
-                    <Image 
-                      src="/cart2.jpeg" 
-                      alt="Basket" 
-                      width={80} 
-                      height={80} 
-                      className="object-contain transition-transform duration-300 group-hover:scale-110"
-                    />
-                  </div>
-                  {cartCount > 0 && (
-                    <span className="absolute top-1 right-1 md:top-2 md:right-2 flex h-7 w-7 md:h-10 md:w-10 items-center justify-center rounded-full bg-gradient-to-tr from-primary to-orange-500 text-[10px] md:text-[14px] font-bold text-white border-2 border-white shadow-lg animate-in zoom-in-50 duration-500 pulse-glow z-20">
-                      {cartCount}
-                    </span>
-                  )}
-               </Link>
-            </Button>
+            {/* Cart Icon image removed as per user request */}
           </div>
         </div>
       </header>
