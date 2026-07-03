@@ -1,12 +1,36 @@
 'use client';
 
 import Link from 'next/link';
-import { ShoppingCart, Loader2, Package } from 'lucide-react';
+import { ShoppingCart, Loader2 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import { useAuth, useUser } from '@/firebase';
 import { signInAnonymously } from 'firebase/auth';
+
+const DeliveryIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    {/* Delivery Person */}
+    <circle cx="6" cy="7" r="2" />
+    <path d="M3 15v-2a2 2 0 0 1 2-2h2" />
+    {/* The Product/Box being handed over */}
+    <rect x="8" y="11" width="5" height="4" rx="1" fill="currentColor" fillOpacity="0.2" />
+    {/* Client/Recipient */}
+    <circle cx="18" cy="9" r="2" />
+    <path d="M15 17v-1a2 2 0 0 1 2-2h2" />
+    {/* Delivery movement indicator */}
+    <path d="M2 18h4" />
+  </svg>
+);
 
 export default function ShopLayout({ children }: { children: React.ReactNode }) {
   const [cartCount, setCartCount] = useState(0);
@@ -65,7 +89,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
           <div className="flex-1 flex justify-start">
             <Button variant="ghost" asChild className="rounded-full px-2 sm:px-6 font-bold uppercase text-[9px] sm:text-[10px] tracking-widest text-stone-500 hover:text-primary transition-colors">
               <Link href="/shop/my-orders">
-                <Package className="mr-1 sm:mr-2 h-4 w-4" /> <span className="hidden xs:inline">My Orders</span>
+                <DeliveryIcon className="mr-1 sm:mr-2 h-5 w-5" /> <span className="hidden xs:inline">My Orders</span>
               </Link>
             </Button>
           </div>
