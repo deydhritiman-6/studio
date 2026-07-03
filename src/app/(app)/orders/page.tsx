@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -54,8 +55,7 @@ export default function OrdersPage() {
       }
     } catch (e) {}
     
-    // Fix: Avoid 'undefined' in Firestore data by conditionally adding the reason field
-    const historyItem: any = {
+    const historyItem: OrderHistoryItem = {
       status,
       timestamp: new Date().toISOString(),
       adminName: adminName,
@@ -80,7 +80,7 @@ export default function OrdersPage() {
         setStatusToUpdate(null);
         setStatusReason('');
       })
-      .catch(async (error) => {
+      .catch(async (serverError) => {
         const permissionError = new FirestorePermissionError({
           path: orderRef.path,
           operation: 'update',
@@ -189,7 +189,7 @@ export default function OrdersPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => setViewingOrder(order)}>View order details</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleActionClick(order.id, 'Order Confirmed')}>Order Confirmed</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleActionClick(order.id, 'Sent for Production')}>Sent for Production</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleActionClick(order.id, 'New Order for Production')}>Sent for Production</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleActionClick(order.id, 'Order On Hold')}>Order On Hold</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleActionClick(order.id, 'Order Rejected')} className="text-destructive">Order Rejected</DropdownMenuItem>
                       </DropdownMenuContent>

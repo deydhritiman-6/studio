@@ -15,6 +15,8 @@ export type OrderHistoryItem = {
   timestamp: string;
   adminName: string;
   reason?: string;
+  recipeId?: string;
+  recipeName?: string;
 };
 
 export type Order = {
@@ -28,7 +30,7 @@ export type Order = {
     quantity: number;
   }[];
   paymentStatus: 'Paid' | 'Pending' | 'Failed';
-  deliveryStatus: 'New Order' | 'Order Confirmed' | 'Sent for Production' | 'Order On Hold' | 'Order Rejected' | 'Pending' | 'Confirmed' | 'Preparing' | 'Packed' | 'Shipped' | 'Delivered';
+  deliveryStatus: 'New Order' | 'Order Confirmed' | 'Sent for Production' | 'Order On Hold' | 'Order Rejected' | 'Pending' | 'Confirmed' | 'Preparing' | 'Packed' | 'Shipped' | 'Delivered' | 'New Order for Production' | 'Production Started' | 'Production Ongoing' | 'Production Complete' | 'Product Packaging Complete' | 'Product Ready';
   statusReason?: string;
   history?: OrderHistoryItem[];
   shippingStatus?: 'Order Received' | 'Production in Progress' | 'Ready for Dispatch' | 'Dispatched' | 'Delivered' | 'Cancelled' | 'On Hold';
