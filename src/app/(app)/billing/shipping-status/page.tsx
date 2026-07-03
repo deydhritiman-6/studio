@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Search, Truck, Package, CheckCircle2, Clock, Send } from 'lucide-react';
+import { Loader2, Search, Truck, Package, CheckCircle2, Clock, Send, PackageSearch } from 'lucide-react';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, doc, updateDoc } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
@@ -62,11 +62,14 @@ export default function ShippingStatusPage() {
 
   const filteredOrders = useMemo(() => {
     if (!orders) return [];
-    return orders.filter(o => 
-      o.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      o.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (o.id.replace('ORD', 'INV').toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+    // Only show orders that have entered the shipping lifecycle (via Ready for Shipping action)
+    return orders
+      .filter(o => !!o.shippingStatus)
+      .filter(o => 
+        o.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        o.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (o.id.replace('ORD', 'INV').toLowerCase().includes(searchTerm.toLowerCase()))
+      );
   }, [orders, searchTerm]);
 
   const form = useForm<ShippingFormValues>({
@@ -108,7 +111,6 @@ export default function ShippingStatusPage() {
     
     const orderRef = doc(firestore, 'orders', selectedOrder.id);
     
-    // Fix: Cleanse update data of undefined values
     const dispatchDetails: any = {
       updatedBy: adminName,
       updatedAt: new Date().toISOString(),
@@ -196,7 +198,7 @@ export default function ShippingStatusPage() {
           <CardContent className="p-0">
             {loading ? (
               <div className="p-12 flex justify-center"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>
-            ) : (
+            ) : filteredOrders.length > 0 ? (
               <Table>
                 <TableHeader>
                   <TableRow className="hover:bg-transparent bg-muted/10">
@@ -208,49 +210,49 @@ export default function ShippingStatusPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredOrders.length > 0 ? (
-                    filteredOrders.map((order) => (
-                      <TableRow key={order.id} className="group hover:bg-muted/5 transition-colors">
-                        <TableCell className="p-6">
-                          <div className="font-bold text-sm">{order.id.replace('ORD', 'INV')}</div>
-                          <div className="text-[10px] text-muted-foreground font-mono">{order.id}</div>
-                        </TableCell>
-                        <TableCell className="p-6">
-                          <div className="font-medium">{order.customerName}</div>
-                          <div className="text-xs text-muted-foreground">Placed: {order.orderDate}</div>
-                        </TableCell>
-                        <TableCell className="p-6">
-                           <StatusTimeline status={order.shippingStatus} />
-                        </TableCell>
-                        <TableCell className="p-6">
-                          <Badge variant="outline" className={cn(
-                            "rounded-full px-4 py-1 text-[10px] font-bold uppercase tracking-widest border-2",
-                            statusColorMap[order.shippingStatus || 'Order Received'] || 'bg-muted text-muted-foreground border-muted'
-                          )}>
-                            {order.shippingStatus || 'Order Received'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="p-6 text-right">
-                          <Button 
-                            variant="secondary" 
-                            size="sm" 
-                            className="rounded-xl px-6 h-10 hover:bg-primary hover:text-white transition-all shadow-sm"
-                            onClick={() => setSelectedOrder(order)}
-                          >
-                            Update Log
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={5} className="h-40 text-center text-muted-foreground italic">
-                        No orders matching your search.
+                  {filteredOrders.map((order) => (
+                    <TableRow key={order.id} className="group hover:bg-muted/5 transition-colors">
+                      <TableCell className="p-6">
+                        <div className="font-bold text-sm">{order.id.replace('ORD', 'INV')}</div>
+                        <div className="text-[10px] text-muted-foreground font-mono">{order.id}</div>
+                      </TableCell>
+                      <TableCell className="p-6">
+                        <div className="font-medium">{order.customerName}</div>
+                        <div className="text-xs text-muted-foreground">Placed: {order.orderDate}</div>
+                      </TableCell>
+                      <TableCell className="p-6">
+                         <StatusTimeline status={order.shippingStatus} />
+                      </TableCell>
+                      <TableCell className="p-6">
+                        <Badge variant="outline" className={cn(
+                          "rounded-full px-4 py-1 text-[10px] font-bold uppercase tracking-widest border-2",
+                          statusColorMap[order.shippingStatus || 'Order Received'] || 'bg-muted text-muted-foreground border-muted'
+                        )}>
+                          {order.shippingStatus || 'Order Received'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="p-6 text-right">
+                        <Button 
+                          variant="secondary" 
+                          size="sm" 
+                          className="rounded-xl px-6 h-10 hover:bg-primary hover:text-white transition-all shadow-sm"
+                          onClick={() => setSelectedOrder(order)}
+                        >
+                          Update Log
+                        </Button>
                       </TableCell>
                     </TableRow>
-                  )}
+                  ))}
                 </TableBody>
               </Table>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-80 text-center space-y-4">
+                 <PackageSearch className="h-12 w-12 text-muted-foreground/30" />
+                 <div className="space-y-1">
+                   <p className="font-headline text-xl italic text-muted-foreground">The dispatch queue is quiet.</p>
+                   <p className="text-xs uppercase tracking-widest text-muted-foreground/60">Orders will appear here once marked as "Ready for Shipping" or "Product Ready".</p>
+                 </div>
+              </div>
             )}
           </CardContent>
         </Card>

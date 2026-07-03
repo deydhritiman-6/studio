@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -92,6 +91,16 @@ export default function ProductionPage() {
       history: arrayUnion(historyItem)
     };
 
+    // Integration: When production is done, add it to the Shipping list automatically
+    if (status === 'Product Ready') {
+      updateData.shippingStatus = 'Ready for Dispatch';
+    }
+
+    if (recipe) {
+      updateData.recipeId = recipe.id;
+      updateData.recipeName = recipe.name;
+    }
+
     updateDoc(orderRef, updateData)
       .then(() => {
         // Automation: When status is "Product Ready", sync with Products and Inventory
@@ -123,7 +132,6 @@ export default function ProductionPage() {
     for (const item of order.products) {
       const productRef = doc(firestore, 'products', item.productId);
       
-      // 1. Update Product Master with Traceability Data
       const productUpdate: Partial<Product> = {
         productionStatus: 'Product Ready',
         sku: `RB-BATCH-${order.id.split('-').pop()}`,
@@ -138,7 +146,6 @@ export default function ProductionPage() {
 
       setDoc(productRef, productUpdate, { merge: true });
 
-      // 2. Sync Stock Level in Inventory
       const productName = getProductName(item.productId);
       const inventoryRef = collection(firestore, 'inventory');
       const q = query(inventoryRef, where('name', '==', productName), where('category', '==', 'Finished Products'));

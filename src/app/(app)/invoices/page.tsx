@@ -9,7 +9,7 @@ import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { MoreHorizontal, PlusCircle, Loader2, Truck } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Loader2, Truck, CheckCircle2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import type { Order, Product, Customer } from '@/lib/types';
@@ -23,6 +23,7 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { cn } from '@/lib/utils';
 
 const getStatusBadgeVariant = (status: Order['paymentStatus']) => {
   switch (status) {
@@ -141,11 +142,12 @@ export default function InvoicesPage() {
     if (!firestore) return;
     const invoiceRef = doc(firestore, 'orders', invoiceId);
     
+    // Setting shippingStatus adds it to the Live Dispatch list
     const updateData = { shippingStatus: 'Ready for Dispatch' };
     
     updateDoc(invoiceRef, updateData)
       .then(() => {
-        toast({ title: 'Status Updated', description: `Order ${invoiceId} is now marked as Ready for Shipping.` });
+        toast({ title: 'Added to Dispatch', description: `Order ${invoiceId} is now in the Shipping Status list.` });
       })
       .catch(async (error) => {
         const permissionError = new FirestorePermissionError({
@@ -286,6 +288,14 @@ export default function InvoicesPage() {
                   {viewingInvoice.paymentStatus}
                 </Badge>
               </div>
+              {viewingInvoice.shippingStatus && (
+                <div className="flex justify-between items-center">
+                  <h4 className="text-sm font-medium text-muted-foreground">Shipping Progress</h4>
+                  <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest border-primary/30 text-primary">
+                    {viewingInvoice.shippingStatus}
+                  </Badge>
+                </div>
+              )}
             </div>
             <DialogFooter>
               <DialogClose asChild><Button type="button" variant="secondary">Close</Button></DialogClose>
@@ -310,7 +320,12 @@ export default function InvoicesPage() {
             <TableBody>
               {invoices?.map((invoice) => (
                 <TableRow key={invoice.id}>
-                  <TableCell className="font-medium">{invoice.id.replace('ORD', 'INV')}</TableCell>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      {invoice.id.replace('ORD', 'INV')}
+                      {invoice.shippingStatus && <Truck className="h-3 w-3 text-primary animate-pulse" />}
+                    </div>
+                  </TableCell>
                   <TableCell>{invoice.customerName}</TableCell>
                   <TableCell>{invoice.orderDate}</TableCell>
                   <TableCell>
@@ -334,8 +349,12 @@ export default function InvoicesPage() {
                         <DropdownMenuItem onClick={() => handleMarkAsPaid(invoice.id)} disabled={invoice.paymentStatus === 'Paid'}>
                           Mark as paid
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleMarkAsReadyForShipping(invoice.id)} disabled={invoice.shippingStatus === 'Ready for Dispatch'}>
-                          <Truck className="mr-2 h-4 w-4" /> Ready for Shipping
+                        <DropdownMenuItem onClick={() => handleMarkAsReadyForShipping(invoice.id)} disabled={!!invoice.shippingStatus}>
+                          {invoice.shippingStatus ? (
+                            <><CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> In Dispatch Queue</>
+                          ) : (
+                            <><Truck className="mr-2 h-4 w-4" /> Ready for Shipping</>
+                          )}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDownloadPdf(invoice.id)}>Download PDF</DropdownMenuItem>
                       </DropdownMenuContent>
