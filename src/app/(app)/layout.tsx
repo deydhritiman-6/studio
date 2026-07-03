@@ -1,3 +1,4 @@
+
 'use client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -67,8 +68,15 @@ const navItems = [
   { href: '/recipes', icon: BookOpen, label: 'Recipes' },
   { href: '/products', icon: Package, label: 'Products' },
   { href: '/inventory', icon: Boxes, label: 'Inventory' },
-  { href: '/invoices', icon: FileText, label: 'Invoices' },
-  { href: '/gst-billing', icon: FileText, label: 'Billing' },
+  {
+    icon: FileText,
+    label: 'Billing',
+    subItems: [
+      { href: '/invoices', icon: FileText, label: 'Invoices' },
+      { href: '/gst-billing', icon: FileText, label: 'Standard Billing' },
+      { href: '/billing/shipping-status', icon: Truck, label: 'Shipping Status' },
+    ],
+  },
   { href: '/distributors', icon: Truck, label: 'Distributors' },
   { href: '/broadcast', icon: Radio, label: 'Broadcasts' },
   {

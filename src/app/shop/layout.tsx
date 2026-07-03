@@ -1,7 +1,8 @@
+
 'use client';
 
 import Link from 'next/link';
-import { ShoppingCart, Loader2 } from 'lucide-react';
+import { ShoppingCart, Loader2, Package, User } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
@@ -63,7 +64,13 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
         <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-1/3 h-20 bg-primary/10 blur-[60px] rounded-full pointer-events-none animate-pulse"></div>
 
         <div className="grid grid-cols-3 w-full items-center">
-          <div className="flex justify-start"></div>
+          <div className="flex justify-start gap-4">
+            <Button variant="ghost" asChild className="rounded-full px-6 font-bold uppercase text-[10px] tracking-widest text-stone-500 hover:text-primary transition-colors">
+              <Link href="/shop/my-orders">
+                <Package className="mr-2 h-4 w-4" /> My Orders
+              </Link>
+            </Button>
+          </div>
           <div className="flex justify-center">
             <Link href="/shop" className="hover:scale-105 transition-transform duration-500 relative z-10 block">
               <Logo className="h-20 w-auto" />
@@ -101,8 +108,8 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
         <div className="flex flex-wrap justify-center gap-8 mb-8 text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">
           <Link href="/shop" className="hover:text-primary transition-colors">Catalog</Link>
           <Link href="/shop/cart" className="hover:text-primary transition-colors">Your Basket</Link>
+          <Link href="/shop/my-orders" className="hover:text-primary transition-colors">Track Orders</Link>
           <Link href="/login" className="hover:text-primary transition-colors">Wholesale Portal</Link>
-          <a href="#" className="hover:text-primary transition-colors">Contact Us</a>
         </div>
         <p className="text-stone-400">&copy; {new Date().getFullYear()} Roseberry Chocolate Puducherry. All rights reserved.</p>
         <p className="mt-4 text-[10px] font-bold uppercase tracking-widest opacity-40">Artisanally crafted for the connoisseur.</p>

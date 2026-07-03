@@ -1,3 +1,4 @@
+
 export type Customer = {
   id: string;
   name: string;
@@ -21,6 +22,16 @@ export type Order = {
   }[];
   paymentStatus: 'Paid' | 'Pending' | 'Failed';
   deliveryStatus: 'Pending' | 'Confirmed' | 'Preparing' | 'Packed' | 'Shipped' | 'Delivered';
+  shippingStatus?: 'Product Preparation in Progress' | 'Product Ready' | 'Product Dispatched';
+  dispatchDetails?: {
+    description: string;
+    courierName: string;
+    trackingNumber: string;
+    dispatchDate: string;
+    expectedDeliveryDate?: string;
+    updatedBy: string;
+    updatedAt: string;
+  };
 };
 
 export type Product = {

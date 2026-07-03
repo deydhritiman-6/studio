@@ -38,7 +38,20 @@
           }
         },
         "paymentStatus": { "type": "string", "enum": ["Paid", "Pending", "Failed"] },
-        "deliveryStatus": { "type": "string", "enum": ["Pending", "Confirmed", "Preparing", "Packed", "Shipped", "Delivered"] }
+        "deliveryStatus": { "type": "string", "enum": ["Pending", "Confirmed", "Preparing", "Packed", "Shipped", "Delivered"] },
+        "shippingStatus": { "type": "string", "enum": ["Product Preparation in Progress", "Product Ready", "Product Dispatched"] },
+        "dispatchDetails": {
+          "type": "object",
+          "properties": {
+            "description": { "type": "string" },
+            "courierName": { "type": "string" },
+            "trackingNumber": { "type": "string" },
+            "dispatchDate": { "type": "string" },
+            "expectedDeliveryDate": { "type": "string" },
+            "updatedBy": { "type": "string" },
+            "updatedAt": { "type": "string" }
+          }
+        }
       },
       "required": ["customerId", "customerName", "orderDate", "totalAmount", "products", "paymentStatus", "deliveryStatus"]
     },
