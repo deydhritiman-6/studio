@@ -38,8 +38,8 @@ import {
   Bell,
   TrendingUp,
   Radio,
-  Lock,
   ShieldCheck,
+  Lock,
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -134,7 +134,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [router, pathname]);
 
-  // Ensure session is restored on refresh if we have a local identity
   useEffect(() => {
     if (!auth || authLoading || firebaseUser) return;
     if (user && !firebaseUser) {
@@ -149,15 +148,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     router.push('/login');
   };
 
-  // Crucial: Wait for Firebase Auth to settle and restore the user session before showing protected data pages
-  const isAuthReady = isClient && !authLoading && (!user || !!firebaseUser);
+  const isRestoringSession = !!user && !firebaseUser && !authLoading;
+  const isAuthReady = isClient && !authLoading && !isRestoringSession && (!!firebaseUser || !user);
 
   return (
     <SidebarProvider>
-      <Sidebar
-        collapsible="icon"
-        className="border-r border-sidebar-border bg-sidebar"
-      >
+      <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-sidebar">
         <SidebarHeader className="h-16 flex items-center justify-between px-4">
           <Link href="/dashboard" className="flex items-center gap-2">
             <Logo />
@@ -169,19 +165,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             {navItems.map((item) =>
               item.subItems ? (
                 <SidebarMenuItem key={item.label}>
-                  <SidebarMenuButton
-                    isActive={item.subItems.some((sub) => pathname.startsWith(sub.href))}
-                  >
+                  <SidebarMenuButton isActive={item.subItems.some((sub) => pathname.startsWith(sub.href))}>
                     <item.icon />
                     <span>{item.label}</span>
                   </SidebarMenuButton>
                   <SidebarMenuSub>
                     {item.subItems.map((subItem) => (
                       <SidebarMenuSubItem key={subItem.href}>
-                        <SidebarMenuSubButton
-                          isActive={pathname === subItem.href}
-                          asChild
-                        >
+                        <SidebarMenuSubButton isActive={pathname === subItem.href} asChild>
                           <Link href={subItem.href}>
                             <subItem.icon />
                             <span>{subItem.label}</span>
@@ -193,10 +184,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </SidebarMenuItem>
               ) : (
                 <SidebarMenuItem key={item.href}>
-                   <SidebarMenuButton
-                    isActive={pathname === item.href}
-                    asChild
-                  >
+                   <SidebarMenuButton isActive={pathname === item.href} asChild>
                     <Link href={item.href}>
                       <item.icon />
                       <span>{item.label}</span>

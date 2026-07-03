@@ -46,9 +46,10 @@ type ProductFormValues = z.infer<typeof productFormSchema>;
 export default function ProductsPage() {
   const firestore = useFirestore();
   const productsQuery = useMemo(() => firestore ? collection(firestore, 'products') : null, [firestore]);
-  const { data: allProducts, loading } = useCollection<Product>(productsQuery);
+  const { data: allProducts, loading: collectionLoading } = useCollection<Product>(productsQuery);
   
-  // Requirement: Only products with status "Product Ready" should appear
+  const loading = collectionLoading || !firestore;
+
   const products = useMemo(() => {
     return allProducts?.filter(p => p.productionStatus === 'Product Ready') || [];
   }, [allProducts]);
