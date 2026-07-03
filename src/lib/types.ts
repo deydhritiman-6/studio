@@ -10,6 +10,13 @@ export type Customer = {
   joinedDate: string;
 };
 
+export type OrderHistoryItem = {
+  status: string;
+  timestamp: string;
+  adminName: string;
+  reason?: string;
+};
+
 export type Order = {
   id: string;
   customerId: string;
@@ -21,8 +28,10 @@ export type Order = {
     quantity: number;
   }[];
   paymentStatus: 'Paid' | 'Pending' | 'Failed';
-  deliveryStatus: 'Pending' | 'Confirmed' | 'Preparing' | 'Packed' | 'Shipped' | 'Delivered';
-  shippingStatus?: 'Product Preparation in Progress' | 'Product Ready' | 'Product Dispatched';
+  deliveryStatus: 'New Order' | 'Order Confirmed' | 'Sent for Production' | 'Order On Hold' | 'Order Rejected' | 'Pending' | 'Confirmed' | 'Preparing' | 'Packed' | 'Shipped' | 'Delivered';
+  statusReason?: string;
+  history?: OrderHistoryItem[];
+  shippingStatus?: 'Order Received' | 'Production in Progress' | 'Ready for Dispatch' | 'Dispatched' | 'Delivered' | 'Cancelled' | 'On Hold';
   dispatchDetails?: {
     description: string;
     courierName: string;

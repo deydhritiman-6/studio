@@ -1,12 +1,13 @@
+
 'use client';
 
 import { useMemo } from 'react';
-import { useCollection, useFirestore, useUser } from '@/firebase';
+import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Package, Truck, CheckCircle2, ShoppingBag, Send, Ban, PauseCircle } from 'lucide-react';
+import { Clock, Package, Truck, CheckCircle2, ShoppingBag, Send, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -89,6 +90,15 @@ export default function MyOrdersPage() {
     );
   };
 
+  const getOrderStatusVariant = (status: string) => {
+    switch (status) {
+      case 'Order Rejected': return 'bg-red-500/10 text-red-500 border-red-500/20';
+      case 'Order On Hold': return 'bg-amber-500/10 text-amber-500 border-amber-500/20';
+      case 'Order Confirmed': return 'bg-green-500/10 text-green-500 border-green-500/20';
+      default: return 'bg-stone-100 text-stone-500 border-stone-200';
+    }
+  }
+
   if (loading) return (
     <div className="max-w-4xl mx-auto py-12 space-y-8 animate-pulse">
         <div className="h-12 w-48 bg-stone-200 rounded-xl" />
@@ -127,20 +137,32 @@ export default function MyOrdersPage() {
                 </div>
                 <div className="flex items-center gap-6">
                   <div className="text-right">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-stone-500">Selection Value</p>
-                    <p className="text-xl font-bold text-primary">₹{order.totalAmount.toLocaleString()}</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-stone-500">Order Status</p>
+                    <Badge variant="outline" className={cn("rounded-full border-2", getOrderStatusVariant(order.deliveryStatus))}>
+                      {order.deliveryStatus}
+                    </Badge>
                   </div>
                   <div className="h-10 w-px bg-stone-800" />
-                   <div className="text-right">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-stone-500">Ordered On</p>
-                    <p className="text-sm font-bold">{order.orderDate}</p>
+                  <div className="text-right">
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-stone-500">Selection Value</p>
+                    <p className="text-xl font-bold text-primary">₹{order.totalAmount.toLocaleString()}</p>
                   </div>
                 </div>
               </div>
               <CardContent className="p-10">
                 <div className="space-y-10">
+                  {order.statusReason && (
+                    <div className="bg-amber-50 border border-amber-100 p-6 rounded-2xl flex gap-4 animate-in slide-in-from-top-4 duration-500">
+                      <MessageSquare className="h-6 w-6 text-amber-500 shrink-0" />
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-600 mb-1">Status Update Note</p>
+                        <p className="text-stone-700 italic leading-relaxed font-light">{order.statusReason}</p>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-stone-400">Artisan Lifecycle</h4>
+                    <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-stone-400">Shipping Lifecycle</h4>
                     <Badge variant="outline" className={cn("px-4 py-1 rounded-full border-2 font-bold text-[10px] uppercase tracking-widest", statusColorMap[order.shippingStatus || 'Order Received'])}>
                         {order.shippingStatus || 'Order Received'}
                     </Badge>
@@ -175,13 +197,6 @@ export default function MyOrdersPage() {
                              <p className="text-stone-600 italic leading-relaxed text-sm">"{order.dispatchDetails.description || 'Your selection has been carefully inspected and handed to our elite logistics partner for prompt delivery.'}"</p>
                         </div>
                     </div>
-                  )}
-
-                  {order.shippingStatus === 'Order Received' && (
-                     <div className="bg-stone-50 rounded-2xl p-8 flex items-center gap-4 text-stone-500 border border-stone-100 italic">
-                        <Clock className="h-5 w-5 text-stone-300" />
-                        Our chocolatiers have received your selection and are currently preparing for the tempering process. Detailed tracking will appear here shortly.
-                     </div>
                   )}
                 </div>
               </CardContent>

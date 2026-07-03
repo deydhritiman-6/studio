@@ -87,7 +87,12 @@ export default function CheckoutPage() {
       totalAmount: total,
       products: cart.map(item => ({ productId: item.id, quantity: item.quantity })),
       paymentStatus: 'Paid',
-      deliveryStatus: 'Confirmed',
+      deliveryStatus: 'New Order',
+      history: [{
+        status: 'New Order',
+        timestamp: new Date().toISOString(),
+        adminName: 'System',
+      }]
     };
 
     const orderRef = doc(firestore, 'orders', orderId);
