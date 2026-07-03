@@ -38,10 +38,56 @@ const DeliveryIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+const ArtisanCartIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    viewBox="0 0 100 100"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    {/* Cart handle and frame */}
+    <path d="M15 25H25L30 65H80L85 30H27" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+    <circle cx="35" cy="75" r="4.5" fill="currentColor" />
+    <circle cx="75" cy="75" r="4.5" fill="currentColor" />
+    
+    {/* Boxes inside - Colorful boxes mimicking the reference */}
+    <rect x="33" y="20" width="14" height="24" rx="1.5" fill="#5b6e92" transform="rotate(-6 33 20)" />
+    <rect x="49" y="15" width="16" height="26" rx="1.5" fill="#74a4bc" transform="rotate(4 49 15)" />
+    <rect x="40" y="35" width="15" height="22" rx="1.5" fill="#c48c6a" transform="rotate(-12 40 35)" />
+    <rect x="58" y="30" width="13" height="24" rx="1.5" fill="#d49a8e" transform="rotate(7 58 30)" />
+    <rect x="70" y="18" width="12" height="30" rx="1.5" fill="#8d6e63" transform="rotate(3 70 18)" />
+    
+    {/* Heart Badge on side of cart */}
+    <circle cx="65" cy="60" r="9" fill="#d49a8e" stroke="white" strokeWidth="1.5" />
+    <path d="M65 63C65 63 61.5 60.5 61.5 58.5C61.5 57.1193 62.6193 56 64 56C64.8414 56 65 56.5 65 57C65 56.5 65.1586 56 66 56C67.3807 56 68.5 57.1193 68.5 58.5C68.5 60.5 65 63 65 63Z" fill="white" />
+    
+    {/* Illustrative Sparkles */}
+    <path d="M25 10L26.5 14L30.5 15.5L26.5 17L25 21L23.5 17L19.5 15.5L23.5 14L25 10Z" fill="#ffd700" opacity="0.7" />
+    <path d="M88 55L89 58L92 59L89 60L88 63L87 60L84 59L87 58L88 55Z" fill="#ffd700" opacity="0.7" />
+  </svg>
+);
+
 export default function ShopLayout({ children }: { children: React.ReactNode }) {
   const [isAuthInitializing, setIsAuthInitializing] = useState(true);
+  const [cartCount, setCartCount] = useState(0);
   const auth = useAuth();
   const { user: firebaseUser, loading: authLoading } = useUser();
+
+  useEffect(() => {
+    const updateCount = () => {
+      const cart = JSON.parse(localStorage.getItem('roseberry-cart') || '[]');
+      const count = Array.isArray(cart) ? cart.reduce((acc: number, item: any) => acc + (item.quantity || 1), 0) : 0;
+      setCartCount(count);
+    };
+
+    updateCount();
+    window.addEventListener('cart-updated', updateCount);
+    window.addEventListener('storage', updateCount);
+    return () => {
+      window.removeEventListener('cart-updated', updateCount);
+      window.removeEventListener('storage', updateCount);
+    };
+  }, []);
 
   useEffect(() => {
     if (!auth || authLoading) return;
@@ -78,7 +124,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
               className="relative hover:bg-stone-50 hover:text-primary rounded-full h-16 w-16 md:h-24 md:w-24 p-0 transition-all duration-300 group shadow-sm hover:shadow-md border border-stone-100/50"
             >
               <Link href="/shop/my-orders" title="Track My Orders">
-                <DeliveryIcon className="h-10 w-10 md:h-20 md:w-20 text-stone-700 transition-transform duration-300 group-hover:scale-110" />
+                <DeliveryIcon className="h-10 w-10 md:h-16 md:w-16 text-stone-700 transition-transform duration-300 group-hover:scale-110" />
               </Link>
             </Button>
           </div>
@@ -90,7 +136,20 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
           </div>
 
           <div className="flex-1 flex justify-end items-center">
-            {/* Cart Icon image removed as per user request */}
+            <Button 
+              variant="ghost" 
+              asChild 
+              className="relative hover:bg-stone-50 hover:text-primary rounded-full h-16 w-16 md:h-24 md:w-24 p-0 transition-all duration-300 group shadow-sm hover:shadow-md border border-stone-100/50"
+            >
+              <Link href="/shop/cart" title="Your Selection Basket">
+                <ArtisanCartIcon className="h-10 w-10 md:h-16 md:w-16 text-stone-700 transition-transform duration-300 group-hover:scale-110" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-primary text-[10px] md:text-xs font-black text-white shadow-lg border-2 border-white animate-in zoom-in duration-300">
+                    {cartCount}
+                  </span>
+                )}
+              </Link>
+            </Button>
           </div>
         </div>
       </header>
