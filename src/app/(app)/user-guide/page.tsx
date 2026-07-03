@@ -25,7 +25,9 @@ The sidebar on the left is your main navigation. It's organized into several key
 
 -   **Customers**: View a complete list of your customers. You can search for specific customers and filter them by type (e.g., VIP, Regular).
 -   **Orders**: Track all customer orders, from placement to delivery. You can see details like the order date, total amount, and current delivery status.
--   **Invoices**: View and manage invoices for all orders. See payment status (Paid, Pending, Failed) at a glance.
+-   **Create Invoice**: Generate professional GST-compliant invoices or simple cash bills for your customers.
+-   **View Invoices**: Access a history of all generated invoices and manage their payment status.
+-   **Shipping Status**: Track the real-time logistics of your orders and update transit details for your customers.
 -   **Distributors**: Manage your relationships with your distribution partners. You can see their contact information, region, and status (Active/Inactive).
 
 ### Product & Inventory
