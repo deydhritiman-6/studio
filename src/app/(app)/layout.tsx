@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import {
   SidebarProvider,
   Sidebar,
@@ -15,6 +15,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import {
   LayoutDashboard,
@@ -99,6 +100,119 @@ type User = {
   role: string;
 };
 
+function NavSidebar({ pathname, lowStockItems, hasLowStock }: { pathname: string, lowStockItems: any[], hasLowStock: boolean }) {
+  const { setOpen, isMobile } = useSidebar();
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const startCollapseTimer = useCallback(() => {
+    if (isMobile) return;
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      setOpen(false);
+    }, 30000);
+  }, [isMobile, setOpen]);
+
+  const stopCollapseTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    startCollapseTimer();
+    return () => stopCollapseTimer();
+  }, [startCollapseTimer, stopCollapseTimer]);
+
+  const handleMouseEnter = () => {
+    stopCollapseTimer();
+    setOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    startCollapseTimer();
+  };
+
+  return (
+    <Sidebar 
+      collapsible="icon" 
+      className="border-r border-sidebar-border bg-sidebar transition-all duration-300"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <SidebarHeader className="h-16 flex items-center justify-between px-4">
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <Logo />
+        </Link>
+        <SidebarTrigger className="hidden md:flex" />
+      </SidebarHeader>
+      <SidebarContent className="flex-1 overflow-y-auto">
+        <SidebarMenu className="px-2 pt-4">
+          {navItems.map((item) =>
+            item.subItems ? (
+              <SidebarMenuItem key={item.label}>
+                <SidebarMenuButton isActive={item.subItems.some((sub) => pathname.startsWith(sub.href))}>
+                  <item.icon />
+                  <span>{item.label}</span>
+                </SidebarMenuButton>
+                <SidebarMenuSub>
+                  {item.subItems.map((subItem) => (
+                    <SidebarMenuSubItem key={subItem.href}>
+                      <SidebarMenuSubButton isActive={pathname === subItem.href} asChild>
+                        <Link href={subItem.href}>
+                          <subItem.icon />
+                          <span>{subItem.label}</span>
+                        </Link>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  ))}
+                </SidebarMenuSub>
+              </SidebarMenuItem>
+            ) : (
+              <SidebarMenuItem key={item.href}>
+                 <SidebarMenuButton isActive={pathname === item.href} asChild>
+                  <Link href={item.href!}>
+                    <item.icon />
+                    <span>{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )
+          )}
+        </SidebarMenu>
+      </SidebarContent>
+      <SidebarFooter className="p-2 border-t border-sidebar-border">
+         <SidebarMenu>
+           <SidebarMenuItem>
+              <SidebarMenuButton isActive={pathname === '/user-guide'} asChild>
+                <Link href="/user-guide">
+                  <BookUser />
+                  <span>User Guide</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+           <SidebarMenuItem>
+              <SidebarMenuButton isActive={pathname === '/guide'} asChild>
+                <Link href="/guide">
+                  <HelpCircle />
+                  <span>Developer Guide</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          <SidebarMenuItem>
+              <SidebarMenuButton isActive={pathname === '/settings'} asChild>
+                <Link href="/settings">
+                  <Settings />
+                  <span>Settings</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+         </SidebarMenu>
+      </SidebarFooter>
+    </Sidebar>
+  );
+}
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -148,77 +262,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-sidebar">
-        <SidebarHeader className="h-16 flex items-center justify-between px-4">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <Logo />
-          </Link>
-          <SidebarTrigger className="hidden md:flex" />
-        </SidebarHeader>
-        <SidebarContent className="flex-1 overflow-y-auto">
-          <SidebarMenu className="px-2 pt-4">
-            {navItems.map((item) =>
-              item.subItems ? (
-                <SidebarMenuItem key={item.label}>
-                  <SidebarMenuButton isActive={item.subItems.some((sub) => pathname.startsWith(sub.href))}>
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </SidebarMenuButton>
-                  <SidebarMenuSub>
-                    {item.subItems.map((subItem) => (
-                      <SidebarMenuSubItem key={subItem.href}>
-                        <SidebarMenuSubButton isActive={pathname === subItem.href} asChild>
-                          <Link href={subItem.href}>
-                            <subItem.icon />
-                            <span>{subItem.label}</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    ))}
-                  </SidebarMenuSub>
-                </SidebarMenuItem>
-              ) : (
-                <SidebarMenuItem key={item.href}>
-                   <SidebarMenuButton isActive={pathname === item.href} asChild>
-                    <Link href={item.href!}>
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )
-            )}
-          </SidebarMenu>
-        </SidebarContent>
-        <SidebarFooter className="p-2 border-t border-sidebar-border">
-           <SidebarMenu>
-             <SidebarMenuItem>
-                <SidebarMenuButton isActive={pathname === '/user-guide'} asChild>
-                  <Link href="/user-guide">
-                    <BookUser />
-                    <span>User Guide</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-             <SidebarMenuItem>
-                <SidebarMenuButton isActive={pathname === '/guide'} asChild>
-                  <Link href="/guide">
-                    <HelpCircle />
-                    <span>Developer Guide</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            <SidebarMenuItem>
-                <SidebarMenuButton isActive={pathname === '/settings'} asChild>
-                  <Link href="/settings">
-                    <Settings />
-                    <span>Settings</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-           </SidebarMenu>
-        </SidebarFooter>
-      </Sidebar>
+      <NavSidebar pathname={pathname} lowStockItems={lowStockItems} hasLowStock={hasLowStock} />
       <div className="flex flex-1 flex-col">
         <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b bg-background px-6">
             <SidebarTrigger className="md:hidden" />
