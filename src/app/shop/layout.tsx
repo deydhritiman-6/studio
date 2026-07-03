@@ -48,28 +48,40 @@ const RoseberryCartIcon = (props: React.SVGProps<SVGSVGElement>) => (
     strokeLinejoin="round"
     {...props}
   >
-    {/* Cart Structure */}
-    <path d="M8 12h10l4 28h28" strokeWidth="3" />
-    <path d="M18 16h34l-3 18H22" strokeWidth="2.5" />
-    <circle cx="26" cy="52" r="4" fill="currentColor" />
-    <circle cx="46" cy="52" r="4" fill="currentColor" />
+    {/* Cart Frame - Grey/Blue wireframe style */}
+    <path d="M12 44h34l6-22H18l-6 22z" fill="none" stroke="#64748b" strokeWidth="2.5" />
+    <path d="M52 22l4 18" stroke="#64748b" strokeWidth="2.5" />
+    <path d="M12 44l-4 8h45l4-8" stroke="#64748b" strokeWidth="2.5" fill="none" />
+    <path d="M52 22c3 0 5 1 5 4v2" stroke="#64748b" strokeWidth="2.5" fill="none" />
     
-    {/* Heart Emblem on Cart side (Circular button with heart) */}
-    <circle cx="48" cy="30" r="8" fill="white" stroke="currentColor" strokeWidth="1" />
-    <path d="M48 33s-3-1.8-3-3.5 1.5-1.8 3-0.8c1.5-1 3-1 3 0.8s-3 3.5-3 3.5z" fill="#f43f5e" stroke="none" />
+    {/* Wheels */}
+    <circle cx="16" cy="56" r="3.5" fill="#334155" stroke="none" />
+    <circle cx="48" cy="56" r="3.5" fill="#334155" stroke="none" />
 
     {/* Chocolate Boxes stacked inside with vibrant colors */}
     <g stroke="none">
-      <rect x="22" y="6" width="10" height="18" rx="1" fill="#7c2d12" transform="rotate(-12 27 15)" /> {/* Deep Dark */}
-      <rect x="34" y="4" width="10" height="20" rx="1" fill="#0e7490" transform="rotate(8 39 14)" />  {/* Artisan Teal */}
-      <rect x="28" y="16" width="14" height="16" rx="1" fill="#9f1239" /> {/* Luxury Rose */}
-      <rect x="42" y="10" width="8" height="18" rx="1" fill="#b45309" transform="rotate(15 46 19)" /> {/* Cacao Gold */}
+      {/* 1. Dark Navy Box (Top Left) */}
+      <rect x="18" y="10" width="12" height="18" rx="1" fill="#1e293b" transform="rotate(-15 24 19)" />
+      {/* 2. Sky Blue Box (Top Center) */}
+      <rect x="30" y="8" width="12" height="18" rx="1" fill="#7dd3fc" transform="rotate(-5 36 17)" />
+      {/* 3. Dark Brown (Top Right) */}
+      <rect x="42" y="6" width="12" height="22" rx="1" fill="#7c2d12" transform="rotate(12 48 17)" />
+      {/* 4. Cream (Front Left) */}
+      <rect x="16" y="24" width="12" height="16" rx="1" fill="#fef3c7" transform="rotate(-10 22 32)" />
+      {/* 5. Roseberry Pink (Front Center) */}
+      <rect x="26" y="20" width="15" height="19" rx="1" fill="#db2777" />
+      {/* 6. Gold/Tan (Front Right) */}
+      <rect x="41" y="22" width="13" height="18" rx="1" fill="#b45309" transform="rotate(5 47.5 31)" />
     </g>
-    
-    {/* Sparkles of quality */}
-    <path d="M58 10l1 1-1 1-1-1 1-1z" fill="#facc15" stroke="none" />
-    <path d="M12 6l0.5 0.5-0.5 0.5-0.5-0.5 0.5-0.5z" fill="#facc15" stroke="none" />
-    <path d="M4 22l0.5 0.5-0.5 0.5-0.5-0.5 0.5-0.5z" fill="#facc15" stroke="none" opacity="0.4" />
+
+    {/* Circular Badge with Heart on the side */}
+    <circle cx="50" cy="42" r="8" fill="#e7e5e4" stroke="#d6d3d1" strokeWidth="1" />
+    <path d="M50 45s-3-1.5-3-3.5 1.5-2 3-2 3 0.5 3 2-3 3.5-3 3.5z" fill="#f472b6" stroke="none" />
+
+    {/* Sparkles */}
+    <circle cx="58" cy="12" r="0.8" fill="#facc15" />
+    <circle cx="10" cy="8" r="1" fill="#facc15" />
+    <path d="M5 18l0.5 0.5-0.5 0.5-0.5-0.5 0.5-0.5z" fill="#facc15" stroke="none" opacity="0.4" />
   </svg>
 );
 
