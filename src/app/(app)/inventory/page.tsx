@@ -49,6 +49,7 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection, doc, setDoc, deleteDoc, query, where, getDocs, updateDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const inventoryFormSchema = z.object({
   name: z.string().min(1, 'Item name is required'),
@@ -233,17 +234,34 @@ export default function InventoryPage() {
     </Table>
   );
 
+  const TableSkeleton = () => (
+    <div className="space-y-4">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead><Skeleton className="h-4 w-32" /></TableHead>
+            <TableHead><Skeleton className="h-4 w-20" /></TableHead>
+            <TableHead><Skeleton className="h-4 w-24" /></TableHead>
+            <TableHead className="w-[80px]"><Skeleton className="h-4 w-8" /></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {[...Array(5)].map((_, i) => (
+            <TableRow key={i}>
+              <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+              <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+              <TableCell><Skeleton className="h-8 w-8 rounded-md" /></TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+
   const rawMaterials = inventory?.filter((item) => item.category === 'Raw Materials') || [];
   const packagingMaterials = inventory?.filter((item) => item.category === 'Packaging Materials') || [];
   const finishedProducts = inventory?.filter((item) => item.category === 'Finished Products') || [];
-
-  if (loading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
 
   return (
     <>
@@ -272,7 +290,7 @@ export default function InventoryPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a category" />
@@ -338,7 +356,7 @@ export default function InventoryPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Availability Status</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select status" />
@@ -377,13 +395,13 @@ export default function InventoryPage() {
               </TabsList>
             </div>
             <TabsContent value="raw_materials" className="p-4">
-              {renderInventoryTable(rawMaterials)}
+              {loading ? <TableSkeleton /> : renderInventoryTable(rawMaterials)}
             </TabsContent>
             <TabsContent value="packaging" className="p-4">
-              {renderInventoryTable(packagingMaterials)}
+              {loading ? <TableSkeleton /> : renderInventoryTable(packagingMaterials)}
             </TabsContent>
             <TabsContent value="finished_products" className="p-4">
-              {renderInventoryTable(finishedProducts)}
+              {loading ? <TableSkeleton /> : renderInventoryTable(finishedProducts)}
             </TabsContent>
           </Tabs>
         </CardContent>

@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   SidebarProvider,
   Sidebar,
@@ -50,9 +50,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { inventory } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore, useCollection } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import type { InventoryItem } from '@/lib/types';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -91,8 +92,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isClient, setIsClient] = useState(false);
   const { user: firebaseUser, loading: authLoading } = useUser();
+  const firestore = useFirestore();
 
-  const lowStockItems = inventory.filter(item => item.status === 'Low Stock');
+  // Fetch real-time inventory for the notification bell
+  const inventoryQuery = useMemo(() => (firestore ? collection(firestore, 'inventory') : null), [firestore]);
+  const { data: inventoryData } = useCollection<InventoryItem>(inventoryQuery);
+
+  const lowStockItems = inventoryData?.filter(item => item.status === 'Low Stock') || [];
   const hasLowStock = lowStockItems.length > 0;
 
   useEffect(() => {
@@ -116,8 +122,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     router.push('/login');
   };
 
-  // Instant Shell Rendering: We always render the frame after hydration.
-  // Content blocks specifically if the user session is verified as missing.
   if (!isClient) {
     return (
       <div className="flex h-screen w-full bg-background animate-pulse">
@@ -271,11 +275,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   </DropdownMenu>
             </div>
         </header>
-        <main className="flex-1 bg-background overflow-y-auto">
+        <div className="flex-1 bg-background overflow-y-auto">
             <div className="p-6 lg:p-8">
               {user ? children : <div className="space-y-6"><Skeleton className="h-10 w-64" /><Skeleton className="h-[400px] w-full" /></div>}
             </div>
-        </main>
+        </div>
       </div>
     </SidebarProvider>
   );
