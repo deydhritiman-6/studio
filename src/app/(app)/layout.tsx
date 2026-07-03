@@ -51,8 +51,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useUser, useFirestore, useCollection } from '@/firebase';
+import { useUser, useFirestore, useCollection, useAuth } from '@/firebase';
 import { collection } from 'firebase/firestore';
+import { signInAnonymously } from 'firebase/auth';
 import type { InventoryItem } from '@/lib/types';
 
 const navItems = [
@@ -92,6 +93,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isClient, setIsClient] = useState(false);
   const { user: firebaseUser, loading: authLoading } = useUser();
+  const auth = useAuth();
   const firestore = useFirestore();
 
   const inventoryQuery = useMemo(() => (firestore ? collection(firestore, 'inventory') : null), [firestore]);
@@ -106,16 +108,25 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       const storedUser = localStorage.getItem('user');
       if (storedUser && storedUser !== 'undefined' && storedUser !== '') {
         setUser(JSON.parse(storedUser));
-      } else {
+      } else if (!pathname.includes('/login')) {
         router.replace('/login');
       }
     } catch (error) {
       console.error('Failed to parse user from localStorage:', error);
       router.replace('/login');
     }
-  }, [router]);
+  }, [router, pathname]);
+
+  // Ensure session is restored on refresh if we have a local identity
+  useEffect(() => {
+    if (!auth || authLoading || firebaseUser) return;
+    if (user && !firebaseUser) {
+      signInAnonymously(auth).catch((err) => console.error("Session restoration failed:", err));
+    }
+  }, [auth, authLoading, firebaseUser, user]);
 
   const handleLogout = () => {
+    if (auth) auth.signOut();
     localStorage.removeItem('user');
     setUser(null);
     router.push('/login');

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -14,12 +14,13 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Printer, MessageCircle, PlusCircle, Trash2 } from 'lucide-react';
 import { generateGstInvoiceAction } from './actions';
 import { type GenerateGstInvoiceOutput } from '@/ai/flows/generate-gst-invoice';
-import { products } from '@/lib/data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Logo } from '@/components/logo';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import type { Product } from '@/lib/types';
 
 const itemSchema = z.object({
   productId: z.string().min(1, "Product is required."),
@@ -72,10 +73,12 @@ type CashBill = {
 export default function GstBillingPage() {
   const [generatedInvoice, setGeneratedInvoice] = useState<GenerateGstInvoiceOutput | null>(null);
   const [isGstLoading, setIsGstLoading] = useState(false);
-
   const [generatedCashBill, setGeneratedCashBill] = useState<CashBill | null>(null);
   
   const { toast } = useToast();
+  const firestore = useFirestore();
+  const productsQuery = useMemo(() => (firestore ? collection(firestore, 'products') : null), [firestore]);
+  const { data: products } = useCollection<Product>(productsQuery);
 
   const gstForm = useForm<GstBillingFormValues>({
     resolver: zodResolver(gstBillingFormSchema),
@@ -113,6 +116,7 @@ export default function GstBillingPage() {
   });
 
   async function onGstSubmit(values: GstBillingFormValues) {
+    if (!products) return;
     setIsGstLoading(true);
     setGeneratedInvoice(null);
     
@@ -139,6 +143,7 @@ export default function GstBillingPage() {
   }
 
   function onCashSubmit(values: CashBillFormValues) {
+    if (!products) return;
     const itemsWithTotals = values.items.map(item => {
         const product = products.find(p => p.id === item.productId);
         return {
@@ -501,7 +506,10 @@ export default function GstBillingPage() {
                     <Separator />
                     
                     <div className="space-y-4">
-                      <FormLabel>Items</FormLabel>
+                      <div className="flex items-center justify-between">
+                         <FormLabel>Items</FormLabel>
+                         {!products && <Loader2 className="h-3 w-3 animate-spin" />}
+                      </div>
                       {gstFields.map((field, index) => (
                         <Card key={field.id} className="p-4 relative">
                             <div className="grid grid-cols-1 gap-2">
@@ -513,7 +521,7 @@ export default function GstBillingPage() {
                                       <FormLabel className="sr-only">Product</FormLabel>
                                       <Select
                                         onValueChange={(value) => {
-                                          const product = products.find(p => p.id === value);
+                                          const product = products?.find(p => p.id === value);
                                           field.onChange(value);
                                           if (product) {
                                             gstForm.setValue(`items.${index}.pricePerUnit`, product.price);
@@ -523,7 +531,7 @@ export default function GstBillingPage() {
                                       >
                                         <FormControl><SelectTrigger><SelectValue placeholder="Select a product" /></SelectTrigger></FormControl>
                                         <SelectContent>
-                                          {products.map((product) => (
+                                          {products?.map((product) => (
                                             <SelectItem key={product.id} value={product.id}>{product.name}</SelectItem>
                                           ))}
                                         </SelectContent>
@@ -576,7 +584,7 @@ export default function GstBillingPage() {
                     
                     <Separator />
 
-                    <Button type="submit" disabled={isGstLoading} className="w-full">
+                    <Button type="submit" disabled={isGstLoading || !products} className="w-full">
                       {isGstLoading ? <Loader2 className="animate-spin" /> : 'Generate Invoice'}
                     </Button>
                   </form>
@@ -665,7 +673,10 @@ export default function GstBillingPage() {
                     )} />
                     <Separator />
                      <div className="space-y-4">
-                      <FormLabel>Items</FormLabel>
+                      <div className="flex items-center justify-between">
+                         <FormLabel>Items</FormLabel>
+                         {!products && <Loader2 className="h-3 w-3 animate-spin" />}
+                      </div>
                       {cashFields.map((field, index) => (
                         <Card key={field.id} className="p-4 relative">
                             <div className="grid grid-cols-5 gap-2">
@@ -677,7 +688,7 @@ export default function GstBillingPage() {
                                       <FormLabel className="sr-only">Product</FormLabel>
                                       <Select
                                         onValueChange={(value) => {
-                                          const product = products.find(p => p.id === value);
+                                          const product = products?.find(p => p.id === value);
                                           field.onChange(value);
                                           if (product) {
                                             cashBillForm.setValue(`items.${index}.pricePerUnit`, product.price);
@@ -687,7 +698,7 @@ export default function GstBillingPage() {
                                       >
                                         <FormControl><SelectTrigger><SelectValue placeholder="Select a product" /></SelectTrigger></FormControl>
                                         <SelectContent>
-                                          {products.map((product) => (
+                                          {products?.map((product) => (
                                             <SelectItem key={product.id} value={product.id}>{product.name}</SelectItem>
                                           ))}
                                         </SelectContent>
@@ -729,7 +740,7 @@ export default function GstBillingPage() {
                       </Button>
                     </div>
                     <Separator />
-                    <Button type="submit" className="w-full">Generate Bill</Button>
+                    <Button type="submit" disabled={!products} className="w-full">Generate Bill</Button>
                   </form>
                 </Form>
               </CardContent>
