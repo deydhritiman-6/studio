@@ -124,7 +124,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
               className="relative hover:bg-stone-50 hover:text-primary rounded-full h-16 w-16 md:h-24 md:w-24 p-0 transition-all duration-300 group shadow-sm hover:shadow-md border border-stone-100/50"
             >
               <Link href="/shop/my-orders" title="Track My Orders">
-                <DeliveryIcon className="h-10 w-10 md:h-16 md:w-16 text-stone-700 transition-transform duration-300 group-hover:scale-110" />
+                <DeliveryIcon className="h-13 w-13 md:h-20 md:w-20 text-stone-700 transition-transform duration-300 group-hover:scale-110" />
               </Link>
             </Button>
           </div>
@@ -142,7 +142,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
               className="relative hover:bg-stone-50 hover:text-primary rounded-full h-16 w-16 md:h-24 md:w-24 p-0 transition-all duration-300 group shadow-sm hover:shadow-md border border-stone-100/50"
             >
               <Link href="/shop/cart" title="Your Selection Basket">
-                <ArtisanCartIcon className="h-10 w-10 md:h-16 md:w-16 text-stone-700 transition-transform duration-300 group-hover:scale-110" />
+                <ArtisanCartIcon className="h-13 w-13 md:h-20 md:w-20 text-stone-700 transition-transform duration-300 group-hover:scale-110" />
                 {cartCount > 0 && (
                   <span className="absolute -top-1 -right-1 flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-primary text-[10px] md:text-xs font-black text-white shadow-lg border-2 border-white animate-in zoom-in duration-300">
                     {cartCount}
