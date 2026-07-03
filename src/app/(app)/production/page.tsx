@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -19,6 +18,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
 const productionStatuses = [
   'New Order for Production',
@@ -40,9 +40,9 @@ const statusColorMap: Record<string, string> = {
 
 export default function ProductionPage() {
   const firestore = useFirestore();
-  const ordersQuery = useMemo(() => firestore ? collection(firestore, 'orders') : null, [firestore]);
-  const productsQuery = useMemo(() => firestore ? collection(firestore, 'products') : null, [firestore]);
-  const recipesQuery = useMemo(() => firestore ? collection(firestore, 'recipes') : null, [firestore]);
+  const ordersQuery = useMemo(() => (firestore ? collection(firestore, 'orders') : null), [firestore]);
+  const productsQuery = useMemo(() => (firestore ? collection(firestore, 'products') : null), [firestore]);
+  const recipesQuery = useMemo(() => (firestore ? collection(firestore, 'recipes') : null), [firestore]);
   
   const { data: orders, loading: ordersLoading } = useCollection<Order>(ordersQuery);
   const { data: products } = useCollection<Product>(productsQuery);
@@ -69,7 +69,10 @@ export default function ProductionPage() {
     let adminName = 'Admin';
     try {
       const stored = localStorage.getItem('user');
-      if (stored) adminName = JSON.parse(stored).name || 'Admin';
+      if (stored) {
+        const user = JSON.parse(stored);
+        adminName = user.name || 'Admin';
+      }
     } catch (e) {}
 
     const historyItem: OrderHistoryItem = {
