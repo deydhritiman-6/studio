@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "Customer": {
@@ -16,6 +15,21 @@
         "joinedDate": { "type": "string", "format": "date" }
       },
       "required": ["name", "email", "customerType"]
+    },
+    "UserAccount": {
+      "title": "User Account",
+      "description": "An internal staff account.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "password": { "type": "string" },
+        "role": { "type": "string", "enum": ["Super Admin", "Store Manager", "Staff"] },
+        "photoUrl": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["name", "email", "role"]
     },
     "Order": {
       "title": "Order",
@@ -131,6 +145,10 @@
     "/customers/{customerId}": {
       "schema": "#/backend/entities/Customer",
       "description": "Collection of customer profiles."
+    },
+    "/users/{userId}": {
+      "schema": "#/backend/entities/UserAccount",
+      "description": "Collection of staff user accounts."
     },
     "/orders/{orderId}": {
       "schema": "#/backend/entities/Order",

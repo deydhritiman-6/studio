@@ -1,4 +1,3 @@
-
 export type Customer = {
   id: string;
   name: string;
@@ -8,6 +7,16 @@ export type Customer = {
   vipLevel: 'Gold' | 'Platinum' | 'Diamond' | 'Silver';
   totalPurchaseValue: number;
   joinedDate: string;
+};
+
+export type UserAccount = {
+  id: string;
+  name: string;
+  email: string;
+  password?: string;
+  role: 'Super Admin' | 'Store Manager' | 'Staff';
+  photoUrl?: string;
+  createdAt: string;
 };
 
 export type OrderHistoryItem = {
