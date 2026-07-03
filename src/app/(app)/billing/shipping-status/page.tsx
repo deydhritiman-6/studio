@@ -174,7 +174,7 @@ export default function ShippingStatusPage() {
 
   return (
     <>
-      <PageHeader title="Shipping Status Management" />
+      <PageHeader title="Dispatch Control" />
       
       <div className="grid grid-cols-1 gap-8">
         <Card className="rounded-[2rem] border-none shadow-xl bg-card overflow-hidden">
@@ -183,7 +183,7 @@ export default function ShippingStatusPage() {
               <div className="space-y-1">
                 <CardTitle className="text-2xl font-headline flex items-center gap-3">
                   <Truck className="h-6 w-6 text-primary" />
-                  Live Order Dispatch
+                  Dispatch Control Center
                 </CardTitle>
                 <CardDescription>Track and update the color-coded lifecycle of artisan chocolates.</CardDescription>
               </div>

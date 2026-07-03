@@ -70,7 +70,7 @@ const navItems = [
   { href: '/inventory', icon: Boxes, label: 'Inventory' },
   { href: '/gst-billing', icon: FileText, label: 'Create Invoice' },
   { href: '/invoices', icon: FileText, label: 'View Invoices' },
-  { href: '/billing/shipping-status', icon: Truck, label: 'Live Dispatch' },
+  { href: '/billing/shipping-status', icon: Truck, label: 'Dispatch Control' },
   { href: '/billing/tracking-visibility', icon: Eye, label: 'Visibility Control' },
   { href: '/distributors', icon: Truck, label: 'Distributors' },
   { href: '/broadcast', icon: Radio, label: 'Broadcasts' },
