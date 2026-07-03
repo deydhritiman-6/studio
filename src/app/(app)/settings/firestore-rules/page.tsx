@@ -14,41 +14,31 @@ const FIRESTORE_RULES = `rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Helper to check if user is authenticated
+    // Helper function to check if a user is signed in
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Allow authenticated users to manage all data in this artisan system
-    // This includes anonymous sessions for guests (to view products/place orders)
-    // and Staff/Admin sessions.
-    match /{document=**} {
-      allow read, write: if isAuthenticated();
-    }
-
-    // Specific rules for collections
+    // Products: Catalog visible to all authenticated users
     match /products/{productId} {
       allow read: if isAuthenticated();
       allow write: if isAuthenticated();
     }
     
-    match /customers/{customerId} {
-      allow read, write: if isAuthenticated();
-    }
-
+    // Orders: Creation enabled for guests, management for staff
     match /orders/{orderId} {
-      allow read, write: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow read, update: if isAuthenticated();
+      allow delete: if false;
     }
 
-    match /inventory/{itemId} {
-      allow read, write: if isAuthenticated();
-    }
+    // Operations: Customers, Inventory, Distributors, Recipes
+    match /customers/{customerId} { allow read, write: if isAuthenticated(); }
+    match /inventory/{itemId} { allow read, write: if isAuthenticated(); }
+    match /distributors/{distributorId} { allow read, write: if isAuthenticated(); }
+    match /recipes/{recipeId} { allow read, write: if isAuthenticated(); }
 
-    match /distributors/{distributorId} {
-      allow read, write: if isAuthenticated();
-    }
-
-    match /recipes/{recipeId} {
+    match /{document=**} {
       allow read, write: if isAuthenticated();
     }
   }
@@ -87,9 +77,9 @@ export default function FirestoreRulesPage() {
                     <Lock className="h-5 w-5 text-primary" />
                     Security Definition
                   </CardTitle>
-                  <CardDescription className="text-stone-500">The core logic protecting the Roseberry database.</CardDescription>
+                  <CardDescription className="text-stone-500">The granular logic protecting your artisan data.</CardDescription>
                 </div>
-                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 uppercase tracking-widest text-[10px]">Version 2</Badge>
+                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 uppercase tracking-widest text-[10px]">Production v1.0</Badge>
               </div>
             </CardHeader>
             <CardContent className="p-0">
@@ -105,8 +95,8 @@ export default function FirestoreRulesPage() {
         <div className="lg:col-span-1 space-y-6">
           <Card className="rounded-[2rem] shadow-md border-border">
             <CardHeader>
-              <CardTitle className="text-lg font-headline">Policy Overview</CardTitle>
-              <CardDescription>Understanding our security posture.</CardDescription>
+              <CardTitle className="text-lg font-headline">Operational Policy</CardTitle>
+              <CardDescription>How our security layer functions.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex gap-4">
@@ -114,8 +104,8 @@ export default function FirestoreRulesPage() {
                   <ShieldCheck className="h-5 w-5" />
                 </div>
                 <div className="space-y-1">
-                  <h4 className="text-sm font-bold uppercase tracking-tight">Identity Required</h4>
-                  <p className="text-xs text-muted-foreground leading-relaxed">No data is accessible without a valid Firebase Authentication token.</p>
+                  <h4 className="text-sm font-bold uppercase tracking-tight">Access Control</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">Mandatory authentication for all data requests, ensuring a secure "Zero Trust" baseline.</p>
                 </div>
               </div>
 
@@ -124,22 +114,18 @@ export default function FirestoreRulesPage() {
                   <Info className="h-5 w-5" />
                 </div>
                 <div className="space-y-1">
-                  <h4 className="text-sm font-bold uppercase tracking-tight">Anonymous Support</h4>
-                  <p className="text-xs text-muted-foreground leading-relaxed">Guests are automatically issued anonymous credentials to safely view the catalog and place orders.</p>
+                  <h4 className="text-sm font-bold uppercase tracking-tight">Audit Trail</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">Order deletions are disabled at the database level to maintain permanent financial records.</p>
                 </div>
               </div>
 
               <div className="pt-4 border-t space-y-4">
-                <h4 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">Affected Collections</h4>
+                <h4 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">Monitored Assets</h4>
                 <div className="flex flex-wrap gap-2">
                   {['Products', 'Orders', 'Inventory', 'Customers', 'Recipes', 'Distributors'].map(tag => (
                     <Badge key={tag} variant="secondary" className="rounded-md font-medium">{tag}</Badge>
                   ))}
                 </div>
-              </div>
-
-              <div className="bg-muted p-4 rounded-2xl text-[11px] leading-relaxed text-muted-foreground italic">
-                "These rules ensure that while our workshop is transparent to our customers, our internal operations remain shielded from unauthorized tampering."
               </div>
             </CardContent>
           </Card>

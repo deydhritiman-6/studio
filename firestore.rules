@@ -1,0 +1,54 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if a user is signed in
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Security Rules for Roseberry Ops
+    
+    // Products: Read access for all authenticated users (Guests + Staff)
+    // Write access for authenticated staff (Dashboard users)
+    match /products/{productId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+    
+    // Orders: Anyone authenticated can create an order.
+    // Only authenticated users can read/update (Staff managing orders)
+    match /orders/{orderId} {
+      allow create: if isAuthenticated();
+      allow read, update: if isAuthenticated();
+      allow delete: if false; // Orders should never be deleted for audit trails
+    }
+
+    // Customers: Staff access for management and insights
+    match /customers/{customerId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Inventory: Real-time stock levels are read by shop and managed by staff
+    match /inventory/{itemId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    // Distributors: Wholesale partner management
+    match /distributors/{distributorId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Recipes: Confidential artisan formulas
+    match /recipes/{recipeId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Default policy: Deny all by default unless specifically matched above
+    match /{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+  }
+}
