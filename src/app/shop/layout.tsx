@@ -11,24 +11,29 @@ import { signInAnonymously } from 'firebase/auth';
 const DeliveryIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
+    viewBox="0 0 64 64"
     fill="none"
     stroke="currentColor"
-    strokeWidth="2"
+    strokeWidth="2.5"
     strokeLinecap="round"
     strokeLinejoin="round"
     {...props}
   >
-    {/* Delivery Person */}
-    <circle cx="6" cy="7" r="2" />
-    <path d="M3 15v-2a2 2 0 0 1 2-2h2" />
-    {/* The Product/Box being handed over */}
-    <rect x="8" y="11" width="5" height="4" rx="1" fill="currentColor" fillOpacity="0.2" />
-    {/* Client/Recipient */}
-    <circle cx="18" cy="9" r="2" />
-    <path d="M15 17v-1a2 2 0 0 1 2-2h2" />
-    {/* Delivery movement indicator */}
-    <path d="M2 18h4" />
+    {/* Delivery Person (Left) */}
+    <circle cx="18" cy="16" r="6" strokeWidth="3" />
+    <path d="M6 48c0-8 6-12 12-12h4l10 10" strokeWidth="3" />
+    
+    {/* The Artisan Chocolate Box (Center) */}
+    <rect x="22" y="30" width="20" height="14" rx="2" fill="currentColor" fillOpacity="0.15" strokeWidth="2.5" />
+    <path d="M22 37h20" strokeWidth="1" opacity="0.6" />
+    <path d="M32 30v14" strokeWidth="1" opacity="0.6" />
+    
+    {/* Patron/Client (Right) */}
+    <circle cx="48" cy="20" r="5" strokeWidth="3" />
+    <path d="M58 52c0-6-4-10-10-10h-2l-6-6" strokeWidth="3" />
+    
+    {/* Subtle Floor indicator */}
+    <path d="M12 58h40" strokeWidth="1.5" opacity="0.2" />
   </svg>
 );
 
@@ -87,9 +92,9 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
 
         <div className="flex w-full items-center justify-between gap-2 relative z-10">
           <div className="flex-1 flex justify-start">
-            <Button variant="ghost" asChild className="rounded-full px-2 sm:px-6 font-bold uppercase text-[9px] sm:text-[10px] tracking-widest text-stone-500 hover:text-primary transition-colors">
+            <Button variant="ghost" asChild className="rounded-full px-2 sm:px-6 py-8 md:py-10 font-bold uppercase text-[9px] sm:text-[10px] tracking-widest text-stone-500 hover:text-primary transition-all duration-300 group">
               <Link href="/shop/my-orders">
-                <DeliveryIcon className="mr-1 sm:mr-2 h-5 w-5" /> <span className="hidden xs:inline">My Orders</span>
+                <DeliveryIcon className="mr-1 sm:mr-3 h-7 w-7 md:h-8 md:w-8 transition-transform duration-300 group-hover:scale-110" /> <span className="hidden xs:inline">My Orders</span>
               </Link>
             </Button>
           </div>
