@@ -58,7 +58,7 @@ export default function CartPage() {
         </div>
         <div className="text-center space-y-4">
           <h2 className="text-3xl md:text-4xl font-bold font-headline text-stone-900">Your basket is waiting</h2>
-          <p className="text-stone-400 max-w-sm mx-auto text-base md:text-lg font-light leading-relaxed">Indulge in our exquisite collection and discover your favorite flavor from our Puducherry workshop.</p>
+          <p className="text-stone-400 max-w-sm mx-auto text-base md:text-lg font-light leading-relaxed">Indulge in our exquisite collection and discover your favorite flavor from our Kolkata workshop.</p>
         </div>
         <Button size="lg" className="h-14 md:h-16 px-12 md:px-16 text-lg rounded-full shadow-xl shadow-primary/20 transition-all hover:scale-105 w-full sm:w-auto" asChild>
           <Link href="/shop">Browse Collection</Link>

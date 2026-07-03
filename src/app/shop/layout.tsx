@@ -111,7 +111,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
           <Link href="/shop/my-orders" className="hover:text-primary transition-colors">Track Orders</Link>
           <Link href="/login" className="hover:text-primary transition-colors">Wholesale Portal</Link>
         </div>
-        <p className="text-stone-400 text-xs sm:text-sm">&copy; {new Date().getFullYear()} Roseberry Chocolate Puducherry. All rights reserved.</p>
+        <p className="text-stone-400 text-xs sm:text-sm">&copy; {new Date().getFullYear()} Roseberry Chocolate Kolkata. All rights reserved.</p>
         <p className="mt-4 text-[8px] sm:text-[10px] font-bold uppercase tracking-widest opacity-40">Artisanally crafted for the connoisseur.</p>
       </footer>
       <style jsx global>{`

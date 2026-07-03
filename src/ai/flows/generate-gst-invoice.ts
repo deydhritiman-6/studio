@@ -50,7 +50,7 @@ const GenerateGstInvoiceOutputSchema = z.object({
   items: z.array(itemTotalSchema).describe("An array of items with calculated totals."),
   amountInWords: z.string().describe("The grand total in words."),
   companyName: z.string().default("Roseberry Chocolate"),
-  companyAddress: z.string().default("123, Chocolate Lane, Puducherry, India, 605001"),
+  companyAddress: z.string().default("123, Chocolate Lane, Kolkata, West Bengal, India, 700001"),
   companyGst: z.string().default("34ABCDE1234F1Z5"),
   bankDetails: z.object({
     bankName: z.string(),
@@ -165,14 +165,14 @@ const generateGstInvoiceFlow = ai.defineFlow(
       items: itemsWithTotals,
       amountInWords,
       companyName: "Roseberry Chocolate",
-      companyAddress: "123, Chocolate Lane, Puducherry, India, 605001",
+      companyAddress: "123, Chocolate Lane, Kolkata, West Bengal, India, 700001",
       companyGst: "34ABCDE1234F1Z5",
       bankDetails: {
         bankName: "STATE BANK OF INDIA",
         accountNumber: "000000123456789",
         ifscCode: "SBIN0000123",
       },
-      termsAndConditions: "1. All disputes are subject to Puducherry jurisdiction only.\n2. Goods once sold will not be taken back or exchanged.",
+      termsAndConditions: "1. All disputes are subject to Kolkata jurisdiction only.\n2. Goods once sold will not be taken back or exchanged.",
     };
 
     // This is important to ensure the output matches the schema, especially with floating point numbers.

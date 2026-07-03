@@ -66,11 +66,11 @@ export default function ShopPage() {
 
         <div className="flex justify-center items-center gap-2 text-primary font-bold uppercase tracking-[0.3em] text-[9px] md:text-[10px] mb-2 px-6 py-2 rounded-full bg-white border border-primary/10 w-fit mx-auto shadow-sm">
           <Sparkles className="h-3 w-3 text-orange-500" /> 
-          <span className="bg-gradient-to-r from-orange-600 via-primary to-rose-600 bg-clip-text text-transparent">Puducherry's Finest</span>
+          <span className="bg-gradient-to-r from-orange-600 via-primary to-rose-600 bg-clip-text text-transparent">Kolkata's Finest</span>
         </div>
 
         <h1 className="text-5xl sm:text-6xl md:text-8xl font-bold font-headline tracking-tight leading-[1.1] px-4 bg-gradient-to-br from-stone-900 via-stone-800 to-primary bg-clip-text text-transparent max-w-5xl mx-auto">
-          The Art of Indulgence
+          Handmade Artisan Chocolate <br className="hidden md:block" /> & Luxury Truffle in Kolkata
         </h1>
 
         <p className="text-stone-500 max-w-2xl mx-auto text-lg md:text-2xl font-light leading-relaxed px-4">

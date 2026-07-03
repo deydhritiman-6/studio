@@ -122,7 +122,7 @@ export default function ProductDetailPage() {
           </div>
 
           <div className="space-y-8 text-stone-600 leading-relaxed text-lg font-light">
-            <p className="border-l-4 border-primary/20 pl-6 italic">Our {product.name} is a testament to the pursuit of perfection. Every bar is carefully tempered and molded by our master chocolatiers in Puducherry, ensuring a flawless snap and a velvet-smooth melt that lingers on the palate.</p>
+            <p className="border-l-4 border-primary/20 pl-6 italic">Our {product.name} is a testament to the pursuit of perfection. Every bar is carefully tempered and molded by our master chocolatiers in Kolkata, ensuring a flawless snap and a velvet-smooth melt that lingers on the palate.</p>
             <ul className="space-y-4 pt-4">
                <li className="flex items-start gap-4"><CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-1" /> <span>Ethically sourced, single-origin cocoa beans from select estates.</span></li>
                <li className="flex items-start gap-4"><CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-1" /> <span>Zero artificial preservatives, colorants, or synthetic flavorings.</span></li>
