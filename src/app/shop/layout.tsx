@@ -128,9 +128,13 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
 
         <div className="flex w-full items-center justify-between gap-2 relative z-10">
           <div className="flex-1 flex justify-start">
-            <Button variant="ghost" asChild className="rounded-full px-2 sm:px-6 py-8 md:py-10 font-bold uppercase text-[9px] sm:text-[10px] tracking-widest text-stone-500 hover:text-primary transition-all duration-300 group">
-              <Link href="/shop/my-orders">
-                <DeliveryIcon className="mr-1 sm:mr-3 h-7 w-7 md:h-9 md:w-9 transition-transform duration-300 group-hover:scale-110" /> <span className="hidden xs:inline">My Orders</span>
+            <Button 
+              variant="ghost" 
+              asChild 
+              className="relative hover:bg-stone-50 hover:text-primary rounded-full h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 p-0 transition-all duration-300 group shadow-sm hover:shadow-md border border-stone-100/50"
+            >
+              <Link href="/shop/my-orders" title="Track My Orders">
+                <DeliveryIcon className="h-8 w-8 sm:h-10 sm:w-10 md:h-14 md:w-14 text-stone-700 transition-transform duration-300 group-hover:scale-110" />
               </Link>
             </Button>
           </div>
@@ -148,9 +152,9 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
               className="relative hover:bg-primary/10 hover:text-primary rounded-full h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 p-0 transition-all duration-300 group shadow-sm hover:shadow-md border border-stone-100/50"
             >
                <Link href="/shop/cart" aria-label="View shopping basket">
-                  <RoseberryCartIcon className="h-7 w-7 sm:h-9 sm:w-9 md:h-12 md:w-12 text-stone-700 group-hover:scale-110 transition-transform duration-300" />
+                  <RoseberryCartIcon className="h-8 w-8 sm:h-10 sm:w-10 md:h-14 md:w-14 text-stone-700 group-hover:scale-110 transition-transform duration-300" />
                   {cartCount > 0 && (
-                    <span className="absolute top-1 right-1 sm:top-2 sm:right-2 flex h-5 w-5 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-gradient-to-tr from-primary to-orange-500 text-[10px] sm:text-[12px] font-bold text-white border-2 border-white shadow-lg animate-in zoom-in-50 duration-500 pulse-glow">
+                    <span className="absolute top-1 right-1 sm:top-2 sm:right-2 flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-gradient-to-tr from-primary to-orange-500 text-[10px] sm:text-[14px] font-bold text-white border-2 border-white shadow-lg animate-in zoom-in-50 duration-500 pulse-glow">
                       {cartCount}
                     </span>
                   )}
