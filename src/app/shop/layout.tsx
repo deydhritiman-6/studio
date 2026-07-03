@@ -58,10 +58,10 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="min-h-screen flex flex-col bg-stone-50 font-body">
       <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-xl px-4 md:px-6 h-24 md:h-32 flex items-center animate-in fade-in slide-in-from-top-4 duration-1000 overflow-hidden shadow-sm">
-        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary via-accent to-primary animate-pulse"></div>
-        <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-1/3 h-20 bg-primary/10 blur-[60px] rounded-full pointer-events-none animate-pulse"></div>
+        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-500 via-primary to-orange-400 animate-pulse"></div>
+        <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-1/3 h-20 bg-primary/10 blur-[80px] rounded-full pointer-events-none animate-pulse"></div>
 
-        <div className="flex w-full items-center justify-between gap-2">
+        <div className="flex w-full items-center justify-between gap-2 relative z-10">
           <div className="flex-1 flex justify-start">
             <Button variant="ghost" asChild className="rounded-full px-2 sm:px-6 font-bold uppercase text-[9px] sm:text-[10px] tracking-widest text-stone-500 hover:text-primary transition-colors">
               <Link href="/shop/my-orders">
@@ -71,21 +71,21 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
           </div>
           
           <div className="flex-shrink-0">
-            <Link href="/shop" className="hover:scale-105 transition-transform duration-500 relative z-10 block">
-              <Logo className="h-12 sm:h-16 md:h-20 w-auto" />
+            <Link href="/shop" className="hover:scale-105 transition-transform duration-500 block">
+              <Logo className="h-12 sm:h-16 md:h-20 w-auto drop-shadow-[0_2px_15px_rgba(var(--primary),0.2)]" />
             </Link>
           </div>
 
-          <div className="flex-1 flex justify-end items-center relative z-10">
+          <div className="flex-1 flex justify-end items-center">
             <Button 
               variant="ghost" 
               asChild 
-              className="relative hover:bg-primary/10 hover:text-primary rounded-full h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 p-0 transition-all duration-300 group shadow-sm hover:shadow-md"
+              className="relative hover:bg-primary/10 hover:text-primary rounded-full h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 p-0 transition-all duration-300 group shadow-sm hover:shadow-md border border-stone-100/50"
             >
                <Link href="/shop/cart" aria-label="View shopping basket">
-                  <ShoppingCart className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 text-stone-700 group-hover:scale-110 transition-transform duration-300" />
+                  <ShoppingCart className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 text-stone-700 group-hover:scale-110 transition-transform duration-300 group-hover:text-primary" />
                   {cartCount > 0 && (
-                    <span className="absolute top-1 right-1 sm:top-2 sm:right-2 flex h-5 w-5 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-primary text-[10px] sm:text-[12px] font-bold text-white border-2 border-white shadow-lg animate-in zoom-in-50 duration-500">
+                    <span className="absolute top-1 right-1 sm:top-2 sm:right-2 flex h-5 w-5 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-gradient-to-tr from-primary to-orange-500 text-[10px] sm:text-[12px] font-bold text-white border-2 border-white shadow-lg animate-in zoom-in-50 duration-500 pulse-glow">
                       {cartCount}
                     </span>
                   )}
@@ -114,6 +114,16 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
         <p className="text-stone-400 text-xs sm:text-sm">&copy; {new Date().getFullYear()} Roseberry Chocolate Puducherry. All rights reserved.</p>
         <p className="mt-4 text-[8px] sm:text-[10px] font-bold uppercase tracking-widest opacity-40">Artisanally crafted for the connoisseur.</p>
       </footer>
+      <style jsx global>{`
+        .pulse-glow {
+          animation: pulse-glow 2s infinite;
+        }
+        @keyframes pulse-glow {
+          0% { box-shadow: 0 0 0 0 rgba(222, 133, 40, 0.4); }
+          70% { box-shadow: 0 0 0 10px rgba(222, 133, 40, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(222, 133, 40, 0); }
+        }
+      `}</style>
     </div>
   );
 }
