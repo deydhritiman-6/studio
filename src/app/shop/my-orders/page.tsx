@@ -1,25 +1,29 @@
-
 'use client';
 
 import { useMemo } from 'react';
 import { useCollection, useFirestore, useUser } from '@/firebase';
-import { collection, query, where, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Package, Truck, CheckCircle2, ChevronRight, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Clock, Package, Truck, CheckCircle2, ShoppingBag, Send, Ban, PauseCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
+const statusColorMap: Record<string, string> = {
+  'Order Received': 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+  'Production in Progress': 'bg-orange-500/10 text-orange-500 border-orange-500/20',
+  'Ready for Dispatch': 'bg-purple-500/10 text-purple-500 border-purple-500/20',
+  'Dispatched': 'bg-green-500/10 text-green-500 border-green-500/20',
+  'Delivered': 'bg-emerald-900/10 text-emerald-900 border-emerald-900/20 dark:text-emerald-400 dark:border-emerald-400/20',
+  'Cancelled': 'bg-red-500/10 text-red-500 border-red-500/20',
+  'On Hold': 'bg-slate-500/10 text-slate-500 border-slate-500/20',
+};
+
 export default function MyOrdersPage() {
-  const { user } = useUser();
   const firestore = useFirestore();
 
-  // For this MVP, we match orders by an identifier. In a full system, this would be order-specific tokens or verified accounts.
-  // Since we use anonymous auth, we query all orders where customerId starts with 'WEB-' 
-  // (In a real app, you'd restrict this with more complex logic or user identity)
   const ordersQuery = useMemo(() => {
     if (!firestore) return null;
     return query(
@@ -30,18 +34,29 @@ export default function MyOrdersPage() {
 
   const { data: allOrders, loading } = useCollection<Order>(ordersQuery);
   
-  // Filter for 'WEB-' orders locally for this demonstration
   const myOrders = useMemo(() => {
     return allOrders?.filter(o => o.id.includes('WEB-')) || [];
   }, [allOrders]);
 
   const StatusTimeline = ({ status }: { status?: string }) => {
     const steps = [
-      { id: 'Product Preparation in Progress', label: 'Preparation', icon: Clock },
-      { id: 'Product Ready', label: 'Ready', icon: Package },
-      { id: 'Product Dispatched', label: 'Dispatched', icon: Truck },
+      { id: 'Order Received', label: 'Received', icon: Send },
+      { id: 'Production in Progress', label: 'Preparation', icon: Clock },
+      { id: 'Ready for Dispatch', label: 'Ready', icon: Package },
+      { id: 'Dispatched', label: 'Dispatched', icon: Truck },
     ];
     const currentIndex = steps.findIndex(s => s.id === status);
+
+    // If it's a special status like Cancelled or On Hold, don't show the standard timeline
+    if (status === 'Cancelled' || status === 'On Hold' || status === 'Delivered') {
+        return (
+            <div className="flex items-center justify-center p-8 bg-stone-50 rounded-2xl border border-stone-100">
+                <Badge variant="outline" className={cn("text-lg px-8 py-3 rounded-full border-2", statusColorMap[status])}>
+                    {status}
+                </Badge>
+            </div>
+        );
+    }
 
     return (
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 py-8">
@@ -124,12 +139,16 @@ export default function MyOrdersPage() {
               </div>
               <CardContent className="p-10">
                 <div className="space-y-10">
-                  <div>
-                    <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-stone-400 mb-2">Artisan Lifecycle</h4>
-                    <StatusTimeline status={order.shippingStatus} />
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-stone-400">Artisan Lifecycle</h4>
+                    <Badge variant="outline" className={cn("px-4 py-1 rounded-full border-2 font-bold text-[10px] uppercase tracking-widest", statusColorMap[order.shippingStatus || 'Order Received'])}>
+                        {order.shippingStatus || 'Order Received'}
+                    </Badge>
                   </div>
+                  
+                  <StatusTimeline status={order.shippingStatus} />
 
-                  {order.shippingStatus === 'Product Dispatched' && order.dispatchDetails && (
+                  {order.shippingStatus === 'Dispatched' && order.dispatchDetails && (
                     <div className="bg-stone-50 rounded-[2rem] p-10 grid grid-cols-1 md:grid-cols-2 gap-12 border border-stone-100 animate-in zoom-in-95 duration-500">
                         <div className="space-y-6">
                             <div>
@@ -158,7 +177,7 @@ export default function MyOrdersPage() {
                     </div>
                   )}
 
-                  {!order.shippingStatus && (
+                  {order.shippingStatus === 'Order Received' && (
                      <div className="bg-stone-50 rounded-2xl p-8 flex items-center gap-4 text-stone-500 border border-stone-100 italic">
                         <Clock className="h-5 w-5 text-stone-300" />
                         Our chocolatiers have received your selection and are currently preparing for the tempering process. Detailed tracking will appear here shortly.

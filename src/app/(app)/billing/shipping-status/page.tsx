@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -13,9 +12,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Search, Truck, Package, CheckCircle2, ChevronRight, Clock, User } from 'lucide-react';
+import { Loader2, Search, Truck, Package, CheckCircle2, Clock, Ban, PauseCircle, Send } from 'lucide-react';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, updateDoc } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -23,14 +22,14 @@ import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const shippingFormSchema = z.object({
-  status: z.enum(['Product Preparation in Progress', 'Product Ready', 'Product Dispatched']),
+  status: z.enum(['Order Received', 'Production in Progress', 'Ready for Dispatch', 'Dispatched', 'Delivered', 'Cancelled', 'On Hold']),
   dispatchDescription: z.string().optional(),
   courierName: z.string().optional(),
   trackingNumber: z.string().optional(),
   dispatchDate: z.string().optional(),
   expectedDeliveryDate: z.string().optional(),
 }).refine((data) => {
-  if (data.status === 'Product Dispatched') {
+  if (data.status === 'Dispatched') {
     return !!data.courierName && !!data.trackingNumber && !!data.dispatchDate;
   }
   return true;
@@ -40,6 +39,16 @@ const shippingFormSchema = z.object({
 });
 
 type ShippingFormValues = z.infer<typeof shippingFormSchema>;
+
+const statusColorMap: Record<string, string> = {
+  'Order Received': 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+  'Production in Progress': 'bg-orange-500/10 text-orange-500 border-orange-500/20',
+  'Ready for Dispatch': 'bg-purple-500/10 text-purple-500 border-purple-500/20',
+  'Dispatched': 'bg-green-500/10 text-green-500 border-green-500/20',
+  'Delivered': 'bg-emerald-900/10 text-emerald-900 border-emerald-900/20 dark:text-emerald-400 dark:border-emerald-400/20',
+  'Cancelled': 'bg-red-500/10 text-red-500 border-red-500/20',
+  'On Hold': 'bg-slate-500/10 text-slate-500 border-slate-500/20',
+};
 
 export default function ShippingStatusPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -63,7 +72,7 @@ export default function ShippingStatusPage() {
   const form = useForm<ShippingFormValues>({
     resolver: zodResolver(shippingFormSchema),
     defaultValues: {
-      status: 'Product Preparation in Progress',
+      status: 'Order Received',
       dispatchDescription: '',
       courierName: '',
       trackingNumber: '',
@@ -77,7 +86,7 @@ export default function ShippingStatusPage() {
   useEffect(() => {
     if (selectedOrder) {
       form.reset({
-        status: selectedOrder.shippingStatus || 'Product Preparation in Progress',
+        status: (selectedOrder.shippingStatus as any) || 'Order Received',
         dispatchDescription: selectedOrder.dispatchDetails?.description || '',
         courierName: selectedOrder.dispatchDetails?.courierName || '',
         trackingNumber: selectedOrder.dispatchDetails?.trackingNumber || '',
@@ -96,7 +105,7 @@ export default function ShippingStatusPage() {
     const orderRef = doc(firestore, 'orders', selectedOrder.id);
     const updateData = {
       shippingStatus: values.status,
-      dispatchDetails: values.status === 'Product Dispatched' ? {
+      dispatchDetails: values.status === 'Dispatched' ? {
         description: values.dispatchDescription,
         courierName: values.courierName,
         trackingNumber: values.trackingNumber,
@@ -124,24 +133,25 @@ export default function ShippingStatusPage() {
 
   const StatusTimeline = ({ status }: { status?: string }) => {
     const steps = [
-      { id: 'Product Preparation in Progress', icon: Clock },
-      { id: 'Product Ready', icon: Package },
-      { id: 'Product Dispatched', icon: Truck },
+      { id: 'Order Received', icon: Send },
+      { id: 'Production in Progress', icon: Clock },
+      { id: 'Ready for Dispatch', icon: Package },
+      { id: 'Dispatched', icon: Truck },
     ];
     const currentIndex = steps.findIndex(s => s.id === status);
 
     return (
-      <div className="flex items-center gap-2 mt-2">
+      <div className="flex items-center gap-1.5 mt-2">
         {steps.map((step, i) => (
           <div key={step.id} className="flex items-center">
             <div className={cn(
-              "flex items-center justify-center h-8 w-8 rounded-full border-2 transition-all",
+              "flex items-center justify-center h-7 w-7 rounded-full border-2 transition-all",
               i <= currentIndex ? "bg-primary border-primary text-white" : "border-muted-foreground/30 text-muted-foreground"
             )}>
-              {i < currentIndex ? <CheckCircle2 className="h-4 w-4" /> : <step.icon className="h-4 w-4" />}
+              {i < currentIndex ? <CheckCircle2 className="h-3 w-3" /> : <step.icon className="h-3 w-3" />}
             </div>
             {i < steps.length - 1 && (
-              <div className={cn("h-0.5 w-8 mx-1", i < currentIndex ? "bg-primary" : "bg-muted-foreground/20")} />
+              <div className={cn("h-0.5 w-4 mx-0.5", i < currentIndex ? "bg-primary" : "bg-muted-foreground/20")} />
             )}
           </div>
         ))}
@@ -162,13 +172,13 @@ export default function ShippingStatusPage() {
                   <Truck className="h-6 w-6 text-primary" />
                   Live Order Dispatch
                 </CardTitle>
-                <CardDescription>Track and update the shipping lifecycle of artisan chocolates.</CardDescription>
+                <CardDescription>Track and update the color-coded lifecycle of artisan chocolates.</CardDescription>
               </div>
               <div className="relative w-full md:w-80">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
                   placeholder="Search Invoice, ID, Customer..." 
-                  className="pl-10 h-11 rounded-xl bg-background" 
+                  className="pl-10 h-11 rounded-xl bg-background border-none shadow-inner" 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -184,8 +194,8 @@ export default function ShippingStatusPage() {
                   <TableRow className="hover:bg-transparent bg-muted/10">
                     <TableHead className="font-black uppercase text-[10px] tracking-widest p-6">Identity</TableHead>
                     <TableHead className="font-black uppercase text-[10px] tracking-widest p-6">Customer</TableHead>
-                    <TableHead className="font-black uppercase text-[10px] tracking-widest p-6">Timeline Progress</TableHead>
-                    <TableHead className="font-black uppercase text-[10px] tracking-widest p-6">Current Status</TableHead>
+                    <TableHead className="font-black uppercase text-[10px] tracking-widest p-6">Progress</TableHead>
+                    <TableHead className="font-black uppercase text-[10px] tracking-widest p-6">Status Indicator</TableHead>
                     <TableHead className="font-black uppercase text-[10px] tracking-widest p-6 text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -199,17 +209,17 @@ export default function ShippingStatusPage() {
                         </TableCell>
                         <TableCell className="p-6">
                           <div className="font-medium">{order.customerName}</div>
-                          <div className="text-xs text-muted-foreground">Order Date: {order.orderDate}</div>
+                          <div className="text-xs text-muted-foreground">Placed: {order.orderDate}</div>
                         </TableCell>
                         <TableCell className="p-6">
                            <StatusTimeline status={order.shippingStatus} />
                         </TableCell>
                         <TableCell className="p-6">
                           <Badge variant="outline" className={cn(
-                            "rounded-full px-4 py-1 text-[10px] font-bold uppercase tracking-widest",
-                            order.shippingStatus === 'Product Dispatched' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-primary/10 text-primary border-primary/20"
+                            "rounded-full px-4 py-1 text-[10px] font-bold uppercase tracking-widest border-2",
+                            statusColorMap[order.shippingStatus || 'Order Received'] || 'bg-muted text-muted-foreground border-muted'
                           )}>
-                            {order.shippingStatus || 'Awaiting Prep'}
+                            {order.shippingStatus || 'Order Received'}
                           </Badge>
                         </TableCell>
                         <TableCell className="p-6 text-right">
@@ -227,7 +237,7 @@ export default function ShippingStatusPage() {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={5} className="h-40 text-center text-muted-foreground italic">
-                        No orders matching your artisan search.
+                        No orders matching your search.
                       </TableCell>
                     </TableRow>
                   )}
@@ -249,24 +259,28 @@ export default function ShippingStatusPage() {
             <form onSubmit={form.handleSubmit(handleUpdateStatus)} className="space-y-6">
               <FormField control={form.control} name="status" render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Artisan Workflow Stage</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Workflow Stage</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                     <FormControl>
                       <SelectTrigger className="h-12 rounded-xl border-2 focus:ring-primary/20 transition-all">
                         <SelectValue placeholder="Select stage" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="Product Preparation in Progress">Product Preparation in Progress</SelectItem>
-                      <SelectItem value="Product Ready">Product Ready</SelectItem>
-                      <SelectItem value="Product Dispatched">Product Dispatched</SelectItem>
+                      <SelectItem value="Order Received"><div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-blue-500" /> Order Received</div></SelectItem>
+                      <SelectItem value="Production in Progress"><div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-orange-500" /> Production in Progress</div></SelectItem>
+                      <SelectItem value="Ready for Dispatch"><div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-purple-500" /> Ready for Dispatch</div></SelectItem>
+                      <SelectItem value="Dispatched"><div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-green-500" /> Dispatched</div></SelectItem>
+                      <SelectItem value="Delivered"><div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-emerald-800" /> Delivered</div></SelectItem>
+                      <SelectItem value="Cancelled"><div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-red-500" /> Cancelled</div></SelectItem>
+                      <SelectItem value="On Hold"><div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-slate-500" /> On Hold</div></SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>
               )} />
 
-              {currentStatus === 'Product Dispatched' && (
+              {currentStatus === 'Dispatched' && (
                 <div className="space-y-6 pt-4 border-t-2 border-dashed animate-in slide-in-from-top-4 duration-300">
                   <FormField control={form.control} name="dispatchDescription" render={({ field }) => (
                     <FormItem>
