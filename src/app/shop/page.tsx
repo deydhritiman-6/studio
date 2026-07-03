@@ -58,8 +58,8 @@ export default function ShopPage() {
   const allProducts = products || [];
 
   return (
-    <div className="space-y-8 md:space-y-24 animate-in fade-in duration-1000">
-      <div className="text-center space-y-6 md:space-y-8 py-12 md:py-24 relative">
+    <div className="space-y-8 md:space-y-16 animate-in fade-in duration-1000">
+      <div className="text-center space-y-6 md:space-y-8 py-6 md:py-10 relative">
         <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl aspect-square bg-gradient-to-tr from-primary/5 via-rose-500/5 to-accent/5 blur-[120px] rounded-full"></div>
         </div>
@@ -69,15 +69,15 @@ export default function ShopPage() {
           <span className="bg-gradient-to-r from-orange-600 via-primary to-rose-600 bg-clip-text text-transparent">Kolkata's Finest</span>
         </div>
 
-        <h1 className="text-5xl sm:text-6xl md:text-8xl font-bold font-headline tracking-tight leading-[1.1] px-4 bg-gradient-to-br from-stone-900 via-stone-800 to-primary bg-clip-text text-transparent max-w-5xl mx-auto">
+        <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold font-headline tracking-tight leading-[1.1] px-4 bg-gradient-to-br from-stone-900 via-stone-800 to-primary bg-clip-text text-transparent max-w-5xl mx-auto">
           Handmade Artisan Chocolate <br className="hidden md:block" /> & Luxury Truffle in Kolkata
         </h1>
 
-        <p className="text-stone-500 max-w-2xl mx-auto text-lg md:text-2xl font-light leading-relaxed px-4">
+        <p className="text-stone-500 max-w-2xl mx-auto text-base md:text-xl font-light leading-relaxed px-4">
           Hand-crafted artisan chocolates made with single-origin cocoa, ethical values, and <span className="text-rose-500 italic font-serif">extraordinary patience</span>.
         </p>
 
-        <div className="flex justify-center items-center gap-4 mt-8 md:mt-12">
+        <div className="flex justify-center items-center gap-4 mt-6 md:mt-8">
            <div className="h-px w-12 bg-gradient-to-r from-transparent to-primary/30"></div>
            <div className="h-2 w-2 rounded-full bg-primary/40 animate-pulse"></div>
            <div className="h-px w-12 bg-gradient-to-l from-transparent to-primary/30"></div>

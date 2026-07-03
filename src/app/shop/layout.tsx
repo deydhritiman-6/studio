@@ -94,7 +94,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
           </div>
         </div>
       </header>
-      <main className="flex-1 container mx-auto py-8 md:py-12 px-4 md:px-6 max-w-7xl">
+      <main className="flex-1 container mx-auto py-4 md:py-6 px-4 md:px-6 max-w-7xl">
         {!isReady ? (
           <div className="flex items-center justify-center py-32">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
