@@ -99,7 +99,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
               className="relative hover:bg-stone-50 hover:text-primary rounded-full h-16 w-16 md:h-24 md:w-24 p-0 transition-all duration-300 group shadow-sm hover:shadow-md border border-stone-100/50"
             >
               <Link href="/shop/my-orders" title="Track My Orders">
-                <DeliveryIcon className="h-10 w-10 md:h-16 md:w-16 text-stone-700 transition-transform duration-300 group-hover:scale-110" />
+                <DeliveryIcon className="h-10 w-10 md:h-20 md:w-20 text-stone-700 transition-transform duration-300 group-hover:scale-110" />
               </Link>
             </Button>
           </div>
@@ -114,20 +114,20 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
             <Button 
               variant="ghost" 
               asChild 
-              className="relative hover:bg-primary/10 hover:text-primary rounded-full h-16 w-16 md:h-24 md:w-24 p-0 transition-all duration-300 group shadow-sm hover:shadow-md border border-stone-100/50"
+              className="relative hover:bg-stone-50 hover:text-primary rounded-full h-16 w-16 md:h-24 md:w-24 p-0 transition-all duration-300 group shadow-sm hover:shadow-md border border-stone-100/50 overflow-visible"
             >
                <Link href="/shop/cart" aria-label="View shopping basket">
-                  <div className="relative h-10 w-10 md:h-16 md:w-16 flex items-center justify-center">
+                  <div className="relative h-12 w-12 md:h-20 md:w-20 flex items-center justify-center">
                     <Image 
                       src="/cart2.jpeg" 
                       alt="Basket" 
-                      width={64} 
-                      height={64} 
+                      width={80} 
+                      height={80} 
                       className="object-contain transition-transform duration-300 group-hover:scale-110"
                     />
                   </div>
                   {cartCount > 0 && (
-                    <span className="absolute top-1 right-1 md:top-2 md:right-2 flex h-7 w-7 md:h-10 md:w-10 items-center justify-center rounded-full bg-gradient-to-tr from-primary to-orange-500 text-[10px] md:text-[14px] font-bold text-white border-2 border-white shadow-lg animate-in zoom-in-50 duration-500 pulse-glow">
+                    <span className="absolute top-1 right-1 md:top-2 md:right-2 flex h-7 w-7 md:h-10 md:w-10 items-center justify-center rounded-full bg-gradient-to-tr from-primary to-orange-500 text-[10px] md:text-[14px] font-bold text-white border-2 border-white shadow-lg animate-in zoom-in-50 duration-500 pulse-glow z-20">
                       {cartCount}
                     </span>
                   )}
