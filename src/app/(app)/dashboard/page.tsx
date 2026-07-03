@@ -100,9 +100,9 @@ export default function DashboardPage() {
             <CardTitle>Top Selling Creations</CardTitle>
             <CardDescription>Real-time market performance.</CardDescription>
           </CardHeader>
-          <CardContent className="flex-1 pb-4">
+          <CardContent className="flex-1 pb-6 flex items-center justify-center">
              {topProductsData.length > 0 ? (
-                <ChartContainer config={topProductsChartConfig} className="mx-auto aspect-square h-full">
+                <ChartContainer config={topProductsChartConfig} className="mx-auto aspect-square w-full max-h-[300px]">
                   <PieChart>
                     <ChartTooltip
                         cursor={true}
@@ -197,7 +197,7 @@ export default function DashboardPage() {
               </CardDescription>
             </div>
             <Button asChild size="sm" className="ml-auto gap-1" variant="outline">
-              <Link href="/inventory">
+              <Link href="/inventory" prefetch={false}>
                 Sync Inventory
                 <ArrowUpRight className="h-4 w-4" />
               </Link>
