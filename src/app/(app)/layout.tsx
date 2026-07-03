@@ -39,6 +39,7 @@ import {
   Radio,
   ShieldCheck,
   Lock,
+  Eye,
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -69,7 +70,14 @@ const navItems = [
   { href: '/inventory', icon: Boxes, label: 'Inventory' },
   { href: '/gst-billing', icon: FileText, label: 'Create Invoice' },
   { href: '/invoices', icon: FileText, label: 'View Invoices' },
-  { href: '/billing/shipping-status', icon: Truck, label: 'Shipping Status' },
+  {
+    icon: Truck,
+    label: 'Shipping Status',
+    subItems: [
+      { href: '/billing/shipping-status', icon: Truck, label: 'Live Dispatch' },
+      { href: '/billing/tracking-visibility', icon: Eye, label: 'Visibility Control' },
+    ],
+  },
   { href: '/distributors', icon: Truck, label: 'Distributors' },
   { href: '/broadcast', icon: Radio, label: 'Broadcasts' },
   {
