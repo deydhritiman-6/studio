@@ -12,14 +12,15 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Search, Truck, Package, CheckCircle2, Clock, Send, PackageSearch } from 'lucide-react';
-import { useCollection, useFirestore } from '@/firebase';
-import { collection, doc, updateDoc } from 'firebase/firestore';
+import { Loader2, Search, Truck, Package, CheckCircle2, Clock, Send, PackageSearch, Eye, ShieldCheck } from 'lucide-react';
+import { useCollection, useFirestore, useDoc } from '@/firebase';
+import { collection, doc, updateDoc, setDoc } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const shippingFormSchema = z.object({
   status: z.enum(['Ready for Dispatch', 'Dispatched', 'Delivered', 'Cancelled', 'On Hold']),
@@ -50,19 +51,39 @@ const statusColorMap: Record<string, string> = {
   'On Hold': 'bg-slate-500/10 text-slate-500 border-slate-500/20',
 };
 
+const visibilityStatuses = [
+  { id: 'Order Confirmed', label: 'Order Confirmed' },
+  { id: 'Sent for Production', label: 'Sent for Production' },
+  { id: 'Order On Hold', label: 'Order On Hold' },
+  { id: 'Order Rejected', label: 'Order Rejected' },
+  { id: 'Production Started', label: 'Production Started' },
+  { id: 'Production Ongoing', label: 'Production Ongoing' },
+  { id: 'Production Complete', label: 'Production Complete' },
+  { id: 'Product Packaging Complete', label: 'Packaging Complete' },
+  { id: 'Product Ready', label: 'Product Ready' },
+  { id: 'Ready for Dispatch', label: 'Product Ready for Dispatch' },
+  { id: 'Dispatched', label: 'Product Dispatched' },
+  { id: 'Delivered', label: 'Product Delivered' },
+  { id: 'Expected Arrival Date', label: 'Expected Arrival Date' },
+];
+
 export default function ShippingStatusPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isSavingVisibility, setIsSavingVisibility] = useState(false);
+  
   const { toast } = useToast();
   const firestore = useFirestore();
 
   const ordersQuery = useMemo(() => (firestore ? collection(firestore, 'orders') : null), [firestore]);
   const { data: orders, loading } = useCollection<Order>(ordersQuery);
 
+  const settingsRef = useMemo(() => (firestore ? doc(firestore, 'settings', 'tracking-visibility') : null), [firestore]);
+  const { data: visibilitySettings } = useDoc<any>(settingsRef as any);
+
   const filteredOrders = useMemo(() => {
     if (!orders) return [];
-    // Only show orders that have entered the shipping lifecycle (via Ready for Shipping action)
     return orders
       .filter(o => !!o.shippingStatus)
       .filter(o => 
@@ -142,6 +163,26 @@ export default function ShippingStatusPage() {
         toast({ variant: 'destructive', title: 'Update Failed', description: 'Failed to update shipping status.' });
       })
       .finally(() => setIsUpdating(false));
+  };
+
+  const handleVisibilityToggle = (id: string, checked: boolean) => {
+    if (!firestore || !settingsRef) return;
+
+    setIsSavingVisibility(true);
+    const newSettings = {
+      ...(visibilitySettings || {}),
+      [id]: checked,
+      updatedAt: new Date().toISOString()
+    };
+
+    setDoc(settingsRef, newSettings)
+      .then(() => {
+        toast({ title: 'Visibility Updated', description: 'Customer tracking milestones have been updated.' });
+      })
+      .catch(() => {
+        toast({ variant: 'destructive', title: 'Update Failed', description: 'Failed to save visibility settings.' });
+      })
+      .finally(() => setIsSavingVisibility(false));
   };
 
   const StatusTimeline = ({ status }: { status?: string }) => {
@@ -257,6 +298,46 @@ export default function ShippingStatusPage() {
                  </div>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Customer Visibility Control Section */}
+        <Card className="rounded-[2.5rem] border-none shadow-2xl bg-stone-900 text-white overflow-hidden mt-8">
+          <CardHeader className="p-10 pb-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <CardTitle className="text-3xl font-headline flex items-center gap-3">
+                  <Eye className="h-8 w-8 text-primary" />
+                  Customer Visibility Control
+                </CardTitle>
+                <CardDescription className="text-stone-400">Define which artisanal milestones are shared with the patron in their live dashboard.</CardDescription>
+              </div>
+              {isSavingVisibility && <Loader2 className="h-6 w-6 animate-spin text-primary" />}
+            </div>
+          </CardHeader>
+          <CardContent className="p-10 pt-0">
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {visibilityStatuses.map((status) => (
+                  <div key={status.id} className="flex items-center space-x-3 bg-stone-800/50 p-4 rounded-2xl border border-stone-800 hover:border-primary/30 transition-all group">
+                    <Checkbox 
+                      id={`v-${status.id}`} 
+                      checked={!!visibilitySettings?.[status.id]} 
+                      onCheckedChange={(checked) => handleVisibilityToggle(status.id, !!checked)}
+                      className="border-stone-600 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                    />
+                    <label 
+                      htmlFor={`v-${status.id}`} 
+                      className="text-sm font-bold uppercase tracking-tight cursor-pointer group-hover:text-primary transition-colors"
+                    >
+                      {status.label}
+                    </label>
+                  </div>
+                ))}
+             </div>
+             <div className="mt-10 pt-8 border-t border-stone-800 flex items-center gap-4 text-stone-500">
+                <ShieldCheck className="h-5 w-5" />
+                <p className="text-[10px] font-black uppercase tracking-[0.2em]">Global Visibility Policy - Changes apply in real-time to all web sessions.</p>
+             </div>
           </CardContent>
         </Card>
       </div>

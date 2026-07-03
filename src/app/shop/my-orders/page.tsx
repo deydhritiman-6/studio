@@ -1,16 +1,19 @@
-
 'use client';
 
-import { useMemo } from 'react';
-import { useCollection, useFirestore } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { useMemo, useState } from 'react';
+import { useCollection, useFirestore, useDoc } from '@/firebase';
+import { collection, query, orderBy, doc } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Package, Truck, CheckCircle2, ShoppingBag, Send, MessageSquare } from 'lucide-react';
+import { Clock, Package, Truck, CheckCircle2, ShoppingBag, Send, MessageSquare, ListChecks, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { format } from 'date-fns';
 
 const statusColorMap: Record<string, string> = {
   'Order Received': 'bg-blue-500/10 text-blue-500 border-blue-500/20',
@@ -24,6 +27,7 @@ const statusColorMap: Record<string, string> = {
 
 export default function MyOrdersPage() {
   const firestore = useFirestore();
+  const [viewingStatusOrder, setViewingStatusOrder] = useState<Order | null>(null);
 
   const ordersQuery = useMemo(() => {
     if (!firestore) return null;
@@ -34,10 +38,22 @@ export default function MyOrdersPage() {
   }, [firestore]);
 
   const { data: allOrders, loading } = useCollection<Order>(ordersQuery);
+
+  const settingsRef = useMemo(() => (firestore ? doc(firestore, 'settings', 'tracking-visibility') : null), [firestore]);
+  const { data: visibilitySettings } = useDoc<any>(settingsRef as any);
   
   const myOrders = useMemo(() => {
     return allOrders?.filter(o => o.id.includes('WEB-')) || [];
   }, [allOrders]);
+
+  const filteredHistory = (order: Order) => {
+    if (!order.history) return [];
+    return order.history.filter(h => {
+        // Special case: ready for dispatch might be stored as shippingStatus
+        if (h.status === 'Ready for Dispatch') return !!visibilitySettings?.['Ready for Dispatch'];
+        return !!visibilitySettings?.[h.status];
+    });
+  };
 
   const StatusTimeline = ({ status }: { status?: string }) => {
     const steps = [
@@ -48,7 +64,6 @@ export default function MyOrdersPage() {
     ];
     const currentIndex = steps.findIndex(s => s.id === status);
 
-    // If it's a special status like Cancelled or On Hold, don't show the standard timeline
     if (status === 'Cancelled' || status === 'On Hold' || status === 'Delivered') {
         return (
             <div className="flex items-center justify-center p-8 bg-stone-50 rounded-2xl border border-stone-100">
@@ -136,16 +151,19 @@ export default function MyOrdersPage() {
                   <h3 className="text-2xl font-bold font-headline">{order.id.replace('ORD', 'INV')}</h3>
                 </div>
                 <div className="flex items-center gap-6">
+                  <Button 
+                    variant="outline" 
+                    className="rounded-full border-primary/30 text-primary hover:bg-primary hover:text-stone-950 font-bold uppercase text-[10px] tracking-widest h-12 px-6 shadow-lg shadow-primary/10 transition-all"
+                    onClick={() => setViewingStatusOrder(order)}
+                  >
+                    <ListChecks className="mr-2 h-4 w-4" /> View Order Status
+                  </Button>
+                  <div className="h-10 w-px bg-stone-800" />
                   <div className="text-right">
                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-stone-500">Order Status</p>
                     <Badge variant="outline" className={cn("rounded-full border-2", getOrderStatusVariant(order.deliveryStatus))}>
                       {order.deliveryStatus}
                     </Badge>
-                  </div>
-                  <div className="h-10 w-px bg-stone-800" />
-                  <div className="text-right">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-stone-500">Selection Value</p>
-                    <p className="text-xl font-bold text-primary">₹{order.totalAmount.toLocaleString()}</p>
                   </div>
                 </div>
               </div>
@@ -170,7 +188,7 @@ export default function MyOrdersPage() {
                   
                   <StatusTimeline status={order.shippingStatus} />
 
-                  {order.shippingStatus === 'Dispatched' && order.dispatchDetails && (
+                  {(order.shippingStatus === 'Dispatched' || visibilitySettings?.['Expected Arrival Date']) && order.dispatchDetails && (
                     <div className="bg-stone-50 rounded-[2rem] p-10 grid grid-cols-1 md:grid-cols-2 gap-12 border border-stone-100 animate-in zoom-in-95 duration-500">
                         <div className="space-y-6">
                             <div>
@@ -187,10 +205,12 @@ export default function MyOrdersPage() {
                                 <span className="text-xs text-stone-500 font-bold uppercase tracking-widest">Left Workshop</span>
                                 <span className="text-sm font-bold">{order.dispatchDetails.dispatchDate}</span>
                             </div>
-                             <div className="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-primary/20">
-                                <span className="text-xs text-primary font-black uppercase tracking-widest">Expected Arrival</span>
-                                <span className="text-sm font-bold text-primary">{order.dispatchDetails.expectedDeliveryDate || 'Standard Window'}</span>
-                            </div>
+                             {visibilitySettings?.['Expected Arrival Date'] && order.dispatchDetails.expectedDeliveryDate && (
+                                <div className="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-primary/20">
+                                    <span className="text-xs text-primary font-black uppercase tracking-widest">Expected Arrival</span>
+                                    <span className="text-sm font-bold text-primary">{order.dispatchDetails.expectedDeliveryDate}</span>
+                                </div>
+                             )}
                         </div>
                         <div className="md:col-span-2 pt-6 border-t border-stone-200">
                              <h5 className="text-[10px] font-black uppercase tracking-[0.3em] text-stone-400 mb-2">Artisan Note</h5>
@@ -204,6 +224,63 @@ export default function MyOrdersPage() {
           ))}
         </div>
       )}
+
+      {/* Artisan Journey Status Dialog */}
+      <Dialog open={!!viewingStatusOrder} onOpenChange={(open) => !open && setViewingStatusOrder(null)}>
+        <DialogContent className="sm:max-w-xl rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
+          <div className="bg-stone-900 p-8 text-white">
+            <DialogHeader>
+               <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-2">Detailed Log</p>
+               <DialogTitle className="text-3xl font-headline">Artisan Journey</DialogTitle>
+               <DialogDescription className="text-stone-400">Chronological history of your chocolate's craftsmanship.</DialogDescription>
+            </DialogHeader>
+          </div>
+          
+          <div className="p-8">
+            <ScrollArea className="h-[400px] pr-4">
+              {viewingStatusOrder && filteredHistory(viewingStatusOrder).length > 0 ? (
+                <div className="space-y-8 relative">
+                   <div className="absolute left-[27px] top-4 bottom-4 w-0.5 bg-stone-100" />
+                   {filteredHistory(viewingStatusOrder).map((item, index) => (
+                     <div key={index} className="flex gap-6 relative group animate-in slide-in-from-left-4 duration-500" style={{ animationDelay: `${index * 100}ms` }}>
+                        <div className={cn(
+                            "z-10 h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 border-2 transition-all group-hover:scale-110 shadow-sm",
+                            index === 0 ? "bg-primary border-primary text-white" : "bg-white border-stone-100 text-stone-400"
+                        )}>
+                            {index === 0 ? <CheckCircle2 className="h-6 w-6" /> : <Clock className="h-5 w-5" />}
+                        </div>
+                        <div className="space-y-1 py-1">
+                            <p className={cn("font-bold text-lg leading-none", index === 0 ? "text-stone-900" : "text-stone-500")}>{item.status}</p>
+                            <div className="flex items-center gap-2 text-stone-400 text-xs font-medium">
+                                <Calendar className="h-3 w-3" />
+                                {format(new Date(item.timestamp), 'PPP p')}
+                            </div>
+                            {item.reason && (
+                                <p className="text-sm italic text-stone-500 bg-stone-50 p-3 rounded-xl mt-2 border border-stone-100">{item.reason}</p>
+                            )}
+                        </div>
+                     </div>
+                   ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-64 text-center space-y-4">
+                    <Clock className="h-12 w-12 text-stone-100" />
+                    <p className="font-headline text-xl italic text-stone-400">The journey is just beginning.</p>
+                    <p className="text-xs uppercase tracking-widest text-stone-300">Detailed milestones will appear here as your order progresses.</p>
+                </div>
+              )}
+            </ScrollArea>
+          </div>
+          
+          <div className="p-8 pt-0">
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button className="w-full h-14 rounded-2xl font-bold uppercase tracking-widest text-[10px] shadow-xl shadow-primary/20">Close Journey Log</Button>
+              </DialogClose>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
