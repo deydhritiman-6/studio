@@ -34,7 +34,9 @@ import {
   EyeOff,
   CheckCircle2,
   AlertCircle,
-  Key
+  Key,
+  ShieldAlert,
+  ArrowRight
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -75,7 +77,6 @@ const userAccountSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
   role: z.enum(['Super Admin', 'Store Manager', 'Staff']),
   photoUrl: z.string().optional(),
-  permissions: z.array(z.string()).default([]),
 });
 
 type UserAccountValues = z.infer<typeof userAccountSchema>;
@@ -88,6 +89,10 @@ export default function SettingsPage() {
   const [isSavingUser, setIsSavingUser] = useState(false);
   const [editingUser, setEditingUser] = useState<UserAccount | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  
+  const [activeMatrixUser, setActiveMatrixUser] = useState<UserAccount | null>(null);
+  const [isSyncingMatrix, setIsSyncingMatrix] = useState(false);
+  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
 
   const usersQuery = useMemo(() => (firestore ? collection(firestore, 'users') : null), [firestore]);
   const { data: users, loading: usersLoading } = useCollection<UserAccount>(usersQuery);
@@ -105,9 +110,17 @@ export default function SettingsPage() {
       password: '',
       role: 'Staff',
       photoUrl: '',
-      permissions: [],
     },
   });
+
+  // Handle activeMatrixUser changes
+  useEffect(() => {
+    if (activeMatrixUser) {
+      setSelectedPermissions(activeMatrixUser.permissions || []);
+    } else {
+      setSelectedPermissions([]);
+    }
+  }, [activeMatrixUser]);
 
   // --- Photo Upload Logic ---
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
@@ -188,6 +201,7 @@ export default function SettingsPage() {
       ...values,
       id: userId,
       createdAt: editingUser?.createdAt || new Date().toISOString(),
+      permissions: editingUser?.permissions || [], // Retain existing permissions
     };
 
     setDoc(userRef, userData)
@@ -226,9 +240,32 @@ export default function SettingsPage() {
       });
   };
 
+  const handleSyncMatrix = () => {
+    if (!firestore || !activeMatrixUser) return;
+    setIsSyncingMatrix(true);
+
+    const userRef = doc(firestore, 'users', activeMatrixUser.id);
+    updateDoc(userRef, { permissions: selectedPermissions })
+      .then(() => {
+        toast({ title: 'Matrix Synchronized', description: `Access rights updated for ${activeMatrixUser.name}.` });
+      })
+      .catch((err) => {
+        const permissionError = new FirestorePermissionError({
+          path: userRef.path,
+          operation: 'update',
+          requestResourceData: { permissions: selectedPermissions },
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      })
+      .finally(() => setIsSyncingMatrix(false));
+  };
+
   const handleDeleteUser = (id: string) => {
     if (!firestore) return;
-    deleteDoc(doc(firestore, 'users', id)).then(() => toast({ title: 'Staff Removed' }));
+    deleteDoc(doc(firestore, 'users', id)).then(() => {
+      toast({ title: 'Staff Removed' });
+      if (activeMatrixUser?.id === id) setActiveMatrixUser(null);
+    });
   };
 
   useEffect(() => {
@@ -239,10 +276,9 @@ export default function SettingsPage() {
         password: editingUser.password || '',
         role: editingUser.role,
         photoUrl: editingUser.photoUrl || '',
-        permissions: editingUser.permissions || [],
       });
     } else {
-      userForm.reset({ name: '', email: '', password: '', role: 'Staff', photoUrl: '', permissions: [] });
+      userForm.reset({ name: '', email: '', password: '', role: 'Staff', photoUrl: '' });
     }
   }, [editingUser, userForm]);
 
@@ -321,7 +357,14 @@ export default function SettingsPage() {
                    {usersLoading ? (
                      <TableRow><TableCell colSpan={3} className="p-10 text-center"><Loader2 className="animate-spin h-8 w-8 mx-auto text-primary" /></TableCell></TableRow>
                    ) : users?.map((u) => (
-                     <TableRow key={u.id} className="hover:bg-muted/5 transition-colors">
+                     <TableRow 
+                        key={u.id} 
+                        className={cn(
+                            "hover:bg-muted/5 transition-colors cursor-pointer group",
+                            activeMatrixUser?.id === u.id && "bg-primary/5"
+                        )}
+                        onClick={() => setActiveMatrixUser(u)}
+                     >
                        <TableCell className="p-8">
                          <div className="flex items-center gap-4">
                            <Avatar className="h-12 w-12 border-2 border-primary/20">
@@ -338,7 +381,7 @@ export default function SettingsPage() {
                            </div>
                          </div>
                        </TableCell>
-                       <TableCell className="p-8 text-center">
+                       <TableCell className="p-8 text-center" onClick={(e) => e.stopPropagation()}>
                          <Select 
                            value={u.role} 
                            onValueChange={(val: any) => handleRoleChange(u.id, val)}
@@ -353,8 +396,11 @@ export default function SettingsPage() {
                             </SelectContent>
                          </Select>
                        </TableCell>
-                       <TableCell className="p-8 text-right">
+                       <TableCell className="p-8 text-right" onClick={(e) => e.stopPropagation()}>
                          <div className="flex justify-end gap-2">
+                           <Button variant="ghost" size="icon" onClick={() => setActiveMatrixUser(u)} className="rounded-xl hover:bg-primary/10 hover:text-primary transition-colors">
+                               <Key className="h-4 w-4" />
+                           </Button>
                            <Button variant="ghost" size="icon" onClick={() => { setEditingUser(u); setIsAddUserOpen(true); }} className="rounded-xl hover:bg-primary/10 hover:text-primary transition-colors"><UserIcon className="h-4 w-4" /></Button>
                            <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(u.id)} className="rounded-xl hover:bg-destructive/10 hover:text-destructive transition-colors"><Trash2 className="h-4 w-4" /></Button>
                          </div>
@@ -366,45 +412,120 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-[2.5rem] border-2 border-dashed bg-muted/20">
-            <CardHeader className="p-8">
-              <CardTitle className="text-xl font-headline flex items-center gap-2">
-                <ShieldCheck className="h-5 w-5 text-primary" />
-                Access Policy Overview
-              </CardTitle>
-              <CardDescription>Guidelines for assigning artisan clearance levels.</CardDescription>
-            </CardHeader>
-            <CardContent className="p-8 pt-0 grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[
-                { 
-                  role: 'Super Admin', 
-                  desc: 'Full system control, financial analytics, and team governance.', 
-                  color: 'text-primary',
-                  icon: ShieldCheck 
-                },
-                { 
-                  role: 'Store Manager', 
-                  desc: 'Inventory oversight, distributor management, and shop operations.', 
-                  color: 'text-accent',
-                  icon: AlertCircle 
-                },
-                { 
-                  role: 'Kitchen Staff', 
-                  desc: 'Production scheduling, recipe access, and manufacturing logs.', 
-                  color: 'text-orange-500',
-                  icon: CheckCircle2 
-                },
-              ].map((policy) => (
-                <div key={policy.role} className="space-y-2 p-6 rounded-2xl bg-background shadow-sm">
-                  <div className={cn("flex items-center gap-2 font-black uppercase text-[10px] tracking-widest", policy.color)}>
-                    <policy.icon className="h-3 w-3" />
-                    {policy.role}
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{policy.desc}</p>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <Card className={cn(
+                "lg:col-span-2 rounded-[2.5rem] border-none shadow-2xl transition-all duration-700",
+                activeMatrixUser ? "opacity-100 translate-y-0" : "opacity-40 pointer-events-none grayscale"
+            )}>
+              <CardHeader className="p-10 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b">
+                 <div className="space-y-1">
+                    <CardTitle className="text-3xl font-headline flex items-center gap-3">
+                        <Key className="h-8 w-8 text-primary" />
+                        Artisan Access Matrix
+                    </CardTitle>
+                    <CardDescription>Define granular operational rights for the selected staff member.</CardDescription>
+                 </div>
+                 {activeMatrixUser && (
+                     <div className="flex items-center gap-3 bg-muted p-2 rounded-2xl">
+                        <Avatar className="h-10 w-10 border-2 border-primary/20">
+                            <AvatarImage src={activeMatrixUser.photoUrl} />
+                            <AvatarFallback>{activeMatrixUser.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div className="pr-4">
+                            <p className="text-[10px] font-black uppercase tracking-widest leading-none mb-1 text-muted-foreground">Configuring</p>
+                            <p className="text-sm font-bold leading-none">{activeMatrixUser.name}</p>
+                        </div>
+                     </div>
+                 )}
+              </CardHeader>
+              <CardContent className="p-10">
+                {!activeMatrixUser ? (
+                    <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
+                        <div className="h-16 w-16 bg-muted rounded-full flex items-center justify-center">
+                            <UserIcon className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                        <p className="text-muted-foreground italic">Select an artisan from the directory to configure their access matrix.</p>
+                    </div>
+                ) : (
+                    <div className="space-y-10">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                            {ACCESS_RIGHTS.map((right) => (
+                                <div key={right.id} className="flex items-center space-x-3 bg-muted/30 p-4 rounded-2xl border border-muted hover:border-primary/30 transition-all group cursor-pointer" onClick={() => {
+                                    setSelectedPermissions(prev => 
+                                        prev.includes(right.id) ? prev.filter(p => p !== right.id) : [...prev, right.id]
+                                    );
+                                }}>
+                                    <Checkbox 
+                                        id={`matrix-${right.id}`}
+                                        checked={selectedPermissions.includes(right.id)}
+                                        onCheckedChange={(checked) => {
+                                            setSelectedPermissions(prev => 
+                                                checked ? [...prev, right.id] : prev.filter(p => p !== right.id)
+                                            );
+                                        }}
+                                        className="h-5 w-5 border-2"
+                                    />
+                                    <label htmlFor={`matrix-${right.id}`} className="text-xs font-bold text-stone-600 group-hover:text-primary cursor-pointer uppercase tracking-tight flex-1">
+                                        {right.label}
+                                    </label>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="flex justify-end pt-6 border-t">
+                            <Button 
+                                onClick={handleSyncMatrix} 
+                                disabled={isSyncingMatrix}
+                                className="rounded-2xl h-14 px-12 font-black uppercase text-[10px] tracking-widest shadow-2xl shadow-primary/20"
+                            >
+                                {isSyncingMatrix ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <ShieldCheck className="h-4 w-4 mr-2" />}
+                                Synchronize Access Matrix
+                            </Button>
+                        </div>
+                    </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-[2.5rem] border-2 border-dashed bg-muted/20">
+                <CardHeader className="p-8">
+                <CardTitle className="text-xl font-headline flex items-center gap-2">
+                    <ShieldCheck className="h-5 w-5 text-primary" />
+                    Access Policy Overview
+                </CardTitle>
+                <CardDescription>Guidelines for assigning artisan clearance levels.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-8 pt-0 space-y-6">
+                {[
+                    { 
+                    role: 'Super Admin', 
+                    desc: 'Full system control, financial analytics, and team governance.', 
+                    color: 'text-primary',
+                    icon: ShieldCheck 
+                    },
+                    { 
+                    role: 'Store Manager', 
+                    desc: 'Inventory oversight, distributor management, and shop operations.', 
+                    color: 'text-accent',
+                    icon: AlertCircle 
+                    },
+                    { 
+                    role: 'Kitchen Staff', 
+                    desc: 'Production scheduling, recipe access, and manufacturing logs.', 
+                    color: 'text-orange-500',
+                    icon: CheckCircle2 
+                    },
+                ].map((policy) => (
+                    <div key={policy.role} className="space-y-2 p-6 rounded-2xl bg-background shadow-sm border">
+                        <div className={cn("flex items-center gap-2 font-black uppercase text-[10px] tracking-widest", policy.color)}>
+                            <policy.icon className="h-3 w-3" />
+                            {policy.role}
+                        </div>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{policy.desc}</p>
+                    </div>
+                ))}
+                </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="appearance">
@@ -445,7 +566,7 @@ export default function SettingsPage() {
           <div className="bg-muted/30 p-8 border-b">
              <DialogHeader>
                 <DialogTitle className="text-3xl font-headline">{editingUser ? 'Refine Artisan' : 'Register New Artisan'}</DialogTitle>
-                <DialogDescription>Define identity, clearance level, and specific access rights.</DialogDescription>
+                <DialogDescription>Define identity and base clearance level.</DialogDescription>
              </DialogHeader>
           </div>
           
@@ -557,59 +678,11 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
-                  <Separator />
-
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-widest">
-                           <Key className="h-3 w-3" /> Granular Access Rights
-                        </div>
-                        <Badge variant="outline" className="text-[8px] uppercase tracking-widest">{userForm.watch('permissions')?.length || 0} Rights Selected</Badge>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-muted/20 p-6 rounded-2xl border border-dashed">
-                       {ACCESS_RIGHTS.map((right) => (
-                          <FormField
-                            key={right.id}
-                            control={userForm.control}
-                            name="permissions"
-                            render={({ field }) => {
-                              return (
-                                <FormItem
-                                  key={right.id}
-                                  className="flex flex-row items-center space-x-3 space-y-0 p-2 rounded-lg hover:bg-background transition-colors group"
-                                >
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value?.includes(right.id)}
-                                      onCheckedChange={(checked) => {
-                                        return checked
-                                          ? field.onChange([...field.value, right.id])
-                                          : field.onChange(
-                                              field.value?.filter(
-                                                (value) => value !== right.id
-                                              )
-                                            )
-                                      }}
-                                      className="h-5 w-5 border-2 rounded-md"
-                                    />
-                                  </FormControl>
-                                  <FormLabel className="text-xs font-bold text-stone-600 group-hover:text-primary cursor-pointer uppercase tracking-tight">
-                                    {right.label}
-                                  </FormLabel>
-                                </FormItem>
-                              )
-                            }}
-                          />
-                       ))}
-                    </div>
-                  </div>
-
                   <div className="pt-6 flex gap-4">
                      <DialogClose asChild><Button type="button" variant="ghost" className="flex-1 h-14 rounded-2xl font-bold uppercase text-[10px] tracking-widest">Discard</Button></DialogClose>
                      <Button type="submit" disabled={isSavingUser} className="flex-2 px-12 h-14 rounded-2xl font-bold uppercase text-[10px] tracking-widest shadow-2xl shadow-primary/20">
                        {isSavingUser ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <ShieldCheck className="h-4 w-4 mr-2" />}
-                       Commit Artisan Matrix
+                       Commit Artisan Data
                      </Button>
                   </div>
                 </form>
