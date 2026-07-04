@@ -9,35 +9,6 @@ import { useAuth, useUser } from '@/firebase';
 import { signInAnonymously } from 'firebase/auth';
 import Image from 'next/image';
 
-const DeliveryIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 64 64"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    {/* Delivery Person (Left) */}
-    <circle cx="18" cy="16" r="6" strokeWidth="3" />
-    <path d="M6 48c0-8 6-12 12-12h4l10 10" strokeWidth="3" />
-    
-    {/* The Artisan Chocolate Box (Center) */}
-    <rect x="22" y="30" width="20" height="14" rx="2" fill="currentColor" fillOpacity="0.15" strokeWidth="2.5" />
-    <path d="M22 37h20" strokeWidth="1" opacity="0.6" />
-    <path d="M32 30v14" strokeWidth="1" opacity="0.6" />
-    
-    {/* Patron/Client (Right) */}
-    <circle cx="48" cy="20" r="5" strokeWidth="3" />
-    <path d="M58 52c0-6-4-10-10-10h-2l-6-6" strokeWidth="3" />
-    
-    {/* Subtle Floor indicator */}
-    <path d="M12 58h40" strokeWidth="1.5" opacity="0.2" />
-  </svg>
-);
-
 export default function ShopLayout({ children }: { children: React.ReactNode }) {
   const [isAuthInitializing, setIsAuthInitializing] = useState(true);
   const [cartCount, setCartCount] = useState(0);
@@ -92,10 +63,20 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
             <Button 
               variant="ghost" 
               asChild 
-              className="relative hover:bg-stone-50 hover:text-primary rounded-full h-16 w-16 md:h-24 md:w-24 p-0 transition-all duration-300 group shadow-sm hover:shadow-md border border-stone-100/50"
+              className="relative hover:bg-stone-50 hover:text-primary rounded-full h-16 w-16 md:h-24 md:w-24 p-0 transition-all duration-300 group shadow-sm hover:shadow-md border border-stone-100/50 overflow-hidden"
             >
               <Link href="/shop/my-orders" title="Track My Orders">
-                <DeliveryIcon className="h-10 w-10 md:h-16 md:w-16 text-stone-700 transition-transform duration-300 group-hover:scale-110" />
+                <div className="relative w-full h-full p-2 md:p-4">
+                  <div className="relative w-full h-full">
+                    <Image 
+                      src="/delivery.jpeg" 
+                      alt="Artisan Delivery" 
+                      fill 
+                      className="object-contain transition-transform duration-300 group-hover:scale-110" 
+                      priority
+                    />
+                  </div>
+                </div>
               </Link>
             </Button>
           </div>
