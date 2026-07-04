@@ -17,6 +17,7 @@ export type UserAccount = {
   role: 'Super Admin' | 'Store Manager' | 'Staff';
   photoUrl?: string;
   createdAt: string;
+  permissions: string[];
 };
 
 export type OrderHistoryItem = {

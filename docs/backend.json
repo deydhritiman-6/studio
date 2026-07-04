@@ -27,7 +27,8 @@
         "password": { "type": "string" },
         "role": { "type": "string", "enum": ["Super Admin", "Store Manager", "Staff"] },
         "photoUrl": { "type": "string" },
-        "createdAt": { "type": "string" }
+        "createdAt": { "type": "string" },
+        "permissions": { "type": "array", "items": { "type": "string" } }
       },
       "required": ["name", "email", "role"]
     },

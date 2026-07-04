@@ -2,7 +2,7 @@
 
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -33,7 +33,8 @@ import {
   Eye,
   EyeOff,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Key
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -43,6 +44,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -55,12 +57,25 @@ const profileFormSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
+const ACCESS_RIGHTS = [
+  { id: 'view_dashboard', label: 'View Dashboard' },
+  { id: 'manage_customers', label: 'Manage Customers' },
+  { id: 'manage_orders', label: 'Manage Orders' },
+  { id: 'manage_inventory', label: 'Manage Inventory' },
+  { id: 'manage_products', label: 'Manage Products' },
+  { id: 'manage_recipes', label: 'Manage Recipes' },
+  { id: 'manage_team', label: 'Manage Team' },
+  { id: 'financial_analytics', label: 'Financial Analytics' },
+  { id: 'ai_insights', label: 'AI Insights' },
+];
+
 const userAccountSchema = z.object({
   name: z.string().min(2, 'Name is required'),
   email: z.string().email('Invalid email'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   role: z.enum(['Super Admin', 'Store Manager', 'Staff']),
   photoUrl: z.string().optional(),
+  permissions: z.array(z.string()).default([]),
 });
 
 type UserAccountValues = z.infer<typeof userAccountSchema>;
@@ -90,10 +105,11 @@ export default function SettingsPage() {
       password: '',
       role: 'Staff',
       photoUrl: '',
+      permissions: [],
     },
   });
 
-  // --- Photo Upload Logic (Camera/File/URL) ---
+  // --- Photo Upload Logic ---
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -176,7 +192,7 @@ export default function SettingsPage() {
 
     setDoc(userRef, userData)
       .then(() => {
-        toast({ title: editingUser ? 'Staff Refined' : 'Staff Added' });
+        toast({ title: editingUser ? 'Artisan Refined' : 'Artisan Registered' });
         setIsAddUserOpen(false);
         setEditingUser(null);
         userForm.reset();
@@ -198,10 +214,7 @@ export default function SettingsPage() {
     const userRef = doc(firestore, 'users', userId);
     updateDoc(userRef, { role: newRole })
       .then(() => {
-        toast({ 
-          title: 'Clearance Updated', 
-          description: `Identity role updated to ${newRole}.` 
-        });
+        toast({ title: 'Clearance Updated' });
       })
       .catch((err) => {
         const permissionError = new FirestorePermissionError({
@@ -226,9 +239,10 @@ export default function SettingsPage() {
         password: editingUser.password || '',
         role: editingUser.role,
         photoUrl: editingUser.photoUrl || '',
+        permissions: editingUser.permissions || [],
       });
     } else {
-      userForm.reset({ name: '', email: '', password: '', role: 'Staff', photoUrl: '' });
+      userForm.reset({ name: '', email: '', password: '', role: 'Staff', photoUrl: '', permissions: [] });
     }
   }, [editingUser, userForm]);
 
@@ -316,7 +330,11 @@ export default function SettingsPage() {
                            </Avatar>
                            <div>
                              <p className="font-bold text-lg">{u.name}</p>
-                             <p className="text-xs text-muted-foreground">{u.email}</p>
+                             <div className="flex items-center gap-2">
+                               <p className="text-xs text-muted-foreground">{u.email}</p>
+                               <Separator orientation="vertical" className="h-3" />
+                               <span className="text-[10px] font-bold text-primary uppercase tracking-tight">{u.permissions?.length || 0} Rights Granted</span>
+                             </div>
                            </div>
                          </div>
                        </TableCell>
@@ -423,18 +441,18 @@ export default function SettingsPage() {
       </Tabs>
 
       <Dialog open={isAddUserOpen} onOpenChange={(o) => { if(!o) { setIsAddUserOpen(false); stopCamera(); } }}>
-        <DialogContent className="sm:max-w-xl rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
+        <DialogContent className="sm:max-w-2xl rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
           <div className="bg-muted/30 p-8 border-b">
              <DialogHeader>
-                <DialogTitle className="text-3xl font-headline">{editingUser ? 'Refine Staff' : 'Register New Staff'}</DialogTitle>
-                <DialogDescription>Define identity and clearance level for a team member.</DialogDescription>
+                <DialogTitle className="text-3xl font-headline">{editingUser ? 'Refine Artisan' : 'Register New Artisan'}</DialogTitle>
+                <DialogDescription>Define identity, clearance level, and specific access rights.</DialogDescription>
              </DialogHeader>
           </div>
           
-          <ScrollArea className="max-h-[70vh]">
-            <div className="p-8">
+          <ScrollArea className="max-h-[75vh]">
+            <div className="p-8 space-y-10">
               <Form {...userForm}>
-                <form onSubmit={userForm.handleSubmit(handleUserSubmit)} className="space-y-8">
+                <form onSubmit={userForm.handleSubmit(handleUserSubmit)} className="space-y-10">
                   <div className="flex flex-col items-center gap-6">
                     <Avatar className="h-32 w-32 border-4 border-primary/20 shadow-2xl">
                         <AvatarImage src={userForm.watch('photoUrl')} />
@@ -475,79 +493,123 @@ export default function SettingsPage() {
                     <canvas ref={canvasRef} className="hidden" />
                   </div>
 
-                  <Separator className="bg-muted/50" />
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-widest">
+                       <UserIcon className="h-3 w-3" /> Identity Matrix
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField control={userForm.control} name="name" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground">Full Legal Name</FormLabel>
+                          <FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={userForm.control} name="email" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground">Workplace Email</FormLabel>
+                          <FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                    </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField control={userForm.control} name="name" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground flex items-center gap-2"><UserIcon className="h-3 w-3" /> Full Name</FormLabel>
-                        <FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <FormField control={userForm.control} name="email" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground flex items-center gap-2"><Mail className="h-3 w-3" /> Workplace Email</FormLabel>
-                        <FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField control={userForm.control} name="password" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground">Secure Access Key</FormLabel>
+                          <div className="relative">
+                            <FormControl>
+                              <Input 
+                                type={showPassword ? "text" : "password"} 
+                                placeholder="••••••••" 
+                                className="h-12 rounded-xl pr-10" 
+                                {...field} 
+                              />
+                            </FormControl>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                              onClick={() => setShowPassword(!showPassword)}
+                            >
+                              {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                            </Button>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={userForm.control} name="role" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground">Base Clearance Level</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                             <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
+                             <SelectContent>
+                               {['Super Admin', 'Store Manager', 'Staff'].map((r) => (
+                                 <SelectItem key={r} value={r}>{r}</SelectItem>
+                               ))}
+                             </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField control={userForm.control} name="password" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground flex items-center gap-2"><Lock className="h-3 w-3" /> Security Key</FormLabel>
-                        <div className="relative">
-                          <FormControl>
-                            <Input 
-                              type={showPassword ? "text" : "password"} 
-                              placeholder="••••••••" 
-                              className="h-12 rounded-xl pr-10" 
-                              {...field} 
-                            />
-                          </FormControl>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                            onClick={() => setShowPassword(!showPassword)}
-                          >
-                            {showPassword ? (
-                              <EyeOff className="h-4 w-4 text-muted-foreground" />
-                            ) : (
-                              <Eye className="h-4 w-4 text-muted-foreground" />
-                            )}
-                            <span className="sr-only">
-                              {showPassword ? "Hide security key" : "Show security key"}
-                            </span>
-                          </Button>
+                  <Separator />
+
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-widest">
+                           <Key className="h-3 w-3" /> Granular Access Rights
                         </div>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <FormField control={userForm.control} name="role" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground flex items-center gap-2"><ShieldCheck className="h-3 w-3" /> Security Clearance</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                           <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
-                           <SelectContent>
-                             {['Super Admin', 'Store Manager', 'Staff'].map((r) => (
-                               <SelectItem key={r} value={r}>{r}</SelectItem>
-                             ))}
-                           </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
+                        <Badge variant="outline" className="text-[8px] uppercase tracking-widest">{userForm.watch('permissions')?.length || 0} Rights Selected</Badge>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-muted/20 p-6 rounded-2xl border border-dashed">
+                       {ACCESS_RIGHTS.map((right) => (
+                          <FormField
+                            key={right.id}
+                            control={userForm.control}
+                            name="permissions"
+                            render={({ field }) => {
+                              return (
+                                <FormItem
+                                  key={right.id}
+                                  className="flex flex-row items-center space-x-3 space-y-0 p-2 rounded-lg hover:bg-background transition-colors group"
+                                >
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value?.includes(right.id)}
+                                      onCheckedChange={(checked) => {
+                                        return checked
+                                          ? field.onChange([...field.value, right.id])
+                                          : field.onChange(
+                                              field.value?.filter(
+                                                (value) => value !== right.id
+                                              )
+                                            )
+                                      }}
+                                      className="h-5 w-5 border-2 rounded-md"
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="text-xs font-bold text-stone-600 group-hover:text-primary cursor-pointer uppercase tracking-tight">
+                                    {right.label}
+                                  </FormLabel>
+                                </FormItem>
+                              )
+                            }}
+                          />
+                       ))}
+                    </div>
                   </div>
 
                   <div className="pt-6 flex gap-4">
-                     <DialogClose asChild><Button type="button" variant="ghost" className="flex-1 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest">Discard</Button></DialogClose>
-                     <Button type="submit" disabled={isSavingUser} className="flex-2 px-12 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest shadow-xl shadow-primary/20">
+                     <DialogClose asChild><Button type="button" variant="ghost" className="flex-1 h-14 rounded-2xl font-bold uppercase text-[10px] tracking-widest">Discard</Button></DialogClose>
+                     <Button type="submit" disabled={isSavingUser} className="flex-2 px-12 h-14 rounded-2xl font-bold uppercase text-[10px] tracking-widest shadow-2xl shadow-primary/20">
                        {isSavingUser ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <ShieldCheck className="h-4 w-4 mr-2" />}
-                       Commit Registration
+                       Commit Artisan Matrix
                      </Button>
                   </div>
                 </form>
