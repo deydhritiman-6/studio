@@ -29,7 +29,9 @@ import {
   ShieldCheck,
   Mail,
   Lock,
-  User as UserIcon
+  User as UserIcon,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -68,6 +70,7 @@ export default function SettingsPage() {
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [isSavingUser, setIsSavingUser] = useState(false);
   const [editingUser, setEditingUser] = useState<UserAccount | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const usersQuery = useMemo(() => (firestore ? collection(firestore, 'users') : null), [firestore]);
   const { data: users, loading: usersLoading } = useCollection<UserAccount>(usersQuery);
@@ -175,6 +178,7 @@ export default function SettingsPage() {
         setIsAddUserOpen(false);
         setEditingUser(null);
         userForm.reset();
+        setShowPassword(false);
       })
       .catch((err) => {
         const permissionError = new FirestorePermissionError({
@@ -422,7 +426,32 @@ export default function SettingsPage() {
                     <FormField control={userForm.control} name="password" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground flex items-center gap-2"><Lock className="h-3 w-3" /> Security Key</FormLabel>
-                        <FormControl><Input type="password" placeholder="••••••••" className="h-12 rounded-xl" {...field} /></FormControl>
+                        <div className="relative">
+                          <FormControl>
+                            <Input 
+                              type={showPassword ? "text" : "password"} 
+                              placeholder="••••••••" 
+                              className="h-12 rounded-xl pr-10" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <Eye className="h-4 w-4 text-muted-foreground" />
+                            )}
+                            <span className="sr-only">
+                              {showPassword ? "Hide security key" : "Show security key"}
+                            </span>
+                          </Button>
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )} />
