@@ -14,7 +14,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useTheme } from '@/components/theme-provider';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { useMemo, useState, useRef, useEffect } from 'react';
 import type { UserAccount } from '@/lib/types';
 import { 
@@ -31,7 +31,9 @@ import {
   Lock,
   User as UserIcon,
   Eye,
-  EyeOff
+  EyeOff,
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -191,6 +193,26 @@ export default function SettingsPage() {
       .finally(() => setIsSavingUser(false));
   };
 
+  const handleRoleChange = (userId: string, newRole: UserAccount['role']) => {
+    if (!firestore) return;
+    const userRef = doc(firestore, 'users', userId);
+    updateDoc(userRef, { role: newRole })
+      .then(() => {
+        toast({ 
+          title: 'Clearance Updated', 
+          description: `Identity role updated to ${newRole}.` 
+        });
+      })
+      .catch((err) => {
+        const permissionError = new FirestorePermissionError({
+          path: userRef.path,
+          operation: 'update',
+          requestResourceData: { role: newRole },
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
+  };
+
   const handleDeleteUser = (id: string) => {
     if (!firestore) return;
     deleteDoc(doc(firestore, 'users', id)).then(() => toast({ title: 'Staff Removed' }));
@@ -258,7 +280,7 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="users">
+        <TabsContent value="users" className="space-y-8">
           <Card className="rounded-[2.5rem] border-none shadow-xl overflow-hidden">
             <CardHeader className="p-10 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-muted/30">
               <div className="space-y-1">
@@ -277,7 +299,7 @@ export default function SettingsPage() {
                  <TableHeader>
                    <TableRow className="hover:bg-transparent bg-muted/10">
                      <TableHead className="p-8 uppercase text-[10px] font-black tracking-widest">Artisan</TableHead>
-                     <TableHead className="p-8 uppercase text-[10px] font-black tracking-widest text-center">Clearance</TableHead>
+                     <TableHead className="p-8 uppercase text-[10px] font-black tracking-widest text-center">Clearance Role</TableHead>
                      <TableHead className="p-8 uppercase text-[10px] font-black tracking-widest text-right">Actions</TableHead>
                    </TableRow>
                  </TableHeader>
@@ -299,9 +321,19 @@ export default function SettingsPage() {
                          </div>
                        </TableCell>
                        <TableCell className="p-8 text-center">
-                         <Badge variant="secondary" className="rounded-full px-4 py-1 text-[10px] font-black uppercase tracking-widest">
-                           {u.role}
-                         </Badge>
+                         <Select 
+                           value={u.role} 
+                           onValueChange={(val: any) => handleRoleChange(u.id, val)}
+                         >
+                            <SelectTrigger className="w-[180px] mx-auto h-10 rounded-full border-2 bg-background font-bold text-[10px] uppercase tracking-widest focus:ring-primary/20">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Super Admin" className="text-[10px] font-bold uppercase">Super Admin</SelectItem>
+                              <SelectItem value="Store Manager" className="text-[10px] font-bold uppercase">Store Manager</SelectItem>
+                              <SelectItem value="Staff" className="text-[10px] font-bold uppercase">Kitchen Staff</SelectItem>
+                            </SelectContent>
+                         </Select>
                        </TableCell>
                        <TableCell className="p-8 text-right">
                          <div className="flex justify-end gap-2">
@@ -313,6 +345,46 @@ export default function SettingsPage() {
                    ))}
                  </TableBody>
                </Table>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-[2.5rem] border-2 border-dashed bg-muted/20">
+            <CardHeader className="p-8">
+              <CardTitle className="text-xl font-headline flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-primary" />
+                Access Policy Overview
+              </CardTitle>
+              <CardDescription>Guidelines for assigning artisan clearance levels.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-8 pt-0 grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[
+                { 
+                  role: 'Super Admin', 
+                  desc: 'Full system control, financial analytics, and team governance.', 
+                  color: 'text-primary',
+                  icon: ShieldCheck 
+                },
+                { 
+                  role: 'Store Manager', 
+                  desc: 'Inventory oversight, distributor management, and shop operations.', 
+                  color: 'text-accent',
+                  icon: AlertCircle 
+                },
+                { 
+                  role: 'Kitchen Staff', 
+                  desc: 'Production scheduling, recipe access, and manufacturing logs.', 
+                  color: 'text-orange-500',
+                  icon: CheckCircle2 
+                },
+              ].map((policy) => (
+                <div key={policy.role} className="space-y-2 p-6 rounded-2xl bg-background shadow-sm">
+                  <div className={cn("flex items-center gap-2 font-black uppercase text-[10px] tracking-widest", policy.color)}>
+                    <policy.icon className="h-3 w-3" />
+                    {policy.role}
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{policy.desc}</p>
+                </div>
+              ))}
             </CardContent>
           </Card>
         </TabsContent>
