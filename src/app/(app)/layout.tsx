@@ -236,8 +236,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     setMounted(true);
     setIsClient(true);
     try {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser && storedUser !== 'undefined' && storedUser !== '') {
+      const storedUserRaw = localStorage.getItem('user');
+      const storedUser = (storedUserRaw && storedUserRaw.trim()) ? storedUserRaw : null;
+      
+      if (storedUser && storedUser !== 'undefined' && storedUser !== 'null') {
         setUser(JSON.parse(storedUser));
       } else if (!pathname.includes('/login')) {
         router.replace('/login');

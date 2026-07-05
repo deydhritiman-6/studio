@@ -30,12 +30,15 @@ export default function CartPage() {
 
   useEffect(() => {
     setIsClient(true);
-    const saved = localStorage.getItem('roseberry-cart');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) setCart(parsed);
-      } catch (e) {}
+    try {
+      const savedRaw = localStorage.getItem('roseberry-cart');
+      const saved = (savedRaw && savedRaw.trim()) ? JSON.parse(savedRaw) : null;
+      if (Array.isArray(saved)) {
+        setCart(saved);
+      }
+    } catch (e) {
+      console.error('Cart parse error:', e);
+      setCart([]);
     }
   }, []);
 

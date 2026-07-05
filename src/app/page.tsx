@@ -51,8 +51,8 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Enhanced Brand Name Banner Under Header */}
-      <div className="w-full py-12 md:py-16 text-center border-b border-stone-200/40 overflow-hidden relative">
+      {/* Enhanced Brand Name Banner Under Header - Narrowed Padding */}
+      <div className="w-full py-1.5 md:py-2.5 text-center border-b border-stone-200/40 overflow-hidden relative">
         <div className="max-w-4xl mx-auto px-4 relative z-10">
           <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold font-headline tracking-[0.12em] leading-tight
             bg-gradient-to-r from-[#3D1E16] via-[#D4AF37] via-[#800020] to-[#E5A9A9] 
@@ -62,7 +62,7 @@ export default function LandingPage() {
           >
             Roseberry Chocolate
           </h2>
-          <div className="h-px w-32 bg-gradient-to-r from-transparent via-stone-300 to-transparent mx-auto mt-6 opacity-40 animate-in fade-in zoom-in duration-1000 delay-500"></div>
+          <div className="h-px w-32 bg-gradient-to-r from-transparent via-stone-300 to-transparent mx-auto mt-4 opacity-40 animate-in fade-in zoom-in duration-1000 delay-500"></div>
         </div>
       </div>
 

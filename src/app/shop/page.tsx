@@ -28,10 +28,16 @@ export default function ShopPage() {
       return;
     }
 
-    const cart = JSON.parse(localStorage.getItem('roseberry-cart') || '[]');
-    const existingIndex = Array.isArray(cart) ? cart.findIndex((item: any) => item.id === product.id) : -1;
-    
-    let updatedCart = Array.isArray(cart) ? [...cart] : [];
+    let updatedCart = [];
+    try {
+      const cartRaw = localStorage.getItem('roseberry-cart');
+      updatedCart = (cartRaw && cartRaw.trim()) ? JSON.parse(cartRaw) : [];
+      if (!Array.isArray(updatedCart)) updatedCart = [];
+    } catch (e) {
+      updatedCart = [];
+    }
+
+    const existingIndex = updatedCart.findIndex((item: any) => item.id === product.id);
     
     if (existingIndex > -1) {
       updatedCart[existingIndex].quantity += 1;

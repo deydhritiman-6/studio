@@ -17,9 +17,15 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
 
   useEffect(() => {
     const updateCount = () => {
-      const cart = JSON.parse(localStorage.getItem('roseberry-cart') || '[]');
-      const count = Array.isArray(cart) ? cart.reduce((acc: number, item: any) => acc + (item.quantity || 1), 0) : 0;
-      setCartCount(count);
+      try {
+        const cartRaw = localStorage.getItem('roseberry-cart');
+        const cart = (cartRaw && cartRaw.trim()) ? JSON.parse(cartRaw) : [];
+        const count = Array.isArray(cart) ? cart.reduce((acc: number, item: any) => acc + (item.quantity || 1), 0) : 0;
+        setCartCount(count);
+      } catch (e) {
+        console.error('Cart parse error:', e);
+        setCartCount(0);
+      }
     };
 
     updateCount();
