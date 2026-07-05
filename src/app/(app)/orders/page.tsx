@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -48,10 +47,10 @@ export default function OrdersPage() {
     
     let adminName = 'Admin';
     try {
-      const stored = localStorage.getItem('user');
-      if (stored) {
-        const user = JSON.parse(stored);
-        adminName = user.name || 'Admin';
+      const storedRaw = localStorage.getItem('user');
+      if (storedRaw && storedRaw.trim()) {
+        const parsed = JSON.parse(storedRaw);
+        adminName = parsed?.name || 'Admin';
       }
     } catch (e) {}
     

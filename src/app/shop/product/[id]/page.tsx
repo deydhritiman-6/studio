@@ -47,10 +47,19 @@ export default function ProductDetailPage() {
   }
 
   const addToCart = () => {
-    const cart = JSON.parse(localStorage.getItem('roseberry-cart') || '[]');
-    const existingIndex = Array.isArray(cart) ? cart.findIndex((item: any) => item.id === product.id) : -1;
+    let cart = [];
+    try {
+      const savedRaw = localStorage.getItem('roseberry-cart');
+      if (savedRaw && savedRaw.trim()) {
+        const parsed = JSON.parse(savedRaw);
+        if (Array.isArray(parsed)) cart = parsed;
+      }
+    } catch (e) {
+      console.error('Product detail cart parse error:', e);
+    }
     
-    let updatedCart = Array.isArray(cart) ? [...cart] : [];
+    const existingIndex = cart.findIndex((item: any) => item.id === product.id);
+    let updatedCart = [...cart];
     
     if (existingIndex > -1) {
       updatedCart[existingIndex].quantity += 1;

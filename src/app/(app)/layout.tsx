@@ -237,16 +237,21 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     setIsClient(true);
     try {
       const storedUserRaw = localStorage.getItem('user');
-      const storedUser = (storedUserRaw && storedUserRaw.trim()) ? storedUserRaw : null;
-      
-      if (storedUser && storedUser !== 'undefined' && storedUser !== 'null') {
-        setUser(JSON.parse(storedUser));
+      if (storedUserRaw && storedUserRaw.trim()) {
+        const parsed = JSON.parse(storedUserRaw);
+        if (parsed && typeof parsed === 'object') {
+          setUser(parsed);
+        } else if (!pathname.includes('/login')) {
+          router.replace('/login');
+        }
       } else if (!pathname.includes('/login')) {
         router.replace('/login');
       }
     } catch (error) {
       console.error('Failed to parse user from localStorage:', error);
-      router.replace('/login');
+      if (!pathname.includes('/login')) {
+        router.replace('/login');
+      }
     }
   }, [router, pathname]);
 

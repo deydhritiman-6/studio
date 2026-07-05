@@ -19,9 +19,13 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
     const updateCount = () => {
       try {
         const cartRaw = localStorage.getItem('roseberry-cart');
-        const cart = (cartRaw && cartRaw.trim()) ? JSON.parse(cartRaw) : [];
-        const count = Array.isArray(cart) ? cart.reduce((acc: number, item: any) => acc + (item.quantity || 1), 0) : 0;
-        setCartCount(count);
+        if (cartRaw && cartRaw.trim()) {
+          const cart = JSON.parse(cartRaw);
+          const count = Array.isArray(cart) ? cart.reduce((acc: number, item: any) => acc + (item.quantity || 1), 0) : 0;
+          setCartCount(count);
+        } else {
+          setCartCount(0);
+        }
       } catch (e) {
         console.error('Cart parse error:', e);
         setCartCount(0);
@@ -60,7 +64,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <div className="min-h-screen flex flex-col bg-stone-50 font-body">
-      <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-xl px-4 md:px-6 h-24 md:h-32 flex items-center animate-in fade-in slide-in-from-top-4 duration-1000 overflow-hidden shadow-sm">
+      <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-xl px-4 md:px-6 h-24 md:h-32 flex items-center animate-in fade-in duration-1000 overflow-hidden shadow-sm">
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-500 via-primary to-orange-400 animate-pulse"></div>
         <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-1/3 h-20 bg-primary/10 blur-[80px] rounded-full pointer-events-none animate-pulse"></div>
 

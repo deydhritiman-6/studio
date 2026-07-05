@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -55,12 +54,15 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     setIsClient(true);
-    const saved = localStorage.getItem('roseberry-cart');
-    if (saved) {
+    const savedRaw = localStorage.getItem('roseberry-cart');
+    if (savedRaw && savedRaw.trim()) {
       try {
-        const parsed = JSON.parse(saved);
+        const parsed = JSON.parse(savedRaw);
         if (Array.isArray(parsed)) setCart(parsed);
-      } catch (e) {}
+      } catch (e) {
+        console.error('Checkout cart parse error:', e);
+        setCart([]);
+      }
     }
   }, []);
 
@@ -97,10 +99,8 @@ export default function CheckoutPage() {
 
     const orderRef = doc(firestore, 'orders', orderId);
 
-    // 1. Create the order
     setDoc(orderRef, newOrder)
       .then(async () => {
-        // 2. Deduct inventory stock and sync product status
         for (const item of cart) {
           const invQuery = query(
             collection(firestore, 'inventory'),
@@ -119,13 +119,11 @@ export default function CheckoutPage() {
               if (newStock === 0) newStatus = 'Out of Stock';
               else if (newStock <= 10) newStatus = 'Low Stock';
 
-              // Update inventory
               updateDoc(invDoc.ref, { 
                 stockLevel: newStock,
                 status: newStatus
               });
 
-              // Sync back to Product catalog if it's out of stock
               if (newStatus === 'Out of Stock') {
                 const productRef = doc(firestore, 'products', item.id);
                 updateDoc(productRef, { availabilityStatus: 'Out of Stock' });

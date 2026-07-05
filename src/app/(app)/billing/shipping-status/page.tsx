@@ -121,8 +121,11 @@ export default function DispatchControlPage() {
     setIsUpdating(true);
     let adminName = 'Admin';
     try {
-      const stored = localStorage.getItem('user');
-      if (stored) adminName = JSON.parse(stored).name || 'Admin';
+      const storedRaw = localStorage.getItem('user');
+      if (storedRaw && storedRaw.trim()) {
+        const parsed = JSON.parse(storedRaw);
+        adminName = parsed?.name || 'Admin';
+      }
     } catch (e) {}
     
     const orderRef = doc(firestore, 'orders', selectedOrder.id);

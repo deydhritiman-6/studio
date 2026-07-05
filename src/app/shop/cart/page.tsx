@@ -32,9 +32,13 @@ export default function CartPage() {
     setIsClient(true);
     try {
       const savedRaw = localStorage.getItem('roseberry-cart');
-      const saved = (savedRaw && savedRaw.trim()) ? JSON.parse(savedRaw) : null;
-      if (Array.isArray(saved)) {
-        setCart(saved);
+      if (savedRaw && savedRaw.trim()) {
+        const saved = JSON.parse(savedRaw);
+        if (Array.isArray(saved)) {
+          setCart(saved);
+        }
+      } else {
+        setCart([]);
       }
     } catch (e) {
       console.error('Cart parse error:', e);
@@ -90,7 +94,6 @@ export default function CartPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-12 animate-in fade-in duration-1000 px-4 md:px-6">
-      {/* Header Section with Illustration */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-12 pt-8">
         <div className="flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
            <div className="w-32 h-32 md:w-48 md:h-48 relative rounded-full overflow-hidden bg-rose-50 shadow-inner">
@@ -112,7 +115,6 @@ export default function CartPage() {
            </div>
         </div>
         
-        {/* Large Decorative Cart Illustration for Desktop */}
         <div className="hidden lg:block w-96 h-80 relative">
           <Image 
             src="https://picsum.photos/seed/cart-full/800/600" 
@@ -128,7 +130,6 @@ export default function CartPage() {
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 xl:gap-20">
-        {/* Cart Items List */}
         <div className="lg:col-span-8 space-y-8">
           {cart.map((item) => (
             <div key={item.id} className="group bg-white rounded-[2rem] p-6 md:p-8 flex flex-col sm:flex-row gap-8 shadow-sm hover:shadow-2xl transition-all duration-500 border border-stone-100">
@@ -179,7 +180,6 @@ export default function CartPage() {
           </div>
         </div>
 
-        {/* Summary Card */}
         <div className="lg:col-span-4">
           <Card className="lg:sticky lg:top-36 border-none shadow-2xl bg-white overflow-hidden rounded-[2.5rem]">
             <CardContent className="p-10 space-y-8">
@@ -220,7 +220,6 @@ export default function CartPage() {
         </div>
       </div>
 
-      {/* Trust Badges Footer */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-12">
          {[
            { icon: ShieldCheck, title: "Secure Payment", desc: "100% Protected", color: "text-green-600", bg: "bg-green-50" },
@@ -240,7 +239,6 @@ export default function CartPage() {
          ))}
       </div>
 
-      {/* Payment Partners & Security Info */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-8 py-10 border-t border-stone-100">
          <div className="flex gap-6 items-center opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-700">
             <div className="flex flex-col items-center gap-1">

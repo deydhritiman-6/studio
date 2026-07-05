@@ -33,8 +33,8 @@ export default function LandingPage() {
       {/* Fixed Artisan Texture Overlay */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-[100] bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]"></div>
       
-      {/* Navigation Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-xl px-4 md:px-8 h-20 md:h-24 flex items-center shadow-sm">
+      {/* Navigation Header - Enhanced Styling */}
+      <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-xl px-4 md:px-8 h-20 md:h-24 flex items-center shadow-sm">
         <div className="flex w-full items-center justify-between gap-4 relative z-10">
           <div className="flex-1 flex justify-start">
             <Link href="/" className="hover:scale-105 transition-transform duration-500 block">
@@ -43,7 +43,7 @@ export default function LandingPage() {
           </div>
 
           <div className="flex-1 flex justify-end items-center gap-6">
-            <nav className="hidden lg:flex items-center gap-8 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">
+            <nav className="hidden lg:flex items-center gap-10 text-sm font-black uppercase tracking-[0.25em] text-stone-500">
               <Link href="/shop" className="hover:text-primary transition-colors">The Shop</Link>
               <Link href="#story" className="hover:text-primary transition-colors">Our Story</Link>
             </nav>
@@ -51,7 +51,7 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Enhanced Brand Name Banner Under Header - Narrowed Padding */}
+      {/* Luxury Brand Title Banner - Narrowed as requested */}
       <div className="w-full py-1.5 md:py-2.5 text-center border-b border-stone-200/40 overflow-hidden relative">
         <div className="max-w-4xl mx-auto px-4 relative z-10">
           <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold font-headline tracking-[0.12em] leading-tight
@@ -67,10 +67,10 @@ export default function LandingPage() {
       </div>
 
       <main className="relative z-10">
-        {/* Hero Section - Background Removed as requested */}
+        {/* Hero Section - Direct on Background */}
         <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden py-24 px-6">
           <div className="max-w-5xl mx-auto text-center space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-            <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-stone-100 border border-stone-200 text-stone-500 text-[10px] font-black uppercase tracking-[0.4em] mx-auto shadow-sm">
+            <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-stone-100/50 border border-stone-200/50 text-stone-500 text-[10px] font-black uppercase tracking-[0.4em] mx-auto shadow-sm">
               <Sparkles className="h-3 w-3 text-amber-500" /> Since 2021 • Kolkata
             </div>
             
@@ -86,7 +86,7 @@ export default function LandingPage() {
               <Button size="lg" className="h-16 px-12 text-lg rounded-2xl bg-amber-600 hover:bg-amber-700 text-white shadow-2xl shadow-amber-900/40 transition-all hover:scale-105" asChild>
                 <Link href="/shop">Explore the Collection <ArrowRight className="ml-3 h-5 w-5" /></Link>
               </Button>
-              <Button variant="outline" size="lg" className="h-16 px-12 text-lg rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-900 border-stone-200 transition-all" asChild>
+              <Button variant="outline" size="lg" className="h-16 px-12 text-lg rounded-2xl bg-stone-100/50 hover:bg-stone-200/50 text-stone-900 border-stone-200 transition-all" asChild>
                 <Link href="#story">The Artisan Story</Link>
               </Button>
             </div>

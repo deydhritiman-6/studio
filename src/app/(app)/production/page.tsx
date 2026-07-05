@@ -68,10 +68,10 @@ export default function ProductionPage() {
     
     let adminName = 'Admin';
     try {
-      const stored = localStorage.getItem('user');
-      if (stored) {
-        const user = JSON.parse(stored);
-        adminName = user.name || 'Admin';
+      const storedRaw = localStorage.getItem('user');
+      if (storedRaw && storedRaw.trim()) {
+        const parsed = JSON.parse(storedRaw);
+        adminName = parsed?.name || 'Admin';
       }
     } catch (e) {}
 
@@ -91,7 +91,6 @@ export default function ProductionPage() {
       history: arrayUnion(historyItem)
     };
 
-    // Integration: When production is done, add it to the Shipping list automatically
     if (status === 'Product Ready') {
       updateData.shippingStatus = 'Ready for Dispatch';
     }
@@ -103,7 +102,6 @@ export default function ProductionPage() {
 
     updateDoc(orderRef, updateData)
       .then(() => {
-        // Automation: When status is "Product Ready", sync with Products and Inventory
         if (status === 'Product Ready') {
           syncProductionToProducts(order, recipe);
         }
