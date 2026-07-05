@@ -23,12 +23,7 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-xl px-4 md:px-8 h-20 md:h-24 flex items-center shadow-sm">
         <div className="flex w-full items-center justify-between gap-4">
           <div className="flex-1 flex justify-start">
-             <Link href="/shop/my-orders" className="flex items-center gap-2 group text-stone-500 hover:text-primary transition-colors">
-                <div className="relative h-10 w-10 md:h-12 md:w-12 rounded-full overflow-hidden border border-stone-200 group-hover:border-primary/30 transition-all">
-                  <Image src="/delivery.jpeg" alt="Tracking" fill className="object-cover" />
-                </div>
-                <span className="hidden md:block text-[10px] font-black uppercase tracking-widest">Track Journey</span>
-             </Link>
+             {/* Track Journey Link Removed */}
           </div>
           
           <div className="flex-shrink-0">
@@ -42,12 +37,7 @@ export default function LandingPage() {
               <Link href="/shop" className="hover:text-primary transition-colors">The Shop</Link>
               <Link href="#story" className="hover:text-primary transition-colors">Our Story</Link>
             </nav>
-            <Link href="/shop/cart" className="flex items-center gap-2 group text-stone-500 hover:text-primary transition-colors">
-                <span className="hidden md:block text-[10px] font-black uppercase tracking-widest text-right">My Basket</span>
-                <div className="relative h-10 w-10 md:h-12 md:w-12 rounded-full overflow-hidden border border-stone-200 group-hover:border-primary/30 transition-all">
-                  <Image src="/cart2.jpeg" alt="Basket" fill className="object-cover" />
-                </div>
-            </Link>
+            {/* My Basket Link Removed */}
           </div>
         </div>
       </header>
