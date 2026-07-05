@@ -172,3 +172,25 @@
   background-size: 200% auto;
   animation: shimmer-glow 6s linear infinite;
 }
+
+@keyframes colorful-glow {
+  0%, 100% { 
+    border-color: hsl(var(--primary)); 
+    box-shadow: 0 0 10px hsla(var(--primary), 0.3);
+    color: hsl(var(--primary));
+  }
+  33% { 
+    border-color: #800020; 
+    box-shadow: 0 0 15px rgba(128, 0, 32, 0.3);
+    color: #800020;
+  }
+  66% { 
+    border-color: #D4AF37; 
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+    color: #D4AF37;
+  }
+}
+
+.animate-colorful-glow {
+  animation: colorful-glow 5s ease-in-out infinite;
+}

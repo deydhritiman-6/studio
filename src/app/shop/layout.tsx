@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { useAuth, useUser } from '@/firebase';
 import { signInAnonymously } from 'firebase/auth';
 import Image from 'next/image';
+import { cn } from '@/lib/utils';
 
 export default function ShopLayout({ children }: { children: React.ReactNode }) {
   const [isAuthInitializing, setIsAuthInitializing] = useState(true);
@@ -73,16 +74,19 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
             <Button 
               variant="outline" 
               asChild 
-              className="hidden lg:flex rounded-full px-6 h-12 border-stone-200 text-stone-500 hover:text-primary hover:bg-stone-50 font-bold uppercase text-[10px] tracking-widest transition-all shadow-sm"
+              className={cn(
+                "hidden lg:flex rounded-full px-6 h-12 border-2 font-bold uppercase text-[10px] tracking-widest transition-all shadow-sm animate-colorful-glow",
+                "hover:bg-stone-50"
+              )}
             >
               <Link href="/">
                 Go to Home Page
               </Link>
             </Button>
             <Button 
-              variant="ghost" 
+              variant="outline" 
               asChild 
-              className="lg:hidden h-12 w-12 rounded-full border border-stone-100/50 p-0 text-stone-400 hover:text-primary"
+              className="lg:hidden h-12 w-12 rounded-full border-2 p-0 animate-colorful-glow"
             >
               <Link href="/" title="Home">
                 <Home className="h-5 w-5" />
