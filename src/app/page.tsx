@@ -21,10 +21,6 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-xl px-4 md:px-8 h-20 md:h-24 flex items-center shadow-sm">
         <div className="flex w-full items-center justify-between gap-4">
           <div className="flex-1 flex justify-start">
-             {/* Left side spacer */}
-          </div>
-          
-          <div className="flex-shrink-0">
             <Link href="/" className="hover:scale-105 transition-transform duration-500 block">
               <Logo className="h-10 md:h-14 w-auto" />
             </Link>
