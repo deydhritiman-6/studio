@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Home } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
@@ -69,7 +69,26 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
         <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-1/3 h-20 bg-primary/10 blur-[80px] rounded-full pointer-events-none animate-pulse"></div>
 
         <div className="flex w-full items-center justify-between gap-2 relative z-10">
-          <div className="flex-1 flex justify-start">
+          <div className="flex-1 flex justify-start items-center gap-2 md:gap-4">
+            <Button 
+              variant="outline" 
+              asChild 
+              className="hidden lg:flex rounded-full px-6 h-12 border-stone-200 text-stone-500 hover:text-primary hover:bg-stone-50 font-bold uppercase text-[10px] tracking-widest transition-all shadow-sm"
+            >
+              <Link href="/">
+                Go to Home Page
+              </Link>
+            </Button>
+            <Button 
+              variant="ghost" 
+              asChild 
+              className="lg:hidden h-12 w-12 rounded-full border border-stone-100/50 p-0 text-stone-400 hover:text-primary"
+            >
+              <Link href="/" title="Home">
+                <Home className="h-5 w-5" />
+              </Link>
+            </Button>
+
             <Button 
               variant="ghost" 
               asChild 
