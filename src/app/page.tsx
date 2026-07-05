@@ -1,4 +1,3 @@
-
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -27,7 +26,7 @@ export default function LandingPage() {
           
           <div className="flex-shrink-0">
             <Link href="/" className="hover:scale-105 transition-transform duration-500 block">
-              <Logo className="h-8 md:h-12 w-auto" />
+              <Logo className="h-10 md:h-14 w-auto" />
             </Link>
           </div>
 
@@ -195,7 +194,7 @@ export default function LandingPage() {
             
             <div className="relative">
               <div className="absolute -top-10 -left-10 text-stone-200 opacity-50"><span className="text-9xl font-serif">“</span></div>
-              <p className="text-3xl md:text-5xl font-headline text-stone-800 italic leading-tight relative z-10">
+              <p className="text-3xl md:text-5xl font-headline text-stone-800 italic leading-tight relative_z-10">
                 "The texture and depth of flavor are unparalleled. You can truly taste the love in every bite. It's not just chocolate; it's an experience."
               </p>
             </div>
@@ -221,7 +220,7 @@ export default function LandingPage() {
       <footer className="bg-stone-900 py-24 px-6 text-center text-white border-t border-white/5">
         <div className="max-w-7xl mx-auto space-y-12">
           <div className="flex justify-center">
-              <Logo className="h-10 md:h-12 w-auto brightness-0 invert opacity-60" />
+              <Logo className="h-14 md:h-16 w-auto brightness-0 invert opacity-60" />
           </div>
           
           <nav className="flex flex-wrap justify-center gap-8 md:gap-16 text-[10px] font-black uppercase tracking-[0.3em] text-stone-500">
