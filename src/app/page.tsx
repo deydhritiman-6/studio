@@ -51,6 +51,13 @@ export default function LandingPage() {
         </div>
       </header>
 
+      {/* Larger Logo below the header in the left corner */}
+      <div className="relative w-full max-w-7xl mx-auto px-4 md:px-8">
+        <div className="absolute top-4 left-4 md:left-8 z-20 pointer-events-none opacity-80">
+          <Logo className="h-16 md:h-24 w-auto" />
+        </div>
+      </div>
+
       {/* Luxury Brand Title Banner - Narrowed as requested */}
       <div className="w-full py-1.5 md:py-2.5 text-center border-b border-stone-200/40 overflow-hidden relative">
         <div className="max-w-4xl mx-auto px-4 relative z-10">
