@@ -35,6 +35,11 @@ export default function LandingPage() {
         </div>
       </header>
 
+      {/* Brand Name Banner Under Header */}
+      <div className="w-full bg-stone-50 py-3 text-center border-b border-stone-200/60">
+        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-stone-400">Roseberry Chocolate</span>
+      </div>
+
       <main>
         {/* Hero Section */}
         <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-20 pb-32 px-6">
