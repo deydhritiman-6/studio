@@ -53,8 +53,8 @@ export default function LandingPage() {
 
       {/* Larger Tilted Logo below the header - Artisan Stamp Style */}
       <div className="relative w-full">
-        <div className="absolute top-28 -left-6 md:-left-10 z-20 pointer-events-none transform -rotate-12">
-          <Logo className="h-32 md:h-56 w-auto mix-blend-multiply opacity-90" />
+        <div className="absolute top-28 -left-8 md:-left-12 z-20 pointer-events-none transform -rotate-12">
+          <Logo className="h-24 md:h-44 w-auto mix-blend-multiply opacity-90" />
         </div>
       </div>
 
