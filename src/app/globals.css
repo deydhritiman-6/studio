@@ -162,3 +162,13 @@
 .animate-logo-float {
   animation: logo-float 4s ease-in-out infinite;
 }
+
+@keyframes shimmer-glow {
+  0%, 100% { background-position: 0% 50%; filter: brightness(1); }
+  50% { background-position: 100% 50%; filter: brightness(1.2); }
+}
+
+.animate-shimmer-brand {
+  background-size: 200% auto;
+  animation: shimmer-glow 6s linear infinite;
+}

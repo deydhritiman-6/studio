@@ -35,9 +35,19 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Brand Name Banner Under Header */}
-      <div className="w-full bg-stone-50 py-3 text-center border-b border-stone-200/60">
-        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-stone-400">Roseberry Chocolate</span>
+      {/* Enhanced Brand Name Banner Under Header */}
+      <div className="w-full bg-stone-50 py-8 md:py-10 text-center border-b border-stone-200/60 overflow-hidden">
+        <div className="max-w-4xl mx-auto px-4">
+          <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold font-headline tracking-[0.15em] leading-tight
+            bg-gradient-to-r from-[#3D1E16] via-[#D4AF37] via-[#800020] to-[#E5A9A9] 
+            bg-clip-text text-transparent drop-shadow-[0_4px_8px_rgba(0,0,0,0.08)]
+            animate-in fade-in slide-in-from-bottom-6 duration-1000 fill-mode-forwards
+            animate-shimmer-brand"
+          >
+            Roseberry Chocolate
+          </h2>
+          <div className="h-px w-24 bg-gradient-to-r from-transparent via-stone-300 to-transparent mx-auto mt-4 opacity-50 animate-in fade-in zoom-in duration-1000 delay-500"></div>
+        </div>
       </div>
 
       <main>
