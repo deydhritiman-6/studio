@@ -72,11 +72,10 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
         <div className="flex w-full items-center justify-between gap-2 relative z-10">
           <div className="flex-1 flex justify-start items-center gap-2 md:gap-4">
             <Button 
-              variant="outline" 
+              variant="default" 
               asChild 
               className={cn(
-                "hidden lg:flex rounded-full px-6 h-12 border-2 font-bold uppercase text-[10px] tracking-widest transition-all shadow-sm animate-colorful-glow",
-                "hover:bg-stone-50"
+                "hidden lg:flex rounded-full px-6 h-12 border-none font-bold uppercase text-[10px] tracking-widest transition-all shadow-lg animate-rainbow-bg text-white hover:scale-105 active:scale-95"
               )}
             >
               <Link href="/">
@@ -84,9 +83,9 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
               </Link>
             </Button>
             <Button 
-              variant="outline" 
+              variant="default" 
               asChild 
-              className="lg:hidden h-12 w-12 rounded-full border-2 p-0 animate-colorful-glow"
+              className="lg:hidden h-12 w-12 rounded-full border-none p-0 animate-rainbow-bg text-white shadow-lg"
             >
               <Link href="/" title="Home">
                 <Home className="h-5 w-5" />
