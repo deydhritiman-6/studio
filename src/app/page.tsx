@@ -16,17 +16,23 @@ import { Logo } from '@/components/logo';
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#faf9f6] font-body selection:bg-primary/20 relative overflow-x-hidden">
+    <div className="min-h-screen font-body selection:bg-primary/20 relative overflow-x-hidden">
+      {/* Custom Image Background */}
+      <div className="fixed inset-0 -z-20">
+        <Image 
+          src="/rosebg.jpeg" 
+          alt="Roseberry Artisan Background" 
+          fill 
+          className="object-cover" 
+          priority 
+        />
+        {/* Premium Readability Overlay */}
+        <div className="absolute inset-0 bg-stone-50/90 backdrop-blur-[2px] opacity-95"></div>
+      </div>
+      
       {/* Fixed Artisan Texture Overlay */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-[100] bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]"></div>
       
-      {/* Atmospheric Ambient Lighting */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-primary/10 blur-[150px] rounded-full animate-pulse duration-[10s]"></div>
-        <div className="absolute top-[30%] -right-[10%] w-[40%] h-[40%] bg-amber-500/5 blur-[120px] rounded-full animate-pulse duration-[12s]" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute bottom-[10%] left-[20%] w-[30%] h-[30%] bg-rose-500/5 blur-[100px] rounded-full animate-pulse duration-[15s]" style={{ animationDelay: '4s' }}></div>
-      </div>
-
       {/* Navigation Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-xl px-4 md:px-8 h-20 md:h-24 flex items-center shadow-sm">
         <div className="flex w-full items-center justify-between gap-4 relative z-10">
@@ -72,7 +78,7 @@ export default function LandingPage() {
               priority
               data-ai-hint="artisan chocolate"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-stone-900/30 via-transparent to-[#faf9f6]"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-stone-900/30 via-transparent to-transparent"></div>
           </div>
 
           <div className="max-w-5xl mx-auto text-center space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
@@ -196,7 +202,7 @@ export default function LandingPage() {
               { icon: CheckCircle2, title: "Pure Ingredients", desc: "No artificial preservatives. Just raw, vibrant flavor." },
             ].map((feat, i) => (
               <div key={i} className="text-center space-y-6 group p-10 rounded-[3rem] bg-white/40 border border-white/60 backdrop-blur-sm shadow-sm hover:shadow-xl transition-all duration-500">
-                <div className="h-20 w-20 bg-[#faf9f6] rounded-[2rem] flex items-center justify-center mx-auto text-amber-600 group-hover:scale-110 group-hover:bg-amber-600 group-hover:text-white transition-all duration-500 shadow-inner">
+                <div className="h-20 w-20 bg-stone-50/50 rounded-[2rem] flex items-center justify-center mx-auto text-amber-600 group-hover:scale-110 group-hover:bg-amber-600 group-hover:text-white transition-all duration-500 shadow-inner">
                   <feat.icon className="h-8 w-8" />
                 </div>
                 <div className="space-y-2">
