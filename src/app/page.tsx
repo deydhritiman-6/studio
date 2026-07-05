@@ -16,10 +16,20 @@ import { Logo } from '@/components/logo';
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-stone-50 font-body">
+    <div className="min-h-screen bg-[#faf9f6] font-body selection:bg-primary/20 relative overflow-x-hidden">
+      {/* Fixed Artisan Texture Overlay */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-[100] bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]"></div>
+      
+      {/* Atmospheric Ambient Lighting */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-primary/10 blur-[150px] rounded-full animate-pulse duration-[10s]"></div>
+        <div className="absolute top-[30%] -right-[10%] w-[40%] h-[40%] bg-amber-500/5 blur-[120px] rounded-full animate-pulse duration-[12s]" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute bottom-[10%] left-[20%] w-[30%] h-[30%] bg-rose-500/5 blur-[100px] rounded-full animate-pulse duration-[15s]" style={{ animationDelay: '4s' }}></div>
+      </div>
+
       {/* Navigation Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-xl px-4 md:px-8 h-20 md:h-24 flex items-center shadow-sm">
-        <div className="flex w-full items-center justify-between gap-4">
+      <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-xl px-4 md:px-8 h-20 md:h-24 flex items-center shadow-sm">
+        <div className="flex w-full items-center justify-between gap-4 relative z-10">
           <div className="flex-1 flex justify-start">
             <Link href="/" className="hover:scale-105 transition-transform duration-500 block">
               <Logo className="h-10 md:h-14 w-auto" />
@@ -36,37 +46,37 @@ export default function LandingPage() {
       </header>
 
       {/* Enhanced Brand Name Banner Under Header */}
-      <div className="w-full bg-stone-50 py-8 md:py-10 text-center border-b border-stone-200/60 overflow-hidden">
-        <div className="max-w-4xl mx-auto px-4">
-          <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold font-headline tracking-[0.15em] leading-tight
+      <div className="w-full py-12 md:py-16 text-center border-b border-stone-200/40 overflow-hidden relative">
+        <div className="max-w-4xl mx-auto px-4 relative z-10">
+          <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold font-headline tracking-[0.12em] leading-tight
             bg-gradient-to-r from-[#3D1E16] via-[#D4AF37] via-[#800020] to-[#E5A9A9] 
-            bg-clip-text text-transparent drop-shadow-[0_4px_8px_rgba(0,0,0,0.08)]
+            bg-clip-text text-transparent drop-shadow-[0_8px_12px_rgba(0,0,0,0.05)]
             animate-in fade-in slide-in-from-bottom-6 duration-1000 fill-mode-forwards
             animate-shimmer-brand"
           >
             Roseberry Chocolate
           </h2>
-          <div className="h-px w-24 bg-gradient-to-r from-transparent via-stone-300 to-transparent mx-auto mt-4 opacity-50 animate-in fade-in zoom-in duration-1000 delay-500"></div>
+          <div className="h-px w-32 bg-gradient-to-r from-transparent via-stone-300 to-transparent mx-auto mt-6 opacity-40 animate-in fade-in zoom-in duration-1000 delay-500"></div>
         </div>
       </div>
 
-      <main>
+      <main className="relative z-10">
         {/* Hero Section */}
-        <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-20 pb-32 px-6">
+        <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden py-24 px-6">
           <div className="absolute inset-0 -z-10">
             <Image 
               src="https://picsum.photos/seed/roseberry-hero/1920/1080" 
               alt="Artisan Chocolate Workspace" 
               fill 
-              className="object-cover brightness-[0.85] grayscale-[0.2]" 
+              className="object-cover brightness-[0.9] grayscale-[0.1]" 
               priority
               data-ai-hint="artisan chocolate"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-stone-900/40 via-stone-900/20 to-stone-50"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-stone-900/30 via-transparent to-[#faf9f6]"></div>
           </div>
 
           <div className="max-w-5xl mx-auto text-center space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-            <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-[10px] font-black uppercase tracking-[0.4em] mx-auto shadow-2xl">
+            <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-[10px] font-black uppercase tracking-[0.4em] mx-auto shadow-2xl">
               <Sparkles className="h-3 w-3 text-amber-400" /> Since 2021 • Kolkata
             </div>
             
@@ -74,7 +84,7 @@ export default function LandingPage() {
               Handmade with Love.<br />Crafted for Every <span className="italic font-serif text-amber-200">Celebration</span>.
             </h1>
             
-            <p className="text-white/90 text-lg md:text-2xl font-light max-w-2xl mx-auto leading-relaxed drop-shadow-lg">
+            <p className="text-white/95 text-lg md:text-2xl font-light max-w-2xl mx-auto leading-relaxed drop-shadow-lg">
               Indulge in the finest single-origin chocolates, meticulously tempered in our Kolkata kitchen for the true connoisseur.
             </p>
 
@@ -82,7 +92,7 @@ export default function LandingPage() {
               <Button size="lg" className="h-16 px-12 text-lg rounded-2xl bg-amber-600 hover:bg-amber-700 text-white shadow-2xl shadow-amber-900/40 transition-all hover:scale-105" asChild>
                 <Link href="/shop">Explore the Collection <ArrowRight className="ml-3 h-5 w-5" /></Link>
               </Button>
-              <Button variant="outline" size="lg" className="h-16 px-12 text-lg rounded-2xl bg-white/5 hover:bg-white/10 text-white border-white/30 backdrop-blur-sm transition-all" asChild>
+              <Button variant="outline" size="lg" className="h-16 px-12 text-lg rounded-2xl bg-white/10 hover:bg-white/20 text-white border-white/40 backdrop-blur-md transition-all" asChild>
                 <Link href="#story">The Artisan Story</Link>
               </Button>
             </div>
@@ -90,7 +100,7 @@ export default function LandingPage() {
         </section>
 
         {/* Featured Collections Showcase */}
-        <section className="py-32 px-6 bg-stone-50">
+        <section className="py-32 px-6">
           <div className="max-w-7xl mx-auto space-y-20">
             <div className="flex flex-col md:flex-row items-end justify-between gap-8">
               <div className="space-y-4">
@@ -109,7 +119,7 @@ export default function LandingPage() {
                 { title: "Fruity Ganache", desc: "Infused with organic local harvests.", seed: "berry" },
               ].map((col, i) => (
                 <div key={i} className="group cursor-pointer">
-                  <div className="aspect-[4/5] relative rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-700">
+                  <div className="aspect-[4/5] relative rounded-[2.5rem] overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-700 border border-white/50">
                     <Image 
                       src={`https://picsum.photos/seed/rose-${col.seed}/600/800`} 
                       alt={col.title} 
@@ -130,9 +140,9 @@ export default function LandingPage() {
         </section>
 
         {/* Founder Story Section */}
-        <section id="story" className="py-32 px-6 bg-stone-900 text-white overflow-hidden relative">
+        <section id="story" className="py-32 px-6 bg-stone-900 text-white overflow-hidden relative rounded-[3rem] mx-4 md:mx-8 mb-32 shadow-2xl">
           <div className="absolute top-0 right-0 w-96 h-96 bg-amber-600/10 blur-[120px] rounded-full -mr-48 -mt-48"></div>
-          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-20 items-center">
+          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-20 items-center relative z-10">
             <div className="lg:col-span-5 relative">
               <div className="aspect-[3/4] relative rounded-[3rem] overflow-hidden border-8 border-stone-800 shadow-2xl">
                 <Image 
@@ -178,15 +188,15 @@ export default function LandingPage() {
         </section>
 
         {/* Why Choose Us Features */}
-        <section className="py-32 px-6 bg-white">
+        <section className="py-32 px-6">
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-16">
             {[
               { icon: Crown, title: "Artisan Quality", desc: "Meticulously hand-tempered by master chocolatiers." },
               { icon: Heart, title: "Ethical Sourcing", desc: "Supporting small-scale cacao farmers across the belt." },
               { icon: CheckCircle2, title: "Pure Ingredients", desc: "No artificial preservatives. Just raw, vibrant flavor." },
             ].map((feat, i) => (
-              <div key={i} className="text-center space-y-6 group">
-                <div className="h-20 w-20 bg-stone-50 rounded-[2rem] flex items-center justify-center mx-auto text-amber-600 group-hover:scale-110 group-hover:bg-amber-600 group-hover:text-white transition-all duration-500 shadow-inner">
+              <div key={i} className="text-center space-y-6 group p-10 rounded-[3rem] bg-white/40 border border-white/60 backdrop-blur-sm shadow-sm hover:shadow-xl transition-all duration-500">
+                <div className="h-20 w-20 bg-[#faf9f6] rounded-[2rem] flex items-center justify-center mx-auto text-amber-600 group-hover:scale-110 group-hover:bg-amber-600 group-hover:text-white transition-all duration-500 shadow-inner">
                   <feat.icon className="h-8 w-8" />
                 </div>
                 <div className="space-y-2">
@@ -199,19 +209,19 @@ export default function LandingPage() {
         </section>
 
         {/* Reviews Section */}
-        <section className="py-32 px-6 bg-stone-50">
+        <section className="py-32 px-6 bg-white/50 backdrop-blur-md">
           <div className="max-w-4xl mx-auto text-center space-y-16">
             <Badge className="bg-primary/10 text-primary border-none px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em]">Patron Testimonials</Badge>
             
             <div className="relative">
               <div className="absolute -top-10 -left-10 text-stone-200 opacity-50"><span className="text-9xl font-serif">“</span></div>
-              <p className="text-3xl md:text-5xl font-headline text-stone-800 italic leading-tight relative_z-10">
+              <p className="text-3xl md:text-5xl font-headline text-stone-800 italic leading-tight relative z-10">
                 "The texture and depth of flavor are unparalleled. You can truly taste the love in every bite. It's not just chocolate; it's an experience."
               </p>
             </div>
 
             <div className="flex items-center justify-center gap-4">
-               <div className="h-12 w-12 rounded-full overflow-hidden bg-stone-200">
+               <div className="h-12 w-12 rounded-full overflow-hidden bg-stone-200 border-2 border-white shadow-md">
                   <Image src="https://picsum.photos/seed/patron/100/100" alt="Patron" width={48} height={48} />
                </div>
                <div className="text-left">
@@ -228,7 +238,7 @@ export default function LandingPage() {
       </main>
 
       {/* Public Footer */}
-      <footer className="bg-stone-900 py-24 px-6 text-center text-white border-t border-white/5">
+      <footer className="bg-stone-900 py-24 px-6 text-center text-white relative z-10 border-t border-white/5">
         <div className="max-w-7xl mx-auto space-y-12">
           <div className="flex justify-center">
               <Logo className="h-14 md:h-16 w-auto brightness-0 invert opacity-60" />
