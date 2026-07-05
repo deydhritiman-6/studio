@@ -67,30 +67,18 @@ export default function LandingPage() {
       </div>
 
       <main className="relative z-10">
-        {/* Hero Section */}
+        {/* Hero Section - Background Removed as requested */}
         <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden py-24 px-6">
-          <div className="absolute inset-0 -z-10">
-            <Image 
-              src="https://picsum.photos/seed/roseberry-hero/1920/1080" 
-              alt="Artisan Chocolate Workspace" 
-              fill 
-              className="object-cover brightness-[0.9] grayscale-[0.1]" 
-              priority
-              data-ai-hint="artisan chocolate"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-stone-900/30 via-transparent to-transparent"></div>
-          </div>
-
           <div className="max-w-5xl mx-auto text-center space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-            <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-[10px] font-black uppercase tracking-[0.4em] mx-auto shadow-2xl">
-              <Sparkles className="h-3 w-3 text-amber-400" /> Since 2021 • Kolkata
+            <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-stone-100 border border-stone-200 text-stone-500 text-[10px] font-black uppercase tracking-[0.4em] mx-auto shadow-sm">
+              <Sparkles className="h-3 w-3 text-amber-500" /> Since 2021 • Kolkata
             </div>
             
-            <h1 className="text-5xl md:text-8xl font-bold font-headline text-white tracking-tight leading-[1.05] drop-shadow-2xl">
-              Handmade with Love.<br />Crafted for Every <span className="italic font-serif text-amber-200">Celebration</span>.
+            <h1 className="text-5xl md:text-8xl font-bold font-headline text-stone-900 tracking-tight leading-[1.05]">
+              Handmade with Love.<br />Crafted for Every <span className="italic font-serif text-primary">Celebration</span>.
             </h1>
             
-            <p className="text-white/95 text-lg md:text-2xl font-light max-w-2xl mx-auto leading-relaxed drop-shadow-lg">
+            <p className="text-stone-500 text-lg md:text-2xl font-light max-w-2xl mx-auto leading-relaxed">
               Indulge in the finest single-origin chocolates, meticulously tempered in our Kolkata kitchen for the true connoisseur.
             </p>
 
@@ -98,7 +86,7 @@ export default function LandingPage() {
               <Button size="lg" className="h-16 px-12 text-lg rounded-2xl bg-amber-600 hover:bg-amber-700 text-white shadow-2xl shadow-amber-900/40 transition-all hover:scale-105" asChild>
                 <Link href="/shop">Explore the Collection <ArrowRight className="ml-3 h-5 w-5" /></Link>
               </Button>
-              <Button variant="outline" size="lg" className="h-16 px-12 text-lg rounded-2xl bg-white/10 hover:bg-white/20 text-white border-white/40 backdrop-blur-md transition-all" asChild>
+              <Button variant="outline" size="lg" className="h-16 px-12 text-lg rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-900 border-stone-200 transition-all" asChild>
                 <Link href="#story">The Artisan Story</Link>
               </Button>
             </div>
