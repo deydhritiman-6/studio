@@ -11,7 +11,6 @@ import {
   History, 
   Crown, 
   CheckCircle2, 
-  ShoppingBag,
   Truck
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
@@ -23,7 +22,7 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-xl px-4 md:px-8 h-20 md:h-24 flex items-center shadow-sm">
         <div className="flex w-full items-center justify-between gap-4">
           <div className="flex-1 flex justify-start">
-             {/* Track Journey Link Removed */}
+             {/* Left side spacer */}
           </div>
           
           <div className="flex-shrink-0">
@@ -37,7 +36,6 @@ export default function LandingPage() {
               <Link href="/shop" className="hover:text-primary transition-colors">The Shop</Link>
               <Link href="#story" className="hover:text-primary transition-colors">Our Story</Link>
             </nav>
-            {/* My Basket Link Removed */}
           </div>
         </div>
       </header>
