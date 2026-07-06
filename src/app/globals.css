@@ -209,9 +209,9 @@
 
 @keyframes rainbow-text-harmony {
   0%, 100% { color: #ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
-  25% { color: #000000; text-shadow: 0 1px 2px rgba(255,255,255,0.4); } /* Harmony with Orange/Yellow */
-  50% { color: #ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); } /* Harmony with Blue/Indigo */
-  75% { color: #000000; text-shadow: 0 1px 2px rgba(255,255,255,0.4); } /* Harmony with Green/Yellow */
+  25% { color: #000000; text-shadow: 0 1px 2px rgba(255,255,255,0.4); }
+  50% { color: #ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+  75% { color: #000000; text-shadow: 0 1px 2px rgba(255,255,255,0.4); }
 }
 
 .animate-rainbow-text-harmony {
