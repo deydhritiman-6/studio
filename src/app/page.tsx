@@ -11,7 +11,8 @@ import {
   Crown, 
   CheckCircle2, 
   Truck,
-  ShoppingCart
+  ShoppingCart,
+  Search
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 
@@ -43,10 +44,17 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          <div className="flex-1 flex justify-end items-center gap-6 md:gap-10">
-            <nav className="hidden lg:flex items-center gap-10 text-sm font-black uppercase tracking-[0.25em] text-stone-500">
-              <Link href="/shop" className="hover:text-primary transition-colors">The Shop</Link>
+          <div className="flex-[2] flex justify-end items-center gap-6 md:gap-8">
+            <nav className="hidden xl:flex items-center gap-6 text-[10px] font-black uppercase tracking-[0.15em] text-stone-500">
+              <Link href="/" className="hover:text-primary transition-colors">Home</Link>
               <Link href="#story" className="hover:text-primary transition-colors">Our Story</Link>
+              <Link href="/shop" className="hover:text-primary transition-colors">Collections</Link>
+              <Link href="/shop" className="hover:text-primary transition-colors">Gift Boxes</Link>
+              <Link href="#reviews" className="hover:text-primary transition-colors">Reviews</Link>
+              <Link href="#footer" className="hover:text-primary transition-colors">Contact</Link>
+              <button className="hover:text-primary transition-colors p-1" aria-label="Search">
+                <Search className="h-4 w-4" />
+              </button>
             </nav>
             <Button 
               asChild 
@@ -219,7 +227,7 @@ export default function LandingPage() {
         </section>
 
         {/* Reviews Section */}
-        <section className="py-32 px-6 bg-white/50 backdrop-blur-md">
+        <section id="reviews" className="py-32 px-6 bg-white/50 backdrop-blur-md">
           <div className="max-w-4xl mx-auto text-center space-y-16">
             <Badge className="bg-primary/10 text-primary border-none px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em]">Patron Testimonials</Badge>
             
@@ -248,7 +256,7 @@ export default function LandingPage() {
       </main>
 
       {/* Public Footer */}
-      <footer className="bg-stone-900 py-24 px-6 text-center text-white relative z-10 border-t border-white/5">
+      <footer id="footer" className="bg-stone-900 py-24 px-6 text-center text-white relative z-10 border-t border-white/5">
         <div className="max-w-7xl mx-auto space-y-12">
           <div className="flex justify-center">
               <Logo className="h-14 md:h-16 w-auto brightness-0 invert opacity-60" />
