@@ -35,27 +35,51 @@ export default function LandingPage() {
       {/* Fixed Artisan Texture Overlay */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-[100] bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]"></div>
       
-      {/* Navigation Header - Enhanced Styling */}
+      {/* Navigation Header - Enhanced Styling & Central Alignment */}
       <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-xl px-4 md:px-8 h-20 md:h-24 flex items-center shadow-sm">
-        <div className="flex w-full items-center justify-between gap-4 relative z-10">
-          <div className="flex-1 flex justify-start">
+        <div className="w-full grid grid-cols-2 lg:grid-cols-12 items-center gap-4 relative z-10">
+          {/* Logo - Left */}
+          <div className="lg:col-span-3 flex justify-start">
             <Link href="/" className="hover:scale-105 transition-transform duration-500 block">
               <Logo className="h-10 md:h-14 w-auto" />
             </Link>
           </div>
 
-          <div className="flex-[2] flex justify-end items-center gap-6 md:gap-8">
-            <nav className="hidden xl:flex items-center gap-6 text-[10px] font-black uppercase tracking-[0.15em] text-stone-500">
-              <Link href="/" className="hover:text-primary transition-colors">Home</Link>
-              <Link href="#story" className="hover:text-primary transition-colors">Our Story</Link>
-              <Link href="/shop" className="hover:text-primary transition-colors">Collections</Link>
-              <Link href="/shop" className="hover:text-primary transition-colors">Gift Boxes</Link>
-              <Link href="#reviews" className="hover:text-primary transition-colors">Reviews</Link>
-              <Link href="#footer" className="hover:text-primary transition-colors">Contact</Link>
-              <button className="hover:text-primary transition-colors p-1" aria-label="Search">
-                <Search className="h-4 w-4" />
+          {/* Centered Navigation - Center */}
+          <div className="hidden lg:flex lg:col-span-6 justify-center">
+            <nav className="flex items-center gap-8 text-xs font-black uppercase tracking-[0.2em] text-stone-500">
+              <Link href="/" className="relative group hover:text-amber-600 transition-colors duration-300">
+                Home
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all duration-300 group-hover:w-full"></span>
+              </Link>
+              <Link href="#story" className="relative group hover:text-rose-700 transition-colors duration-300">
+                Our Story
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-rose-700 transition-all duration-300 group-hover:w-full"></span>
+              </Link>
+              <Link href="/shop" className="relative group hover:text-amber-600 transition-colors duration-300">
+                Collections
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all duration-300 group-hover:w-full"></span>
+              </Link>
+              <Link href="/shop" className="relative group hover:text-rose-700 transition-colors duration-300">
+                Gift Boxes
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-rose-700 transition-all duration-300 group-hover:w-full"></span>
+              </Link>
+              <Link href="#reviews" className="relative group hover:text-amber-600 transition-colors duration-300">
+                Reviews
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all duration-300 group-hover:w-full"></span>
+              </Link>
+              <Link href="#footer" className="relative group hover:text-rose-700 transition-colors duration-300">
+                Contact
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-rose-700 transition-all duration-300 group-hover:w-full"></span>
+              </Link>
+              <button className="hover:text-primary hover:scale-125 transition-all duration-300 p-1 flex items-center" aria-label="Search">
+                <Search className="h-5 w-5" />
               </button>
             </nav>
+          </div>
+
+          {/* Shop Now Button - Right */}
+          <div className="lg:col-span-3 flex justify-end">
             <Button 
               asChild 
               className="bg-[#3D1E16] hover:bg-[#4A251B] text-[#D4AF37] border border-[#D4AF37]/20 rounded-xl h-11 md:h-12 px-6 md:px-8 font-black uppercase text-[10px] md:text-xs tracking-[0.2em] shadow-lg shadow-black/20 transition-all hover:scale-105 active:scale-95 group"
@@ -259,7 +283,7 @@ export default function LandingPage() {
       <footer id="footer" className="bg-stone-900 py-24 px-6 text-center text-white relative z-10 border-t border-white/5">
         <div className="max-w-7xl mx-auto space-y-12">
           <div className="flex justify-center">
-              <Logo className="h-14 md:h-16 w-auto brightness-0 invert opacity-60" />
+              <Logo className="h-14 md:h-16 w-auto" />
           </div>
           
           <nav className="flex flex-wrap justify-center gap-8 md:gap-16 text-[10px] font-black uppercase tracking-[0.3em] text-stone-500">
