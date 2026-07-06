@@ -36,7 +36,7 @@ export default function LandingPage() {
       <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-[100] bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]"></div>
       
       {/* Navigation Header - Enhanced Styling & Central Alignment */}
-      <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-xl px-4 md:px-8 h-20 md:h-24 flex items-center shadow-sm">
+      <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-xl px-4 md:px-8 h-16 md:h-20 flex items-center shadow-sm">
         <div className="w-full grid grid-cols-2 lg:grid-cols-12 items-center gap-4 relative z-10">
           {/* Logo - Left */}
           <div className="lg:col-span-3 flex justify-start">
