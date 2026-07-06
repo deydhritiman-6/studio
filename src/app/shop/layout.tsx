@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -175,7 +176,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
           </div>
         ) : children}
       </main>
-      <footer className="border-t bg-white py-12 md:py-16 px-6 text-center text-muted-foreground text-sm mt-auto">
+      <footer className="border-t bg-white py-12 md:py-16 px-6 text-center text-muted-foreground text-sm mt-auto max-w-[50%] mx-auto w-full rounded-b-3xl shadow-sm">
         <div className="mb-8 flex justify-center">
             <Logo className="opacity-30 grayscale h-8 sm:h-10 w-auto" />
         </div>
