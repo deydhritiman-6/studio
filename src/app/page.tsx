@@ -181,7 +181,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Founder Story Section */}
+        {/* Founder Story Section - Explicitly Titled "Our Story" */}
         <section id="story" className="py-32 px-6 bg-stone-900 text-white overflow-hidden relative rounded-[3rem] mx-4 md:mx-8 mb-32 shadow-2xl">
           <div className="absolute top-0 right-0 w-96 h-96 bg-amber-600/10 blur-[120px] rounded-full -mr-48 -mt-48"></div>
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-20 items-center relative z-10">
@@ -203,22 +203,24 @@ export default function LandingPage() {
             </div>
 
             <div className="lg:col-span-7 space-y-10">
-              <div className="space-y-4">
-                <Badge className="bg-amber-600/20 text-amber-400 border-none px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em]">The Visionary</Badge>
-                <h2 className="text-5xl md:text-7xl font-bold font-headline leading-tight">Meet <span className="text-amber-500 italic">Raisa</span></h2>
-              </div>
-              
-              <div className="space-y-6 text-stone-400 text-lg md:text-xl font-light leading-relaxed">
-                <p>
-                  Raisa founded Roseberry Chocolate at the age of 65, transforming a lifelong passion into Kolkata's most beloved artisan studio.
-                </p>
-                <p className="border-l-4 border-amber-600/30 pl-8 italic">
-                  "I believe that dreams have no age limit. Our chocolates are born from a desire to bring pure, handmade joy to every celebration, using only the finest ethical ingredients."
-                </p>
-                <p>
-                  Every piece that leaves our kitchen is hand-tempered and personally inspected by Raisa, ensuring the "Handmade with Love" promise is never compromised.
-                </p>
-              </div>
+              <article className="space-y-8">
+                <div className="space-y-4">
+                  <Badge className="bg-amber-600/20 text-amber-400 border-none px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em]">The Visionary</Badge>
+                  <h2 className="text-5xl md:text-7xl font-bold font-headline leading-tight">Our Story</h2>
+                </div>
+                
+                <div className="space-y-6 text-stone-400 text-lg md:text-xl font-light leading-relaxed">
+                  <p>
+                    Raisa founded Roseberry Chocolate at the age of 65, transforming a lifelong passion into Kolkata's most beloved artisan studio. Her journey began not with a business plan, but with a simple bowl and a heart full of dreams.
+                  </p>
+                  <p className="border-l-4 border-amber-600/30 pl-8 italic">
+                    "I believe that dreams have no age limit. Our chocolates are born from a desire to bring pure, handmade joy to every celebration, using only the finest ethical ingredients."
+                  </p>
+                  <p>
+                    Every piece that leaves our kitchen is hand-tempered and personally inspected by Raisa, ensuring the "Handmade with Love" promise is never compromised. We are a family-led operation dedicated to preserving the slow, patient art of chocolate making.
+                  </p>
+                </div>
+              </article>
 
               <div className="pt-8">
                 <Button className="h-16 px-12 text-lg rounded-2xl bg-white text-stone-900 hover:bg-stone-100 transition-all shadow-xl shadow-white/5 group" asChild>
