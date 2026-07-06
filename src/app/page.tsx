@@ -35,62 +35,64 @@ export default function LandingPage() {
       {/* Fixed Artisan Texture Overlay */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-[100] bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]"></div>
       
-      {/* Navigation Header - Enhanced Styling & Central Alignment */}
-      <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-xl px-4 md:px-8 h-16 md:h-20 flex items-center shadow-sm">
-        <div className="w-full grid grid-cols-2 lg:grid-cols-12 items-center gap-4 relative z-10">
-          {/* Logo - Left */}
-          <div className="lg:col-span-3 flex justify-start">
-            <Link href="/" className="hover:scale-105 transition-transform duration-500 block">
-              <Logo className="h-10 md:h-14 w-auto" />
-            </Link>
-          </div>
+      {/* Modern Sticky Floating Header */}
+      <div className="sticky top-0 z-50 w-full pt-4 px-4 md:px-8 pointer-events-none">
+        <header className="pointer-events-auto max-w-7xl mx-auto border bg-white/70 backdrop-blur-lg rounded-full px-6 md:px-10 h-16 md:h-20 flex items-center shadow-2xl transition-all duration-500">
+          <div className="w-full grid grid-cols-2 lg:grid-cols-12 items-center gap-4 relative z-10">
+            {/* Logo - Left */}
+            <div className="lg:col-span-3 flex justify-start">
+              <Link href="/" className="hover:scale-105 transition-transform duration-500 block">
+                <Logo className="h-8 md:h-12 w-auto" />
+              </Link>
+            </div>
 
-          {/* Centered Navigation - Center */}
-          <div className="hidden lg:flex lg:col-span-6 justify-center">
-            <nav className="flex items-center gap-8 text-xs font-black uppercase tracking-[0.2em] text-stone-500">
-              <Link href="/" className="relative group hover:text-amber-600 transition-colors duration-300">
-                Home
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all duration-300 group-hover:w-full"></span>
-              </Link>
-              <Link href="#story" className="relative group hover:text-rose-700 transition-colors duration-300">
-                Our Story
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-rose-700 transition-all duration-300 group-hover:w-full"></span>
-              </Link>
-              <Link href="/shop" className="relative group hover:text-amber-600 transition-colors duration-300">
-                Collections
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all duration-300 group-hover:w-full"></span>
-              </Link>
-              <Link href="/shop" className="relative group hover:text-rose-700 transition-colors duration-300">
-                Gift Boxes
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-rose-700 transition-all duration-300 group-hover:w-full"></span>
-              </Link>
-              <Link href="#reviews" className="relative group hover:text-amber-600 transition-colors duration-300">
-                Reviews
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all duration-300 group-hover:w-full"></span>
-              </Link>
-              <Link href="#footer" className="relative group hover:text-rose-700 transition-colors duration-300">
-                Contact
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-rose-700 transition-all duration-300 group-hover:w-full"></span>
-              </Link>
-              <button className="hover:text-primary hover:scale-125 transition-all duration-300 p-1 flex items-center" aria-label="Search">
-                <Search className="h-5 w-5" />
-              </button>
-            </nav>
-          </div>
+            {/* Centered Navigation - Center */}
+            <div className="hidden lg:flex lg:col-span-6 justify-center">
+              <nav className="flex items-center gap-8 text-[10px] font-black uppercase tracking-[0.2em] text-stone-500">
+                <Link href="/" className="relative group hover:text-amber-600 transition-colors duration-300">
+                  Home
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all duration-300 group-hover:w-full"></span>
+                </Link>
+                <Link href="#story" className="relative group hover:text-rose-700 transition-colors duration-300">
+                  Our Story
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-rose-700 transition-all duration-300 group-hover:w-full"></span>
+                </Link>
+                <Link href="/shop" className="relative group hover:text-amber-600 transition-colors duration-300">
+                  Collections
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all duration-300 group-hover:w-full"></span>
+                </Link>
+                <Link href="/shop" className="relative group hover:text-rose-700 transition-colors duration-300">
+                  Gift Boxes
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-rose-700 transition-all duration-300 group-hover:w-full"></span>
+                </Link>
+                <Link href="#reviews" className="relative group hover:text-amber-600 transition-colors duration-300">
+                  Reviews
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all duration-300 group-hover:w-full"></span>
+                </Link>
+                <Link href="#footer" className="relative group hover:text-rose-700 transition-colors duration-300">
+                  Contact
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-rose-700 transition-all duration-300 group-hover:w-full"></span>
+                </Link>
+                <button className="hover:text-primary hover:scale-125 transition-all duration-300 p-1 flex items-center" aria-label="Search">
+                  <Search className="h-4 w-4" />
+                </button>
+              </nav>
+            </div>
 
-          {/* Shop Now Button - Right */}
-          <div className="lg:col-span-3 flex justify-end">
-            <Button 
-              asChild 
-              className="bg-[#3D1E16] hover:bg-[#4A251B] text-[#D4AF37] border border-[#D4AF37]/20 rounded-xl h-11 md:h-12 px-6 md:px-8 font-black uppercase text-[10px] md:text-xs tracking-[0.2em] shadow-lg shadow-black/20 transition-all hover:scale-105 active:scale-95 group"
-            >
-              <Link href="/shop">
-                Shop Now <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </Button>
+            {/* Shop Now Button - Right */}
+            <div className="lg:col-span-3 flex justify-end">
+              <Button 
+                asChild 
+                className="bg-[#3D1E16] hover:bg-[#4A251B] text-[#D4AF37] border border-[#D4AF37]/20 rounded-full h-10 md:h-12 px-6 md:px-8 font-black uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-black/20 transition-all hover:scale-105 active:scale-95 group"
+              >
+                <Link href="/shop">
+                  Shop Now <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </Button>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      </div>
 
       {/* Secondary Logo below the header - Extreme Left */}
       <div className="relative w-full">
@@ -99,7 +101,7 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* Luxury Brand Title Banner - Narrowed as requested */}
+      {/* Luxury Brand Title Banner */}
       <div className="w-full py-1.5 md:py-2.5 text-center border-b border-stone-200/40 overflow-hidden relative">
         <div className="max-w-4xl mx-auto px-4 relative z-10">
           <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold font-headline tracking-[0.12em] leading-tight
