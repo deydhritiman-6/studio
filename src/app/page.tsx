@@ -35,8 +35,8 @@ export default function LandingPage() {
       {/* Fixed Artisan Texture Overlay */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-[100] bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]"></div>
       
-      {/* Modern Sticky Floating Header */}
-      <div className="sticky top-0 z-50 w-full pt-4 px-4 md:px-8 pointer-events-none">
+      {/* Modern Fixed Floating Header */}
+      <div className="fixed top-0 z-50 w-full pt-4 px-4 md:px-8 pointer-events-none">
         <header className="pointer-events-auto max-w-7xl mx-auto border bg-white/70 backdrop-blur-lg rounded-full px-6 md:px-10 h-16 md:h-20 flex items-center shadow-2xl transition-all duration-500">
           <div className="w-full grid grid-cols-2 lg:grid-cols-12 items-center gap-4 relative z-10">
             {/* Logo - Left */}
@@ -93,6 +93,9 @@ export default function LandingPage() {
           </div>
         </header>
       </div>
+
+      {/* Spacer to prevent content from jumping behind the fixed header */}
+      <div className="h-20 md:h-24"></div>
 
       {/* Secondary Logo below the header - Extreme Left */}
       <div className="relative w-full">
