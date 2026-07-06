@@ -10,7 +10,8 @@ import {
   History, 
   Crown, 
   CheckCircle2, 
-  Truck
+  Truck,
+  ShoppingCart
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 
@@ -42,11 +43,19 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          <div className="flex-1 flex justify-end items-center gap-6">
+          <div className="flex-1 flex justify-end items-center gap-6 md:gap-10">
             <nav className="hidden lg:flex items-center gap-10 text-sm font-black uppercase tracking-[0.25em] text-stone-500">
               <Link href="/shop" className="hover:text-primary transition-colors">The Shop</Link>
               <Link href="#story" className="hover:text-primary transition-colors">Our Story</Link>
             </nav>
+            <Button 
+              asChild 
+              className="bg-[#3D1E16] hover:bg-[#4A251B] text-[#D4AF37] border border-[#D4AF37]/20 rounded-xl h-11 md:h-12 px-6 md:px-8 font-black uppercase text-[10px] md:text-xs tracking-[0.2em] shadow-lg shadow-black/20 transition-all hover:scale-105 active:scale-95 group"
+            >
+              <Link href="/shop">
+                Shop Now <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </Button>
           </div>
         </div>
       </header>
