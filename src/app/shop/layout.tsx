@@ -75,7 +75,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
               variant="default" 
               asChild 
               className={cn(
-                "hidden lg:flex rounded-full px-6 h-12 border-none font-bold uppercase text-[10px] tracking-widest transition-all shadow-lg animate-rainbow-bg animate-rainbow-text-harmony hover:scale-105 active:scale-95"
+                "hidden lg:flex rounded-full px-6 h-12 border-none font-bold uppercase text-[10px] tracking-widest transition-all shadow-lg hover:scale-105 active:scale-95"
               )}
             >
               <Link href="/">
@@ -85,7 +85,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
             <Button 
               variant="default" 
               asChild 
-              className="lg:hidden h-12 w-12 rounded-full border-none p-0 animate-rainbow-bg animate-rainbow-text-harmony shadow-lg"
+              className="lg:hidden h-12 w-12 rounded-full border-none p-0 shadow-lg"
             >
               <Link href="/" title="Home">
                 <Home className="h-5 w-5" />
