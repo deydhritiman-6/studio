@@ -144,16 +144,16 @@ export default function LandingPage() {
             {/* Artisan Storybook Image */}
             {storyImage && (
               <div className="pt-16 max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-300">
-                <div className="relative aspect-[4/3] rounded-[3rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] border-[12px] border-white/80 hover:scale-[1.02] transition-transform duration-700">
+                <div className="rounded-[3rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] border-[12px] border-white/80 hover:scale-[1.02] transition-transform duration-700 bg-white">
                   <Image 
                     src={storyImage.imageUrl} 
                     alt={storyImage.description}
-                    fill
-                    className="object-cover"
+                    width={1200}
+                    height={900}
+                    className="w-full h-auto block"
                     priority
                     data-ai-hint={storyImage.imageHint}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-stone-900/10 to-transparent pointer-events-none"></div>
                 </div>
                 <p className="mt-8 text-[10px] font-black uppercase tracking-[0.6em] text-stone-400">The Legend of Raisa & Roseberry</p>
               </div>
