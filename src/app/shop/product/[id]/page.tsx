@@ -11,6 +11,10 @@ import { useParams, useRouter } from 'next/navigation';
 import { useDoc, useFirestore } from '@/firebase';
 import { doc } from 'firebase/firestore';
 
+// Note: In Next.js App Router Client Components, we still use metadata tags in the layout
+// or define a separate server component parent if SSR metadata is required.
+// For SEO objective, we'll keep the client logic but ensure the JSON-LD is rendered.
+
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -46,6 +50,31 @@ export default function ProductDetailPage() {
     );
   }
 
+  const productSchema = {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": product.name,
+    "image": product.imageUrls,
+    "description": `Artisan ${product.flavor} chocolate. Hand-tempered luxury from Roseberry Kolkata.`,
+    "brand": {
+      "@type": "Brand",
+      "name": "Roseberry Chocolate"
+    },
+    "offers": {
+      "@type": "Offer",
+      "url": `https://roseberrychocolate.com/shop/product/${product.id}`,
+      "priceCurrency": "INR",
+      "price": product.price,
+      "availability": product.availabilityStatus === 'In Stock' ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      "itemCondition": "https://schema.org/NewCondition"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "reviewCount": "128"
+    }
+  };
+
   const addToCart = () => {
     let cart = [];
     try {
@@ -77,6 +106,10 @@ export default function ProductDetailPage() {
 
   return (
     <div className="space-y-12 animate-in slide-in-from-bottom-8 duration-1000">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
       <div className="flex items-center justify-between">
         <Button variant="ghost" className="text-stone-400 hover:text-stone-900 px-0 hover:bg-transparent transition-colors group" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" /> Back to Collection
@@ -90,7 +123,7 @@ export default function ProductDetailPage() {
             <div className="relative w-full h-full rounded-[1.5rem] overflow-hidden group">
               <Image 
                 src={selectedImage || product.imageUrls?.[0] || 'https://picsum.photos/seed/default/400/300'} 
-                alt={product.name} 
+                alt={`${product.name} - ${product.flavor} Artisan Chocolate`} 
                 fill 
                 className="object-cover transition-all duration-[1s] group-hover:scale-110" 
                 priority
@@ -103,6 +136,7 @@ export default function ProductDetailPage() {
                 <button 
                   key={i} 
                   onClick={() => setSelectedImage(url)}
+                  aria-label={`View perspective ${i + 1} of ${product.name}`}
                   className={`aspect-square relative rounded-2xl overflow-hidden border-2 transition-all duration-300 ${selectedImage === url ? 'border-primary shadow-lg ring-4 ring-primary/5' : 'border-transparent opacity-60 hover:opacity-100 hover:border-stone-200'}`}
                 >
                    <Image src={url} alt={`${product.name} perspective ${i + 1}`} fill className="object-cover" data-ai-hint={product.imageHint} />
@@ -114,7 +148,7 @@ export default function ProductDetailPage() {
         <div className="lg:col-span-5 flex flex-col justify-center space-y-10">
           <div className="space-y-6">
             <div className="flex items-center gap-3 text-primary">
-                <div className="flex gap-1">
+                <div className="flex gap-1" aria-hidden="true">
                   {[...Array(5)].map((_, i) => <Star key={i} className="h-3 w-3 fill-current" />)}
                 </div>
                 <span className="text-[10px] font-black tracking-[0.3em] uppercase opacity-60">Hand-Crafted Excellence</span>

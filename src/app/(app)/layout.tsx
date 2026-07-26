@@ -41,6 +41,8 @@ import {
   ShieldCheck,
   Lock,
   Eye,
+  Search,
+  Globe
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -86,9 +88,10 @@ const navItems = [
     ],
   },
   {
-    icon: ShieldCheck,
-    label: 'System',
+    icon: Globe,
+    label: 'Optimization',
     subItems: [
+      { href: '/seo-dashboard', icon: Search, label: 'SEO Intelligence' },
       { href: '/settings/firestore-rules', icon: Lock, label: 'Security Rules' },
     ],
   },
