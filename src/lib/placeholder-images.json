@@ -41,6 +41,18 @@
       "description": "An illustrated storybook detailing the heritage of Roseberry Chocolate.",
       "imageUrl": "/rozystory.jpeg",
       "imageHint": "artisan story"
+    },
+    {
+      "id": "chocolate-piece-1",
+      "description": "A small floating piece of dark chocolate.",
+      "imageUrl": "https://picsum.photos/seed/choco1/200/200",
+      "imageHint": "chocolate piece"
+    },
+    {
+      "id": "chocolate-piece-2",
+      "description": "A small floating piece of milk chocolate.",
+      "imageUrl": "https://picsum.photos/seed/choco2/200/200",
+      "imageHint": "chocolate chunk"
     }
   ]
 }

@@ -217,3 +217,24 @@
 .animate-rainbow-text-harmony {
   animation: rainbow-text-harmony 8s ease-in-out infinite;
 }
+
+@keyframes float-down {
+  0% {
+    transform: translateY(-10vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.4;
+  }
+  90% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateY(110vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.animate-float-down {
+  animation: float-down linear infinite;
+}

@@ -1,4 +1,3 @@
-
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -17,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { FloatingChocolates } from '@/components/floating-chocolates';
 
 export default function LandingPage() {
   const storyImage = PlaceHolderImages.find(img => img.id === 'raisa-story-book');
@@ -35,6 +35,9 @@ export default function LandingPage() {
         {/* Premium Readability Overlay */}
         <div className="absolute inset-0 bg-stone-50/90 backdrop-blur-[2px] opacity-95"></div>
       </div>
+      
+      {/* Floating Chocolate Animation Layer */}
+      <FloatingChocolates />
       
       {/* Fixed Artisan Texture Overlay */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-[100] bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]"></div>
@@ -259,7 +262,7 @@ export default function LandingPage() {
               { icon: Heart, title: "Ethical Sourcing", desc: "Supporting small-scale cacao farmers across the belt." },
               { icon: CheckCircle2, title: "Pure Ingredients", desc: "No artificial preservatives. Just raw, vibrant flavor." },
             ].map((feat, i) => (
-              <div key={i} className="text-center space-y-6 group p-10 rounded-[3rem] bg-white/40 border border-white/60 backdrop-blur-sm shadow-sm hover:shadow-xl transition-all duration-500">
+              <div key={i} className="text-center space-y-6 group p-10 rounded-[3rem] bg-white/40 border border-white/60 backdrop-blur-sm shadow-sm hover:shadow-xl duration-500">
                 <div className="h-20 w-20 bg-stone-50/50 rounded-[2rem] flex items-center justify-center mx-auto text-amber-600 group-hover:scale-110 group-hover:bg-amber-600 group-hover:text-white transition-all duration-500 shadow-inner">
                   <feat.icon className="h-8 w-8" />
                 </div>
