@@ -45,37 +45,37 @@
     {
       "id": "chocolate-piece-1",
       "description": "Artisan truffle piece 1.",
-      "imageUrl": "/truffle/truffle1.png",
+      "imageUrl": "/truffle.jpeg",
       "imageHint": "chocolate truffle"
     },
     {
       "id": "chocolate-piece-2",
       "description": "Artisan truffle piece 2.",
-      "imageUrl": "/truffle/truffle2.png",
+      "imageUrl": "/truffle.jpeg",
       "imageHint": "chocolate chunk"
     },
     {
       "id": "chocolate-piece-3",
       "description": "Artisan truffle piece 3.",
-      "imageUrl": "/truffle/truffle3.png",
+      "imageUrl": "/truffle.jpeg",
       "imageHint": "white chocolate"
     },
     {
       "id": "chocolate-piece-4",
       "description": "Artisan truffle piece 4.",
-      "imageUrl": "/truffle/truffle4.png",
+      "imageUrl": "/truffle.jpeg",
       "imageHint": "chocolate shard"
     },
     {
       "id": "chocolate-piece-5",
       "description": "Artisan truffle piece 5.",
-      "imageUrl": "/truffle/truffle5.png",
+      "imageUrl": "/truffle.jpeg",
       "imageHint": "chocolate block"
     },
     {
       "id": "chocolate-piece-6",
       "description": "Artisan truffle piece 6.",
-      "imageUrl": "/truffle/truffle6.png",
+      "imageUrl": "/truffle.jpeg",
       "imageHint": "chocolate half"
     }
   ]
