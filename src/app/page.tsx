@@ -1,4 +1,3 @@
-
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -273,7 +272,7 @@ export default function LandingPage() {
                         src={item.imageUrl} 
                         alt={item.description} 
                         fill 
-                        className="object-contain p-4 group-hover:scale-110 transition-transform duration-500 grayscale group-hover:grayscale-0 opacity-80 group-hover:opacity-100"
+                        className="object-contain p-4 group-hover:scale-110 transition-transform duration-500 opacity-80 group-hover:opacity-100"
                         data-ai-hint={item.imageHint}
                       />
                    </div>

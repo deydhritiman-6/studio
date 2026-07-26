@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -38,7 +37,7 @@ export function FloatingChocolates() {
       {items.map((item) => (
         <div
           key={item.id}
-          className="absolute animate-float-down grayscale opacity-30 blur-[1px]"
+          className="absolute animate-float-down opacity-30 blur-[0.5px]"
           style={{
             left: item.left,
             width: item.size,
