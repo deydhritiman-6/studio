@@ -53,6 +53,30 @@
       "description": "A small floating piece of milk chocolate.",
       "imageUrl": "https://picsum.photos/seed/choco2/200/200",
       "imageHint": "chocolate chunk"
+    },
+    {
+      "id": "chocolate-piece-3",
+      "description": "Artisan white chocolate demi-piece.",
+      "imageUrl": "https://picsum.photos/seed/choco3/200/200",
+      "imageHint": "white chocolate"
+    },
+    {
+      "id": "chocolate-piece-4",
+      "description": "Luxury dark chocolate demi-shard.",
+      "imageUrl": "https://picsum.photos/seed/choco4/200/200",
+      "imageHint": "chocolate shard"
+    },
+    {
+      "id": "chocolate-piece-5",
+      "description": "Single-origin milk chocolate demi-block.",
+      "imageUrl": "https://picsum.photos/seed/choco5/200/200",
+      "imageHint": "chocolate block"
+    },
+    {
+      "id": "chocolate-piece-6",
+      "description": "Hand-crafted caramel demi-half.",
+      "imageUrl": "https://picsum.photos/seed/choco6/200/200",
+      "imageHint": "chocolate half"
     }
   ]
 }

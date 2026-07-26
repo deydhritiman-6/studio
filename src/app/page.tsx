@@ -20,6 +20,7 @@ import { FloatingChocolates } from '@/components/floating-chocolates';
 
 export default function LandingPage() {
   const storyImage = PlaceHolderImages.find(img => img.id === 'raisa-story-book');
+  const demiPieces = PlaceHolderImages.filter(img => img.id.startsWith('chocolate-piece'));
 
   return (
     <div className="min-h-screen font-body selection:bg-primary/20 relative overflow-x-hidden">
@@ -250,6 +251,34 @@ export default function LandingPage() {
                   <Link href="/shop">Indulge Now <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform" /></Link>
                 </Button>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Demi Chocolate Gallery Showcase */}
+        <section className="py-24 px-6 relative overflow-hidden">
+          <div className="max-w-7xl mx-auto space-y-16">
+            <div className="text-center space-y-4">
+              <Badge variant="outline" className="border-primary/20 text-primary px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em]">The Demi Collection</Badge>
+              <h2 className="text-3xl md:text-5xl font-bold font-headline text-stone-900 tracking-tight">Artisan Pieces</h2>
+              <p className="text-stone-400 max-w-xl mx-auto text-sm font-light">Explore our individual hand-crafted demis, each a perfect miniature of our grandest flavors.</p>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+              {demiPieces.map((item, i) => (
+                <div key={i} className="group text-center space-y-4">
+                   <div className="aspect-square relative bg-white rounded-3xl border border-stone-100 shadow-sm overflow-hidden p-6 hover:shadow-xl transition-all duration-500 group-hover:-translate-y-2">
+                      <Image 
+                        src={item.imageUrl} 
+                        alt={item.description} 
+                        fill 
+                        className="object-contain p-4 group-hover:scale-110 transition-transform duration-500 grayscale group-hover:grayscale-0 opacity-80 group-hover:opacity-100"
+                        data-ai-hint={item.imageHint}
+                      />
+                   </div>
+                   <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500 leading-tight px-2">{item.description.replace('Artisan ', '').replace('Luxury ', '').replace('Single-origin ', '').replace('Hand-crafted ', '')}</p>
+                </div>
+              ))}
             </div>
           </div>
         </section>
