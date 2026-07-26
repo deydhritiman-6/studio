@@ -16,7 +16,6 @@ import {
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { FloatingChocolates } from '@/components/floating-chocolates';
 
 export default function LandingPage() {
   const storyImage = PlaceHolderImages.find(img => img.id === 'raisa-story-book');
@@ -36,9 +35,6 @@ export default function LandingPage() {
         {/* Premium Readability Overlay */}
         <div className="absolute inset-0 bg-stone-50/90 backdrop-blur-[2px] opacity-95"></div>
       </div>
-      
-      {/* Floating Chocolate Animation Layer */}
-      <FloatingChocolates />
       
       {/* Fixed Artisan Texture Overlay */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-[100] bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]"></div>
