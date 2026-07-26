@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -100,13 +101,6 @@ export default function LandingPage() {
       {/* Spacer to prevent content from jumping behind the fixed header */}
       <div className="h-20 md:h-24"></div>
 
-      {/* Secondary Logo below the header - Extreme Left */}
-      <div className="relative w-full">
-        <div className="absolute top-28 -left-16 md:-left-24 z-20 pointer-events-none">
-          <Logo className="h-20 md:h-32 w-auto mix-blend-multiply opacity-90" />
-        </div>
-      </div>
-
       {/* Luxury Brand Title Banner */}
       <div className="w-full py-1.5 md:py-2.5 text-center border-b border-stone-200/40 overflow-hidden relative">
         <div className="max-w-4xl mx-auto px-4 relative z-10">
@@ -149,18 +143,19 @@ export default function LandingPage() {
 
             {/* Artisan Storybook Image */}
             {storyImage && (
-              <div className="pt-16 max-w-xl mx-auto animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-300">
-                <div className="relative aspect-[3/4] rounded-[2.5rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.25)] border-8 border-white/60 hover:scale-[1.02] transition-transform duration-700">
+              <div className="pt-16 max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-300">
+                <div className="relative aspect-[4/3] rounded-[3rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] border-[12px] border-white/80 hover:scale-[1.02] transition-transform duration-700">
                   <Image 
                     src={storyImage.imageUrl} 
                     alt={storyImage.description}
                     fill
                     className="object-cover"
+                    priority
                     data-ai-hint={storyImage.imageHint}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-stone-900/20 to-transparent pointer-events-none"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-stone-900/10 to-transparent pointer-events-none"></div>
                 </div>
-                <p className="mt-6 text-[10px] font-black uppercase tracking-[0.5em] text-stone-400">The Legend of Raisa & Roseberry</p>
+                <p className="mt-8 text-[10px] font-black uppercase tracking-[0.6em] text-stone-400">The Legend of Raisa & Roseberry</p>
               </div>
             )}
           </div>
