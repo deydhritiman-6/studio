@@ -15,8 +15,11 @@ import {
   Search
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export default function LandingPage() {
+  const storyImage = PlaceHolderImages.find(img => img.id === 'raisa-story-book');
+
   return (
     <div className="min-h-screen font-body selection:bg-primary/20 relative overflow-x-hidden">
       {/* Custom Image Background */}
@@ -121,7 +124,7 @@ export default function LandingPage() {
 
       <main className="relative z-10">
         {/* Hero Section - Direct on Background */}
-        <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden py-24 px-6">
+        <section className="relative min-h-[85vh] flex flex-col items-center justify-center overflow-hidden py-24 px-6">
           <div className="max-w-5xl mx-auto text-center space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
             <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-stone-100/50 border border-stone-200/50 text-stone-500 text-[10px] font-black uppercase tracking-[0.4em] mx-auto shadow-sm">
               <Sparkles className="h-3 w-3 text-amber-500" /> Since 2021 • Kolkata
@@ -143,6 +146,23 @@ export default function LandingPage() {
                 <Link href="#story">The Artisan Story</Link>
               </Button>
             </div>
+
+            {/* Artisan Storybook Image */}
+            {storyImage && (
+              <div className="pt-16 max-w-xl mx-auto animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-300">
+                <div className="relative aspect-[3/4] rounded-[2.5rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.25)] border-8 border-white/60 hover:scale-[1.02] transition-transform duration-700">
+                  <Image 
+                    src={storyImage.imageUrl} 
+                    alt={storyImage.description}
+                    fill
+                    className="object-cover"
+                    data-ai-hint={storyImage.imageHint}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-stone-900/20 to-transparent pointer-events-none"></div>
+                </div>
+                <p className="mt-6 text-[10px] font-black uppercase tracking-[0.5em] text-stone-400">The Legend of Raisa & Roseberry</p>
+              </div>
+            )}
           </div>
         </section>
 

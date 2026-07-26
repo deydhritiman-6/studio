@@ -35,6 +35,12 @@
       "description": "A box of assorted artisan chocolates.",
       "imageUrl": "https://picsum.photos/seed/106/400/300",
       "imageHint": "chocolate box"
+    },
+    {
+      "id": "raisa-story-book",
+      "description": "An illustrated storybook detailing the heritage of Roseberry Chocolate.",
+      "imageUrl": "https://picsum.photos/seed/storybook/800/1200",
+      "imageHint": "storybook illustration"
     }
   ]
 }
