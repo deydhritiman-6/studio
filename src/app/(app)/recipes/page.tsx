@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -35,8 +36,8 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 const recipeFormSchema = z.object({
-  name: z.string().min(1, 'Recipe name is required'),
-  associatedProduct: z.string().min(1, 'Associated product is required'),
+  name: z.string().min(1, 'Associated recipe is required'),
+  associatedProduct: z.string().min(1, 'Product selection is required'),
   ingredients: z.string().min(1, 'Ingredients are required. Please provide a comma-separated list, e.g., "Cocoa Beans (1kg), Sugar (500g)"'),
 });
 
@@ -116,7 +117,7 @@ export default function RecipesPage() {
                 name="associatedProduct"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Associated Product</FormLabel>
+                    <FormLabel>Product Name</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -144,9 +145,9 @@ export default function RecipesPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Recipe Name</FormLabel>
+                    <FormLabel>Associated Recipe</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Spicy Chilli Chocolate Bar Recipe" {...field} />
+                      <Input placeholder="e.g., Spicy Chilli Chocolate Bar Formulation" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
