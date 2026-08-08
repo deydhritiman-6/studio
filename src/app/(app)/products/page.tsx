@@ -35,6 +35,9 @@ const productFormSchema = z.object({
   flavor: z.string().min(1, 'Flavor profile is required.'),
   weight: z.string().optional(),
   dimensions: z.string().optional(),
+  dimL: z.string().optional(),
+  dimW: z.string().optional(),
+  dimH: z.string().optional(),
   price: z.coerce.number().positive('Price must be a positive number.'),
   wholesalePrice: z.coerce.number().positive('Wholesale price must be a positive number.'),
   availabilityStatus: z.enum(['In Stock', 'Out of Stock']),
@@ -43,6 +46,12 @@ const productFormSchema = z.object({
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
+
+const DIMENSION_VALUES = [
+  '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 
+  '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', 
+  '22', '24', '26', '28', '30'
+];
 
 export default function ProductsPage() {
   const firestore = useFirestore();
@@ -74,6 +83,9 @@ export default function ProductsPage() {
       flavor: '',
       weight: '',
       dimensions: '',
+      dimL: '',
+      dimW: '',
+      dimH: '',
       price: 0,
       wholesalePrice: 0,
       availabilityStatus: 'In Stock',
@@ -93,11 +105,23 @@ export default function ProductsPage() {
 
   useEffect(() => {
     if (editingProduct) {
+      // Parse dimensions string "LxWxH cm"
+      let dL = '', dW = '', dH = '';
+      if (editingProduct.dimensions) {
+        const parts = editingProduct.dimensions.replace(' cm', '').split('x');
+        dL = parts[0] || '';
+        dW = parts[1] || '';
+        dH = parts[2] || '';
+      }
+
       form.reset({
         name: editingProduct.name,
         flavor: editingProduct.flavor,
         weight: editingProduct.weight || '',
         dimensions: editingProduct.dimensions || '',
+        dimL: dL,
+        dimW: dW,
+        dimH: dH,
         price: editingProduct.price,
         wholesalePrice: editingProduct.wholesalePrice,
         availabilityStatus: editingProduct.availabilityStatus,
@@ -110,6 +134,9 @@ export default function ProductsPage() {
         flavor: '',
         weight: '',
         dimensions: '',
+        dimL: '',
+        dimW: '',
+        dimH: '',
         price: 0,
         wholesalePrice: 0,
         availabilityStatus: 'In Stock',
@@ -143,13 +170,22 @@ export default function ProductsPage() {
     const productId = id || `P${Date.now()}`;
     const productRef = doc(firestore, 'products', productId);
     
+    // Construct dimensions string from parts if available
+    const finalDimensions = values.dimL && values.dimW && values.dimH 
+      ? `${values.dimL}x${values.dimW}x${values.dimH} cm`
+      : values.dimensions;
+
     const productData = { 
       ...values, 
       id: productId,
+      dimensions: finalDimensions,
       productionStatus: id ? (editingProduct?.productionStatus || 'Product Ready') : 'Product Ready'
     };
 
-    setDoc(productRef, productData, { merge: true })
+    // Remove internal UI fields before saving to Firestore
+    const { dimL, dimW, dimH, ...dataToSave } = productData;
+
+    setDoc(productRef, dataToSave, { merge: true })
       .then(() => {
         setIsAddDialogOpen(false);
         setEditingProduct(null);
@@ -356,7 +392,7 @@ export default function ProductsPage() {
                     </FormItem>
                   )} />
                   
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField control={form.control} name="weight" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Product Weight</FormLabel>
@@ -364,13 +400,54 @@ export default function ProductsPage() {
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField control={form.control} name="dimensions" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Product Dimensions</FormLabel>
-                        <FormControl><Input placeholder="e.g., 10x5x2 cm" className="h-12 rounded-xl" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
+                    
+                    <div className="space-y-2">
+                      <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Product Dimensions (cm)</FormLabel>
+                      <div className="grid grid-cols-3 gap-2">
+                        <FormField control={form.control} name="dimL" render={({ field }) => (
+                          <FormItem>
+                            <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="h-12 rounded-xl">
+                                  <SelectValue placeholder="L" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {DIMENSION_VALUES.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="dimW" render={({ field }) => (
+                          <FormItem>
+                            <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="h-12 rounded-xl">
+                                  <SelectValue placeholder="W" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {DIMENSION_VALUES.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="dimH" render={({ field }) => (
+                          <FormItem>
+                            <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="h-12 rounded-xl">
+                                  <SelectValue placeholder="H" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {DIMENSION_VALUES.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )} />
+                      </div>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-6">
