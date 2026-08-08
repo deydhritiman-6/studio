@@ -106,24 +106,11 @@ export default function RecipesPage() {
           <DialogHeader>
             <DialogTitle>Add New Recipe</DialogTitle>
             <DialogDescription>
-              Fill in the details for the new recipe. Select a product from the collection.
+              Fill in the details for the new recipe. Select a product from the collection first.
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onAddSubmit)} className="space-y-4 py-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Recipe Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., Spicy Chilli Chocolate Bar Recipe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               <FormField
                 control={form.control}
                 name="associatedProduct"
@@ -148,6 +135,19 @@ export default function RecipesPage() {
                         )}
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Recipe Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Spicy Chilli Chocolate Bar Recipe" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -180,8 +180,8 @@ export default function RecipesPage() {
         {viewRecipe && (
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="font-headline">{viewRecipe.name}</DialogTitle>
-              <DialogDescription>Associated with: {viewRecipe.associatedProduct}</DialogDescription>
+              <DialogTitle className="font-headline">{viewRecipe.associatedProduct}</DialogTitle>
+              <DialogDescription>{viewRecipe.name}</DialogDescription>
             </DialogHeader>
             <div className="py-4">
               <h4 className="font-semibold mb-2 text-foreground">Full Ingredient List:</h4>
@@ -208,8 +208,8 @@ export default function RecipesPage() {
         {recipes?.map((recipe) => (
           <Card key={recipe.id} className="flex flex-col">
             <CardHeader>
-              <CardTitle className="font-headline">{recipe.name}</CardTitle>
-              <CardDescription>Associated with: {recipe.associatedProduct}</CardDescription>
+              <CardTitle className="font-headline">{recipe.associatedProduct}</CardTitle>
+              <CardDescription>{recipe.name}</CardDescription>
             </CardHeader>
             <CardContent className="flex-grow">
               <h4 className="font-semibold mb-2">Key Ingredients:</h4>
