@@ -33,6 +33,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 const productFormSchema = z.object({
   name: z.string().min(1, 'Product name is required.'),
   flavor: z.string().min(1, 'Flavor profile is required.'),
+  weight: z.string().optional(),
+  dimensions: z.string().optional(),
   price: z.coerce.number().positive('Price must be a positive number.'),
   wholesalePrice: z.coerce.number().positive('Wholesale price must be a positive number.'),
   availabilityStatus: z.enum(['In Stock', 'Out of Stock']),
@@ -70,6 +72,8 @@ export default function ProductsPage() {
     defaultValues: {
       name: '',
       flavor: '',
+      weight: '',
+      dimensions: '',
       price: 0,
       wholesalePrice: 0,
       availabilityStatus: 'In Stock',
@@ -92,6 +96,8 @@ export default function ProductsPage() {
       form.reset({
         name: editingProduct.name,
         flavor: editingProduct.flavor,
+        weight: editingProduct.weight || '',
+        dimensions: editingProduct.dimensions || '',
         price: editingProduct.price,
         wholesalePrice: editingProduct.wholesalePrice,
         availabilityStatus: editingProduct.availabilityStatus,
@@ -102,6 +108,8 @@ export default function ProductsPage() {
       form.reset({
         name: '',
         flavor: '',
+        weight: '',
+        dimensions: '',
         price: 0,
         wholesalePrice: 0,
         availabilityStatus: 'In Stock',
@@ -347,6 +355,24 @@ export default function ProductsPage() {
                       <FormMessage />
                     </FormItem>
                   )} />
+                  
+                  <div className="grid grid-cols-2 gap-6">
+                    <FormField control={form.control} name="weight" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Product Weight</FormLabel>
+                        <FormControl><Input placeholder="e.g., 100g" className="h-12 rounded-xl" {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="dimensions" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Product Dimensions</FormLabel>
+                        <FormControl><Input placeholder="e.g., 10x5x2 cm" className="h-12 rounded-xl" {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  </div>
+
                   <div className="grid grid-cols-2 gap-6">
                     <FormField control={form.control} name="price" render={({ field }) => (
                       <FormItem>

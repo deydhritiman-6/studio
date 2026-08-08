@@ -59,6 +59,8 @@ export type Product = {
   id: string;
   name: string;
   flavor: string;
+  weight?: string;
+  dimensions?: string;
   price: number;
   wholesalePrice: number;
   availabilityStatus: 'In Stock' | 'Out of Stock';
