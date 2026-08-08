@@ -60,21 +60,21 @@ function ChocolateShapePreview({ l, w, h }: { l: string, w: string, h: string })
 
   if (!length || !width || !height) return null;
 
-  // Scaling factor to keep it within a reasonable size for the UI (max 150px)
+  // Scaling factor to keep it within a reasonable size for the UI (max 100px)
   const maxDim = Math.max(length, width, height);
-  const scale = 120 / maxDim;
+  const scale = 100 / maxDim;
   
   const drawL = length * scale;
   const drawW = width * scale;
   const drawH = height * scale;
 
   return (
-    <div className="mt-4 p-6 bg-muted/30 rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center space-y-4 animate-in fade-in duration-500">
-      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary mb-2">
-        <Box className="h-3 w-3" /> Proportional Shape Visualization
+    <div className="mt-2 p-4 bg-muted/20 rounded-xl border border-border flex flex-col items-center justify-center space-y-2 animate-in fade-in duration-500">
+      <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-primary/70">
+        <Box className="h-2.5 w-2.5" /> Shape Visualization
       </div>
       
-      <div className="relative h-[180px] w-full flex items-center justify-center perspective-[1000px]">
+      <div className="relative h-[130px] w-full flex items-center justify-center perspective-[800px]">
         <div 
           className="relative preserve-3d transition-transform duration-700 hover:rotate-y-180 cursor-grab active:cursor-grabbing"
           style={{ 
@@ -98,7 +98,7 @@ function ChocolateShapePreview({ l, w, h }: { l: string, w: string, h: string })
         </div>
       </div>
       
-      <p className="text-[10px] text-muted-foreground italic">Interactive 3D Preview (Approximate Proportions)</p>
+      <p className="text-[9px] text-muted-foreground italic">Approximate Proportions</p>
     </div>
   );
 }
@@ -394,6 +394,7 @@ export default function ProductsPage() {
     <TooltipProvider>
       <style jsx global>{`
         .perspective-1000 { perspective: 1000px; }
+        .perspective-800 { perspective: 800px; }
         .preserve-3d { transform-style: preserve-3d; }
         .rotate-y-180:hover { transform: rotateX(-25deg) rotateY(225deg) !important; }
       `}</style>
@@ -468,7 +469,7 @@ export default function ProductsPage() {
                           <FormItem>
                             <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                               <FormControl>
-                                <SelectTrigger className="h-12 rounded-xl">
+                                <SelectTrigger className="h-10 rounded-xl">
                                   <SelectValue placeholder="L" />
                                 </SelectTrigger>
                               </FormControl>
@@ -482,7 +483,7 @@ export default function ProductsPage() {
                           <FormItem>
                             <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                               <FormControl>
-                                <SelectTrigger className="h-12 rounded-xl">
+                                <SelectTrigger className="h-10 rounded-xl">
                                   <SelectValue placeholder="W" />
                                 </SelectTrigger>
                               </FormControl>
@@ -496,7 +497,7 @@ export default function ProductsPage() {
                           <FormItem>
                             <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                               <FormControl>
-                                <SelectTrigger className="h-12 rounded-xl">
+                                <SelectTrigger className="h-10 rounded-xl">
                                   <SelectValue placeholder="H" />
                                 </SelectTrigger>
                               </FormControl>
