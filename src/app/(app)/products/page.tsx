@@ -172,6 +172,24 @@ export default function ProductsPage() {
     if (!editingProduct) return;
     saveProduct(values, editingProduct.id);
   };
+
+  const onInvalid = (errors: any) => {
+    const missingFields: string[] = [];
+    if (errors.name) missingFields.push("Name");
+    if (errors.flavor) missingFields.push("Flavor Profile");
+    if (errors.price) missingFields.push("Retail Value");
+    if (errors.wholesalePrice) missingFields.push("Wholesale Value");
+    if (errors.availabilityStatus) missingFields.push("Availability Status");
+    if (errors.imageUrls) missingFields.push("Picture");
+
+    const missingText = missingFields.length > 0 ? ` (${missingFields.join(", ")})` : "";
+    
+    toast({
+      variant: "destructive",
+      title: "Validation Required",
+      description: `Please update the required fields${missingText} and upload the required picture before creating the register.`,
+    });
+  };
   
   const enableCamera = async () => {
     try {
@@ -314,7 +332,7 @@ export default function ProductsPage() {
             <DialogDescription className="text-muted-foreground">Add the intricate details of your latest artisan chocolate masterpiece.</DialogDescription>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(activeDialog === 'edit' ? onEditSubmit : onAddSubmit)}>
+            <form onSubmit={form.handleSubmit(activeDialog === 'edit' ? onEditSubmit : onAddSubmit, onInvalid)}>
               <ScrollArea className="h-[60vh] pr-6">
                 <div className="space-y-8 py-4">
                   <FormField control={form.control} name="name" render={({ field }) => (
@@ -447,7 +465,7 @@ export default function ProductsPage() {
                 <DialogClose asChild><Button type="button" variant="secondary" className="rounded-xl h-12 px-8">Discard</Button></DialogClose>
                 <Button type="submit" disabled={isSaving} className="rounded-xl h-12 px-10 shadow-xl shadow-primary/20">
                   {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  {activeDialog === 'edit' ? 'Commit Refinement' : 'Register Creation'}
+                  {activeDialog === 'edit' ? 'Commit Refinement' : 'Create Register'}
                 </Button>
               </DialogFooter>
             </form>
