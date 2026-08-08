@@ -96,10 +96,10 @@ export default function ProductsPage() {
         price: editingProduct.price,
         wholesalePrice: editingProduct.wholesalePrice,
         availabilityStatus: editingProduct.availabilityStatus,
-        imageUrls: editingProduct.imageUrls,
-        imageHint: editingProduct.imageHint,
+        imageUrls: editingProduct.imageUrls || [],
+        imageHint: editingProduct.imageHint || 'product photo',
       });
-    } else {
+    } else if (isAddDialogOpen) {
       form.reset({
         name: '',
         flavor: '',
@@ -135,14 +135,23 @@ export default function ProductsPage() {
     setIsSaving(true);
     const productId = id || `P${Date.now()}`;
     const productRef = doc(firestore, 'products', productId);
-    const productData = { ...values, id: productId };
+    
+    // Ensure the product is marked as 'Product Ready' so it appears in the gallery
+    const productData = { 
+      ...values, 
+      id: productId,
+      productionStatus: id ? (editingProduct?.productionStatus || 'Product Ready') : 'Product Ready'
+    };
 
     setDoc(productRef, productData, { merge: true })
       .then(() => {
         setIsAddDialogOpen(false);
         setEditingProduct(null);
         setIsSaving(false);
-        toast({ title: id ? 'Creation Refined' : 'Creation Added', description: `${values.name} has been synchronized with the collection.` });
+        toast({ 
+          title: id ? 'Creation Refined' : 'Creation Added', 
+          description: `${values.name} has been synchronized with the collection.` 
+        });
       })
       .catch(async (serverError) => {
         setIsSaving(false);
@@ -155,14 +164,14 @@ export default function ProductsPage() {
       });
   };
 
-  function onAddSubmit(values: ProductFormValues) {
+  const onAddSubmit = (values: ProductFormValues) => {
     saveProduct(values);
-  }
+  };
 
-  function onEditSubmit(values: ProductFormValues) {
+  const onEditSubmit = (values: ProductFormValues) => {
     if (!editingProduct) return;
     saveProduct(values, editingProduct.id);
-  }
+  };
   
   const enableCamera = async () => {
     try {
@@ -341,7 +350,7 @@ export default function ProductsPage() {
                   <FormField control={form.control} name="availabilityStatus" render={({ field }) => (
                     <FormItem>
                       <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Availability Status</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                         <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Select status" /></SelectTrigger></FormControl>
                         <SelectContent>
                           <SelectItem value="In Stock">Available for Reserve</SelectItem>
