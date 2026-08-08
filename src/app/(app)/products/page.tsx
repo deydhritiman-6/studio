@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
@@ -136,7 +135,6 @@ export default function ProductsPage() {
     const productId = id || `P${Date.now()}`;
     const productRef = doc(firestore, 'products', productId);
     
-    // Ensure the product is marked as 'Product Ready' so it appears in the gallery
     const productData = { 
       ...values, 
       id: productId,
@@ -337,7 +335,7 @@ export default function ProductsPage() {
                 <div className="space-y-8 py-4">
                   <FormField control={form.control} name="name" render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Name of Indulgence</FormLabel>
+                      <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Name of the Product</FormLabel>
                       <FormControl><Input placeholder="e.g., Velvet Noir 85%" className="h-12 rounded-xl" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
