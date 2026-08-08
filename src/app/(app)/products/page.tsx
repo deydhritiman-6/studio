@@ -69,7 +69,7 @@ function ChocolateShapePreview({ l, w, h }: { l: string, w: string, h: string })
   const drawH = height * scale;
 
   return (
-    <div className="mt-2 p-4 bg-muted/20 rounded-xl border border-border flex flex-col items-center justify-center space-y-2 animate-in fade-in duration-500">
+    <div className="mt-2 p-4 bg-muted/20 rounded-xl border border-border flex flex-col items-center justify-center space-y-2 animate-in fade-in duration-500 max-w-sm mx-auto">
       <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-primary/70">
         <Box className="h-2.5 w-2.5" /> Shape Visualization
       </div>
