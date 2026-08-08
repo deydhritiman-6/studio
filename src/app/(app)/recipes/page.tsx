@@ -19,7 +19,14 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import type { Recipe } from '@/lib/types';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import type { Recipe, Product } from '@/lib/types';
 import { PlusCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCollection, useFirestore } from '@/firebase';
@@ -36,7 +43,10 @@ const recipeFormSchema = z.object({
 export default function RecipesPage() {
   const firestore = useFirestore();
   const recipesQuery = useMemo(() => firestore ? collection(firestore, 'recipes') : null, [firestore]);
-  const { data: recipes, loading } = useCollection<Recipe>(recipesQuery);
+  const { data: recipes, loading: recipesLoading } = useCollection<Recipe>(recipesQuery);
+
+  const productsQuery = useMemo(() => firestore ? collection(firestore, 'products') : null, [firestore]);
+  const { data: products, loading: productsLoading } = useCollection<Product>(productsQuery);
 
   const [viewRecipe, setViewRecipe] = useState<Recipe | null>(null);
   const [isAddRecipeOpen, setIsAddRecipeOpen] = useState(false);
@@ -87,7 +97,7 @@ export default function RecipesPage() {
       });
   }
 
-  if (loading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin" /></div>;
+  if (recipesLoading || productsLoading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin" /></div>;
 
   return (
     <>
@@ -96,7 +106,7 @@ export default function RecipesPage() {
           <DialogHeader>
             <DialogTitle>Add New Recipe</DialogTitle>
             <DialogDescription>
-              Fill in the details for the new recipe. Click save when you're done.
+              Fill in the details for the new recipe. Select a product from the collection.
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
@@ -120,9 +130,24 @@ export default function RecipesPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Associated Product</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., Spicy Chilli Chocolate Bar" {...field} />
-                    </FormControl>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a product" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {products && products.length > 0 ? (
+                          products.map((product) => (
+                            <SelectItem key={product.id} value={product.name}>
+                              {product.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <div className="p-2 text-xs text-muted-foreground text-center">No products found</div>
+                        )}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
