@@ -8,8 +8,8 @@ import { z } from 'zod';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import type { Product, ProductDimensions } from '@/lib/types';
-import { PlusCircle, Loader2, Upload, Trash2, Edit, Ruler, AlertCircle, RefreshCw, PackageSearch } from 'lucide-react';
+import type { Product, ProductDimensions, ProductGallery } from '@/lib/types';
+import { PlusCircle, Loader2, Upload, Trash2, Edit, Ruler, AlertCircle, RefreshCw, PackageSearch, Images, Search, CheckCircle2 } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
@@ -26,6 +26,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ChocolateMeshViewer } from '@/components/chocolate-mesh-viewer';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const SHAPE_CONFIG: Record<string, { fields: { name: string; label: string; placeholder?: string; type: 'number' | 'text' }[] }> = {
   Square: {
@@ -161,7 +162,10 @@ const sanitizeData = (obj: any): any => {
 export default function ProductsPage() {
   const firestore = useFirestore();
   const productsQuery = useMemo(() => firestore ? collection(firestore, 'products') : null, [firestore]);
+  const galleriesQuery = useMemo(() => firestore ? collection(firestore, 'product-galleries') : null, [firestore]);
+
   const { data: allProducts, loading: collectionLoading } = useCollection<Product>(productsQuery);
+  const { data: galleries } = useCollection<ProductGallery>(galleriesQuery);
   
   const loading = collectionLoading || !firestore;
 
@@ -174,6 +178,11 @@ export default function ProductsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
   const [viewingProduct, setViewingProduct] = useState<{images: string[], startIndex: number, productName: string, hint: string} | null>(null);
+
+  // Gallery Picker States
+  const [isGalleryPickerOpen, setIsGalleryPickerOpen] = useState(false);
+  const [pickerTargetField, setPickerTargetField] = useState<keyof ProductFormValues | null>(null);
+  const [gallerySearch, setGallerySearch] = useState('');
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -291,7 +300,6 @@ export default function ProductsPage() {
       })
       .catch(async (serverError) => {
         setIsSaving(false);
-        console.error('Save Error:', serverError);
         const permissionError = new FirestorePermissionError({
           path: productRef.path,
           operation: id ? 'update' : 'create',
@@ -303,7 +311,7 @@ export default function ProductsPage() {
 
   const onInvalid = (errs: any) => {
     console.error('Form Validation Errors:', errs);
-    toast({ variant: 'destructive', title: 'Validation Error', description: 'Please check all required fields and ensure the Main Photo is uploaded.' });
+    toast({ variant: 'destructive', title: 'Validation Error', description: 'Please check all required fields and ensure the Main Photo is provided.' });
   };
 
   const PhotoUploadSlot = ({ fieldName, label, required = false }: { fieldName: keyof ProductFormValues, label: string, required?: boolean }) => {
@@ -321,23 +329,34 @@ export default function ProductsPage() {
           )}
         </Label>
         <div 
-          onClick={() => fileInputRef.current?.click()}
           className={cn(
-            "aspect-[4/3] rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group overflow-hidden bg-muted/20",
-            value ? "border-primary/40 bg-background" : "border-stone-200 hover:border-primary/30 hover:bg-muted/40"
+            "aspect-[4/3] rounded-2xl border-2 border-dashed flex flex-col items-center justify-center transition-all duration-300 relative group overflow-hidden bg-muted/20",
+            value ? "border-primary/40 bg-background" : "border-stone-200"
           )}
         >
           {value ? (
             <>
               <Image src={value} alt={label} fill className="object-cover" />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                 <RefreshCw className="text-white h-6 w-6" />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                 <Button type="button" size="sm" variant="secondary" className="h-8 px-3 rounded-lg text-[10px] font-bold" onClick={() => fileInputRef.current?.click()}>
+                    <RefreshCw className="h-3 w-3 mr-1" /> Replace
+                 </Button>
+                 <Button type="button" size="sm" variant="secondary" className="h-8 px-3 rounded-lg text-[10px] font-bold" onClick={() => { setPickerTargetField(fieldName); setIsGalleryPickerOpen(true); }}>
+                    <Images className="h-3 w-3 mr-1" /> Gallery
+                 </Button>
               </div>
             </>
           ) : (
-            <div className="flex flex-col items-center gap-2 text-stone-400 group-hover:text-primary transition-colors">
-               <Upload className="h-6 w-6" />
-               <span className="text-[10px] font-bold uppercase tracking-tight">Select Photo</span>
+            <div className="flex flex-col items-center gap-3 p-4 text-center">
+               <div className="flex gap-2">
+                 <Button type="button" variant="outline" size="sm" className="h-10 px-4 rounded-xl border-stone-200 hover:border-primary/40 text-stone-500 hover:text-primary transition-all group/up" onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="h-4 w-4 mr-2 group-hover/up:scale-110 transition-transform" /> Upload
+                 </Button>
+                 <Button type="button" variant="outline" size="sm" className="h-10 px-4 rounded-xl border-stone-200 hover:border-primary/40 text-stone-500 hover:text-primary transition-all group/gal" onClick={() => { setPickerTargetField(fieldName); setIsGalleryPickerOpen(true); }}>
+                    <Images className="h-4 w-4 mr-2 group-hover/gal:scale-110 transition-transform" /> Gallery
+                 </Button>
+               </div>
+               <span className="text-[9px] font-bold uppercase tracking-tight text-stone-400">Select Perspective</span>
             </div>
           )}
           <input 
@@ -352,10 +371,79 @@ export default function ProductsPage() {
     );
   };
 
+  const filteredGalleries = useMemo(() => {
+    if (!galleries) return [];
+    return galleries.filter(g => g.productName.toLowerCase().includes(gallerySearch.toLowerCase()));
+  }, [galleries, gallerySearch]);
+
   const activeDialog = editingProduct ? 'edit' : (isAddDialogOpen ? 'add' : null);
 
   return (
     <TooltipProvider>
+      {/* Immersive Gallery Picker */}
+      <Dialog open={isGalleryPickerOpen} onOpenChange={setIsGalleryPickerOpen}>
+        <DialogContent className="sm:max-w-4xl rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden flex flex-col h-[80vh] bg-background">
+          <div className="px-10 py-6 border-b shrink-0 bg-muted/30">
+            <DialogHeader className="flex flex-row items-center justify-between gap-6">
+              <div className="space-y-1">
+                <DialogTitle className="text-2xl font-headline">Visual Asset Archive</DialogTitle>
+                <DialogDescription className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/60">Selecting for {pickerTargetField?.replace('subPhoto', 'Perspective ').replace('mainImage', 'Main Portrait')}</DialogDescription>
+              </div>
+              <div className="relative w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input 
+                    placeholder="Search Artisan Galleries..." 
+                    className="pl-9 h-10 rounded-xl bg-background border-none shadow-inner text-xs" 
+                    value={gallerySearch}
+                    onChange={(e) => setGallerySearch(e.target.value)}
+                />
+              </div>
+            </DialogHeader>
+          </div>
+          
+          <ScrollArea className="flex-1 p-10 custom-scrollbar">
+            {filteredGalleries.length > 0 ? (
+                <div className="space-y-12">
+                    {filteredGalleries.map((gallery) => (
+                        <div key={gallery.id} className="space-y-4">
+                            <div className="flex items-center justify-between border-b pb-2">
+                                <h3 className="text-sm font-bold uppercase tracking-tight text-primary">{gallery.productName}</h3>
+                                <span className="text-[9px] font-medium text-muted-foreground">{gallery.id}</span>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {[gallery.mainImage, ...gallery.subImages].map((img, i) => (
+                                    <div 
+                                        key={i} 
+                                        className="aspect-square relative rounded-xl overflow-hidden border-2 border-transparent hover:border-primary cursor-pointer transition-all group"
+                                        onClick={() => {
+                                            if (pickerTargetField) form.setValue(pickerTargetField, img, { shouldValidate: true });
+                                            setIsGalleryPickerOpen(false);
+                                        }}
+                                    >
+                                        <Image src={img} alt="" fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                                        <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <CheckCircle2 className="text-white h-6 w-6 drop-shadow-lg" />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="flex flex-col items-center justify-center h-64 text-center">
+                    <Images className="h-12 w-12 text-muted-foreground opacity-20 mb-4" />
+                    <p className="text-muted-foreground italic text-sm">No historical visual assets found.</p>
+                </div>
+            )}
+          </ScrollArea>
+          
+          <div className="px-10 py-4 border-t flex justify-end shrink-0">
+             <Button variant="secondary" className="rounded-xl h-10 px-6 font-bold uppercase text-[10px] tracking-widest" onClick={() => setIsGalleryPickerOpen(false)}>Close Archive</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={!!viewingProduct} onOpenChange={(open) => !open && setViewingProduct(null)}>
         <DialogContent className="sm:max-w-4xl p-0 border-0 bg-transparent shadow-none">
           <DialogHeader className="sr-only">
@@ -569,7 +657,7 @@ export default function ProductsPage() {
                     <p className="text-2xl font-bold">₹{product.price.toLocaleString()}</p>
                     <p className="text-[9px] text-muted-foreground uppercase tracking-widest">W: ₹{product.wholesalePrice.toLocaleString()}</p>
                   </div>
-                  <Badge variant={product.availabilityStatus === 'In Stock' ? 'default' : 'destructive'} className="rounded-full uppercase tracking-widest text-[8px] py-1 px-3">
+                  <Badge variant={product.availabilityStatus === 'In Stock' ? 'default' : 'destructive'} className="rounded-full uppercase tracking-widest text-[8px] py-1.5 px-4">
                     {product.availabilityStatus}
                   </Badge>
                 </div>
