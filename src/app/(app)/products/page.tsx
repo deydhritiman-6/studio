@@ -48,7 +48,6 @@ const SHAPE_CONFIG: Record<string, { fields: { name: string; label: string; plac
   Spherical: {
     fields: [
       { name: 'diameter', label: 'Diameter', type: 'number' },
-      { name: 'radius', label: 'Radius (Optional)', type: 'number' },
     ]
   },
   'Half Spherical': {
@@ -413,10 +412,10 @@ export default function ProductsPage() {
         }
       }}>
         <DialogContent className="sm:max-w-4xl rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden flex flex-col h-[85vh] max-h-[90vh]">
-          <div className="px-10 py-6 border-b shrink-0">
-            <DialogHeader>
-              <DialogTitle className="text-3xl font-headline tracking-tight">{activeDialog === 'edit' ? 'Refine Creation' : 'Register New Creation'}</DialogTitle>
-              <DialogDescription className="text-muted-foreground font-medium">Define the identity and physical profile of your artisan masterpiece.</DialogDescription>
+          <div className="px-8 py-5 border-b shrink-0">
+            <DialogHeader className="space-y-1">
+              <DialogTitle className="text-2xl font-headline font-bold tracking-tight text-stone-900">{activeDialog === 'edit' ? 'Refine Creation' : 'Register New Creation'}</DialogTitle>
+              <DialogDescription className="text-[10px] uppercase tracking-[0.2em] font-black text-stone-400">Identity & Design Specification</DialogDescription>
             </DialogHeader>
           </div>
           
@@ -494,21 +493,26 @@ export default function ProductsPage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                       {SHAPE_CONFIG[watchShape]?.fields.map((f) => (
-                        <FormField key={f.name} control={form.control} name={`productDimensions.${f.name}` as any} render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="uppercase text-[9px] font-bold tracking-widest text-stone-500">{f.label} ({watchDimensions.unit})</FormLabel>
-                            <FormControl>
-                              <Input 
-                                type={f.type} 
-                                placeholder={f.placeholder || `0.00`} 
-                                className="h-10 rounded-xl bg-background border-stone-200 focus:ring-primary/20" 
-                                {...field} 
-                                value={field.value ?? ''}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
+                        <FormField 
+                          key={f.name} 
+                          control={form.control} 
+                          name={`productDimensions.${f.name}` as any} 
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="uppercase text-[9px] font-bold tracking-widest text-stone-500">{f.label} ({watchDimensions.unit})</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type={f.type} 
+                                  placeholder={f.placeholder || `0.00`} 
+                                  className="h-10 rounded-xl bg-background border-stone-200 focus:ring-primary/20" 
+                                  {...field} 
+                                  value={field.value ?? ''}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} 
+                        />
                       ))}
                     </div>
 
@@ -642,24 +646,26 @@ export default function ProductsPage() {
                 </div>
               </div>
 
-              <div className="px-10 py-6 border-t shrink-0">
+              <div className="px-8 py-5 border-t shrink-0">
                 {!isValid && Object.keys(errors).length > 0 && (
-                  <div className="mb-6 p-5 bg-destructive/5 border border-destructive/10 rounded-2xl flex items-center gap-4 text-destructive animate-in slide-in-from-bottom-2 duration-300">
+                  <div className="mb-6 p-4 bg-destructive/5 border border-destructive/10 rounded-2xl flex items-center gap-4 text-destructive animate-in slide-in-from-bottom-2 duration-300">
                     <AlertCircle className="h-5 w-5 shrink-0" />
                     <div className="text-[10px] font-black uppercase tracking-widest leading-normal">
-                      {errors.name && <span>Please enter a product name. </span>}
-                      {errors.flavor && <span>Please enter the flavor profile. </span>}
+                      {errors.name && <span>Missing product name. </span>}
+                      {errors.flavor && <span>Missing flavor profile. </span>}
                       {errors.price && <span>Retail value is required. </span>}
-                      {errors.imageUrls && <span>You have not yet selected an image. </span>}
+                      {errors.imageUrls && <span>Artisan photography is required. </span>}
                     </div>
                   </div>
                 )}
                 
-                <DialogFooter className="gap-6 flex items-center justify-end">
-                  <DialogClose asChild><Button type="button" variant="ghost" className="rounded-xl h-14 px-8 font-bold uppercase text-[10px] tracking-widest text-stone-500 hover:text-stone-900 transition-colors">Discard</Button></DialogClose>
-                  <Button type="submit" disabled={isSaving} className="rounded-xl h-14 px-12 shadow-xl shadow-primary/10 font-bold uppercase text-[10px] tracking-widest min-w-[220px]">
+                <DialogFooter className="flex items-center justify-end gap-4">
+                  <DialogClose asChild>
+                    <Button type="button" variant="ghost" className="h-12 px-6 rounded-xl font-bold uppercase text-[10px] tracking-widest text-stone-500 hover:text-stone-900 transition-colors">Discard</Button>
+                  </DialogClose>
+                  <Button type="submit" disabled={isSaving} className="h-12 px-10 rounded-xl shadow-xl shadow-primary/10 font-bold uppercase text-[10px] tracking-widest min-w-[180px]">
                     {isSaving ? <Loader2 className="mr-3 h-4 w-4 animate-spin" /> : null}
-                    {activeDialog === 'edit' ? 'Commit Refinement' : 'Create Register'}
+                    {activeDialog === 'edit' ? 'Save Refinement' : 'Register Creation'}
                   </Button>
                 </DialogFooter>
               </div>
