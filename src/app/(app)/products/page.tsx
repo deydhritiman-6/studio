@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
@@ -173,6 +172,13 @@ export default function ProductsPage() {
     return allProducts?.filter(p => p.productionStatus === 'Product Ready') || [];
   }, [allProducts]);
 
+  // Derive unique product names from gallery for identity sync
+  const availableNamesFromGallery = useMemo(() => {
+    if (!galleries) return [];
+    const names = galleries.map(g => g.productName);
+    return Array.from(new Set(names)).sort();
+  }, [galleries]);
+
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -261,7 +267,7 @@ export default function ProductsPage() {
     });
   }
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: keyof ProductFormValues) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: keyof GalleryFormValues) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -484,7 +490,32 @@ export default function ProductsPage() {
                     <FormField control={form.control} name="name" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Product Identity</FormLabel>
-                        <FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl>
+                        {availableNamesFromGallery.length > 0 ? (
+                           <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="h-12 rounded-xl">
+                                  <SelectValue placeholder="Select from Gallery or existing..." />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {availableNamesFromGallery.map(name => (
+                                  <SelectItem key={name} value={name}>{name}</SelectItem>
+                                ))}
+                                <Separator className="my-2" />
+                                <div className="p-2">
+                                   <p className="text-[9px] font-black uppercase text-stone-400 mb-2">New Identity</p>
+                                   <Input 
+                                      placeholder="Type new name..." 
+                                      className="h-8 text-xs" 
+                                      onChange={(e) => field.onChange(e.target.value)} 
+                                      onKeyDown={(e) => e.stopPropagation()} 
+                                   />
+                                </div>
+                              </SelectContent>
+                           </Select>
+                        ) : (
+                          <FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )} />

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
@@ -39,9 +38,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { Separator } from '@/components/ui/separator';
 
 const galleryFormSchema = z.object({
-  productId: z.string().min(1, 'Product selection is required.'),
+  productId: z.string().optional(),
+  productName: z.string().min(1, 'Product Name is required.'),
   mainImage: z.string().min(1, 'Main Photo is required.'),
   subPhoto1: z.string().optional(),
   subPhoto2: z.string().optional(),
@@ -70,6 +71,7 @@ export default function PhotoGalleryManagementPage() {
     resolver: zodResolver(galleryFormSchema),
     defaultValues: {
       productId: '',
+      productName: '',
       mainImage: '',
       subPhoto1: '',
       subPhoto2: '',
@@ -80,7 +82,8 @@ export default function PhotoGalleryManagementPage() {
   useEffect(() => {
     if (editingGallery) {
       form.reset({
-        productId: editingGallery.productId,
+        productId: editingGallery.productId || '',
+        productName: editingGallery.productName,
         mainImage: editingGallery.mainImage,
         subPhoto1: editingGallery.subImages?.[0] || '',
         subPhoto2: editingGallery.subImages?.[1] || '',
@@ -89,6 +92,7 @@ export default function PhotoGalleryManagementPage() {
     } else {
       form.reset({
         productId: '',
+        productName: '',
         mainImage: '',
         subPhoto1: '',
         subPhoto2: '',
@@ -125,16 +129,6 @@ export default function PhotoGalleryManagementPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-      toast({
-        variant: 'destructive',
-        title: 'Invalid Format',
-        description: 'Please upload JPG, PNG, or WEBP images.',
-      });
-      return;
-    }
-
     const reader = new FileReader();
     reader.onload = async (event) => {
       const optimized = await optimizeImage(event.target?.result as string);
@@ -144,19 +138,18 @@ export default function PhotoGalleryManagementPage() {
   };
 
   const handleSaveGallery = (values: GalleryFormValues) => {
-    if (!firestore || !products) return;
+    if (!firestore) return;
 
     setIsSaving(true);
     const galleryId = editingGallery?.id || `GAL-${Date.now()}`;
     const galleryRef = doc(firestore, 'product-galleries', galleryId);
     
-    const selectedProduct = products.find(p => p.id === values.productId);
     const subImages = [values.subPhoto1, values.subPhoto2, values.subPhoto3].filter(Boolean) as string[];
 
     const galleryData: ProductGallery = {
       id: galleryId,
-      productId: values.productId,
-      productName: selectedProduct?.name || 'Unknown Product',
+      productId: values.productId || '',
+      productName: values.productName,
       mainImage: values.mainImage,
       subImages: subImages,
       createdAt: editingGallery?.createdAt || new Date().toISOString(),
@@ -351,17 +344,35 @@ export default function PhotoGalleryManagementPage() {
                <ScrollArea className="flex-1 px-10 custom-scrollbar">
                   <div className="space-y-10 py-10">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                       <FormField control={form.control} name="productId" render={({ field }) => (
+                       <FormField control={form.control} name="productName" render={({ field }) => (
                          <FormItem>
-                            <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Target Creation</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                            <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Target Identity</FormLabel>
+                            <Select 
+                              onValueChange={(val) => {
+                                const prod = products?.find(p => p.name === val);
+                                field.onChange(val);
+                                if (prod) form.setValue('productId', prod.id);
+                              }} 
+                              defaultValue={field.value} 
+                              value={field.value}
+                            >
                                <FormControl>
                                   <SelectTrigger className="h-12 rounded-xl border-stone-200">
-                                     <SelectValue placeholder="Select product for association..." />
+                                     <SelectValue placeholder="Select existing or enter new..." />
                                   </SelectTrigger>
                                </FormControl>
                                <SelectContent>
-                                  {products?.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                                  {products?.map(p => <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>)}
+                                  <Separator className="my-2" />
+                                  <div className="p-2">
+                                     <p className="text-[9px] font-black uppercase text-stone-400 mb-2">New Identity</p>
+                                     <Input 
+                                        placeholder="Type new identity name..." 
+                                        className="h-8 text-xs" 
+                                        onChange={(e) => field.onChange(e.target.value)} 
+                                        onKeyDown={(e) => e.stopPropagation()} 
+                                     />
+                                  </div>
                                </SelectContent>
                             </Select>
                             <FormMessage />
