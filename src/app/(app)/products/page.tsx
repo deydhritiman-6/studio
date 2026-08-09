@@ -22,7 +22,8 @@ import {
   Eye, 
   CopyCheck,
   Search,
-  CheckCircle2
+  CheckCircle2,
+  ShieldAlert
 } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
@@ -35,7 +36,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, doc, setDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -183,6 +184,10 @@ export default function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [deleteInput, setDeleteInput] = useState('');
+  
   const { toast } = useToast();
   
   const [viewingProduct, setViewingProduct] = useState<{images: string[], startIndex: number, productName: string, hint: string} | null>(null);
@@ -260,11 +265,9 @@ export default function ProductsPage() {
   }, [editingProduct, form, isAddDialogOpen]);
 
   const handleReEnroll = (product: Product) => {
-    // Re-enroll is "edit but as a new document"
     setEditingProduct(null);
     setIsAddDialogOpen(true);
     
-    // Manual pre-fill of form
     setTimeout(() => {
       const urls = product.imageUrls || [];
       form.reset({
@@ -344,6 +347,23 @@ export default function ProductsPage() {
           path: productRef.path,
           operation: id ? 'update' : 'create',
           requestResourceData: productData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
+  };
+
+  const handleDelete = (id: string) => {
+    if (!firestore) return;
+    deleteDoc(doc(firestore, 'products', id))
+      .then(() => {
+        toast({ title: 'Creation Removed', description: 'The artisan product has been permanently deleted.' });
+        setProductToDelete(null);
+        setDeleteInput('');
+      })
+      .catch(async (error) => {
+        const permissionError = new FirestorePermissionError({
+          path: `products/${id}`,
+          operation: 'delete',
         });
         errorEmitter.emit('permission-error', permissionError);
       });
@@ -611,6 +631,45 @@ export default function ProductsPage() {
           </Form>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!productToDelete} onOpenChange={(o) => { if(!o) { setProductToDelete(null); setDeleteInput(''); } }}>
+        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden p-0">
+          <div className="bg-destructive/10 p-8 border-b border-destructive/20">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-headline flex items-center gap-3 text-destructive">
+                <ShieldAlert className="h-8 w-8" />
+                Permanent Removal
+              </DialogTitle>
+              <DialogDescription className="text-stone-600 font-medium">
+                You are about to delete <strong className="text-stone-900 font-bold">{productToDelete?.name}</strong>. This artisanal record will be erased from the global catalog.
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+          <div className="p-10 space-y-6">
+            <div className="space-y-4">
+              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Security Verification</Label>
+              <p className="text-xs text-stone-500 italic">Type the word <span className="font-bold text-destructive underline">delete</span> manually to authorize this action.</p>
+              <Input 
+                placeholder="Type here..." 
+                value={deleteInput}
+                onChange={(e) => setDeleteInput(e.target.value)}
+                className="h-14 rounded-2xl border-2 border-stone-200 focus:border-destructive/40 focus:ring-destructive/10 text-center text-lg font-bold tracking-widest"
+              />
+            </div>
+            <div className="flex gap-4">
+               <Button variant="ghost" onClick={() => setProductToDelete(null)} className="flex-1 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest">Abort</Button>
+               <Button 
+                variant="destructive" 
+                className="flex-2 px-10 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest shadow-xl shadow-destructive/20" 
+                disabled={deleteInput.toLowerCase() !== 'delete'}
+                onClick={() => productToDelete && handleDelete(productToDelete.id)}
+               >
+                 Destroy Record
+               </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
       
       <PageHeader title="Artisan Portfolio" actions={<Button onClick={() => setIsAddDialogOpen(true)} className="rounded-xl h-11 px-6"><PlusCircle className="mr-2 h-4 w-4" />New Creation</Button>} />
       
@@ -625,7 +684,7 @@ export default function ProductsPage() {
       ) : (
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {products.map((product) => (
-            <Card key={product.id} className="flex flex-col group overflow-hidden border-none shadow-sm hover:shadow-2xl transition-all duration-500 rounded-[2rem] bg-card">
+            <Card key={product.id} className="flex flex-col group overflow-hidden border-none shadow-sm hover:shadow-2xl transition-all duration-500 rounded-[2rem] bg-card relative">
               <CardHeader className="p-0 relative">
                  <button type="button" className="block w-full aspect-[4/3] relative overflow-hidden" onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: 0, productName: product.name, hint: product.imageHint })}>
                     <Image src={product.imageUrls?.[0] || 'https://picsum.photos/seed/default/400/300'} alt={product.name} fill className={`object-cover transition-transform duration-700 ${product.availabilityStatus === 'Out of Stock' ? 'grayscale' : 'group-hover:scale-110'}`} data-ai-hint={product.imageHint} />
@@ -633,6 +692,16 @@ export default function ProductsPage() {
                   <div className="absolute top-4 left-4 flex gap-2">
                     {product.sku && <Badge variant="secondary" className="uppercase tracking-tighter text-[8px]">{product.sku}</Badge>}
                     <Badge variant="outline" className="bg-white/90 backdrop-blur-sm border-none shadow-sm uppercase tracking-widest text-[8px] font-black">{product.productShape}</Badge>
+                  </div>
+                  <div className="absolute top-4 right-4 flex gap-2 translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500">
+                    <Button 
+                      variant="destructive" 
+                      size="icon" 
+                      className="h-8 w-8 rounded-full shadow-2xl bg-white/20 backdrop-blur-md border border-white/20 hover:bg-destructive hover:text-white"
+                      onClick={(e) => { e.stopPropagation(); setProductToDelete(product); }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
               </CardHeader>
               <CardContent className="p-6 flex-grow space-y-6">
@@ -666,3 +735,4 @@ export default function ProductsPage() {
     </TooltipProvider>
   );
 }
+
