@@ -13,7 +13,7 @@ import { Camera, PlusCircle, Loader2, Link as LinkIcon, Upload, Image as ImageIc
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -27,7 +27,6 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection, doc, setDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChocolateMeshViewer } from '@/components/chocolate-mesh-viewer';
 
@@ -411,17 +410,17 @@ export default function ProductsPage() {
           stopCamera();
         }
       }}>
-        <DialogContent className="sm:max-w-4xl rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden flex flex-col h-[85vh] max-h-[90vh]">
-          <div className="px-8 py-5 border-b shrink-0">
+        <DialogContent className="sm:max-w-4xl rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden flex flex-col h-[85vh] max-h-[90vh] bg-background">
+          <div className="px-10 py-6 border-b shrink-0 bg-background/50 backdrop-blur-sm">
             <DialogHeader className="space-y-1">
-              <DialogTitle className="text-2xl font-headline font-bold tracking-tight text-stone-900">{activeDialog === 'edit' ? 'Refine Creation' : 'Register New Creation'}</DialogTitle>
-              <DialogDescription className="text-[10px] uppercase tracking-[0.2em] font-black text-stone-400">Identity & Design Specification</DialogDescription>
+              <DialogTitle className="text-2xl font-headline font-bold tracking-tight text-foreground">{activeDialog === 'edit' ? 'Refine Creation' : 'Register New Creation'}</DialogTitle>
+              <DialogDescription className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground/60">Identity & Design Specification</DialogDescription>
             </DialogHeader>
           </div>
           
           <Form {...form}>
             <form onSubmit={form.handleSubmit(activeDialog === 'edit' ? onEditSubmit : onAddSubmit)} className="flex flex-col flex-1 overflow-hidden">
-              <div className="flex-1 overflow-y-auto px-10 custom-scrollbar">
+              <div className="flex-1 overflow-y-auto px-10 custom-scrollbar bg-background/20">
                 <div className="space-y-10 py-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <FormField control={form.control} name="name" render={({ field }) => (
@@ -469,14 +468,14 @@ export default function ProductsPage() {
                     )} />
                   </div>
 
-                  <div className="bg-stone-50 p-10 rounded-[2.5rem] border-2 border-dashed border-stone-200 space-y-8 shadow-inner">
+                  <div className="bg-stone-50/30 dark:bg-stone-900/30 p-10 rounded-[2.5rem] border-2 border-dashed border-stone-200/50 space-y-8 shadow-inner">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-[0.2em]">
                         <Ruler className="h-4 w-4" /> Dimension configuration
                       </div>
                       <FormField control={form.control} name="productDimensions.unit" render={({ field }) => (
                         <div className="flex items-center gap-2">
-                           <Label className="text-[9px] font-bold text-stone-400 uppercase tracking-tighter">Scale Unit</Label>
+                           <Label className="text-[9px] font-bold text-muted-foreground uppercase tracking-tighter">Scale Unit</Label>
                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                              <SelectTrigger className="h-8 w-24 rounded-lg bg-background text-[10px] font-bold border-none shadow-sm">
                                <SelectValue />
@@ -499,7 +498,7 @@ export default function ProductsPage() {
                           name={`productDimensions.${f.name}` as any} 
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="uppercase text-[9px] font-bold tracking-widest text-stone-500">{f.label} ({watchDimensions.unit})</FormLabel>
+                              <FormLabel className="uppercase text-[9px] font-bold tracking-widest text-muted-foreground/70">{f.label} ({watchDimensions.unit})</FormLabel>
                               <FormControl>
                                 <Input 
                                   type={f.type} 
@@ -516,17 +515,17 @@ export default function ProductsPage() {
                       ))}
                     </div>
 
-                    <div className="mt-8 pt-8 border-t border-stone-200 space-y-4">
-                       <h4 className="text-[9px] font-black uppercase tracking-[0.3em] text-stone-400">Design Specification Summary</h4>
+                    <div className="mt-8 pt-8 border-t border-stone-200/50 space-y-4">
+                       <h4 className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/40">Design Specification Summary</h4>
                        <div className="p-6 bg-background rounded-2xl border border-stone-100 flex flex-wrap gap-x-10 gap-y-4 shadow-sm">
                           <div className="space-y-0.5">
                              <p className="text-[8px] font-bold uppercase text-muted-foreground">Type</p>
-                             <p className="text-xs font-bold text-stone-900">{watchShape}</p>
+                             <p className="text-xs font-bold text-foreground">{watchShape}</p>
                           </div>
                           {SHAPE_CONFIG[watchShape]?.fields.filter(f => f.type === 'number').map(f => (
                              <div key={f.name} className="space-y-0.5">
                                 <p className="text-[8px] font-bold uppercase text-muted-foreground">{f.label}</p>
-                                <p className="text-xs font-bold text-stone-900">{watchDimensions[f.name as keyof ProductDimensions] || '--'} {watchDimensions.unit}</p>
+                                <p className="text-xs font-bold text-foreground">{watchDimensions[f.name as keyof ProductDimensions] || '--'} {watchDimensions.unit}</p>
                              </div>
                           ))}
                        </div>
@@ -646,7 +645,7 @@ export default function ProductsPage() {
                 </div>
               </div>
 
-              <div className="px-8 py-5 border-t shrink-0">
+              <div className="px-10 py-8 shrink-0 bg-background border-t">
                 {!isValid && Object.keys(errors).length > 0 && (
                   <div className="mb-6 p-4 bg-destructive/5 border border-destructive/10 rounded-2xl flex items-center gap-4 text-destructive animate-in slide-in-from-bottom-2 duration-300">
                     <AlertCircle className="h-5 w-5 shrink-0" />
@@ -659,11 +658,11 @@ export default function ProductsPage() {
                   </div>
                 )}
                 
-                <DialogFooter className="flex items-center justify-end gap-4">
+                <DialogFooter className="flex items-center justify-end gap-6 sm:justify-end">
                   <DialogClose asChild>
-                    <Button type="button" variant="ghost" className="h-12 px-6 rounded-xl font-bold uppercase text-[10px] tracking-widest text-stone-500 hover:text-stone-900 transition-colors">Discard</Button>
+                    <Button type="button" variant="ghost" className="h-12 px-6 rounded-xl font-bold uppercase text-[10px] tracking-widest text-muted-foreground hover:text-foreground transition-colors">Discard</Button>
                   </DialogClose>
-                  <Button type="submit" disabled={isSaving} className="h-12 px-10 rounded-xl shadow-xl shadow-primary/10 font-bold uppercase text-[10px] tracking-widest min-w-[180px]">
+                  <Button type="submit" disabled={isSaving} className="h-12 px-12 rounded-xl shadow-2xl shadow-primary/20 font-bold uppercase text-[10px] tracking-widest min-w-[200px]">
                     {isSaving ? <Loader2 className="mr-3 h-4 w-4 animate-spin" /> : null}
                     {activeDialog === 'edit' ? 'Save Refinement' : 'Register Creation'}
                   </Button>
