@@ -1,3 +1,4 @@
+
 'use client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -42,7 +43,8 @@ import {
   Lock,
   Eye,
   Search,
-  Globe
+  Globe,
+  ClipboardList
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -71,8 +73,22 @@ const navItems = [
   { href: '/recipes', icon: BookOpen, label: 'Recipes' },
   { href: '/products', icon: Package, label: 'Products' },
   { href: '/inventory', icon: Boxes, label: 'Inventory' },
-  { href: '/gst-billing', icon: FileText, label: 'Create Invoice' },
-  { href: '/invoices', icon: FileText, label: 'View Invoices' },
+  {
+    icon: FileText,
+    label: 'Billing & Invoices',
+    subItems: [
+        { href: '/gst-billing', icon: FileText, label: 'Create Invoice' },
+        { href: '/invoices', icon: FileText, label: 'View Invoices' },
+    ]
+  },
+  {
+    icon: ClipboardList,
+    label: 'Quotations',
+    subItems: [
+        { href: '/quotations/create', icon: PlusCircle, label: 'Create Quotation' },
+        { href: '/quotations', icon: ClipboardList, label: 'View Quotations' },
+    ]
+  },
   { href: '/billing/shipping-status', icon: Truck, label: 'Dispatch Control' },
   { href: '/billing/tracking-visibility', icon: Eye, label: 'Visibility Control' },
   { href: '/distributors', icon: Truck, label: 'Distributors' },
@@ -96,6 +112,8 @@ const navItems = [
     ],
   },
 ];
+
+import { PlusCircle } from 'lucide-react';
 
 type User = {
   name: string;

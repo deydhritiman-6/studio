@@ -1,4 +1,5 @@
 
+
 export type Customer = {
   id: string;
   name: string;
@@ -54,6 +55,27 @@ export type Order = {
     updatedBy: string;
     updatedAt: string;
   };
+};
+
+export type QuotationItem = {
+  productId: string;
+  productName: string;
+  quantity: number;
+  pricePerUnit: number;
+  total: number;
+};
+
+export type Quotation = {
+  id: string;
+  customerId: string;
+  customerName: string;
+  date: string;
+  expiryDate: string;
+  totalAmount: number;
+  status: 'Draft' | 'Sent' | 'Accepted' | 'Expired' | 'Converted to Order';
+  items: QuotationItem[];
+  notes?: string;
+  terms?: string;
 };
 
 export type ProductDimensions = {

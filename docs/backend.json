@@ -161,6 +161,36 @@
         "lastOrderDate": { "type": "string", "format": "date" }
       },
       "required": ["name", "contactPerson", "email", "phone", "region", "state", "district", "status"]
+    },
+    "Quotation": {
+      "title": "Quotation",
+      "description": "A sales quotation for a customer.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerId": { "type": "string" },
+        "customerName": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "expiryDate": { "type": "string", "format": "date" },
+        "totalAmount": { "type": "number" },
+        "status": { "type": "string", "enum": ["Draft", "Sent", "Accepted", "Expired", "Converted to Order"] },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "productId": { "type": "string" },
+              "productName": { "type": "string" },
+              "quantity": { "type": "number" },
+              "pricePerUnit": { "type": "number" },
+              "total": { "type": "number" }
+            }
+          }
+        },
+        "notes": { "type": "string" },
+        "terms": { "type": "string" }
+      },
+      "required": ["customerId", "customerName", "date", "expiryDate", "totalAmount", "status", "items"]
     }
   },
   "auth": {
@@ -194,6 +224,10 @@
     "/distributors/{distributorId}": {
       "schema": "#/backend/entities/Distributor",
       "description": "Collection of distributors."
+    },
+    "/quotations/{quotationId}": {
+      "schema": "#/backend/entities/Quotation",
+      "description": "Collection of customer quotations."
     }
   }
 }
