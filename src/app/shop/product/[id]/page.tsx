@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -11,6 +10,7 @@ import { ShoppingCart, ArrowLeft, CheckCircle2, Star, ShieldCheck, Loader2, Box,
 import { useParams, useRouter } from 'next/navigation';
 import { useDoc, useFirestore } from '@/firebase';
 import { doc } from 'firebase/firestore';
+import { ChocolateMeshViewer } from '@/app/(app)/products/page';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -105,11 +105,11 @@ export default function ProductDetailPage() {
     if (product.productDimensions) {
       const dims = product.productDimensions;
       return (
-        <div className="bg-stone-50 p-6 rounded-2xl border border-stone-100 space-y-4">
+        <div className="bg-stone-50 p-6 rounded-2xl border border-stone-100 space-y-6">
            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary">
               <Ruler className="h-3 w-3" /> Technical Specifications
            </div>
-           <div className="grid grid-cols-2 gap-y-3">
+           <div className="grid grid-cols-2 gap-y-4">
               <div className="space-y-0.5">
                  <p className="text-[9px] font-bold text-stone-400 uppercase tracking-tighter">Shape</p>
                  <p className="text-sm font-bold text-stone-900">{product.productShape}</p>
@@ -139,6 +139,11 @@ export default function ProductDetailPage() {
                 </div>
               )}
            </div>
+           
+           <div className="pt-2">
+             <ChocolateMeshViewer shape={product.productShape || 'Rectangular'} dimensions={dims} />
+           </div>
+
            {dims.additionalDescription && (
               <p className="text-[10px] text-stone-500 italic pt-2 border-t border-stone-200">
                 Note: {dims.additionalDescription}
@@ -190,7 +195,7 @@ export default function ProductDetailPage() {
                   aria-label={`View perspective ${i + 1} of ${product.name}`}
                   className={`aspect-square relative rounded-2xl overflow-hidden border-2 transition-all duration-300 ${selectedImage === url ? 'border-primary shadow-lg ring-4 ring-primary/5' : 'border-transparent opacity-60 hover:opacity-100 hover:border-stone-200'}`}
                 >
-                   <Image src={url} alt={`${product.name perspective ${i + 1}`} fill className="object-cover" data-ai-hint={product.imageHint} />
+                   <Image src={url} alt={`${product.name} perspective ${i + 1}`} fill className="object-cover" data-ai-hint={product.imageHint} />
                 </button>
              ))}
           </div>

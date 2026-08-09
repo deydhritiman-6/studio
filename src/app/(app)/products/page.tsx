@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
@@ -142,30 +141,42 @@ const productFormSchema = z.object({
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
 
-function ChocolateMeshViewer({ shape, dimensions }: { shape: string, dimensions: ProductDimensions }) {
+export function ChocolateMeshViewer({ shape, dimensions }: { shape: string, dimensions: ProductDimensions }) {
   const mountRef = useRef<HTMLDivElement>(null);
-  const [zoom, setZoom] = useState(1);
-  const requestRef = useRef<number>();
-  const controlsRef = useRef({ rotationX: -0.5, rotationY: 0.8, isDragging: false, lastMouseX: 0, lastMouseY: 0 });
+  const sceneRef = useRef<THREE.Scene | null>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const meshRef = useRef<THREE.Mesh | null>(null);
+  const frameRef = useRef<number | null>(null);
+  
+  const controlsRef = useRef({ 
+    rotationX: -0.5, 
+    rotationY: 0.8, 
+    zoom: 1,
+    isDragging: false, 
+    lastMouseX: 0, 
+    lastMouseY: 0 
+  });
 
   useEffect(() => {
     if (!mountRef.current) return;
-
     const width = mountRef.current.clientWidth;
     const height = mountRef.current.clientHeight;
 
     const scene = new THREE.Scene();
     scene.background = null;
+    sceneRef.current = scene;
 
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
     camera.position.z = 5;
+    cameraRef.current = camera;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);
     mountRef.current.appendChild(renderer.domElement);
+    rendererRef.current = renderer;
 
-    // Lights
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
 
@@ -173,43 +184,81 @@ function ChocolateMeshViewer({ shape, dimensions }: { shape: string, dimensions:
     directionalLight.position.set(5, 10, 7.5);
     scene.add(directionalLight);
 
-    // Geometry based on shape
-    let geometry: THREE.BufferGeometry;
+    const animate = () => {
+      if (meshRef.current) {
+        meshRef.current.rotation.x = controlsRef.current.rotationX;
+        meshRef.current.rotation.y = controlsRef.current.rotationY;
+        const s = controlsRef.current.zoom;
+        meshRef.current.scale.set(s, s, s);
+      }
+      renderer.render(scene, camera);
+      frameRef.current = requestAnimationFrame(animate);
+    };
+    animate();
+
+    const handleResize = () => {
+      if (!mountRef.current || !cameraRef.current || !rendererRef.current) return;
+      const w = mountRef.current.clientWidth;
+      const h = mountRef.current.clientHeight;
+      cameraRef.current.aspect = w / h;
+      cameraRef.current.updateProjectionMatrix();
+      rendererRef.current.setSize(w, h);
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (frameRef.current) cancelAnimationFrame(frameRef.current);
+      if (mountRef.current && renderer.domElement) {
+        mountRef.current.removeChild(renderer.domElement);
+      }
+      renderer.dispose();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!sceneRef.current) return;
     
+    if (meshRef.current) {
+      sceneRef.current.remove(meshRef.current);
+      meshRef.current.geometry.dispose();
+      (meshRef.current.material as THREE.Material).dispose();
+      meshRef.current = null;
+    }
+
     const L = (dimensions.length || dimensions.sideLength || dimensions.diameter || dimensions.base || 50) / 100;
     const W = (dimensions.width || dimensions.sideLength || dimensions.diameter || 50) / 100;
     const H = (dimensions.height || 20) / 100;
 
+    let geometry: THREE.BufferGeometry;
     switch (shape) {
       case 'Spherical':
-        geometry = new THREE.SphereGeometry(L / 2, 32, 32);
+        geometry = new THREE.SphereGeometry(L / 2, 64, 32);
         break;
       case 'Half Spherical':
-        geometry = new THREE.SphereGeometry(L / 2, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+        geometry = new THREE.SphereGeometry(L / 2, 64, 16, 0, Math.PI * 2, 0, Math.PI / 2);
         break;
       case 'Cylindrical':
       case 'Circular':
-        geometry = new THREE.CylinderGeometry(L / 2, L / 2, H, 32);
+        geometry = new THREE.CylinderGeometry(L / 2, L / 2, H, 64);
         break;
       case 'Conical':
-        geometry = new THREE.ConeGeometry(L / 2, H, 32);
+        geometry = new THREE.ConeGeometry(L / 2, H, 64);
         break;
       case 'Triangular':
         geometry = new THREE.CylinderGeometry(L / 2, L / 2, H, 3);
         break;
       case 'Oval':
-        geometry = new THREE.SphereGeometry(1, 32, 32);
+        geometry = new THREE.SphereGeometry(1, 64, 32);
         geometry.scale(L / 2, H / 2, W / 2);
         break;
-      case 'Square':
-      case 'Rectangular':
       default:
         geometry = new THREE.BoxGeometry(L, H, W);
         break;
     }
 
     const material = new THREE.MeshStandardMaterial({
-      color: 0x3d1e16, // Roseberry Brown
+      color: 0x3d1e16,
       roughness: 0.3,
       metalness: 0.1,
       transparent: true,
@@ -217,55 +266,45 @@ function ChocolateMeshViewer({ shape, dimensions }: { shape: string, dimensions:
     });
 
     const mesh = new THREE.Mesh(geometry, material);
-    scene.add(mesh);
-
-    // Add Wireframe/Net
     const wireframe = new THREE.WireframeGeometry(geometry);
-    const lineMaterial = new THREE.LineBasicMaterial({ color: 0xd4af37, transparent: true, opacity: 0.3 });
+    const lineMaterial = new THREE.LineBasicMaterial({ color: 0xd4af37, transparent: true, opacity: 0.4 });
     const net = new THREE.LineSegments(wireframe, lineMaterial);
     mesh.add(net);
+    
+    sceneRef.current.add(mesh);
+    meshRef.current = mesh;
+  }, [shape, dimensions]);
 
-    const animate = () => {
-      mesh.rotation.x = controlsRef.current.rotationX;
-      mesh.rotation.y = controlsRef.current.rotationY;
-      mesh.scale.set(zoom, zoom, zoom);
-      
-      renderer.render(scene, camera);
-      requestRef.current = requestAnimationFrame(animate);
-    };
+  useEffect(() => {
+    const el = mountRef.current;
+    if (!el) return;
 
-    const handleMouseDown = (e: MouseEvent) => {
+    const onMouseDown = (e: MouseEvent) => {
       controlsRef.current.isDragging = true;
       controlsRef.current.lastMouseX = e.clientX;
       controlsRef.current.lastMouseY = e.clientY;
     };
 
-    const handleMouseMove = (e: MouseEvent) => {
+    const onMouseMove = (e: MouseEvent) => {
       if (!controlsRef.current.isDragging) return;
-      const deltaX = e.clientX - controlsRef.current.lastMouseX;
-      const deltaY = e.clientY - controlsRef.current.lastMouseY;
-      controlsRef.current.rotationY += deltaX * 0.01;
-      controlsRef.current.rotationX += deltaY * 0.01;
+      const dx = e.clientX - controlsRef.current.lastMouseX;
+      const dy = e.clientY - controlsRef.current.lastMouseY;
+      controlsRef.current.rotationY += dx * 0.01;
+      controlsRef.current.rotationX += dy * 0.01;
       controlsRef.current.lastMouseX = e.clientX;
       controlsRef.current.lastMouseY = e.clientY;
     };
 
-    const handleMouseUp = () => {
+    const onMouseUp = () => {
       controlsRef.current.isDragging = false;
     };
 
-    const handleWheel = (e: WheelEvent) => {
+    const onWheel = (e: WheelEvent) => {
       e.preventDefault();
-      setZoom(prev => Math.max(0.5, Math.min(2, prev - e.deltaY * 0.001)));
+      controlsRef.current.zoom = Math.max(0.5, Math.min(3, controlsRef.current.zoom - e.deltaY * 0.001));
     };
 
-    mountRef.current.addEventListener('mousedown', handleMouseDown);
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-    mountRef.current.addEventListener('wheel', handleWheel, { passive: false });
-
-    // Touch support
-    const handleTouchStart = (e: TouchEvent) => {
+    const onTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 1) {
         controlsRef.current.isDragging = true;
         controlsRef.current.lastMouseX = e.touches[0].clientX;
@@ -273,40 +312,39 @@ function ChocolateMeshViewer({ shape, dimensions }: { shape: string, dimensions:
       }
     };
 
-    const handleTouchMove = (e: TouchEvent) => {
+    const onTouchMove = (e: TouchEvent) => {
       if (!controlsRef.current.isDragging || e.touches.length !== 1) return;
-      const deltaX = e.touches[0].clientX - controlsRef.current.lastMouseX;
-      const deltaY = e.touches[0].clientY - controlsRef.current.lastMouseY;
-      controlsRef.current.rotationY += deltaX * 0.01;
-      controlsRef.current.rotationX += deltaY * 0.01;
+      const dx = e.touches[0].clientX - controlsRef.current.lastMouseX;
+      const dy = e.touches[0].clientY - controlsRef.current.lastMouseY;
+      controlsRef.current.rotationY += dx * 0.01;
+      controlsRef.current.rotationX += dy * 0.01;
       controlsRef.current.lastMouseX = e.touches[0].clientX;
       controlsRef.current.lastMouseY = e.touches[0].clientY;
     };
 
-    mountRef.current.addEventListener('touchstart', handleTouchStart);
-    mountRef.current.addEventListener('touchmove', handleTouchMove);
-    mountRef.current.addEventListener('touchend', handleMouseUp);
-
-    animate();
+    el.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    el.addEventListener('wheel', onWheel, { passive: false });
+    el.addEventListener('touchstart', onTouchStart);
+    el.addEventListener('touchmove', onTouchMove);
+    el.addEventListener('touchend', onMouseUp);
 
     return () => {
-      if (requestRef.current) cancelAnimationFrame(requestRef.current);
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-      if (mountRef.current) {
-        mountRef.current.removeChild(renderer.domElement);
-      }
-      geometry.dispose();
-      material.dispose();
-      lineMaterial.dispose();
-      renderer.dispose();
+      el.removeEventListener('mousedown', onMouseDown);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      el.removeEventListener('wheel', onWheel);
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onMouseUp);
     };
-  }, [shape, dimensions, zoom]);
+  }, []);
 
   const resetView = () => {
     controlsRef.current.rotationX = -0.5;
     controlsRef.current.rotationY = 0.8;
-    setZoom(1);
+    controlsRef.current.zoom = 1;
   };
 
   return (
@@ -314,21 +352,18 @@ function ChocolateMeshViewer({ shape, dimensions }: { shape: string, dimensions:
       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary/70">
         <Box className="h-3 w-3" /> {shape} Interactive Mesh
       </div>
-      
-      <div ref={mountRef} className="h-[250px] w-full cursor-grab active:cursor-grabbing" />
-      
+      <div ref={mountRef} className="h-[250px] w-full cursor-grab active:cursor-grabbing touch-none" />
       <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-lg" onClick={resetView} title="Reset Perspective">
+        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-lg" onClick={resetView} title="Reset View">
            <RotateCcw className="h-4 w-4" />
         </Button>
-        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-lg" onClick={() => setZoom(prev => Math.min(2, prev + 0.1))} title="Zoom In">
+        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-lg" onClick={() => controlsRef.current.zoom = Math.min(3, controlsRef.current.zoom + 0.2)} title="Zoom In">
            <Maximize2 className="h-4 w-4" />
         </Button>
-        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-lg" onClick={() => setZoom(prev => Math.max(0.5, prev - 0.1))} title="Zoom Out">
+        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-lg" onClick={() => controlsRef.current.zoom = Math.max(0.5, controlsRef.current.zoom - 0.2)} title="Zoom Out">
            <Minimize2 className="h-4 w-4" />
         </Button>
       </div>
-
       <div className="text-center space-y-1">
         <p className="text-[9px] text-muted-foreground italic">Drag to Rotate • Scroll to Zoom</p>
       </div>
@@ -439,7 +474,6 @@ export default function ProductsPage() {
   const saveProduct = (values: ProductFormValues, id?: string) => {
     if (!firestore) return;
 
-    // Validate dimension fields for selected shape
     const config = SHAPE_CONFIG[values.productShape];
     const missingFields = config.fields.filter(f => f.type === 'number' && !values.productDimensions[f.name as keyof ProductDimensions]);
     
