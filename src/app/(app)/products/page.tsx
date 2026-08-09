@@ -412,30 +412,30 @@ export default function ProductsPage() {
           stopCamera();
         }
       }}>
-        <DialogContent className="sm:max-w-4xl rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden flex flex-col h-[90vh] max-h-[90vh]">
-          <div className="p-8 bg-muted/30 border-b shrink-0">
+        <DialogContent className="sm:max-w-4xl rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden flex flex-col h-[85vh] max-h-[90vh]">
+          <div className="px-10 py-6 border-b shrink-0">
             <DialogHeader>
-              <DialogTitle className="text-3xl font-headline">{activeDialog === 'edit' ? 'Refine Creation' : 'Register New Creation'}</DialogTitle>
-              <DialogDescription className="text-muted-foreground">Define the identity and physical profile of your artisan masterpiece.</DialogDescription>
+              <DialogTitle className="text-3xl font-headline tracking-tight">{activeDialog === 'edit' ? 'Refine Creation' : 'Register New Creation'}</DialogTitle>
+              <DialogDescription className="text-muted-foreground font-medium">Define the identity and physical profile of your artisan masterpiece.</DialogDescription>
             </DialogHeader>
           </div>
           
           <Form {...form}>
             <form onSubmit={form.handleSubmit(activeDialog === 'edit' ? onEditSubmit : onAddSubmit)} className="flex flex-col flex-1 overflow-hidden">
-              <div className="flex-1 overflow-y-auto px-8 custom-scrollbar">
-                <div className="space-y-8 py-8">
+              <div className="flex-1 overflow-y-auto px-10 custom-scrollbar">
+                <div className="space-y-10 py-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <FormField control={form.control} name="name" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Name of the Product</FormLabel>
-                        <FormControl><Input placeholder="e.g., Velvet Noir 85%" className="h-12 rounded-xl" {...field} /></FormControl>
+                        <FormControl><Input placeholder="e.g., Velvet Noir 85%" className="h-12 rounded-xl border-stone-200" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                     <FormField control={form.control} name="flavor" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Flavor Profile</FormLabel>
-                        <FormControl><Input placeholder="e.g., Single-Origin Dark Cocoa" className="h-12 rounded-xl" {...field} /></FormControl>
+                        <FormControl><Input placeholder="e.g., Single-Origin Dark Cocoa" className="h-12 rounded-xl border-stone-200" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
@@ -445,7 +445,7 @@ export default function ProductsPage() {
                     <FormField control={form.control} name="weight" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Product Weight</FormLabel>
-                        <FormControl><Input placeholder="e.g., 100g" className="h-12 rounded-xl" {...field} /></FormControl>
+                        <FormControl><Input placeholder="e.g., 100g" className="h-12 rounded-xl border-stone-200" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
@@ -458,7 +458,7 @@ export default function ProductsPage() {
                            const unit = form.getValues('productDimensions.unit');
                            form.setValue('productDimensions', { unit } as ProductDimensions);
                         }} defaultValue={field.value} value={field.value}>
-                          <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Select shape" /></SelectTrigger></FormControl>
+                          <FormControl><SelectTrigger className="h-12 rounded-xl border-stone-200"><SelectValue placeholder="Select shape" /></SelectTrigger></FormControl>
                           <SelectContent>
                             {Object.keys(SHAPE_CONFIG).map(shape => (
                               <SelectItem key={shape} value={shape}>{shape}</SelectItem>
@@ -470,8 +470,8 @@ export default function ProductsPage() {
                     )} />
                   </div>
 
-                  <div className="bg-stone-50 p-8 rounded-[2rem] border-2 border-dashed border-stone-200 space-y-6 shadow-inner">
-                    <div className="flex items-center justify-between mb-4">
+                  <div className="bg-stone-50 p-10 rounded-[2.5rem] border-2 border-dashed border-stone-200 space-y-8 shadow-inner">
+                    <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-[0.2em]">
                         <Ruler className="h-4 w-4" /> Dimension configuration
                       </div>
@@ -512,9 +512,9 @@ export default function ProductsPage() {
                       ))}
                     </div>
 
-                    <div className="mt-6 pt-6 border-t border-stone-200 space-y-3">
+                    <div className="mt-8 pt-8 border-t border-stone-200 space-y-4">
                        <h4 className="text-[9px] font-black uppercase tracking-[0.3em] text-stone-400">Design Specification Summary</h4>
-                       <div className="p-4 bg-background rounded-xl border border-stone-100 flex flex-wrap gap-x-8 gap-y-2 shadow-sm">
+                       <div className="p-6 bg-background rounded-2xl border border-stone-100 flex flex-wrap gap-x-10 gap-y-4 shadow-sm">
                           <div className="space-y-0.5">
                              <p className="text-[8px] font-bold uppercase text-muted-foreground">Type</p>
                              <p className="text-xs font-bold text-stone-900">{watchShape}</p>
@@ -535,14 +535,14 @@ export default function ProductsPage() {
                     <FormField control={form.control} name="price" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Retail Value (₹)</FormLabel>
-                        <FormControl><Input type="number" className="h-12 rounded-xl" {...field} /></FormControl>
+                        <FormControl><Input type="number" className="h-12 rounded-xl border-stone-200" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                     <FormField control={form.control} name="wholesalePrice" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Wholesale Value (₹)</FormLabel>
-                        <FormControl><Input type="number" className="h-12 rounded-xl" {...field} /></FormControl>
+                        <FormControl><Input type="number" className="h-12 rounded-xl border-stone-200" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
@@ -552,7 +552,7 @@ export default function ProductsPage() {
                     <FormItem>
                       <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Availability Status</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                        <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Select status" /></SelectTrigger></FormControl>
+                        <FormControl><SelectTrigger className="h-12 rounded-xl border-stone-200"><SelectValue placeholder="Select status" /></SelectTrigger></FormControl>
                         <SelectContent>
                           <SelectItem value="In Stock">Available for Reserve</SelectItem>
                           <SelectItem value="Out of Stock">Currently Maturing</SelectItem>
@@ -562,28 +562,28 @@ export default function ProductsPage() {
                     </FormItem>
                   )} />
                   
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Artisan Photography</FormLabel>
                     <Tabs defaultValue="gallery" className="w-full" onValueChange={(tab) => { if (tab !== 'camera') stopCamera(); }}>
-                      <TabsList className="grid w-full grid-cols-4 bg-muted rounded-xl p-1 h-12">
-                        <TabsTrigger value="gallery" className="rounded-lg"><ImageIcon className="h-4 w-4 mr-2" /> Gallery</TabsTrigger>
-                        <TabsTrigger value="camera" className="rounded-lg"><Camera className="h-4 w-4 mr-2" /> Live</TabsTrigger>
-                        <TabsTrigger value="url" className="rounded-lg"><LinkIcon className="h-4 w-4 mr-2" /> URL</TabsTrigger>
-                        <TabsTrigger value="upload" className="rounded-lg"><Upload className="h-4 w-4 mr-2" /> File</TabsTrigger>
+                      <TabsList className="grid w-full grid-cols-4 bg-muted/50 rounded-xl p-1 h-12">
+                        <TabsTrigger value="gallery" className="rounded-lg font-bold text-[10px] uppercase tracking-tighter"><ImageIcon className="h-3.5 w-3.5 mr-2" /> Gallery</TabsTrigger>
+                        <TabsTrigger value="camera" className="rounded-lg font-bold text-[10px] uppercase tracking-tighter"><Camera className="h-3.5 w-3.5 mr-2" /> Live</TabsTrigger>
+                        <TabsTrigger value="url" className="rounded-lg font-bold text-[10px] uppercase tracking-tighter"><LinkIcon className="h-3.5 w-3.5 mr-2" /> URL</TabsTrigger>
+                        <TabsTrigger value="upload" className="rounded-lg font-bold text-[10px] uppercase tracking-tighter"><Upload className="h-3.5 w-3.5 mr-2" /> File</TabsTrigger>
                       </TabsList>
                       
-                      <TabsContent value="gallery" className="pt-4">
+                      <TabsContent value="gallery" className="pt-6">
                         <RadioGroup onValueChange={(value) => {
                           const selectedImage = PlaceHolderImages.find(img => img.imageUrl === value);
                           if (selectedImage) {
                             form.setValue('imageUrls', [selectedImage.imageUrl], { shouldValidate: true });
                             form.setValue('imageHint', selectedImage.imageHint, { shouldValidate: true });
                           }
-                        }} value={form.watch('imageUrls')?.[0]} className="grid grid-cols-3 gap-4">
+                        }} value={form.watch('imageUrls')?.[0]} className="grid grid-cols-3 gap-6">
                           {PlaceHolderImages.map((image) => (
                             <div key={image.id} className="relative">
                               <RadioGroupItem value={image.imageUrl} id={image.id} className="peer sr-only" />
-                              <Label htmlFor={image.id} className="block cursor-pointer rounded-2xl border-2 border-muted bg-popover hover:border-accent peer-data-[state=checked]:border-primary transition-all overflow-hidden aspect-[4/3] relative">
+                              <Label htmlFor={image.id} className="block cursor-pointer rounded-2xl border-2 border-muted bg-popover hover:border-accent peer-data-[state=checked]:border-primary transition-all overflow-hidden aspect-[4/3] relative shadow-sm">
                                 <Image src={image.imageUrl} alt={image.description} fill className="object-cover" data-ai-hint={image.imageHint} />
                               </Label>
                             </div>
@@ -591,46 +591,46 @@ export default function ProductsPage() {
                         </RadioGroup>
                       </TabsContent>
                       
-                      <TabsContent value="camera" className="pt-4 space-y-4">
-                        <div className="w-full aspect-[4/3] bg-black rounded-2xl flex items-center justify-center overflow-hidden border-2 border-dashed border-border">
+                      <TabsContent value="camera" className="pt-6 space-y-4">
+                        <div className="w-full aspect-[4/3] bg-black rounded-2xl flex items-center justify-center overflow-hidden border-2 border-dashed border-border shadow-inner">
                           <video ref={videoRef} className={cn("w-full h-full object-cover", hasCameraPermission === true ? 'block' : 'hidden')} autoPlay muted playsInline />
                           {hasCameraPermission !== true && <Camera className="h-16 w-16 text-muted-foreground opacity-20" />}
                         </div>
-                        <div className="flex justify-center gap-2">
+                        <div className="flex justify-center gap-3">
                           {hasCameraPermission !== true ? (
-                            <Button type="button" onClick={enableCamera} variant="outline" className="rounded-xl">Initialize Camera</Button>
+                            <Button type="button" onClick={enableCamera} variant="outline" className="rounded-xl px-8">Initialize Camera</Button>
                           ) : (
-                            <Button type="button" onClick={capturePhoto} className="rounded-xl px-10">Capture Creation</Button>
+                            <Button type="button" onClick={capturePhoto} className="rounded-xl px-12 shadow-lg">Capture Creation</Button>
                           )}
                         </div>
                       </TabsContent>
 
-                      <TabsContent value="url" className="pt-4 space-y-4">
-                        <div className="flex gap-2">
-                          <Input placeholder="Enter high-end photography URL..." value={remoteUrl} onChange={(e) => setRemoteUrl(e.target.value)} className="h-12 rounded-xl" />
-                          <Button type="button" onClick={handleAddRemoteUrl} className="h-12 rounded-xl px-6">Apply</Button>
+                      <TabsContent value="url" className="pt-6 space-y-4">
+                        <div className="flex gap-3">
+                          <Input placeholder="Enter high-end photography URL..." value={remoteUrl} onChange={(e) => setRemoteUrl(e.target.value)} className="h-12 rounded-xl border-stone-200" />
+                          <Button type="button" onClick={handleAddRemoteUrl} className="h-12 rounded-xl px-8">Apply</Button>
                         </div>
                       </TabsContent>
 
-                      <TabsContent value="upload" className="pt-4 space-y-4">
+                      <TabsContent value="upload" className="pt-6 space-y-4">
                         <div className="grid w-full items-center gap-1.5">
-                          <Input id="picture" type="file" multiple accept="image/*" onChange={handleFileChange} className="cursor-pointer py-3 h-auto rounded-xl" />
+                          <Input id="picture" type="file" multiple accept="image/*" onChange={handleFileChange} className="cursor-pointer py-3 h-auto rounded-xl border-stone-200" />
                         </div>
                       </TabsContent>
                     </Tabs>
                     
                     {form.watch('imageUrls')?.length > 0 && (
-                      <div className="mt-6 space-y-3">
+                      <div className="mt-8 space-y-4">
                         <Label className="text-[9px] text-muted-foreground uppercase tracking-[0.3em] font-black">Selection Portfolio ({form.watch('imageUrls').length}/4)</Label>
-                        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin">
+                        <div className="flex gap-6 overflow-x-auto pb-6 scrollbar-thin">
                           {form.watch('imageUrls').map((url, i) => (
-                            <div key={i} className="relative h-20 w-24 shrink-0 rounded-2xl overflow-hidden border-2 border-border shadow-md group">
+                            <div key={i} className="relative h-24 w-32 shrink-0 rounded-2xl overflow-hidden border-2 border-stone-100 shadow-md group">
                               <Image src={url} alt="" fill className="object-cover" />
-                              <button type="button" className="absolute top-1 right-1 bg-black/40 hover:bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all" onClick={() => {
+                              <button type="button" className="absolute top-2 right-2 bg-black/40 hover:bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-lg" onClick={() => {
                                 const newUrls = [...form.getValues('imageUrls')];
                                 newUrls.splice(i, 1);
                                 form.setValue('imageUrls', newUrls, { shouldValidate: true });
-                              }}><Trash2 className="h-3 w-3" /></button>
+                              }}><Trash2 className="h-4 w-4" /></button>
                             </div>
                           ))}
                         </div>
@@ -642,11 +642,11 @@ export default function ProductsPage() {
                 </div>
               </div>
 
-              <div className="p-8 border-t shrink-0">
+              <div className="px-10 py-6 border-t shrink-0">
                 {!isValid && Object.keys(errors).length > 0 && (
-                  <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-2xl flex items-center gap-3 text-destructive animate-in slide-in-from-bottom-2 duration-300">
-                    <AlertCircle className="h-5 w-5" />
-                    <div className="text-[10px] font-black uppercase tracking-widest leading-none">
+                  <div className="mb-6 p-5 bg-destructive/5 border border-destructive/10 rounded-2xl flex items-center gap-4 text-destructive animate-in slide-in-from-bottom-2 duration-300">
+                    <AlertCircle className="h-5 w-5 shrink-0" />
+                    <div className="text-[10px] font-black uppercase tracking-widest leading-normal">
                       {errors.name && <span>Please enter a product name. </span>}
                       {errors.flavor && <span>Please enter the flavor profile. </span>}
                       {errors.price && <span>Retail value is required. </span>}
@@ -655,10 +655,10 @@ export default function ProductsPage() {
                   </div>
                 )}
                 
-                <DialogFooter className="gap-4">
-                  <DialogClose asChild><Button type="button" variant="ghost" className="rounded-xl h-14 px-8 font-bold uppercase text-[10px] tracking-widest">Discard</Button></DialogClose>
-                  <Button type="submit" disabled={isSaving} className="rounded-xl h-14 px-12 shadow-xl shadow-primary/20 font-bold uppercase text-[10px] tracking-widest">
-                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                <DialogFooter className="gap-6 flex items-center justify-end">
+                  <DialogClose asChild><Button type="button" variant="ghost" className="rounded-xl h-14 px-8 font-bold uppercase text-[10px] tracking-widest text-stone-500 hover:text-stone-900 transition-colors">Discard</Button></DialogClose>
+                  <Button type="submit" disabled={isSaving} className="rounded-xl h-14 px-12 shadow-xl shadow-primary/10 font-bold uppercase text-[10px] tracking-widest min-w-[220px]">
+                    {isSaving ? <Loader2 className="mr-3 h-4 w-4 animate-spin" /> : null}
                     {activeDialog === 'edit' ? 'Commit Refinement' : 'Create Register'}
                   </Button>
                 </DialogFooter>
