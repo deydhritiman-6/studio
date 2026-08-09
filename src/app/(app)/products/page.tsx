@@ -26,6 +26,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ChocolateMeshViewer } from '@/components/chocolate-mesh-viewer';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 
 const SHAPE_CONFIG: Record<string, { fields: { name: string; label: string; placeholder?: string; type: 'number' | 'text' }[] }> = {
   Square: {
@@ -172,7 +173,6 @@ export default function ProductsPage() {
     return allProducts?.filter(p => p.productionStatus === 'Product Ready') || [];
   }, [allProducts]);
 
-  // Derive unique product names from gallery for identity sync
   const availableNamesFromGallery = useMemo(() => {
     if (!galleries) return [];
     const names = galleries.map(g => g.productName);
@@ -185,7 +185,6 @@ export default function ProductsPage() {
   const { toast } = useToast();
   const [viewingProduct, setViewingProduct] = useState<{images: string[], startIndex: number, productName: string, hint: string} | null>(null);
 
-  // Gallery Picker States
   const [isGalleryPickerOpen, setIsGalleryPickerOpen] = useState(false);
   const [pickerTargetField, setPickerTargetField] = useState<keyof ProductFormValues | null>(null);
   const [gallerySearch, setGallerySearch] = useState('');
@@ -267,7 +266,7 @@ export default function ProductsPage() {
     });
   }
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: keyof GalleryFormValues) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: keyof ProductFormValues) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -386,7 +385,6 @@ export default function ProductsPage() {
 
   return (
     <TooltipProvider>
-      {/* Immersive Gallery Picker */}
       <Dialog open={isGalleryPickerOpen} onOpenChange={setIsGalleryPickerOpen}>
         <DialogContent className="sm:max-w-4xl rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden flex flex-col h-[80vh] bg-background">
           <div className="px-10 py-6 border-b shrink-0 bg-muted/30">
