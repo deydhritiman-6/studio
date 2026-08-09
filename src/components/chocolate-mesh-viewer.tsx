@@ -45,7 +45,7 @@ export function ChocolateMeshViewer({ shape, dimensions, className }: ChocolateM
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(typeof window !== 'undefined' ? window.devicePixelRatio : 1, 2));
     mountRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
@@ -116,12 +116,11 @@ export function ChocolateMeshViewer({ shape, dimensions, className }: ChocolateM
     }
 
     // Proportions
-    // Use fallbacks to ensure something is always visible during entry
     const rawL = Number(dimensions.length || dimensions.sideLength || dimensions.diameter || dimensions.base || 50);
     const rawW = Number(dimensions.width || dimensions.sideLength || dimensions.diameter || 50);
     const rawH = Number(dimensions.height || 20);
 
-    // Normalize so the object is a good size in the viewport (around 3 units max)
+    // Normalize so the object is a good size in the viewport
     const maxDim = Math.max(rawL, rawW, rawH);
     const scaleFactor = 3 / (maxDim || 1);
     
@@ -159,6 +158,9 @@ export function ChocolateMeshViewer({ shape, dimensions, className }: ChocolateM
         geometry = new THREE.BoxGeometry(L, H, W);
         break;
     }
+
+    // Explicitly center the geometry to ensure it shows in the middle of the viewport
+    geometry.center();
 
     const material = new THREE.MeshStandardMaterial({
       color: 0x3d1e16,
