@@ -159,7 +159,7 @@ export function ChocolateMeshViewer({ shape, dimensions, className }: ChocolateM
         break;
     }
 
-    // Explicitly center the geometry to ensure it shows in the middle of the viewport
+    // Explicitly center the geometry
     geometry.center();
 
     const material = new THREE.MeshStandardMaterial({
@@ -231,10 +231,18 @@ export function ChocolateMeshViewer({ shape, dimensions, className }: ChocolateM
     };
   }, []);
 
-  const resetView = () => {
+  const resetView = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     controlsRef.current.rotationX = -0.5;
     controlsRef.current.rotationY = 0.8;
     controlsRef.current.zoom = 1;
+  };
+
+  const handleZoom = (e: React.MouseEvent, delta: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    controlsRef.current.zoom = Math.max(0.5, Math.min(3, controlsRef.current.zoom + delta));
   };
 
   return (
@@ -244,13 +252,34 @@ export function ChocolateMeshViewer({ shape, dimensions, className }: ChocolateM
       </div>
       <div ref={mountRef} className="h-[250px] w-full cursor-grab active:cursor-grabbing touch-none" />
       <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-lg border-none" onClick={resetView} title="Reset View">
+        <Button 
+          type="button"
+          variant="secondary" 
+          size="icon" 
+          className="h-8 w-8 rounded-full shadow-lg border-none" 
+          onClick={resetView} 
+          title="Reset View"
+        >
            <RotateCcw className="h-4 w-4" />
         </Button>
-        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-lg border-none" onClick={() => controlsRef.current.zoom = Math.min(3, controlsRef.current.zoom + 0.2)} title="Zoom In">
+        <Button 
+          type="button"
+          variant="secondary" 
+          size="icon" 
+          className="h-8 w-8 rounded-full shadow-lg border-none" 
+          onClick={(e) => handleZoom(e, 0.2)} 
+          title="Zoom In"
+        >
            <Maximize2 className="h-4 w-4" />
         </Button>
-        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-lg border-none" onClick={() => controlsRef.current.zoom = Math.max(0.5, controlsRef.current.zoom - 0.2)} title="Zoom Out">
+        <Button 
+          type="button"
+          variant="secondary" 
+          size="icon" 
+          className="h-8 w-8 rounded-full shadow-lg border-none" 
+          onClick={(e) => handleZoom(e, -0.2)} 
+          title="Zoom Out"
+        >
            <Minimize2 className="h-4 w-4" />
         </Button>
       </div>
