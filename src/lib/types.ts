@@ -108,6 +108,8 @@ export type Product = {
   wholesalePrice: number;
   availabilityStatus: 'In Stock' | 'Out of Stock';
   imageUrls: string[];
+  mainImage?: string;
+  subImages?: string[];
   imageHint: string;
   sku?: string;
   recipeUsed?: string;

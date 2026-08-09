@@ -8,7 +8,7 @@ import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Product, ProductDimensions } from '@/lib/types';
-import { Camera, PlusCircle, Loader2, Link as LinkIcon, Upload, Image as ImageIcon, PackageSearch, Trash2, Edit, History, Info, Box, Ruler, AlertCircle } from 'lucide-react';
+import { Camera, PlusCircle, Loader2, Link as LinkIcon, Upload, Image as ImageIcon, PackageSearch, Trash2, Edit, History, Info, Box, Ruler, AlertCircle, X, RefreshCw } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
@@ -18,8 +18,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { useCollection, useFirestore } from '@/firebase';
@@ -138,8 +136,11 @@ const productFormSchema = z.object({
   price: z.coerce.number().positive('Retail Value must be a positive number.'),
   wholesalePrice: z.coerce.number().positive('Wholesale Value must be a positive number.'),
   availabilityStatus: z.enum(['In Stock', 'Out of Stock']),
-  imageUrls: z.array(z.string()).min(1, "At least one picture is required.").max(4, "Maximum 4 visuals allowed."),
-  imageHint: z.string().min(1, 'Image hint is required.'),
+  mainImage: z.string().min(1, 'Main Photo is required.'),
+  subPhoto1: z.string().optional(),
+  subPhoto2: z.string().optional(),
+  subPhoto3: z.string().optional(),
+  imageHint: z.string().default('artisan chocolate'),
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
@@ -159,13 +160,7 @@ export default function ProductsPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
-  
-  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [viewingProduct, setViewingProduct] = useState<{images: string[], startIndex: number, productName: string, hint: string} | null>(null);
-
-  const [remoteUrl, setRemoteUrl] = useState('');
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -174,14 +169,15 @@ export default function ProductsPage() {
       flavor: '',
       weight: '',
       productShape: 'Rectangular',
-      productDimensions: {
-        unit: 'mm',
-      },
+      productDimensions: { unit: 'mm' },
       price: 0,
       wholesalePrice: 0,
       availabilityStatus: 'In Stock',
-      imageUrls: [],
-      imageHint: '',
+      mainImage: '',
+      subPhoto1: '',
+      subPhoto2: '',
+      subPhoto3: '',
+      imageHint: 'artisan chocolate',
     }
   });
 
@@ -189,17 +185,9 @@ export default function ProductsPage() {
   const watchDimensions = useWatch({ control: form.control, name: 'productDimensions' });
   const { errors, isValid } = form.formState;
 
-  const stopCamera = () => {
-    if (videoRef.current?.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream;
-      stream.getTracks().forEach((track) => track.stop());
-      videoRef.current.srcObject = null;
-      setHasCameraPermission(null);
-    }
-  };
-
   useEffect(() => {
     if (editingProduct) {
+      const urls = editingProduct.imageUrls || [];
       form.reset({
         name: editingProduct.name,
         flavor: editingProduct.flavor,
@@ -209,8 +197,11 @@ export default function ProductsPage() {
         price: editingProduct.price,
         wholesalePrice: editingProduct.wholesalePrice,
         availabilityStatus: editingProduct.availabilityStatus,
-        imageUrls: editingProduct.imageUrls || [],
-        imageHint: editingProduct.imageHint || 'product photo',
+        mainImage: editingProduct.mainImage || urls[0] || '',
+        subPhoto1: editingProduct.subImages?.[0] || urls[1] || '',
+        subPhoto2: editingProduct.subImages?.[1] || urls[2] || '',
+        subPhoto3: editingProduct.subImages?.[2] || urls[3] || '',
+        imageHint: editingProduct.imageHint || 'artisan chocolate',
       });
     } else if (isAddDialogOpen) {
       form.reset({
@@ -222,8 +213,11 @@ export default function ProductsPage() {
         price: 0,
         wholesalePrice: 0,
         availabilityStatus: 'In Stock',
-        imageUrls: [],
-        imageHint: '',
+        mainImage: '',
+        subPhoto1: '',
+        subPhoto2: '',
+        subPhoto3: '',
+        imageHint: 'artisan chocolate',
       });
     }
   }, [editingProduct, form, isAddDialogOpen]);
@@ -245,6 +239,28 @@ export default function ProductsPage() {
     });
   }
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: keyof ProductFormValues) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      toast({
+        variant: 'destructive',
+        title: 'Invalid Format',
+        description: 'Please upload JPG, PNG, or WEBP images.',
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const optimized = await optimizeImage(event.target?.result as string);
+      form.setValue(fieldName, optimized, { shouldValidate: true });
+    };
+    reader.readAsDataURL(file);
+  };
+
   const saveProduct = (values: ProductFormValues, id?: string) => {
     if (!firestore) return;
 
@@ -264,9 +280,14 @@ export default function ProductsPage() {
     const productId = id || `P${Date.now()}`;
     const productRef = doc(firestore, 'products', productId);
     
+    const subImages = [values.subPhoto1, values.subPhoto2, values.subPhoto3].filter(Boolean) as string[];
+    const imageUrls = [values.mainImage, ...subImages].filter(Boolean);
+
     const productData = { 
       ...values, 
       id: productId,
+      imageUrls,
+      subImages,
       productionStatus: id ? (editingProduct?.productionStatus || 'Product Ready') : 'Product Ready'
     };
 
@@ -275,10 +296,7 @@ export default function ProductsPage() {
         setIsAddDialogOpen(false);
         setEditingProduct(null);
         setIsSaving(false);
-        toast({ 
-          title: id ? 'Creation Refined' : 'Creation Added', 
-          description: `${values.name} has been synchronized with the collection.` 
-        });
+        toast({ title: id ? 'Creation Refined' : 'Creation Added', description: `${values.name} has been synchronized.` });
       })
       .catch(async (serverError) => {
         setIsSaving(false);
@@ -291,88 +309,50 @@ export default function ProductsPage() {
       });
   };
 
-  const onAddSubmit = (values: ProductFormValues) => {
-    saveProduct(values);
-  };
+  const PhotoUploadSlot = ({ fieldName, label, required = false }: { fieldName: keyof ProductFormValues, label: string, required?: boolean }) => {
+    const value = form.watch(fieldName) as string;
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const onEditSubmit = (values: ProductFormValues) => {
-    if (!editingProduct) return;
-    saveProduct(values, editingProduct.id);
-  };
-  
-  const enableCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      setHasCameraPermission(true);
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
-    } catch (error) {
-      setHasCameraPermission(false);
-      toast({
-        variant: 'destructive',
-        title: 'Camera Access Denied',
-        description: 'Please enable camera permissions to capture artisanal photography.',
-      });
-    }
-  };
-  
-  const capturePhoto = async () => {
-    if (videoRef.current && canvasRef.current) {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      const MAX_WIDTH = 800;
-      const scale = MAX_WIDTH / video.videoWidth;
-      canvas.width = MAX_WIDTH;
-      canvas.height = video.videoHeight * scale;
-      
-      const context = canvas.getContext('2d');
-      if (context) {
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-        const optimizedUrl = await optimizeImage(dataUrl);
-        form.setValue('imageUrls', [optimizedUrl], { shouldValidate: true });
-        form.setValue('imageHint', 'custom photo', { shouldValidate: true });
-        stopCamera();
-        toast({ title: "Artisan Shot Captured", description: "Photo successfully optimized and added." });
-      }
-    }
-  };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
-
-    let fileArray = Array.from(files).slice(0, 4);
-    const fileToUrlPromises = fileArray.map(file => {
-      return new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = async e => {
-          const optimized = await optimizeImage(e.target!.result as string);
-          resolve(optimized);
-        };
-        reader.onerror = e => reject(e);
-        reader.readAsDataURL(file);
-      });
-    });
-
-    Promise.all(fileToUrlPromises).then(urls => {
-        form.setValue('imageUrls', urls, { shouldValidate: true });
-        form.setValue('imageHint', 'uploaded image', { shouldValidate: true });
-        toast({ title: "Visuals Uploaded", description: `${urls.length} optimized images added.` });
-    });
-  };
-
-  const handleAddRemoteUrl = () => {
-    if (!remoteUrl) return;
-    const currentUrls = form.getValues('imageUrls') || [];
-    if (currentUrls.length >= 4) {
-      toast({ variant: 'destructive', title: 'Limit Reached', description: 'Maximum of 4 visuals allowed per creation.' });
-      return;
-    }
-    form.setValue('imageUrls', [...currentUrls, remoteUrl], { shouldValidate: true });
-    form.setValue('imageHint', 'remote image', { shouldValidate: true });
-    setRemoteUrl('');
+    return (
+      <div className="space-y-2">
+        <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground flex justify-between">
+          {label} {required && <span className="text-primary">*</span>}
+          {value && (
+            <button type="button" onClick={() => form.setValue(fieldName, '', { shouldValidate: true })} className="text-destructive hover:text-destructive/80 flex items-center gap-1 transition-colors">
+              <Trash2 className="h-2.5 w-2.5" /> Remove
+            </button>
+          )}
+        </Label>
+        <div 
+          onClick={() => fileInputRef.current?.click()}
+          className={cn(
+            "aspect-[4/3] rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group overflow-hidden bg-muted/20",
+            value ? "border-primary/40 bg-background" : "border-stone-200 hover:border-primary/30 hover:bg-muted/40"
+          )}
+        >
+          {value ? (
+            <>
+              <Image src={value} alt={label} fill className="object-cover" />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                 <RefreshCw className="text-white h-6 w-6 animate-in zoom-in-50" />
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center gap-2 text-stone-400 group-hover:text-primary transition-colors">
+               <Upload className="h-6 w-6" />
+               <span className="text-[10px] font-bold uppercase tracking-tight">Select Photo</span>
+            </div>
+          )}
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={(e) => handleFileSelect(e, fieldName)} 
+            className="hidden" 
+            accept="image/jpeg,image/png,image/webp" 
+          />
+        </div>
+      </div>
+    );
   };
 
   const activeDialog = editingProduct ? 'edit' : (isAddDialogOpen ? 'add' : null);
@@ -395,30 +375,24 @@ export default function ProductsPage() {
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 text-accent bg-black/60 hover:bg-black/80 h-10 w-10 border-none" />
-              <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 text-accent bg-black/60 hover:bg-black/80 h-10 w-10 border-none" />
+              <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 text-accent bg-black/60 hover:bg-black/80 h-10 w-10 border-none rounded-full" />
+              <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 text-accent bg-black/60 hover:bg-black/80 h-10 w-10 border-none rounded-full" />
             </Carousel>
           )}
         </DialogContent>
       </Dialog>
       
-      <Dialog open={!!activeDialog} onOpenChange={(open) => {
-        if (!open) {
-          setEditingProduct(null);
-          setIsAddDialogOpen(false);
-          stopCamera();
-        }
-      }}>
+      <Dialog open={!!activeDialog} onOpenChange={(open) => { if (!open) { setEditingProduct(null); setIsAddDialogOpen(false); } }}>
         <DialogContent className="sm:max-w-4xl rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden flex flex-col h-[85vh] max-h-[90vh] bg-background">
           <div className="px-10 py-4 border-b shrink-0 bg-background/50 backdrop-blur-sm">
-            <DialogHeader className="space-y-1">
+            <DialogHeader className="space-y-1 text-left">
               <DialogTitle className="text-2xl font-headline font-bold tracking-tight text-foreground">{activeDialog === 'edit' ? 'Refine Creation' : 'Register New Creation'}</DialogTitle>
               <DialogDescription className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground/60">Identity & Design Specification</DialogDescription>
             </DialogHeader>
           </div>
           
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(activeDialog === 'edit' ? onEditSubmit : onAddSubmit)} className="flex flex-col flex-1 overflow-hidden">
+            <form onSubmit={form.handleSubmit(activeDialog === 'edit' ? (v) => saveProduct(v, editingProduct!.id) : (v) => saveProduct(v))} className="flex flex-col flex-1 overflow-hidden">
               <div className="flex-1 overflow-y-auto px-10 custom-scrollbar bg-background/20">
                 <div className="space-y-10 py-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -513,22 +487,6 @@ export default function ProductsPage() {
                         />
                       ))}
                     </div>
-
-                    <div className="mt-8 pt-8 border-t border-stone-200/50 space-y-4">
-                       <h4 className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/40">Design Specification Summary</h4>
-                       <div className="p-6 bg-background rounded-2xl border border-stone-100 flex flex-wrap gap-x-10 gap-y-4 shadow-sm">
-                          <div className="space-y-0.5">
-                             <p className="text-[8px] font-bold uppercase text-muted-foreground">Type</p>
-                             <p className="text-xs font-bold text-foreground">{watchShape}</p>
-                          </div>
-                          {SHAPE_CONFIG[watchShape]?.fields.filter(f => f.type === 'number').map(f => (
-                             <div key={f.name} className="space-y-0.5">
-                                <p className="text-[8px] font-bold uppercase text-muted-foreground">{f.label}</p>
-                                <p className="text-xs font-bold text-foreground">{watchDimensions[f.name as keyof ProductDimensions] || '--'} {watchDimensions.unit}</p>
-                             </div>
-                          ))}
-                       </div>
-                    </div>
                     
                     <ChocolateMeshViewer shape={watchShape} dimensions={watchDimensions} />
                   </div>
@@ -549,98 +507,21 @@ export default function ProductsPage() {
                       </FormItem>
                     )} />
                   </div>
-                  
-                  <FormField control={form.control} name="availabilityStatus" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Availability Status</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                        <FormControl><SelectTrigger className="h-12 rounded-xl border-stone-200"><SelectValue placeholder="Select status" /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          <SelectItem value="In Stock">Available for Reserve</SelectItem>
-                          <SelectItem value="Out of Stock">Currently Maturing</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  
+
                   <div className="space-y-6">
-                    <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Artisan Photography</FormLabel>
-                    <Tabs defaultValue="gallery" className="w-full" onValueChange={(tab) => { if (tab !== 'camera') stopCamera(); }}>
-                      <TabsList className="grid w-full grid-cols-4 bg-muted/50 rounded-xl p-1 h-12">
-                        <TabsTrigger value="gallery" className="rounded-lg font-bold text-[10px] uppercase tracking-tighter"><ImageIcon className="h-3.5 w-3.5 mr-2" /> Gallery</TabsTrigger>
-                        <TabsTrigger value="camera" className="rounded-lg font-bold text-[10px] uppercase tracking-tighter"><Camera className="h-3.5 w-3.5 mr-2" /> Live</TabsTrigger>
-                        <TabsTrigger value="url" className="rounded-lg font-bold text-[10px] uppercase tracking-tighter"><LinkIcon className="h-3.5 w-3.5 mr-2" /> URL</TabsTrigger>
-                        <TabsTrigger value="upload" className="rounded-lg font-bold text-[10px] uppercase tracking-tighter"><Upload className="h-3.5 w-3.5 mr-2" /> File</TabsTrigger>
-                      </TabsList>
-                      
-                      <TabsContent value="gallery" className="pt-6">
-                        <RadioGroup onValueChange={(value) => {
-                          const selectedImage = PlaceHolderImages.find(img => img.imageUrl === value);
-                          if (selectedImage) {
-                            form.setValue('imageUrls', [selectedImage.imageUrl], { shouldValidate: true });
-                            form.setValue('imageHint', selectedImage.imageHint, { shouldValidate: true });
-                          }
-                        }} value={form.watch('imageUrls')?.[0]} className="grid grid-cols-3 gap-6">
-                          {PlaceHolderImages.map((image) => (
-                            <div key={image.id} className="relative">
-                              <RadioGroupItem value={image.imageUrl} id={image.id} className="peer sr-only" />
-                              <Label htmlFor={image.id} className="block cursor-pointer rounded-2xl border-2 border-muted bg-popover hover:border-accent peer-data-[state=checked]:border-primary transition-all overflow-hidden aspect-[4/3] relative shadow-sm">
-                                <Image src={image.imageUrl} alt={image.description} fill className="object-cover" data-ai-hint={image.imageHint} />
-                              </Label>
-                            </div>
-                          ))}
-                        </RadioGroup>
-                      </TabsContent>
-                      
-                      <TabsContent value="camera" className="pt-6 space-y-4">
-                        <div className="w-full aspect-[4/3] bg-black rounded-2xl flex items-center justify-center overflow-hidden border-2 border-dashed border-border shadow-inner">
-                          <video ref={videoRef} className={cn("w-full h-full object-cover", hasCameraPermission === true ? 'block' : 'hidden')} autoPlay muted playsInline />
-                          {hasCameraPermission !== true && <Camera className="h-16 w-16 text-muted-foreground opacity-20" />}
-                        </div>
-                        <div className="flex justify-center gap-3">
-                          {hasCameraPermission !== true ? (
-                            <Button type="button" onClick={enableCamera} variant="outline" className="rounded-xl px-8">Initialize Camera</Button>
-                          ) : (
-                            <Button type="button" onClick={capturePhoto} className="rounded-xl px-12 shadow-lg">Capture Creation</Button>
-                          )}
-                        </div>
-                      </TabsContent>
-
-                      <TabsContent value="url" className="pt-6 space-y-4">
-                        <div className="flex gap-3">
-                          <Input placeholder="Enter high-end photography URL..." value={remoteUrl} onChange={(e) => setRemoteUrl(e.target.value)} className="h-12 rounded-xl border-stone-200" />
-                          <Button type="button" onClick={handleAddRemoteUrl} className="h-12 rounded-xl px-8">Apply</Button>
-                        </div>
-                      </TabsContent>
-
-                      <TabsContent value="upload" className="pt-6 space-y-4">
-                        <div className="grid w-full items-center gap-1.5">
-                          <Input id="picture" type="file" multiple accept="image/*" onChange={handleFileChange} className="cursor-pointer py-3 h-auto rounded-xl border-stone-200" />
-                        </div>
-                      </TabsContent>
-                    </Tabs>
-                    
-                    {form.watch('imageUrls')?.length > 0 && (
-                      <div className="mt-8 space-y-4">
-                        <Label className="text-[9px] text-muted-foreground uppercase tracking-[0.3em] font-black">Selection Portfolio ({form.watch('imageUrls').length}/4)</Label>
-                        <div className="flex gap-6 overflow-x-auto pb-6 scrollbar-thin">
-                          {form.watch('imageUrls').map((url, i) => (
-                            <div key={i} className="relative h-24 w-32 shrink-0 rounded-2xl overflow-hidden border-2 border-stone-100 shadow-md group">
-                              <Image src={url} alt="" fill className="object-cover" />
-                              <button type="button" className="absolute top-2 right-2 bg-black/40 hover:bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-lg" onClick={() => {
-                                const newUrls = [...form.getValues('imageUrls')];
-                                newUrls.splice(i, 1);
-                                form.setValue('imageUrls', newUrls, { shouldValidate: true });
-                              }}><Trash2 className="h-4 w-4" /></button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    <FormField control={form.control} name="imageUrls" render={() => <FormMessage />} />
+                    <h3 className="uppercase text-[10px] font-black tracking-widest text-muted-foreground border-b pb-2">Artisan Photography</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                       <div className="md:col-span-1">
+                          <PhotoUploadSlot fieldName="mainImage" label="Main Photo" required />
+                       </div>
+                       <div className="md:col-span-3 grid grid-cols-3 gap-6">
+                          <PhotoUploadSlot fieldName="subPhoto1" label="Sub Photo 1" />
+                          <PhotoUploadSlot fieldName="subPhoto2" label="Sub Photo 2" />
+                          <PhotoUploadSlot fieldName="subPhoto3" label="Sub Photo 3" />
+                       </div>
+                    </div>
+                    <p className="text-[9px] text-muted-foreground italic font-medium">Capture the perfection of your craftsmanship. Support for JPG, PNG, WEBP.</p>
                   </div>
-                  <canvas ref={canvasRef} className="hidden" />
                 </div>
               </div>
 
@@ -649,10 +530,10 @@ export default function ProductsPage() {
                   <div className="mb-4 p-4 bg-destructive/5 border border-destructive/10 rounded-2xl flex items-center gap-4 text-destructive animate-in slide-in-from-bottom-2 duration-300">
                     <AlertCircle className="h-5 w-5 shrink-0" />
                     <div className="text-[10px] font-black uppercase tracking-widest leading-normal">
-                      {errors.name && <span>Missing product name. </span>}
-                      {errors.flavor && <span>Missing flavor profile. </span>}
-                      {errors.price && <span>Retail value is required. </span>}
-                      {errors.imageUrls && <span>Artisan photography is required. </span>}
+                      {errors.name && <span>Product name required. </span>}
+                      {errors.flavor && <span>Flavor profile required. </span>}
+                      {errors.price && <span>Retail value required. </span>}
+                      {errors.mainImage && <span>Main photo required. </span>}
                     </div>
                   </div>
                 )}
@@ -675,7 +556,7 @@ export default function ProductsPage() {
       <PageHeader title="Artisan Portfolio" actions={<Button onClick={() => setIsAddDialogOpen(true)} className="rounded-xl h-11 px-6 shadow-lg shadow-primary/10"><PlusCircle className="mr-2 h-4 w-4" />New Creation</Button>} />
       
       {(!products || products.length === 0) && !loading ? (
-        <div className="flex flex-col items-center justify-center h-80 border-2 border-dashed rounded-[2.5rem] bg-muted/50 border-border">
+        <div className="flex flex-col items-center justify-center h-80 border-2 border-dashed rounded-[2.5rem] bg-muted/50 border-border text-center px-4">
            <PackageSearch className="h-16 w-16 text-muted-foreground mb-6" />
            <p className="text-muted-foreground font-headline text-2xl italic">The collection is currently awaiting its first production batch.</p>
            <p className="text-xs uppercase tracking-widest text-muted-foreground mt-2">Only "Product Ready" items appear in this portfolio.</p>
@@ -687,7 +568,7 @@ export default function ProductsPage() {
             <Card key={product.id} className="flex flex-col group overflow-hidden border-none shadow-sm hover:shadow-[0_20px_50px_-20px_rgba(0,0,0,0.1)] transition-all duration-700 rounded-[2rem] bg-card">
               <CardHeader className="p-0 relative">
                  <button type="button" className="block w-full aspect-[4/3] relative overflow-hidden" onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: 0, productName: product.name, hint: product.imageHint })}>
-                    <Image src={product.imageUrls?.[0] || 'https://picsum.photos/seed/default/400/300'} alt={product.name} fill className="object-cover transition-transform duration-[2s] ease-in-out group-hover:scale-110" data-ai-hint={product.imageHint} />
+                    <Image src={product.imageUrls?.[0] || 'https://picsum.photos/seed/default/400/300'} alt={product.name} fill className={`object-cover transition-transform duration-[2s] ease-in-out group-hover:scale-110 ${product.availabilityStatus === 'Out of Stock' ? 'grayscale opacity-60' : ''}`} data-ai-hint={product.imageHint} />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-700 flex items-center justify-center">
                         <ImageIcon className="text-white opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 transition-all duration-500 h-10 w-10 drop-shadow-2xl" />
                     </div>
@@ -705,12 +586,9 @@ export default function ProductsPage() {
                   {product.imageUrls?.slice(1, 4).map((url, index) => (
                      <button key={index} type="button" className="block w-full aspect-square relative rounded-xl overflow-hidden border-2 border-border hover:border-primary/30 transition-all shadow-sm" onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: index + 1, productName: product.name, hint: product.imageHint })}><Image src={url} alt="" fill className="object-cover" data-ai-hint={product.imageHint} /></button>
                   ))}
-                  {product.imageUrls?.length > 4 && (
-                    <div className="bg-muted rounded-xl flex items-center justify-center text-[10px] font-black text-muted-foreground">+{product.imageUrls.length - 4}</div>
-                  )}
                 </div>
                 
-                <div className="space-y-2">
+                <div className="space-y-2 text-left">
                     <div>
                         <CardTitle className="font-headline text-2xl mb-1 group-hover:text-primary transition-colors leading-tight">{product.name}</CardTitle>
                         <p className="text-[9px] text-muted-foreground uppercase tracking-[0.3em] font-black leading-none">{product.flavor}</p>
@@ -720,14 +598,9 @@ export default function ProductsPage() {
                            <Box className="h-2.5 w-2.5" /> Shape: {product.productShape}
                         </div>
                     )}
-                    {product.recipeUsed && (
-                        <div className="flex items-center gap-1 text-[8px] font-bold uppercase tracking-widest text-muted-foreground/60">
-                           <History className="h-2.5 w-2.5" /> Made with: {product.recipeUsed}
-                        </div>
-                    )}
                 </div>
 
-                <div className="flex justify-between items-end pt-2 border-t border-border/50">
+                <div className="flex justify-between items-end pt-2 border-t border-border/50 text-left">
                   <div className="space-y-0.5">
                     <p className="text-2xl font-bold text-foreground tracking-tighter">₹{product.price.toLocaleString()}</p>
                     <p className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">W: ₹{product.wholesalePrice.toLocaleString()}</p>
@@ -747,11 +620,10 @@ export default function ProductsPage() {
                             <TooltipContent className="bg-stone-900 border-none p-4 rounded-2xl shadow-2xl">
                                 <div className="space-y-2 text-[10px]">
                                     <p className="text-primary font-bold uppercase">Manufacturing Audit</p>
-                                    <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-left">
                                         <span className="text-stone-500">Order Ref:</span> <span className="text-stone-300">{product.originalOrderId}</span>
                                         <span className="text-stone-500">Production:</span> <span className="text-stone-300">{product.productionDate}</span>
-                                        <span className="text-stone-500">Packaging:</span> <span className="text-stone-300">{product.packagingDate}</span>
-                                        <span className="text-stone-500">Batch Qty:</span> <span className="text-stone-300">{product.quantityProduced} {product.unitOfMeasurement}</span>
+                                        <span className="text-stone-500">Batch Qty:</span> <span className="text-stone-300">{product.quantityProduced}</span>
                                     </div>
                                 </div>
                             </TooltipContent>
