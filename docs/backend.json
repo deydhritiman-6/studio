@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "Customer": {
@@ -82,7 +83,10 @@
         "wholesalePrice": { "type": "number" },
         "availabilityStatus": { "type": "string", "enum": ["In Stock", "Out of Stock"] },
         "imageUrls": { "type": "array", "items": { "type": "string" } },
-        "imageHint": { "type": "string" }
+        "imageHint": { "type": "string" },
+        "weight": { "type": "string" },
+        "dimensions": { "type": "string" },
+        "productShape": { "type": "string", "enum": ["Square", "Rectangular", "Circular", "Spherical", "Half Spherical", "Oval", "Heart", "Custom"] }
       },
       "required": ["name", "flavor", "price", "wholesalePrice", "availabilityStatus", "imageUrls"]
     },

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -6,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
-import { ShoppingCart, ArrowLeft, CheckCircle2, Star, ShieldCheck, Loader2 } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, CheckCircle2, Star, ShieldCheck, Loader2, Box } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useDoc, useFirestore } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -167,6 +168,9 @@ export default function ProductDetailPage() {
           <div className="space-y-8 text-stone-600 leading-relaxed text-lg font-light">
             <p className="border-l-4 border-primary/20 pl-6 italic">Our {product.name} is a testament to the pursuit of perfection. Every bar is carefully tempered and molded by our master chocolatiers in Kolkata, ensuring a flawless snap and a velvet-smooth melt that lingers on the palate.</p>
             <ul className="space-y-4 pt-4">
+               {product.productShape && (
+                 <li className="flex items-start gap-4"><Box className="h-5 w-5 text-primary shrink-0 mt-1" /> <span>Artisanal <strong>{product.productShape}</strong> geometry.</span></li>
+               )}
                <li className="flex items-start gap-4"><CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-1" /> <span>Ethically sourced, single-origin cocoa beans from select estates.</span></li>
                <li className="flex items-start gap-4"><CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-1" /> <span>Zero artificial preservatives, colorants, or synthetic flavorings.</span></li>
                <li className="flex items-start gap-4"><CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-1" /> <span>Presented in gold-embossed bespoke packaging, ready for gifting.</span></li>

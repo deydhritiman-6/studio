@@ -1,3 +1,4 @@
+
 export type Customer = {
   id: string;
   name: string;
@@ -61,6 +62,7 @@ export type Product = {
   flavor: string;
   weight?: string;
   dimensions?: string;
+  productShape?: 'Square' | 'Rectangular' | 'Circular' | 'Spherical' | 'Half Spherical' | 'Oval' | 'Heart' | 'Custom';
   price: number;
   wholesalePrice: number;
   availabilityStatus: 'In Stock' | 'Out of Stock';

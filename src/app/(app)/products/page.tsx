@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
@@ -34,6 +35,7 @@ const productFormSchema = z.object({
   name: z.string().min(1, 'Product name is required.'),
   flavor: z.string().min(1, 'Flavor profile is required.'),
   weight: z.string().optional(),
+  productShape: z.enum(['Square', 'Rectangular', 'Circular', 'Spherical', 'Half Spherical', 'Oval', 'Heart', 'Custom']).optional(),
   dimensions: z.string().optional(),
   dimL: z.string().optional(),
   dimW: z.string().optional(),
@@ -132,6 +134,7 @@ export default function ProductsPage() {
       name: '',
       flavor: '',
       weight: '',
+      productShape: 'Square',
       dimensions: '',
       dimL: '',
       dimW: '',
@@ -172,6 +175,7 @@ export default function ProductsPage() {
         name: editingProduct.name,
         flavor: editingProduct.flavor,
         weight: editingProduct.weight || '',
+        productShape: editingProduct.productShape || 'Square',
         dimensions: editingProduct.dimensions || '',
         dimL: dL,
         dimW: dW,
@@ -187,6 +191,7 @@ export default function ProductsPage() {
         name: '',
         flavor: '',
         weight: '',
+        productShape: 'Square',
         dimensions: '',
         dimL: '',
         dimW: '',
@@ -461,53 +466,73 @@ export default function ProductsPage() {
                         <FormMessage />
                       </FormItem>
                     )} />
-                    
-                    <div className="space-y-2">
-                      <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Product Dimensions (cm)</FormLabel>
-                      <div className="grid grid-cols-3 gap-2">
-                        <FormField control={form.control} name="dimL" render={({ field }) => (
-                          <FormItem>
-                            <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger className="h-10 rounded-xl">
-                                  <SelectValue placeholder="L" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {DIMENSION_VALUES.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
-                              </SelectContent>
-                            </Select>
-                          </FormItem>
-                        )} />
-                        <FormField control={form.control} name="dimW" render={({ field }) => (
-                          <FormItem>
-                            <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger className="h-10 rounded-xl">
-                                  <SelectValue placeholder="W" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {DIMENSION_VALUES.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
-                              </SelectContent>
-                            </Select>
-                          </FormItem>
-                        )} />
-                        <FormField control={form.control} name="dimH" render={({ field }) => (
-                          <FormItem>
-                            <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger className="h-10 rounded-xl">
-                                  <SelectValue placeholder="H" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {DIMENSION_VALUES.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
-                              </SelectContent>
-                            </Select>
-                          </FormItem>
-                        )} />
-                      </div>
+
+                    <FormField control={form.control} name="productShape" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Product Shape</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                          <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Select shape" /></SelectTrigger></FormControl>
+                          <SelectContent>
+                            <SelectItem value="Square">Square</SelectItem>
+                            <SelectItem value="Rectangular">Rectangular</SelectItem>
+                            <SelectItem value="Circular">Circular</SelectItem>
+                            <SelectItem value="Spherical">Spherical</SelectItem>
+                            <SelectItem value="Half Spherical">Half Spherical</SelectItem>
+                            <SelectItem value="Oval">Oval</SelectItem>
+                            <SelectItem value="Heart">Heart</SelectItem>
+                            <SelectItem value="Custom">Custom</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  </div>
+
+                  <div className="space-y-2">
+                    <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Product Dimensions (cm)</FormLabel>
+                    <div className="grid grid-cols-3 gap-2">
+                      <FormField control={form.control} name="dimL" render={({ field }) => (
+                        <FormItem>
+                          <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="h-10 rounded-xl">
+                                <SelectValue placeholder="L" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {DIMENSION_VALUES.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </FormItem>
+                      )} />
+                      <FormField control={form.control} name="dimW" render={({ field }) => (
+                        <FormItem>
+                          <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="h-10 rounded-xl">
+                                <SelectValue placeholder="W" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {DIMENSION_VALUES.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </FormItem>
+                      )} />
+                      <FormField control={form.control} name="dimH" render={({ field }) => (
+                        <FormItem>
+                          <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="h-10 rounded-xl">
+                                <SelectValue placeholder="H" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {DIMENSION_VALUES.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </FormItem>
+                      )} />
                     </div>
                   </div>
 
@@ -680,6 +705,11 @@ export default function ProductsPage() {
                         <CardTitle className="font-headline text-2xl mb-1 group-hover:text-primary transition-colors leading-tight">{product.name}</CardTitle>
                         <p className="text-[9px] text-muted-foreground uppercase tracking-[0.3em] font-black leading-none">{product.flavor}</p>
                     </div>
+                    {product.productShape && (
+                        <div className="flex items-center gap-1 text-[8px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                           <Box className="h-2.5 w-2.5" /> Shape: {product.productShape}
+                        </div>
+                    )}
                     {product.recipeUsed && (
                         <div className="flex items-center gap-1 text-[8px] font-bold uppercase tracking-widest text-muted-foreground/60">
                            <History className="h-2.5 w-2.5" /> Made with: {product.recipeUsed}
