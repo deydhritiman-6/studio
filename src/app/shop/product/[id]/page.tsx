@@ -10,7 +10,7 @@ import { ShoppingCart, ArrowLeft, CheckCircle2, Star, ShieldCheck, Loader2, Box,
 import { useParams, useRouter } from 'next/navigation';
 import { useDoc, useFirestore } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import { ChocolateMeshViewer } from '@/app/(app)/products/page';
+import { ChocolateMeshViewer } from '@/components/chocolate-mesh-viewer';
 
 export default function ProductDetailPage() {
   const params = useParams();

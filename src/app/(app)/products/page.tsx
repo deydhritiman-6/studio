@@ -4,12 +4,11 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import * as THREE from 'three';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Product, ProductDimensions } from '@/lib/types';
-import { Camera, PlusCircle, Loader2, Link as LinkIcon, Upload, Image as ImageIcon, PackageSearch, Trash2, Edit, History, Info, Box, Ruler, RotateCcw, Maximize2, Minimize2 } from 'lucide-react';
+import { Camera, PlusCircle, Loader2, Link as LinkIcon, Upload, Image as ImageIcon, PackageSearch, Trash2, Edit, History, Info, Box, Ruler, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
@@ -30,6 +29,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ChocolateMeshViewer } from '@/components/chocolate-mesh-viewer';
 
 const SHAPE_CONFIG: Record<string, { fields: { name: string; label: string; placeholder?: string; type: 'number' | 'text' }[] }> = {
   Square: {
@@ -141,236 +141,6 @@ const productFormSchema = z.object({
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
 
-export function ChocolateMeshViewer({ shape, dimensions }: { shape: string, dimensions: ProductDimensions }) {
-  const mountRef = useRef<HTMLDivElement>(null);
-  const sceneRef = useRef<THREE.Scene | null>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-  const meshRef = useRef<THREE.Mesh | null>(null);
-  const frameRef = useRef<number | null>(null);
-  
-  const controlsRef = useRef({ 
-    rotationX: -0.5, 
-    rotationY: 0.8, 
-    zoom: 1,
-    isDragging: false, 
-    lastMouseX: 0, 
-    lastMouseY: 0 
-  });
-
-  useEffect(() => {
-    if (!mountRef.current) return;
-    const width = mountRef.current.clientWidth;
-    const height = mountRef.current.clientHeight;
-
-    const scene = new THREE.Scene();
-    scene.background = null;
-    sceneRef.current = scene;
-
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.z = 5;
-    cameraRef.current = camera;
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    mountRef.current.appendChild(renderer.domElement);
-    rendererRef.current = renderer;
-
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-    scene.add(ambientLight);
-
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(5, 10, 7.5);
-    scene.add(directionalLight);
-
-    const animate = () => {
-      if (meshRef.current) {
-        meshRef.current.rotation.x = controlsRef.current.rotationX;
-        meshRef.current.rotation.y = controlsRef.current.rotationY;
-        const s = controlsRef.current.zoom;
-        meshRef.current.scale.set(s, s, s);
-      }
-      renderer.render(scene, camera);
-      frameRef.current = requestAnimationFrame(animate);
-    };
-    animate();
-
-    const handleResize = () => {
-      if (!mountRef.current || !cameraRef.current || !rendererRef.current) return;
-      const w = mountRef.current.clientWidth;
-      const h = mountRef.current.clientHeight;
-      cameraRef.current.aspect = w / h;
-      cameraRef.current.updateProjectionMatrix();
-      rendererRef.current.setSize(w, h);
-    };
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      if (frameRef.current) cancelAnimationFrame(frameRef.current);
-      if (mountRef.current && renderer.domElement) {
-        mountRef.current.removeChild(renderer.domElement);
-      }
-      renderer.dispose();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!sceneRef.current) return;
-    
-    if (meshRef.current) {
-      sceneRef.current.remove(meshRef.current);
-      meshRef.current.geometry.dispose();
-      (meshRef.current.material as THREE.Material).dispose();
-      meshRef.current = null;
-    }
-
-    const L = (dimensions.length || dimensions.sideLength || dimensions.diameter || dimensions.base || 50) / 100;
-    const W = (dimensions.width || dimensions.sideLength || dimensions.diameter || 50) / 100;
-    const H = (dimensions.height || 20) / 100;
-
-    let geometry: THREE.BufferGeometry;
-    switch (shape) {
-      case 'Spherical':
-        geometry = new THREE.SphereGeometry(L / 2, 64, 32);
-        break;
-      case 'Half Spherical':
-        geometry = new THREE.SphereGeometry(L / 2, 64, 16, 0, Math.PI * 2, 0, Math.PI / 2);
-        break;
-      case 'Cylindrical':
-      case 'Circular':
-        geometry = new THREE.CylinderGeometry(L / 2, L / 2, H, 64);
-        break;
-      case 'Conical':
-        geometry = new THREE.ConeGeometry(L / 2, H, 64);
-        break;
-      case 'Triangular':
-        geometry = new THREE.CylinderGeometry(L / 2, L / 2, H, 3);
-        break;
-      case 'Oval':
-        geometry = new THREE.SphereGeometry(1, 64, 32);
-        geometry.scale(L / 2, H / 2, W / 2);
-        break;
-      default:
-        geometry = new THREE.BoxGeometry(L, H, W);
-        break;
-    }
-
-    const material = new THREE.MeshStandardMaterial({
-      color: 0x3d1e16,
-      roughness: 0.3,
-      metalness: 0.1,
-      transparent: true,
-      opacity: 0.9,
-    });
-
-    const mesh = new THREE.Mesh(geometry, material);
-    const wireframe = new THREE.WireframeGeometry(geometry);
-    const lineMaterial = new THREE.LineBasicMaterial({ color: 0xd4af37, transparent: true, opacity: 0.4 });
-    const net = new THREE.LineSegments(wireframe, lineMaterial);
-    mesh.add(net);
-    
-    sceneRef.current.add(mesh);
-    meshRef.current = mesh;
-  }, [shape, dimensions]);
-
-  useEffect(() => {
-    const el = mountRef.current;
-    if (!el) return;
-
-    const onMouseDown = (e: MouseEvent) => {
-      controlsRef.current.isDragging = true;
-      controlsRef.current.lastMouseX = e.clientX;
-      controlsRef.current.lastMouseY = e.clientY;
-    };
-
-    const onMouseMove = (e: MouseEvent) => {
-      if (!controlsRef.current.isDragging) return;
-      const dx = e.clientX - controlsRef.current.lastMouseX;
-      const dy = e.clientY - controlsRef.current.lastMouseY;
-      controlsRef.current.rotationY += dx * 0.01;
-      controlsRef.current.rotationX += dy * 0.01;
-      controlsRef.current.lastMouseX = e.clientX;
-      controlsRef.current.lastMouseY = e.clientY;
-    };
-
-    const onMouseUp = () => {
-      controlsRef.current.isDragging = false;
-    };
-
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      controlsRef.current.zoom = Math.max(0.5, Math.min(3, controlsRef.current.zoom - e.deltaY * 0.001));
-    };
-
-    const onTouchStart = (e: TouchEvent) => {
-      if (e.touches.length === 1) {
-        controlsRef.current.isDragging = true;
-        controlsRef.current.lastMouseX = e.touches[0].clientX;
-        controlsRef.current.lastMouseY = e.touches[0].clientY;
-      }
-    };
-
-    const onTouchMove = (e: TouchEvent) => {
-      if (!controlsRef.current.isDragging || e.touches.length !== 1) return;
-      const dx = e.touches[0].clientX - controlsRef.current.lastMouseX;
-      const dy = e.touches[0].clientY - controlsRef.current.lastMouseY;
-      controlsRef.current.rotationY += dx * 0.01;
-      controlsRef.current.rotationX += dy * 0.01;
-      controlsRef.current.lastMouseX = e.touches[0].clientX;
-      controlsRef.current.lastMouseY = e.touches[0].clientY;
-    };
-
-    el.addEventListener('mousedown', onMouseDown);
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-    el.addEventListener('wheel', onWheel, { passive: false });
-    el.addEventListener('touchstart', onTouchStart);
-    el.addEventListener('touchmove', onTouchMove);
-    el.addEventListener('touchend', onMouseUp);
-
-    return () => {
-      el.removeEventListener('mousedown', onMouseDown);
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
-      el.removeEventListener('wheel', onWheel);
-      el.removeEventListener('touchstart', onTouchStart);
-      el.removeEventListener('touchmove', onTouchMove);
-      el.removeEventListener('touchend', onMouseUp);
-    };
-  }, []);
-
-  const resetView = () => {
-    controlsRef.current.rotationX = -0.5;
-    controlsRef.current.rotationY = 0.8;
-    controlsRef.current.zoom = 1;
-  };
-
-  return (
-    <div className="mt-4 p-4 bg-muted/20 rounded-[2rem] border-2 border-dashed border-border flex flex-col items-center justify-center space-y-4 animate-in fade-in duration-500 max-w-md mx-auto overflow-hidden relative group">
-      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary/70">
-        <Box className="h-3 w-3" /> {shape} Interactive Mesh
-      </div>
-      <div ref={mountRef} className="h-[250px] w-full cursor-grab active:cursor-grabbing touch-none" />
-      <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-lg" onClick={resetView} title="Reset View">
-           <RotateCcw className="h-4 w-4" />
-        </Button>
-        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-lg" onClick={() => controlsRef.current.zoom = Math.min(3, controlsRef.current.zoom + 0.2)} title="Zoom In">
-           <Maximize2 className="h-4 w-4" />
-        </Button>
-        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-lg" onClick={() => controlsRef.current.zoom = Math.max(0.5, controlsRef.current.zoom - 0.2)} title="Zoom Out">
-           <Minimize2 className="h-4 w-4" />
-        </Button>
-      </div>
-      <div className="text-center space-y-1">
-        <p className="text-[9px] text-muted-foreground italic">Drag to Rotate • Scroll to Zoom</p>
-      </div>
-    </div>
-  );
-}
-
 export default function ProductsPage() {
   const firestore = useFirestore();
   const productsQuery = useMemo(() => firestore ? collection(firestore, 'products') : null, [firestore]);
@@ -414,6 +184,7 @@ export default function ProductsPage() {
 
   const watchShape = useWatch({ control: form.control, name: 'productShape' });
   const watchDimensions = useWatch({ control: form.control, name: 'productDimensions' });
+  const { errors, isValid } = form.formState;
 
   const stopCamera = () => {
     if (videoRef.current?.srcObject) {
@@ -431,7 +202,7 @@ export default function ProductsPage() {
         flavor: editingProduct.flavor,
         weight: editingProduct.weight || '',
         productShape: editingProduct.productShape || 'Rectangular',
-        productDimensions: editingProduct.productDimensions || { unit: 'mm' },
+        productDimensions: editingProduct.productDimensions || { unit: 'mm' } as ProductDimensions,
         price: editingProduct.price,
         wholesalePrice: editingProduct.wholesalePrice,
         availabilityStatus: editingProduct.availabilityStatus,
@@ -444,7 +215,7 @@ export default function ProductsPage() {
         flavor: '',
         weight: '',
         productShape: 'Rectangular',
-        productDimensions: { unit: 'mm' },
+        productDimensions: { unit: 'mm' } as ProductDimensions,
         price: 0,
         wholesalePrice: 0,
         availabilityStatus: 'In Stock',
@@ -525,22 +296,6 @@ export default function ProductsPage() {
     if (!editingProduct) return;
     saveProduct(values, editingProduct.id);
   };
-
-  const onInvalid = (errors: any) => {
-    const errorList = [];
-    if (errors.name) errorList.push("Name of the Product");
-    if (errors.flavor) errorList.push("Flavor Profile");
-    if (errors.price) errorList.push("Retail Value");
-    if (errors.wholesalePrice) errorList.push("Wholesale Value");
-    if (errors.imageUrls) errorList.push("Artisan Picture");
-    if (errors.productDimensions) errorList.push("Product Dimensions");
-
-    toast({
-      variant: "destructive",
-      title: "Validation Incomplete",
-      description: `Please update the required fields: ${errorList.join(", ")} and upload the required picture before creating the register.`,
-    });
-  };
   
   const enableCamera = async () => {
     try {
@@ -617,32 +372,6 @@ export default function ProductsPage() {
     setRemoteUrl('');
   };
 
-  if (loading) {
-    return (
-      <>
-        <PageHeader title="Artisan Portfolio" />
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {[...Array(8)].map((_, i) => (
-            <Card key={i} className="animate-pulse rounded-[2rem] overflow-hidden border-none shadow-sm">
-               <div className="aspect-[4/3] bg-muted" />
-               <CardContent className="p-6 space-y-4">
-                  <Skeleton className="h-6 w-3/4" />
-                  <Skeleton className="h-3 w-1/4" />
-                  <div className="flex justify-between items-end pt-4">
-                     <div className="space-y-2">
-                        <Skeleton className="h-8 w-24" />
-                        <Skeleton className="h-3 w-16" />
-                     </div>
-                     <Skeleton className="h-6 w-20 rounded-full" />
-                  </div>
-               </CardContent>
-            </Card>
-          ))}
-        </div>
-      </>
-    );
-  }
-
   const activeDialog = editingProduct ? 'edit' : (isAddDialogOpen ? 'add' : null);
 
   return (
@@ -677,29 +406,34 @@ export default function ProductsPage() {
           stopCamera();
         }
       }}>
-        <DialogContent className="sm:max-w-3xl rounded-[2.5rem] border-border shadow-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-3xl font-headline">{activeDialog === 'edit' ? 'Refine Creation' : 'Register New Creation'}</DialogTitle>
-            <DialogDescription className="text-muted-foreground">Add the intricate details of your latest artisan chocolate masterpiece.</DialogDescription>
-          </DialogHeader>
+        <DialogContent className="sm:max-w-4xl rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="p-8 bg-muted/30 border-b shrink-0">
+            <DialogHeader>
+              <DialogTitle className="text-3xl font-headline">{activeDialog === 'edit' ? 'Refine Creation' : 'Register New Creation'}</DialogTitle>
+              <DialogDescription className="text-muted-foreground">Define the identity and physical profile of your artisan masterpiece.</DialogDescription>
+            </DialogHeader>
+          </div>
+          
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(activeDialog === 'edit' ? onEditSubmit : onAddSubmit, onInvalid)}>
-              <ScrollArea className="h-[65vh] pr-6">
-                <div className="space-y-8 py-4">
-                  <FormField control={form.control} name="name" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Name of the Product</FormLabel>
-                      <FormControl><Input placeholder="e.g., Velvet Noir 85%" className="h-12 rounded-xl" {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="flavor" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Flavor Profile</FormLabel>
-                      <FormControl><Input placeholder="e.g., Single-Origin Dark Cocoa" className="h-12 rounded-xl" {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+            <form onSubmit={form.handleSubmit(activeDialog === 'edit' ? onEditSubmit : onAddSubmit)} className="flex flex-col flex-1 overflow-hidden">
+              <ScrollArea className="flex-1 px-8">
+                <div className="space-y-8 py-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <FormField control={form.control} name="name" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Name of the Product</FormLabel>
+                        <FormControl><Input placeholder="e.g., Velvet Noir 85%" className="h-12 rounded-xl" {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="flavor" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Flavor Profile</FormLabel>
+                        <FormControl><Input placeholder="e.g., Single-Origin Dark Cocoa" className="h-12 rounded-xl" {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <FormField control={form.control} name="weight" render={({ field }) => (
@@ -716,7 +450,7 @@ export default function ProductsPage() {
                         <Select onValueChange={(val: any) => {
                            field.onChange(val);
                            const unit = form.getValues('productDimensions.unit');
-                           form.setValue('productDimensions', { unit });
+                           form.setValue('productDimensions', { unit } as ProductDimensions);
                         }} defaultValue={field.value} value={field.value}>
                           <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Select shape" /></SelectTrigger></FormControl>
                           <SelectContent>
@@ -730,16 +464,16 @@ export default function ProductsPage() {
                     )} />
                   </div>
 
-                  <div className="bg-muted/30 p-8 rounded-[2rem] border-2 border-dashed border-stone-200 space-y-6">
+                  <div className="bg-stone-50 p-8 rounded-[2rem] border-2 border-dashed border-stone-200 space-y-6 shadow-inner">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-[0.2em]">
-                        <Ruler className="h-4 w-4" /> Dimension Configuration
+                        <Ruler className="h-4 w-4" /> Dimension configuration
                       </div>
                       <FormField control={form.control} name="productDimensions.unit" render={({ field }) => (
                         <div className="flex items-center gap-2">
                            <Label className="text-[9px] font-bold text-stone-400 uppercase tracking-tighter">Scale Unit</Label>
                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                             <SelectTrigger className="h-8 w-24 rounded-lg bg-background text-[10px] font-bold">
+                             <SelectTrigger className="h-8 w-24 rounded-lg bg-background text-[10px] font-bold border-none shadow-sm">
                                <SelectValue />
                              </SelectTrigger>
                              <SelectContent>
@@ -761,7 +495,7 @@ export default function ProductsPage() {
                               <Input 
                                 type={f.type} 
                                 placeholder={f.placeholder || `0.00`} 
-                                className="h-10 rounded-xl bg-background border-stone-200" 
+                                className="h-10 rounded-xl bg-background border-stone-200 focus:ring-primary/20" 
                                 {...field} 
                                 value={field.value ?? ''}
                               />
@@ -774,7 +508,7 @@ export default function ProductsPage() {
 
                     <div className="mt-6 pt-6 border-t border-stone-200 space-y-3">
                        <h4 className="text-[9px] font-black uppercase tracking-[0.3em] text-stone-400">Design Specification Summary</h4>
-                       <div className="p-4 bg-background rounded-xl border border-stone-100 flex flex-wrap gap-x-8 gap-y-2">
+                       <div className="p-4 bg-background rounded-xl border border-stone-100 flex flex-wrap gap-x-8 gap-y-2 shadow-sm">
                           <div className="space-y-0.5">
                              <p className="text-[8px] font-bold uppercase text-muted-foreground">Type</p>
                              <p className="text-xs font-bold text-stone-900">{watchShape}</p>
@@ -791,7 +525,7 @@ export default function ProductsPage() {
                     <ChocolateMeshViewer shape={watchShape} dimensions={watchDimensions} />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <FormField control={form.control} name="price" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Retail Value (₹)</FormLabel>
@@ -807,6 +541,7 @@ export default function ProductsPage() {
                       </FormItem>
                     )} />
                   </div>
+                  
                   <FormField control={form.control} name="availabilityStatus" render={({ field }) => (
                     <FormItem>
                       <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Availability Status</FormLabel>
@@ -851,7 +586,7 @@ export default function ProductsPage() {
                       </TabsContent>
                       
                       <TabsContent value="camera" className="pt-4 space-y-4">
-                        <div className="w-full aspect-[4/3] bg-muted rounded-2xl flex items-center justify-center overflow-hidden border-2 border-dashed border-border">
+                        <div className="w-full aspect-[4/3] bg-black rounded-2xl flex items-center justify-center overflow-hidden border-2 border-dashed border-border">
                           <video ref={videoRef} className={cn("w-full h-full object-cover", hasCameraPermission === true ? 'block' : 'hidden')} autoPlay muted playsInline />
                           {hasCameraPermission !== true && <Camera className="h-16 w-16 text-muted-foreground opacity-20" />}
                         </div>
@@ -869,15 +604,12 @@ export default function ProductsPage() {
                           <Input placeholder="Enter high-end photography URL..." value={remoteUrl} onChange={(e) => setRemoteUrl(e.target.value)} className="h-12 rounded-xl" />
                           <Button type="button" onClick={handleAddRemoteUrl} className="h-12 rounded-xl px-6">Apply</Button>
                         </div>
-                        <FormDescription className="text-[10px] uppercase tracking-tighter">Link to professional assets hosted on a premium CDN.</FormDescription>
                       </TabsContent>
 
                       <TabsContent value="upload" className="pt-4 space-y-4">
                         <div className="grid w-full items-center gap-1.5">
-                          <Label htmlFor="picture" className="sr-only">Select Asset</Label>
-                          <Input id="picture" type="file" multiple accept="image/*" onChange={handleFileChange} className="cursor-pointer py-3 h-auto" />
+                          <Input id="picture" type="file" multiple accept="image/*" onChange={handleFileChange} className="cursor-pointer py-3 h-auto rounded-xl" />
                         </div>
-                        <FormDescription className="text-[10px] uppercase tracking-tighter">Upload up to 4 high-fidelity files. They will be optimized for storage.</FormDescription>
                       </TabsContent>
                     </Tabs>
                     
@@ -903,13 +635,28 @@ export default function ProductsPage() {
                   <canvas ref={canvasRef} className="hidden" />
                 </div>
               </ScrollArea>
-              <DialogFooter className="mt-8 pt-6 border-t border-border">
-                <DialogClose asChild><Button type="button" variant="secondary" className="rounded-xl h-12 px-8">Discard</Button></DialogClose>
-                <Button type="submit" disabled={isSaving} className="rounded-xl h-12 px-10 shadow-xl shadow-primary/20">
-                  {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  {activeDialog === 'edit' ? 'Commit Refinement' : 'Create Register'}
-                </Button>
-              </DialogFooter>
+
+              <div className="p-8 border-t shrink-0 bg-stone-50/50">
+                {!isValid && Object.keys(errors).length > 0 && (
+                  <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-2xl flex items-center gap-3 text-destructive animate-in slide-in-from-bottom-2 duration-300">
+                    <AlertCircle className="h-5 w-5" />
+                    <div className="text-[10px] font-black uppercase tracking-widest leading-none">
+                      {errors.name && <span>Please enter a product name. </span>}
+                      {errors.flavor && <span>Please enter the flavor profile. </span>}
+                      {errors.price && <span>Retail value is required. </span>}
+                      {errors.imageUrls && <span>You have not yet selected an image. </span>}
+                    </div>
+                  </div>
+                )}
+                
+                <DialogFooter className="gap-4">
+                  <DialogClose asChild><Button type="button" variant="ghost" className="rounded-xl h-14 px-8 font-bold uppercase text-[10px] tracking-widest">Discard</Button></DialogClose>
+                  <Button type="submit" disabled={isSaving} className="rounded-xl h-14 px-12 shadow-xl shadow-primary/20 font-bold uppercase text-[10px] tracking-widest">
+                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    {activeDialog === 'edit' ? 'Commit Refinement' : 'Create Register'}
+                  </Button>
+                </DialogFooter>
+              </div>
             </form>
           </Form>
         </DialogContent>
