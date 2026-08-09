@@ -660,7 +660,7 @@ export default function ProductsPage() {
                 
                 <DialogFooter className="flex items-center justify-end gap-6 sm:justify-end">
                   <DialogClose asChild>
-                    <Button type="button" variant="ghost" className="h-12 px-6 rounded-xl font-bold uppercase text-[10px] tracking-widest text-muted-foreground hover:text-foreground transition-colors">Discard</Button>
+                    <Button type="button" variant="secondary" className="h-12 px-6 rounded-xl font-bold uppercase text-[10px] tracking-widest">Discard</Button>
                   </DialogClose>
                   <Button type="submit" disabled={isSaving} className="h-12 px-12 rounded-xl shadow-2xl shadow-primary/20 font-bold uppercase text-[10px] tracking-widest min-w-[200px]">
                     {isSaving ? <Loader2 className="mr-3 h-4 w-4 animate-spin" /> : null}
