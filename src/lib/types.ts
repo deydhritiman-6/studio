@@ -56,19 +56,37 @@ export type Order = {
   };
 };
 
+export type ProductDimensions = {
+  unit: 'mm' | 'cm' | 'inch';
+  length?: number;
+  width?: number;
+  height?: number;
+  diameter?: number;
+  sideLength?: number;
+  base?: number;
+  radius?: number;
+  custom1?: number;
+  custom2?: number;
+  custom3?: number;
+  customLabel1?: string;
+  customLabel2?: string;
+  customLabel3?: string;
+  additionalDescription?: string;
+};
+
 export type Product = {
   id: string;
   name: string;
   flavor: string;
   weight?: string;
-  dimensions?: string;
-  productShape?: 'Square' | 'Rectangular' | 'Circular' | 'Spherical' | 'Half Spherical' | 'Oval' | 'Heart' | 'Custom';
+  dimensions?: string; // Legacy string format
+  productDimensions?: ProductDimensions; // New structured format
+  productShape?: 'Square' | 'Rectangular' | 'Spherical' | 'Half Spherical' | 'Circular' | 'Cylindrical' | 'Oval' | 'Triangular' | 'Irregular' | 'Other';
   price: number;
   wholesalePrice: number;
   availabilityStatus: 'In Stock' | 'Out of Stock';
   imageUrls: string[];
   imageHint: string;
-  // New Production Traceability Fields
   sku?: string;
   recipeUsed?: string;
   productionDate?: string;

@@ -2,14 +2,14 @@
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import type { Product } from '@/lib/types';
-import { Camera, PlusCircle, Loader2, Link as LinkIcon, Upload, Image as ImageIcon, PackageSearch, Trash2, Edit, History, Info, Box } from 'lucide-react';
+import type { Product, ProductDimensions } from '@/lib/types';
+import { Camera, PlusCircle, Loader2, Link as LinkIcon, Upload, Image as ImageIcon, PackageSearch, Trash2, Edit, History, Info, Box, Ruler } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
@@ -30,77 +30,174 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Textarea } from '@/components/ui/textarea';
+
+const SHAPE_CONFIG: Record<string, { fields: { name: string; label: string; placeholder?: string; type: 'number' | 'text' }[] }> = {
+  Square: {
+    fields: [
+      { name: 'sideLength', label: 'Side Length', type: 'number' },
+      { name: 'height', label: 'Height / Thickness', type: 'number' },
+    ]
+  },
+  Rectangular: {
+    fields: [
+      { name: 'length', label: 'Length', type: 'number' },
+      { name: 'width', label: 'Width', type: 'number' },
+      { name: 'height', label: 'Height / Thickness', type: 'number' },
+    ]
+  },
+  Spherical: {
+    fields: [
+      { name: 'diameter', label: 'Diameter', type: 'number' },
+      { name: 'radius', label: 'Radius (Optional)', type: 'number' },
+    ]
+  },
+  'Half Spherical': {
+    fields: [
+      { name: 'diameter', label: 'Diameter', type: 'number' },
+      { name: 'height', label: 'Height', type: 'number' },
+    ]
+  },
+  Circular: {
+    fields: [
+      { name: 'diameter', label: 'Diameter', type: 'number' },
+      { name: 'height', label: 'Height / Thickness', type: 'number' },
+    ]
+  },
+  Cylindrical: {
+    fields: [
+      { name: 'diameter', label: 'Diameter', type: 'number' },
+      { name: 'height', label: 'Height', type: 'number' },
+    ]
+  },
+  Oval: {
+    fields: [
+      { name: 'length', label: 'Length', type: 'number' },
+      { name: 'width', label: 'Width', type: 'number' },
+      { name: 'height', label: 'Height / Thickness', type: 'number' },
+    ]
+  },
+  Triangular: {
+    fields: [
+      { name: 'base', label: 'Base', type: 'number' },
+      { name: 'height', label: 'Height', type: 'number' },
+      { name: 'length', label: 'Length / Thickness', type: 'number' },
+    ]
+  },
+  Irregular: {
+    fields: [
+      { name: 'length', label: 'Length', type: 'number' },
+      { name: 'width', label: 'Width', type: 'number' },
+      { name: 'height', label: 'Height / Thickness', type: 'number' },
+      { name: 'additionalDescription', label: 'Description', type: 'text' },
+    ]
+  },
+  Other: {
+    fields: [
+      { name: 'custom1', label: 'Custom Dimension 1', type: 'number' },
+      { name: 'customLabel1', label: 'Label for Dim 1', type: 'text' },
+      { name: 'custom2', label: 'Custom Dimension 2', type: 'number' },
+      { name: 'customLabel2', label: 'Label for Dim 2', type: 'text' },
+      { name: 'custom3', label: 'Custom Dimension 3', type: 'number' },
+      { name: 'customLabel3', label: 'Label for Dim 3', type: 'text' },
+      { name: 'additionalDescription', label: 'Description', type: 'text' },
+    ]
+  }
+};
 
 const productFormSchema = z.object({
-  name: z.string().min(1, 'Product name is required.'),
+  name: z.string().min(1, 'Name of the Product is required.'),
   flavor: z.string().min(1, 'Flavor profile is required.'),
   weight: z.string().optional(),
-  productShape: z.enum(['Square', 'Rectangular', 'Circular', 'Spherical', 'Half Spherical', 'Oval', 'Heart', 'Custom']).optional(),
-  dimensions: z.string().optional(),
-  dimL: z.string().optional(),
-  dimW: z.string().optional(),
-  dimH: z.string().optional(),
-  price: z.coerce.number().positive('Price must be a positive number.'),
-  wholesalePrice: z.coerce.number().positive('Wholesale price must be a positive number.'),
+  productShape: z.enum(['Square', 'Rectangular', 'Spherical', 'Half Spherical', 'Circular', 'Cylindrical', 'Oval', 'Triangular', 'Irregular', 'Other']).default('Rectangular'),
+  productDimensions: z.object({
+    unit: z.enum(['mm', 'cm', 'inch']).default('mm'),
+    length: z.coerce.number().optional(),
+    width: z.coerce.number().optional(),
+    height: z.coerce.number().optional(),
+    diameter: z.coerce.number().optional(),
+    sideLength: z.coerce.number().optional(),
+    base: z.coerce.number().optional(),
+    radius: z.coerce.number().optional(),
+    custom1: z.coerce.number().optional(),
+    custom2: z.coerce.number().optional(),
+    custom3: z.coerce.number().optional(),
+    customLabel1: z.string().optional(),
+    customLabel2: z.string().optional(),
+    customLabel3: z.string().optional(),
+    additionalDescription: z.string().optional(),
+  }),
+  price: z.coerce.number().positive('Retail Value must be a positive number.'),
+  wholesalePrice: z.coerce.number().positive('Wholesale Value must be a positive number.'),
   availabilityStatus: z.enum(['In Stock', 'Out of Stock']),
-  imageUrls: z.array(z.string()).min(1, "Please select at least one image.").max(4, "You can upload a maximum of 4 images."),
+  imageUrls: z.array(z.string()).min(1, "At least one picture is required.").max(4, "Maximum 4 visuals allowed."),
   imageHint: z.string().min(1, 'Image hint is required.'),
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
 
-const DIMENSION_VALUES = [
-  '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 
-  '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', 
-  '22', '24', '26', '28', '30'
-];
+function ChocolateShapePreview({ shape, dimensions }: { shape: string, dimensions: ProductDimensions }) {
+  const { unit, length, width, height, sideLength, diameter, base } = dimensions;
 
-function ChocolateShapePreview({ l, w, h }: { l: string, w: string, h: string }) {
-  const length = parseInt(l) || 0;
-  const width = parseInt(w) || 0;
-  const height = parseInt(h) || 0;
+  // Use unified sizing for preview
+  const L = sideLength || length || diameter || base || 50;
+  const W = sideLength || width || diameter || 50;
+  const H = height || 20;
 
-  if (!length || !width || !height) return null;
-
-  // Scaling factor to keep it within a reasonable size for the UI (max 100px)
-  const maxDim = Math.max(length, width, height);
+  const maxDim = Math.max(L, W, H);
   const scale = 100 / maxDim;
   
-  const drawL = length * scale;
-  const drawW = width * scale;
-  const drawH = height * scale;
+  const drawL = L * scale;
+  const drawW = W * scale;
+  const drawH = H * scale;
+
+  const isRound = shape === 'Spherical' || shape === 'Circular' || shape === 'Cylindrical' || shape === 'Half Spherical';
 
   return (
-    <div className="mt-2 p-4 bg-muted/20 rounded-xl border border-border flex flex-col items-center justify-center space-y-2 animate-in fade-in duration-500 max-w-sm mx-auto">
-      <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-primary/70">
-        <Box className="h-2.5 w-2.5" /> Shape Visualization
+    <div className="mt-4 p-6 bg-muted/20 rounded-[2rem] border-2 border-dashed border-border flex flex-col items-center justify-center space-y-4 animate-in fade-in duration-500 max-w-md mx-auto overflow-hidden">
+      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary/70">
+        <Box className="h-3 w-3" /> {shape} Prototype View
       </div>
       
-      <div className="relative h-[130px] w-full flex items-center justify-center perspective-[800px]">
+      <div className="relative h-[150px] w-full flex items-center justify-center perspective-[1000px]">
         <div 
-          className="relative preserve-3d transition-transform duration-700 hover:rotate-y-180 cursor-grab active:cursor-grabbing"
+          className={cn(
+            "relative preserve-3d transition-transform duration-1000 hover:rotate-y-180 cursor-grab active:cursor-grabbing",
+            isRound ? "rounded-full" : ""
+          )}
           style={{ 
             width: `${drawL}px`, 
             height: `${drawH}px`,
             transform: 'rotateX(-25deg) rotateY(45deg)'
           }}
         >
-          {/* Front */}
-          <div className="absolute inset-0 bg-primary/80 border border-primary/20 shadow-inner" style={{ transform: `translateZ(${drawW / 2}px)` }} />
-          {/* Back */}
-          <div className="absolute inset-0 bg-primary/80 border border-primary/20 shadow-inner" style={{ transform: `rotateY(180deg) translateZ(${drawW / 2}px)` }} />
-          {/* Left */}
-          <div className="absolute top-0 bottom-0 bg-primary/60 border border-primary/20 shadow-inner" style={{ width: `${drawW}px`, left: `calc(50% - ${drawW / 2}px)`, transform: `rotateY(-90deg) translateZ(${drawL / 2}px)` }} />
-          {/* Right */}
-          <div className="absolute top-0 bottom-0 bg-primary/60 border border-primary/20 shadow-inner" style={{ width: `${drawW}px`, left: `calc(50% - ${drawW / 2}px)`, transform: `rotateY(90deg) translateZ(${drawL / 2}px)` }} />
-          {/* Top */}
-          <div className="absolute left-0 right-0 bg-primary/40 border border-primary/20 shadow-inner" style={{ height: `${drawW}px`, top: `calc(50% - ${drawW / 2}px)`, transform: `rotateX(90deg) translateZ(${drawH / 2}px)` }} />
-          {/* Bottom */}
-          <div className="absolute left-0 right-0 bg-primary/40 border border-primary/20 shadow-inner" style={{ height: `${drawW}px`, top: `calc(50% - ${drawW / 2}px)`, transform: `rotateX(-90deg) translateZ(${drawH / 2}px)` }} />
+          {/* Front / Surface */}
+          <div className={cn(
+            "absolute inset-0 bg-primary/80 border border-primary/20 shadow-inner",
+            isRound ? "rounded-full" : ""
+          )} style={{ transform: `translateZ(${drawW / 2}px)` }} />
+          
+          {/* Sides */}
+          {!isRound && (
+            <>
+              <div className="absolute inset-0 bg-primary/80 border border-primary/20 shadow-inner" style={{ transform: `rotateY(180deg) translateZ(${drawW / 2}px)` }} />
+              <div className="absolute top-0 bottom-0 bg-primary/60 border border-primary/20 shadow-inner" style={{ width: `${drawW}px`, left: `calc(50% - ${drawW / 2}px)`, transform: `rotateY(-90deg) translateZ(${drawL / 2}px)` }} />
+              <div className="absolute top-0 bottom-0 bg-primary/60 border border-primary/20 shadow-inner" style={{ width: `${drawW}px`, left: `calc(50% - ${drawW / 2}px)`, transform: `rotateY(90deg) translateZ(${drawL / 2}px)` }} />
+              <div className="absolute left-0 right-0 bg-primary/40 border border-primary/20 shadow-inner" style={{ height: `${drawW}px`, top: `calc(50% - ${drawW / 2}px)`, transform: `rotateX(90deg) translateZ(${drawH / 2}px)` }} />
+              <div className="absolute left-0 right-0 bg-primary/40 border border-primary/20 shadow-inner" style={{ height: `${drawW}px`, top: `calc(50% - ${drawW / 2}px)`, transform: `rotateX(-90deg) translateZ(${drawH / 2}px)` }} />
+            </>
+          )}
+          
+          {isRound && shape !== 'Spherical' && (
+            <div className="absolute inset-0 bg-primary/40 rounded-full border border-primary/20" style={{ height: `${drawW}px`, transform: `rotateX(90deg) translateZ(${drawH / 2}px)` }} />
+          )}
         </div>
       </div>
       
-      <p className="text-[9px] text-muted-foreground italic">Approximate Proportions</p>
+      <div className="text-center space-y-1">
+        <p className="text-[10px] font-bold text-stone-900 uppercase tracking-widest">{shape} Configuration</p>
+        <p className="text-[9px] text-muted-foreground italic">Proportional rendering in {unit}</p>
+      </div>
     </div>
   );
 }
@@ -134,11 +231,10 @@ export default function ProductsPage() {
       name: '',
       flavor: '',
       weight: '',
-      productShape: 'Square',
-      dimensions: '',
-      dimL: '',
-      dimW: '',
-      dimH: '',
+      productShape: 'Rectangular',
+      productDimensions: {
+        unit: 'mm',
+      },
       price: 0,
       wholesalePrice: 0,
       availabilityStatus: 'In Stock',
@@ -147,9 +243,8 @@ export default function ProductsPage() {
     }
   });
 
-  const watchDimL = form.watch('dimL');
-  const watchDimW = form.watch('dimW');
-  const watchDimH = form.watch('dimH');
+  const watchShape = useWatch({ control: form.control, name: 'productShape' });
+  const watchDimensions = useWatch({ control: form.control, name: 'productDimensions' });
 
   const stopCamera = () => {
     if (videoRef.current?.srcObject) {
@@ -162,24 +257,12 @@ export default function ProductsPage() {
 
   useEffect(() => {
     if (editingProduct) {
-      // Parse dimensions string "LxWxH cm"
-      let dL = '', dW = '', dH = '';
-      if (editingProduct.dimensions) {
-        const parts = editingProduct.dimensions.replace(' cm', '').split('x');
-        dL = parts[0] || '';
-        dW = parts[1] || '';
-        dH = parts[2] || '';
-      }
-
       form.reset({
         name: editingProduct.name,
         flavor: editingProduct.flavor,
         weight: editingProduct.weight || '',
-        productShape: editingProduct.productShape || 'Square',
-        dimensions: editingProduct.dimensions || '',
-        dimL: dL,
-        dimW: dW,
-        dimH: dH,
+        productShape: editingProduct.productShape || 'Rectangular',
+        productDimensions: editingProduct.productDimensions || { unit: 'mm' },
         price: editingProduct.price,
         wholesalePrice: editingProduct.wholesalePrice,
         availabilityStatus: editingProduct.availabilityStatus,
@@ -191,11 +274,8 @@ export default function ProductsPage() {
         name: '',
         flavor: '',
         weight: '',
-        productShape: 'Square',
-        dimensions: '',
-        dimL: '',
-        dimW: '',
-        dimH: '',
+        productShape: 'Rectangular',
+        productDimensions: { unit: 'mm' },
         price: 0,
         wholesalePrice: 0,
         availabilityStatus: 'In Stock',
@@ -224,27 +304,31 @@ export default function ProductsPage() {
 
   const saveProduct = (values: ProductFormValues, id?: string) => {
     if (!firestore) return;
+
+    // Validate dimension fields for selected shape
+    const config = SHAPE_CONFIG[values.productShape];
+    const missingFields = config.fields.filter(f => f.type === 'number' && !values.productDimensions[f.name as keyof ProductDimensions]);
+    
+    if (missingFields.length > 0) {
+      toast({
+        variant: 'destructive',
+        title: 'Validation Error',
+        description: `Please complete all required product dimension fields for ${values.productShape}.`,
+      });
+      return;
+    }
     
     setIsSaving(true);
     const productId = id || `P${Date.now()}`;
     const productRef = doc(firestore, 'products', productId);
     
-    // Construct dimensions string from parts if available
-    const finalDimensions = values.dimL && values.dimW && values.dimH 
-      ? `${values.dimL}x${values.dimW}x${values.dimH} cm`
-      : values.dimensions;
-
     const productData = { 
       ...values, 
       id: productId,
-      dimensions: finalDimensions,
       productionStatus: id ? (editingProduct?.productionStatus || 'Product Ready') : 'Product Ready'
     };
 
-    // Remove internal UI fields before saving to Firestore
-    const { dimL, dimW, dimH, ...dataToSave } = productData;
-
-    setDoc(productRef, dataToSave, { merge: true })
+    setDoc(productRef, productData, { merge: true })
       .then(() => {
         setIsAddDialogOpen(false);
         setEditingProduct(null);
@@ -275,20 +359,18 @@ export default function ProductsPage() {
   };
 
   const onInvalid = (errors: any) => {
-    const missingFields: string[] = [];
-    if (errors.name) missingFields.push("Name");
-    if (errors.flavor) missingFields.push("Flavor Profile");
-    if (errors.price) missingFields.push("Retail Value");
-    if (errors.wholesalePrice) missingFields.push("Wholesale Value");
-    if (errors.availabilityStatus) missingFields.push("Availability Status");
-    if (errors.imageUrls) missingFields.push("Picture");
+    const errorList = [];
+    if (errors.name) errorList.push("Name of the Product");
+    if (errors.flavor) errorList.push("Flavor Profile");
+    if (errors.price) errorList.push("Retail Value");
+    if (errors.wholesalePrice) errorList.push("Wholesale Value");
+    if (errors.imageUrls) errorList.push("Artisan Picture");
+    if (errors.productDimensions) errorList.push("Product Dimensions");
 
-    const missingText = missingFields.length > 0 ? ` (${missingFields.join(", ")})` : "";
-    
     toast({
       variant: "destructive",
-      title: "Validation Required",
-      description: `Please update the required fields${missingText} and upload the required picture before creating the register.`,
+      title: "Validation Incomplete",
+      description: `Please update the required fields: ${errorList.join(", ")} and upload the required picture before creating the register.`,
     });
   };
   
@@ -399,9 +481,7 @@ export default function ProductsPage() {
     <TooltipProvider>
       <style jsx global>{`
         .perspective-1000 { perspective: 1000px; }
-        .perspective-800 { perspective: 800px; }
         .preserve-3d { transform-style: preserve-3d; }
-        .rotate-y-180:hover { transform: rotateX(-25deg) rotateY(225deg) !important; }
       `}</style>
       
       <Dialog open={!!viewingProduct} onOpenChange={(open) => !open && setViewingProduct(null)}>
@@ -434,14 +514,14 @@ export default function ProductsPage() {
           stopCamera();
         }
       }}>
-        <DialogContent className="sm:max-w-2xl rounded-[2rem] border-border shadow-2xl">
+        <DialogContent className="sm:max-w-3xl rounded-[2.5rem] border-border shadow-2xl">
           <DialogHeader>
             <DialogTitle className="text-3xl font-headline">{activeDialog === 'edit' ? 'Refine Creation' : 'Register New Creation'}</DialogTitle>
             <DialogDescription className="text-muted-foreground">Add the intricate details of your latest artisan chocolate masterpiece.</DialogDescription>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(activeDialog === 'edit' ? onEditSubmit : onAddSubmit, onInvalid)}>
-              <ScrollArea className="h-[60vh] pr-6">
+              <ScrollArea className="h-[65vh] pr-6">
                 <div className="space-y-8 py-4">
                   <FormField control={form.control} name="name" render={({ field }) => (
                     <FormItem>
@@ -458,7 +538,7 @@ export default function ProductsPage() {
                     </FormItem>
                   )} />
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <FormField control={form.control} name="weight" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Product Weight</FormLabel>
@@ -470,17 +550,17 @@ export default function ProductsPage() {
                     <FormField control={form.control} name="productShape" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Product Shape</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                        <Select onValueChange={(val: any) => {
+                           field.onChange(val);
+                           // Reset dimensions on shape change to avoid cross-contamination
+                           const unit = form.getValues('productDimensions.unit');
+                           form.setValue('productDimensions', { unit });
+                        }} defaultValue={field.value} value={field.value}>
                           <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Select shape" /></SelectTrigger></FormControl>
                           <SelectContent>
-                            <SelectItem value="Square">Square</SelectItem>
-                            <SelectItem value="Rectangular">Rectangular</SelectItem>
-                            <SelectItem value="Circular">Circular</SelectItem>
-                            <SelectItem value="Spherical">Spherical</SelectItem>
-                            <SelectItem value="Half Spherical">Half Spherical</SelectItem>
-                            <SelectItem value="Oval">Oval</SelectItem>
-                            <SelectItem value="Heart">Heart</SelectItem>
-                            <SelectItem value="Custom">Custom</SelectItem>
+                            {Object.keys(SHAPE_CONFIG).map(shape => (
+                              <SelectItem key={shape} value={shape}>{shape}</SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -488,57 +568,69 @@ export default function ProductsPage() {
                     )} />
                   </div>
 
-                  <div className="space-y-2">
-                    <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Product Dimensions (cm)</FormLabel>
-                    <div className="grid grid-cols-3 gap-2">
-                      <FormField control={form.control} name="dimL" render={({ field }) => (
-                        <FormItem>
-                          <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="h-10 rounded-xl">
-                                <SelectValue placeholder="L" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {DIMENSION_VALUES.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="dimW" render={({ field }) => (
-                        <FormItem>
-                          <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="h-10 rounded-xl">
-                                <SelectValue placeholder="W" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {DIMENSION_VALUES.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="dimH" render={({ field }) => (
-                        <FormItem>
-                          <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="h-10 rounded-xl">
-                                <SelectValue placeholder="H" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {DIMENSION_VALUES.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
+                  {/* Dynamic Dimension Parameters */}
+                  <div className="bg-muted/30 p-8 rounded-[2rem] border-2 border-dashed border-stone-200 space-y-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-[0.2em]">
+                        <Ruler className="h-4 w-4" /> Dimension Configuration
+                      </div>
+                      <FormField control={form.control} name="productDimensions.unit" render={({ field }) => (
+                        <div className="flex items-center gap-2">
+                           <Label className="text-[9px] font-bold text-stone-400 uppercase tracking-tighter">Scale Unit</Label>
+                           <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                             <SelectTrigger className="h-8 w-24 rounded-lg bg-background text-[10px] font-bold">
+                               <SelectValue />
+                             </SelectTrigger>
+                             <SelectContent>
+                               <SelectItem value="mm" className="text-[10px] font-bold">mm</SelectItem>
+                               <SelectItem value="cm" className="text-[10px] font-bold">cm</SelectItem>
+                               <SelectItem value="inch" className="text-[10px] font-bold">inch</SelectItem>
+                             </SelectContent>
+                           </Select>
+                        </div>
                       )} />
                     </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                      {SHAPE_CONFIG[watchShape]?.fields.map((f) => (
+                        <FormField key={f.name} control={form.control} name={`productDimensions.${f.name}` as any} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="uppercase text-[9px] font-bold tracking-widest text-stone-500">{f.label} ({watchDimensions.unit})</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type={f.type} 
+                                placeholder={f.placeholder || `0.00`} 
+                                className="h-10 rounded-xl bg-background border-stone-200" 
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      ))}
+                    </div>
+
+                    {/* Summary Block */}
+                    <div className="mt-6 pt-6 border-t border-stone-200 space-y-3">
+                       <h4 className="text-[9px] font-black uppercase tracking-[0.3em] text-stone-400">Design Specification Summary</h4>
+                       <div className="p-4 bg-background rounded-xl border border-stone-100 flex flex-wrap gap-x-8 gap-y-2">
+                          <div className="space-y-0.5">
+                             <p className="text-[8px] font-bold uppercase text-muted-foreground">Type</p>
+                             <p className="text-xs font-bold text-stone-900">{watchShape}</p>
+                          </div>
+                          {SHAPE_CONFIG[watchShape]?.fields.filter(f => f.type === 'number').map(f => (
+                             <div key={f.name} className="space-y-0.5">
+                                <p className="text-[8px] font-bold uppercase text-muted-foreground">{f.label}</p>
+                                <p className="text-xs font-bold text-stone-900">{watchDimensions[f.name as keyof ProductDimensions] || '--'} {watchDimensions.unit}</p>
+                             </div>
+                          ))}
+                       </div>
+                    </div>
+                    
+                    <ChocolateShapePreview shape={watchShape} dimensions={watchDimensions} />
                   </div>
 
-                  <ChocolateShapePreview l={watchDimL || ''} w={watchDimW || ''} h={watchDimH || ''} />
-
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-2 gap-8">
                     <FormField control={form.control} name="price" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Retail Value (₹)</FormLabel>

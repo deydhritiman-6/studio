@@ -7,14 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
-import { ShoppingCart, ArrowLeft, CheckCircle2, Star, ShieldCheck, Loader2, Box } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, CheckCircle2, Star, ShieldCheck, Loader2, Box, Ruler } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useDoc, useFirestore } from '@/firebase';
 import { doc } from 'firebase/firestore';
-
-// Note: In Next.js App Router Client Components, we still use metadata tags in the layout
-// or define a separate server component parent if SSR metadata is required.
-// For SEO objective, we'll keep the client logic but ensure the JSON-LD is rendered.
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -105,6 +101,60 @@ export default function ProductDetailPage() {
     window.dispatchEvent(new Event('cart-updated'));
   };
 
+  const renderDimensions = () => {
+    if (product.productDimensions) {
+      const dims = product.productDimensions;
+      return (
+        <div className="bg-stone-50 p-6 rounded-2xl border border-stone-100 space-y-4">
+           <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+              <Ruler className="h-3 w-3" /> Technical Specifications
+           </div>
+           <div className="grid grid-cols-2 gap-y-3">
+              <div className="space-y-0.5">
+                 <p className="text-[9px] font-bold text-stone-400 uppercase tracking-tighter">Shape</p>
+                 <p className="text-sm font-bold text-stone-900">{product.productShape}</p>
+              </div>
+              {dims.diameter && (
+                <div className="space-y-0.5">
+                   <p className="text-[9px] font-bold text-stone-400 uppercase tracking-tighter">Diameter</p>
+                   <p className="text-sm font-bold text-stone-900">{dims.diameter} {dims.unit}</p>
+                </div>
+              )}
+              {dims.length && (
+                <div className="space-y-0.5">
+                   <p className="text-[9px] font-bold text-stone-400 uppercase tracking-tighter">Length</p>
+                   <p className="text-sm font-bold text-stone-900">{dims.length} {dims.unit}</p>
+                </div>
+              )}
+              {dims.width && (
+                <div className="space-y-0.5">
+                   <p className="text-[9px] font-bold text-stone-400 uppercase tracking-tighter">Width</p>
+                   <p className="text-sm font-bold text-stone-900">{dims.width} {dims.unit}</p>
+                </div>
+              )}
+              {dims.height && (
+                <div className="space-y-0.5">
+                   <p className="text-[9px] font-bold text-stone-400 uppercase tracking-tighter">Thickness</p>
+                   <p className="text-sm font-bold text-stone-900">{dims.height} {dims.unit}</p>
+                </div>
+              )}
+           </div>
+           {dims.additionalDescription && (
+              <p className="text-[10px] text-stone-500 italic pt-2 border-t border-stone-200">
+                Note: {dims.additionalDescription}
+              </p>
+           )}
+        </div>
+      );
+    }
+    
+    if (product.dimensions) {
+      return <li className="flex items-start gap-4"><Box className="h-5 w-5 text-primary shrink-0 mt-1" /> <span>Dimensions: <strong>{product.dimensions}</strong></span></li>;
+    }
+    
+    return null;
+  };
+
   return (
     <div className="space-y-12 animate-in slide-in-from-bottom-8 duration-1000">
       <script
@@ -140,7 +190,7 @@ export default function ProductDetailPage() {
                   aria-label={`View perspective ${i + 1} of ${product.name}`}
                   className={`aspect-square relative rounded-2xl overflow-hidden border-2 transition-all duration-300 ${selectedImage === url ? 'border-primary shadow-lg ring-4 ring-primary/5' : 'border-transparent opacity-60 hover:opacity-100 hover:border-stone-200'}`}
                 >
-                   <Image src={url} alt={`${product.name} perspective ${i + 1}`} fill className="object-cover" data-ai-hint={product.imageHint} />
+                   <Image src={url} alt={`${product.name perspective ${i + 1}`} fill className="object-cover" data-ai-hint={product.imageHint} />
                 </button>
              ))}
           </div>
@@ -167,10 +217,12 @@ export default function ProductDetailPage() {
 
           <div className="space-y-8 text-stone-600 leading-relaxed text-lg font-light">
             <p className="border-l-4 border-primary/20 pl-6 italic">Our {product.name} is a testament to the pursuit of perfection. Every bar is carefully tempered and molded by our master chocolatiers in Kolkata, ensuring a flawless snap and a velvet-smooth melt that lingers on the palate.</p>
+            
+            <div className="space-y-4">
+               {renderDimensions()}
+            </div>
+
             <ul className="space-y-4 pt-4">
-               {product.productShape && (
-                 <li className="flex items-start gap-4"><Box className="h-5 w-5 text-primary shrink-0 mt-1" /> <span>Artisanal <strong>{product.productShape}</strong> geometry.</span></li>
-               )}
                <li className="flex items-start gap-4"><CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-1" /> <span>Ethically sourced, single-origin cocoa beans from select estates.</span></li>
                <li className="flex items-start gap-4"><CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-1" /> <span>Zero artificial preservatives, colorants, or synthetic flavorings.</span></li>
                <li className="flex items-start gap-4"><CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-1" /> <span>Presented in gold-embossed bespoke packaging, ready for gifting.</span></li>

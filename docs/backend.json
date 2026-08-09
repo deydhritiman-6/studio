@@ -86,7 +86,27 @@
         "imageHint": { "type": "string" },
         "weight": { "type": "string" },
         "dimensions": { "type": "string" },
-        "productShape": { "type": "string", "enum": ["Square", "Rectangular", "Circular", "Spherical", "Half Spherical", "Oval", "Heart", "Custom"] }
+        "productDimensions": {
+            "type": "object",
+            "properties": {
+                "unit": { "type": "string", "enum": ["mm", "cm", "inch"] },
+                "length": { "type": "number" },
+                "width": { "type": "number" },
+                "height": { "type": "number" },
+                "diameter": { "type": "number" },
+                "sideLength": { "type": "number" },
+                "base": { "type": "number" },
+                "radius": { "type": "number" },
+                "custom1": { "type": "number" },
+                "custom2": { "type": "number" },
+                "custom3": { "type": "number" },
+                "customLabel1": { "type": "string" },
+                "customLabel2": { "type": "string" },
+                "customLabel3": { "type": "string" },
+                "additionalDescription": { "type": "string" }
+            }
+        },
+        "productShape": { "type": "string", "enum": ["Square", "Rectangular", "Spherical", "Half Spherical", "Circular", "Cylindrical", "Oval", "Triangular", "Irregular", "Other"] }
       },
       "required": ["name", "flavor", "price", "wholesalePrice", "availabilityStatus", "imageUrls"]
     },
