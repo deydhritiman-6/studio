@@ -568,7 +568,7 @@ export default function ProductsPage() {
                     )} />
                   </div>
 
-                  {/* Dynamic Dimension Parameters */}
+                  {/* Dimension configuration block */}
                   <div className="bg-muted/30 p-8 rounded-[2rem] border-2 border-dashed border-stone-200 space-y-6">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-[0.2em]">
@@ -602,6 +602,7 @@ export default function ProductsPage() {
                                 placeholder={f.placeholder || `0.00`} 
                                 className="h-10 rounded-xl bg-background border-stone-200" 
                                 {...field} 
+                                value={field.value ?? ''}
                               />
                             </FormControl>
                             <FormMessage />
@@ -610,7 +611,7 @@ export default function ProductsPage() {
                       ))}
                     </div>
 
-                    {/* Summary Block */}
+                    {/* Summary block */}
                     <div className="mt-6 pt-6 border-t border-stone-200 space-y-3">
                        <h4 className="text-[9px] font-black uppercase tracking-[0.3em] text-stone-400">Design Specification Summary</h4>
                        <div className="p-4 bg-background rounded-xl border border-stone-100 flex flex-wrap gap-x-8 gap-y-2">
