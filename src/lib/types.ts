@@ -81,7 +81,7 @@ export type Product = {
   weight?: string;
   dimensions?: string; // Legacy string format
   productDimensions?: ProductDimensions; // New structured format
-  productShape?: 'Square' | 'Rectangular' | 'Spherical' | 'Half Spherical' | 'Circular' | 'Cylindrical' | 'Oval' | 'Triangular' | 'Irregular' | 'Other';
+  productShape?: 'Square' | 'Rectangular' | 'Spherical' | 'Half Spherical' | 'Circular' | 'Cylindrical' | 'Oval' | 'Heart' | 'Triangular' | 'Conical' | 'Irregular' | 'Other';
   price: number;
   wholesalePrice: number;
   availabilityStatus: 'In Stock' | 'Out of Stock';

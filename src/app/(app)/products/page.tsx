@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
@@ -75,6 +76,12 @@ const SHAPE_CONFIG: Record<string, { fields: { name: string; label: string; plac
       { name: 'height', label: 'Height / Thickness', type: 'number' },
     ]
   },
+  Heart: {
+    fields: [
+      { name: 'width', label: 'Width', type: 'number' },
+      { name: 'height', label: 'Height / Thickness', type: 'number' },
+    ]
+  },
   Triangular: {
     fields: [
       { name: 'base', label: 'Base', type: 'number' },
@@ -113,7 +120,7 @@ const productFormSchema = z.object({
   name: z.string().min(1, 'Name of the Product is required.'),
   flavor: z.string().min(1, 'Flavor profile is required.'),
   weight: z.string().optional(),
-  productShape: z.enum(['Square', 'Rectangular', 'Spherical', 'Half Spherical', 'Circular', 'Cylindrical', 'Oval', 'Triangular', 'Conical', 'Irregular', 'Other']).default('Rectangular'),
+  productShape: z.enum(['Square', 'Rectangular', 'Spherical', 'Half Spherical', 'Circular', 'Cylindrical', 'Oval', 'Heart', 'Triangular', 'Conical', 'Irregular', 'Other']).default('Rectangular'),
   productDimensions: z.object({
     unit: z.enum(['mm', 'cm', 'inch']).default('mm'),
     length: z.coerce.number().optional(),
@@ -635,7 +642,7 @@ export default function ProductsPage() {
                 </div>
               </div>
 
-              <div className="p-8 border-t shrink-0 bg-stone-50/50">
+              <div className="p-8 border-t shrink-0">
                 {!isValid && Object.keys(errors).length > 0 && (
                   <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-2xl flex items-center gap-3 text-destructive animate-in slide-in-from-bottom-2 duration-300">
                     <AlertCircle className="h-5 w-5" />
