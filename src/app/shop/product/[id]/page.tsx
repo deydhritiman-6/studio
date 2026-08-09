@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -41,6 +40,14 @@ export default function ProductDetailPage() {
     // Deduplicate images
     return Array.from(new Set([...base, ...galleryImages]));
   }, [product, galleries]);
+
+  // The primary image for the big preview (defaults to the first one in the collection)
+  const mainPreviewImage = selectedImage || allImages[0] || 'https://picsum.photos/seed/default/400/300';
+
+  // Thumbnails: Take exactly three images starting from the second one (to avoid repeating the main image)
+  const thumbnails = useMemo(() => {
+    return allImages.slice(1, 4);
+  }, [allImages]);
 
   useEffect(() => {
     if (allImages.length > 0 && !selectedImage) {
@@ -154,7 +161,7 @@ export default function ProductDetailPage() {
           <div className="aspect-square relative rounded-[2.5rem] overflow-hidden shadow-2xl bg-white border border-stone-100 p-8">
             <div className="relative w-full h-full rounded-[1.5rem] overflow-hidden group">
               <Image 
-                src={selectedImage || 'https://picsum.photos/seed/default/400/300'} 
+                src={mainPreviewImage} 
                 alt={product.name} 
                 fill 
                 className="object-cover transition-all duration-[1s] group-hover:scale-110" 
@@ -163,17 +170,20 @@ export default function ProductDetailPage() {
               />
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-6 px-4 md:px-12">
-             {allImages.slice(0, 3).map((url, i) => (
-                <button 
-                  key={i} 
-                  onClick={() => setSelectedImage(url)}
-                  className={`aspect-square relative rounded-xl overflow-hidden border-2 transition-all ${selectedImage === url ? 'border-primary shadow-lg scale-105' : 'border-transparent opacity-60 hover:opacity-100 hover:scale-105'}`}
-                >
-                   <Image src={url} alt={`${product.name} perspective ${i + 1}`} fill className="object-cover" data-ai-hint={product.imageHint} />
-                </button>
-             ))}
-          </div>
+          
+          {thumbnails.length > 0 && (
+            <div className="grid grid-cols-3 gap-6 px-4 md:px-12">
+               {thumbnails.map((url, i) => (
+                  <button 
+                    key={i} 
+                    onClick={() => setSelectedImage(url)}
+                    className={`aspect-square relative rounded-xl overflow-hidden border-2 transition-all ${selectedImage === url ? 'border-primary shadow-lg scale-105' : 'border-transparent opacity-60 hover:opacity-100 hover:scale-105'}`}
+                  >
+                     <Image src={url} alt={`${product.name} perspective ${i + 1}`} fill className="object-cover" data-ai-hint={product.imageHint} />
+                  </button>
+               ))}
+            </div>
+          )}
         </div>
 
         <div className="lg:col-span-5 flex flex-col justify-center space-y-10">
