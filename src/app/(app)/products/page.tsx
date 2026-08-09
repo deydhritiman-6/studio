@@ -5,11 +5,12 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import * as THREE from 'three';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Product, ProductDimensions } from '@/lib/types';
-import { Camera, PlusCircle, Loader2, Link as LinkIcon, Upload, Image as ImageIcon, PackageSearch, Trash2, Edit, History, Info, Box, Ruler } from 'lucide-react';
+import { Camera, PlusCircle, Loader2, Link as LinkIcon, Upload, Image as ImageIcon, PackageSearch, Trash2, Edit, History, Info, Box, Ruler, RotateCcw, Maximize2, Minimize2 } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
@@ -30,7 +31,6 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Textarea } from '@/components/ui/textarea';
 
 const SHAPE_CONFIG: Record<string, { fields: { name: string; label: string; placeholder?: string; type: 'number' | 'text' }[] }> = {
   Square: {
@@ -84,6 +84,12 @@ const SHAPE_CONFIG: Record<string, { fields: { name: string; label: string; plac
       { name: 'length', label: 'Length / Thickness', type: 'number' },
     ]
   },
+  Conical: {
+    fields: [
+      { name: 'diameter', label: 'Base Diameter', type: 'number' },
+      { name: 'height', label: 'Height', type: 'number' },
+    ]
+  },
   Irregular: {
     fields: [
       { name: 'length', label: 'Length', type: 'number' },
@@ -109,7 +115,7 @@ const productFormSchema = z.object({
   name: z.string().min(1, 'Name of the Product is required.'),
   flavor: z.string().min(1, 'Flavor profile is required.'),
   weight: z.string().optional(),
-  productShape: z.enum(['Square', 'Rectangular', 'Spherical', 'Half Spherical', 'Circular', 'Cylindrical', 'Oval', 'Triangular', 'Irregular', 'Other']).default('Rectangular'),
+  productShape: z.enum(['Square', 'Rectangular', 'Spherical', 'Half Spherical', 'Circular', 'Cylindrical', 'Oval', 'Triangular', 'Conical', 'Irregular', 'Other']).default('Rectangular'),
   productDimensions: z.object({
     unit: z.enum(['mm', 'cm', 'inch']).default('mm'),
     length: z.coerce.number().optional(),
@@ -136,67 +142,195 @@ const productFormSchema = z.object({
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
 
-function ChocolateShapePreview({ shape, dimensions }: { shape: string, dimensions: ProductDimensions }) {
-  const { unit, length, width, height, sideLength, diameter, base } = dimensions;
+function ChocolateMeshViewer({ shape, dimensions }: { shape: string, dimensions: ProductDimensions }) {
+  const mountRef = useRef<HTMLDivElement>(null);
+  const [zoom, setZoom] = useState(1);
+  const requestRef = useRef<number>();
+  const controlsRef = useRef({ rotationX: -0.5, rotationY: 0.8, isDragging: false, lastMouseX: 0, lastMouseY: 0 });
 
-  // Use unified sizing for preview
-  const L = sideLength || length || diameter || base || 50;
-  const W = sideLength || width || diameter || 50;
-  const H = height || 20;
+  useEffect(() => {
+    if (!mountRef.current) return;
 
-  const maxDim = Math.max(L, W, H);
-  const scale = 100 / maxDim;
-  
-  const drawL = L * scale;
-  const drawW = W * scale;
-  const drawH = H * scale;
+    const width = mountRef.current.clientWidth;
+    const height = mountRef.current.clientHeight;
 
-  const isRound = shape === 'Spherical' || shape === 'Circular' || shape === 'Cylindrical' || shape === 'Half Spherical';
+    const scene = new THREE.Scene();
+    scene.background = null;
+
+    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+    camera.position.z = 5;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    mountRef.current.appendChild(renderer.domElement);
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(5, 10, 7.5);
+    scene.add(directionalLight);
+
+    // Geometry based on shape
+    let geometry: THREE.BufferGeometry;
+    
+    const L = (dimensions.length || dimensions.sideLength || dimensions.diameter || dimensions.base || 50) / 100;
+    const W = (dimensions.width || dimensions.sideLength || dimensions.diameter || 50) / 100;
+    const H = (dimensions.height || 20) / 100;
+
+    switch (shape) {
+      case 'Spherical':
+        geometry = new THREE.SphereGeometry(L / 2, 32, 32);
+        break;
+      case 'Half Spherical':
+        geometry = new THREE.SphereGeometry(L / 2, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+        break;
+      case 'Cylindrical':
+      case 'Circular':
+        geometry = new THREE.CylinderGeometry(L / 2, L / 2, H, 32);
+        break;
+      case 'Conical':
+        geometry = new THREE.ConeGeometry(L / 2, H, 32);
+        break;
+      case 'Triangular':
+        geometry = new THREE.CylinderGeometry(L / 2, L / 2, H, 3);
+        break;
+      case 'Oval':
+        geometry = new THREE.SphereGeometry(1, 32, 32);
+        geometry.scale(L / 2, H / 2, W / 2);
+        break;
+      case 'Square':
+      case 'Rectangular':
+      default:
+        geometry = new THREE.BoxGeometry(L, H, W);
+        break;
+    }
+
+    const material = new THREE.MeshStandardMaterial({
+      color: 0x3d1e16, // Roseberry Brown
+      roughness: 0.3,
+      metalness: 0.1,
+      transparent: true,
+      opacity: 0.9,
+    });
+
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+
+    // Add Wireframe/Net
+    const wireframe = new THREE.WireframeGeometry(geometry);
+    const lineMaterial = new THREE.LineBasicMaterial({ color: 0xd4af37, transparent: true, opacity: 0.3 });
+    const net = new THREE.LineSegments(wireframe, lineMaterial);
+    mesh.add(net);
+
+    const animate = () => {
+      mesh.rotation.x = controlsRef.current.rotationX;
+      mesh.rotation.y = controlsRef.current.rotationY;
+      mesh.scale.set(zoom, zoom, zoom);
+      
+      renderer.render(scene, camera);
+      requestRef.current = requestAnimationFrame(animate);
+    };
+
+    const handleMouseDown = (e: MouseEvent) => {
+      controlsRef.current.isDragging = true;
+      controlsRef.current.lastMouseX = e.clientX;
+      controlsRef.current.lastMouseY = e.clientY;
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!controlsRef.current.isDragging) return;
+      const deltaX = e.clientX - controlsRef.current.lastMouseX;
+      const deltaY = e.clientY - controlsRef.current.lastMouseY;
+      controlsRef.current.rotationY += deltaX * 0.01;
+      controlsRef.current.rotationX += deltaY * 0.01;
+      controlsRef.current.lastMouseX = e.clientX;
+      controlsRef.current.lastMouseY = e.clientY;
+    };
+
+    const handleMouseUp = () => {
+      controlsRef.current.isDragging = false;
+    };
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      setZoom(prev => Math.max(0.5, Math.min(2, prev - e.deltaY * 0.001)));
+    };
+
+    mountRef.current.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    mountRef.current.addEventListener('wheel', handleWheel, { passive: false });
+
+    // Touch support
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        controlsRef.current.isDragging = true;
+        controlsRef.current.lastMouseX = e.touches[0].clientX;
+        controlsRef.current.lastMouseY = e.touches[0].clientY;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!controlsRef.current.isDragging || e.touches.length !== 1) return;
+      const deltaX = e.touches[0].clientX - controlsRef.current.lastMouseX;
+      const deltaY = e.touches[0].clientY - controlsRef.current.lastMouseY;
+      controlsRef.current.rotationY += deltaX * 0.01;
+      controlsRef.current.rotationX += deltaY * 0.01;
+      controlsRef.current.lastMouseX = e.touches[0].clientX;
+      controlsRef.current.lastMouseY = e.touches[0].clientY;
+    };
+
+    mountRef.current.addEventListener('touchstart', handleTouchStart);
+    mountRef.current.addEventListener('touchmove', handleTouchMove);
+    mountRef.current.addEventListener('touchend', handleMouseUp);
+
+    animate();
+
+    return () => {
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      if (mountRef.current) {
+        mountRef.current.removeChild(renderer.domElement);
+      }
+      geometry.dispose();
+      material.dispose();
+      lineMaterial.dispose();
+      renderer.dispose();
+    };
+  }, [shape, dimensions, zoom]);
+
+  const resetView = () => {
+    controlsRef.current.rotationX = -0.5;
+    controlsRef.current.rotationY = 0.8;
+    setZoom(1);
+  };
 
   return (
-    <div className="mt-4 p-6 bg-muted/20 rounded-[2rem] border-2 border-dashed border-border flex flex-col items-center justify-center space-y-4 animate-in fade-in duration-500 max-w-md mx-auto overflow-hidden">
+    <div className="mt-4 p-4 bg-muted/20 rounded-[2rem] border-2 border-dashed border-border flex flex-col items-center justify-center space-y-4 animate-in fade-in duration-500 max-w-md mx-auto overflow-hidden relative group">
       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary/70">
-        <Box className="h-3 w-3" /> {shape} Prototype View
+        <Box className="h-3 w-3" /> {shape} Interactive Mesh
       </div>
       
-      <div className="relative h-[150px] w-full flex items-center justify-center perspective-[1000px]">
-        <div 
-          className={cn(
-            "relative preserve-3d transition-transform duration-1000 hover:rotate-y-180 cursor-grab active:cursor-grabbing",
-            isRound ? "rounded-full" : ""
-          )}
-          style={{ 
-            width: `${drawL}px`, 
-            height: `${drawH}px`,
-            transform: 'rotateX(-25deg) rotateY(45deg)'
-          }}
-        >
-          {/* Front / Surface */}
-          <div className={cn(
-            "absolute inset-0 bg-primary/80 border border-primary/20 shadow-inner",
-            isRound ? "rounded-full" : ""
-          )} style={{ transform: `translateZ(${drawW / 2}px)` }} />
-          
-          {/* Sides */}
-          {!isRound && (
-            <>
-              <div className="absolute inset-0 bg-primary/80 border border-primary/20 shadow-inner" style={{ transform: `rotateY(180deg) translateZ(${drawW / 2}px)` }} />
-              <div className="absolute top-0 bottom-0 bg-primary/60 border border-primary/20 shadow-inner" style={{ width: `${drawW}px`, left: `calc(50% - ${drawW / 2}px)`, transform: `rotateY(-90deg) translateZ(${drawL / 2}px)` }} />
-              <div className="absolute top-0 bottom-0 bg-primary/60 border border-primary/20 shadow-inner" style={{ width: `${drawW}px`, left: `calc(50% - ${drawW / 2}px)`, transform: `rotateY(90deg) translateZ(${drawL / 2}px)` }} />
-              <div className="absolute left-0 right-0 bg-primary/40 border border-primary/20 shadow-inner" style={{ height: `${drawW}px`, top: `calc(50% - ${drawW / 2}px)`, transform: `rotateX(90deg) translateZ(${drawH / 2}px)` }} />
-              <div className="absolute left-0 right-0 bg-primary/40 border border-primary/20 shadow-inner" style={{ height: `${drawW}px`, top: `calc(50% - ${drawW / 2}px)`, transform: `rotateX(-90deg) translateZ(${drawH / 2}px)` }} />
-            </>
-          )}
-          
-          {isRound && shape !== 'Spherical' && (
-            <div className="absolute inset-0 bg-primary/40 rounded-full border border-primary/20" style={{ height: `${drawW}px`, transform: `rotateX(90deg) translateZ(${drawH / 2}px)` }} />
-          )}
-        </div>
-      </div>
+      <div ref={mountRef} className="h-[250px] w-full cursor-grab active:cursor-grabbing" />
       
+      <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-lg" onClick={resetView} title="Reset Perspective">
+           <RotateCcw className="h-4 w-4" />
+        </Button>
+        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-lg" onClick={() => setZoom(prev => Math.min(2, prev + 0.1))} title="Zoom In">
+           <Maximize2 className="h-4 w-4" />
+        </Button>
+        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-lg" onClick={() => setZoom(prev => Math.max(0.5, prev - 0.1))} title="Zoom Out">
+           <Minimize2 className="h-4 w-4" />
+        </Button>
+      </div>
+
       <div className="text-center space-y-1">
-        <p className="text-[10px] font-bold text-stone-900 uppercase tracking-widest">{shape} Configuration</p>
-        <p className="text-[9px] text-muted-foreground italic">Proportional rendering in {unit}</p>
+        <p className="text-[9px] text-muted-foreground italic">Drag to Rotate • Scroll to Zoom</p>
       </div>
     </div>
   );
@@ -479,11 +613,6 @@ export default function ProductsPage() {
 
   return (
     <TooltipProvider>
-      <style jsx global>{`
-        .perspective-1000 { perspective: 1000px; }
-        .preserve-3d { transform-style: preserve-3d; }
-      `}</style>
-      
       <Dialog open={!!viewingProduct} onOpenChange={(open) => !open && setViewingProduct(null)}>
         <DialogContent className="sm:max-w-4xl p-0 border-0 bg-transparent shadow-none">
           <DialogHeader className="sr-only">
@@ -552,7 +681,6 @@ export default function ProductsPage() {
                         <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Product Shape</FormLabel>
                         <Select onValueChange={(val: any) => {
                            field.onChange(val);
-                           // Reset dimensions on shape change to avoid cross-contamination
                            const unit = form.getValues('productDimensions.unit');
                            form.setValue('productDimensions', { unit });
                         }} defaultValue={field.value} value={field.value}>
@@ -568,7 +696,6 @@ export default function ProductsPage() {
                     )} />
                   </div>
 
-                  {/* Dimension configuration block */}
                   <div className="bg-muted/30 p-8 rounded-[2rem] border-2 border-dashed border-stone-200 space-y-6">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-[0.2em]">
@@ -611,7 +738,6 @@ export default function ProductsPage() {
                       ))}
                     </div>
 
-                    {/* Summary block */}
                     <div className="mt-6 pt-6 border-t border-stone-200 space-y-3">
                        <h4 className="text-[9px] font-black uppercase tracking-[0.3em] text-stone-400">Design Specification Summary</h4>
                        <div className="p-4 bg-background rounded-xl border border-stone-100 flex flex-wrap gap-x-8 gap-y-2">
@@ -628,7 +754,7 @@ export default function ProductsPage() {
                        </div>
                     </div>
                     
-                    <ChocolateShapePreview shape={watchShape} dimensions={watchDimensions} />
+                    <ChocolateMeshViewer shape={watchShape} dimensions={watchDimensions} />
                   </div>
 
                   <div className="grid grid-cols-2 gap-8">
