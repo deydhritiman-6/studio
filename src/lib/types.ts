@@ -120,6 +120,8 @@ export type Product = {
   expiryDate?: string;
   productionStatus?: string;
   originalOrderId?: string;
+  isArchived?: boolean;
+  deletedAt?: string;
 };
 
 export type ProductGallery = {

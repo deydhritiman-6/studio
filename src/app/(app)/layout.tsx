@@ -46,7 +46,8 @@ import {
   Globe,
   ClipboardList,
   Images,
-  PlusCircle
+  PlusCircle,
+  Trash2
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -73,7 +74,14 @@ const navItems = [
   { href: '/orders', icon: ShoppingCart, label: 'Orders' },
   { href: '/production', icon: Package, label: 'Production' },
   { href: '/recipes', icon: BookOpen, label: 'Recipes' },
-  { href: '/products', icon: Package, label: 'Products' },
+  {
+    icon: Package,
+    label: 'Products',
+    subItems: [
+      { href: '/products', icon: Package, label: 'Artisan Portfolio' },
+      { href: '/products/bin', icon: Trash2, label: 'Product Bin' },
+    ]
+  },
   { href: '/photo-gallery', icon: Images, label: 'Photo Gallery' },
   { href: '/inventory', icon: Boxes, label: 'Inventory' },
   {

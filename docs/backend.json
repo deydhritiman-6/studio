@@ -86,6 +86,8 @@
         "imageHint": { "type": "string" },
         "weight": { "type": "string" },
         "dimensions": { "type": "string" },
+        "isArchived": { "type": "boolean" },
+        "deletedAt": { "type": "string" },
         "productDimensions": {
             "type": "object",
             "properties": {

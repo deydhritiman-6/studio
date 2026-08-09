@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import type { Product, ProductDimensions } from '@/lib/types';
+import type { Product, ProductDimensions, ProductGallery } from '@/lib/types';
 import { 
   PlusCircle, 
   Loader2, 
@@ -23,7 +23,8 @@ import {
   CopyCheck,
   Search,
   CheckCircle2,
-  ShieldAlert
+  ShieldAlert,
+  Images
 } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
@@ -36,7 +37,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, updateDoc, query, where } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -44,6 +45,7 @@ import { ChocolateMeshViewer } from '@/components/chocolate-mesh-viewer';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Link from 'next/link';
 
 const SHAPE_CONFIG: Record<string, { fields: { name: string; label: string; placeholder?: string; type: 'number' | 'text' }[] }> = {
   Square: {
@@ -179,28 +181,32 @@ const sanitizeData = (obj: any): any => {
 export default function ProductsPage() {
   const firestore = useFirestore();
   const productsQuery = useMemo(() => firestore ? collection(firestore, 'products') : null, [firestore]);
-  const { data: allProducts, loading } = useCollection<Product>(productsQuery);
+  const { data: allProductsRaw, loading } = useCollection<Product>(productsQuery);
+
+  const galleriesQuery = useMemo(() => firestore ? collection(firestore, 'product-galleries') : null, [firestore]);
+  const { data: galleries } = useCollection<ProductGallery>(galleriesQuery);
   
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isGalleryPickerOpen, setIsGalleryPickerOpen] = useState<{ open: boolean, field: keyof ProductFormValues } | null>(null);
   
-  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
-  const [deleteInput, setDeleteInput] = useState('');
+  const [productToArchive, setProductToArchive] = useState<Product | null>(null);
   
   const { toast } = useToast();
   
   const [viewingProduct, setViewingProduct] = useState<{images: string[], startIndex: number, productName: string, hint: string} | null>(null);
   const [identityMode, setIdentityMode] = useState<'existing' | 'new'>('existing');
 
-  const uniqueProductNames = useMemo(() => {
-    if (!allProducts) return [];
-    return Array.from(new Set(allProducts.map(p => p.name))).sort();
-  }, [allProducts]);
+  const uniqueIdentities = useMemo(() => {
+    const fromProducts = allProductsRaw?.map(p => p.name) || [];
+    const fromGalleries = galleries?.map(g => g.productName) || [];
+    return Array.from(new Set([...fromProducts, ...fromGalleries])).sort();
+  }, [allProductsRaw, galleries]);
 
   const products = useMemo(() => {
-    return allProducts?.filter(p => p.productionStatus === 'Product Ready') || [];
-  }, [allProducts]);
+    return allProductsRaw?.filter(p => p.productionStatus === 'Product Ready' && !p.isArchived) || [];
+  }, [allProductsRaw]);
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -352,18 +358,21 @@ export default function ProductsPage() {
       });
   };
 
-  const handleDelete = (id: string) => {
+  const handleMoveToBin = (id: string) => {
     if (!firestore) return;
-    deleteDoc(doc(firestore, 'products', id))
+    const productRef = doc(firestore, 'products', id);
+    const updateData = { isArchived: true, deletedAt: new Date().toISOString() };
+
+    updateDoc(productRef, updateData)
       .then(() => {
-        toast({ title: 'Creation Removed', description: 'The artisan product has been permanently deleted.' });
-        setProductToDelete(null);
-        setDeleteInput('');
+        toast({ title: 'Moved to Bin', description: 'Creation has been moved to the Product Bin.' });
+        setProductToArchive(null);
       })
       .catch(async (error) => {
         const permissionError = new FirestorePermissionError({
-          path: `products/${id}`,
-          operation: 'delete',
+          path: productRef.path,
+          operation: 'update',
+          requestResourceData: updateData,
         });
         errorEmitter.emit('permission-error', permissionError);
       });
@@ -388,24 +397,30 @@ export default function ProductsPage() {
             </button>
           )}
         </Label>
-        <div 
-          onClick={() => fileInputRef.current?.click()}
-          className={cn(
-            "aspect-[4/3] rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group overflow-hidden bg-muted/20",
-            value ? "border-primary/40 bg-background" : "border-stone-200 hover:border-primary/30 hover:bg-muted/40"
-          )}
-        >
+        <div className={cn(
+            "aspect-[4/3] rounded-2xl border-2 border-dashed flex flex-col items-center justify-center transition-all duration-300 relative group overflow-hidden bg-muted/20",
+            value ? "border-primary/40 bg-background" : "border-stone-200 hover:border-primary/30"
+          )}>
           {value ? (
             <>
               <Image src={value} alt={label} fill className="object-cover" />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                 <RefreshCw className="text-white h-6 w-6" />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                 <Button type="button" size="sm" variant="secondary" className="h-8 rounded-lg text-[9px] font-bold uppercase" onClick={() => fileInputRef.current?.click()}>
+                    <RefreshCw className="h-3 w-3 mr-1" /> Replace
+                 </Button>
               </div>
             </>
           ) : (
-            <div className="flex flex-col items-center gap-2 text-stone-400 group-hover:text-primary transition-colors">
-               <Upload className="h-6 w-6" />
-               <span className="text-[9px] font-bold uppercase tracking-tight">Select Photo</span>
+            <div className="flex flex-col items-center gap-4">
+               <div className="flex gap-2">
+                  <Button type="button" variant="outline" size="sm" className="h-9 px-4 rounded-xl text-[9px] font-bold uppercase tracking-widest border-2 hover:bg-primary/10 hover:text-primary transition-all" onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="h-3 w-3 mr-2" /> Device
+                  </Button>
+                  <Button type="button" variant="outline" size="sm" className="h-9 px-4 rounded-xl text-[9px] font-bold uppercase tracking-widest border-2 hover:bg-accent/10 hover:text-accent transition-all" onClick={() => setIsGalleryPickerOpen({ open: true, field: fieldName })}>
+                    <Images className="h-3 w-3 mr-2" /> Gallery
+                  </Button>
+               </div>
+               <span className="text-[8px] font-black uppercase tracking-widest text-stone-300">Select Acquisition Mode</span>
             </div>
           )}
           <input 
@@ -465,7 +480,7 @@ export default function ProductsPage() {
                         <Tabs value={identityMode} onValueChange={(v: any) => setIdentityMode(v)} className="w-full">
                            <TabsList className="grid w-full grid-cols-2 bg-muted/30 h-9 rounded-xl p-1 mb-2">
                              <TabsTrigger value="existing" className="rounded-lg text-[9px] uppercase font-bold">Select Existing</TabsTrigger>
-                             <TabsTrigger value="new" className="rounded-lg text-[9px] uppercase font-bold">Manual Entry</TabsTrigger>
+                             <TabsTrigger value="new" className="rounded-lg text-[9px] uppercase font-bold">Create New</TabsTrigger>
                            </TabsList>
                            <TabsContent value="existing" className="mt-0">
                              <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
@@ -475,7 +490,7 @@ export default function ProductsPage() {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {uniqueProductNames.map(name => (
+                                  {uniqueIdentities.map(name => (
                                     <SelectItem key={name} value={name}>{name}</SelectItem>
                                   ))}
                                 </SelectContent>
@@ -603,7 +618,7 @@ export default function ProductsPage() {
                 </div>
               </div>
 
-              <div className="px-10 py-4 shrink-0 border-t flex flex-col items-end">
+              <div className="px-10 py-4 shrink-0 border-t flex flex-col items-end bg-background">
                 {!isValid && Object.keys(errors).length > 0 && (
                   <div className="mb-4 p-4 bg-destructive/10 rounded-xl flex items-center gap-4 text-destructive w-full">
                     <AlertCircle className="h-5 w-5" />
@@ -611,7 +626,7 @@ export default function ProductsPage() {
                   </div>
                 )}
                 
-                <DialogFooter className="w-full flex items-center justify-end gap-6">
+                <DialogFooter className="w-full flex items-center justify-end gap-6 bg-transparent">
                   <DialogClose asChild>
                     <Button type="button" variant="secondary" className="h-12 px-8 rounded-xl font-bold uppercase text-[10px] tracking-widest">Discard</Button>
                   </DialogClose>
@@ -632,46 +647,102 @@ export default function ProductsPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!productToDelete} onOpenChange={(o) => { if(!o) { setProductToDelete(null); setDeleteInput(''); } }}>
+      <Dialog open={!!isGalleryPickerOpen} onOpenChange={(open) => !open && setIsGalleryPickerOpen(null)}>
+        <DialogContent className="sm:max-w-4xl rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden flex flex-col h-[80vh] bg-stone-50">
+           <div className="px-10 py-6 border-b bg-white shrink-0">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-headline flex items-center gap-3">
+                  <Images className="h-6 w-6 text-primary" />
+                  Select from Artisan Gallery
+                </DialogTitle>
+                <DialogDescription>Browse and import photography from previous professional sessions.</DialogDescription>
+              </DialogHeader>
+           </div>
+           
+           <ScrollArea className="flex-1 p-10">
+              <div className="space-y-12">
+                 {uniqueIdentities.map(productName => {
+                    const productGalleries = galleries?.filter(g => g.productName === productName) || [];
+                    if (productGalleries.length === 0) return null;
+
+                    return (
+                      <div key={productName} className="space-y-4">
+                         <h3 className="text-lg font-headline font-bold text-stone-800 border-l-4 border-primary/40 pl-4">{productName}</h3>
+                         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
+                            {productGalleries.map(entry => (
+                              [entry.mainImage, ...entry.subImages].map((img, idx) => (
+                                <button 
+                                  key={`${entry.id}-${idx}`}
+                                  onClick={() => {
+                                    if (isGalleryPickerOpen?.field) {
+                                      form.setValue(isGalleryPickerOpen.field, img, { shouldValidate: true });
+                                      setIsGalleryPickerOpen(null);
+                                      toast({ title: 'Photography Imported' });
+                                    }
+                                  }}
+                                  className="aspect-square relative rounded-xl overflow-hidden group border-2 border-transparent hover:border-primary transition-all shadow-sm"
+                                >
+                                  <Image src={img} alt="" fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
+                                  <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 flex items-center justify-center">
+                                     <CheckCircle2 className="text-white h-6 w-6" />
+                                  </div>
+                                </button>
+                              ))
+                            ))}
+                         </div>
+                      </div>
+                    );
+                 })}
+              </div>
+           </ScrollArea>
+           
+           <div className="px-10 py-4 border-t bg-white shrink-0 flex justify-end">
+              <Button variant="ghost" onClick={() => setIsGalleryPickerOpen(null)} className="rounded-xl font-bold uppercase text-[10px] tracking-widest">Close Gallery</Button>
+           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!productToArchive} onOpenChange={(o) => !o && setProductToArchive(null)}>
         <DialogContent className="sm:max-w-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden p-0">
-          <div className="bg-destructive/10 p-8 border-b border-destructive/20">
+          <div className="bg-amber-50 p-8 border-b border-amber-100">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-headline flex items-center gap-3 text-destructive">
-                <ShieldAlert className="h-8 w-8" />
-                Permanent Removal
+              <DialogTitle className="text-2xl font-headline flex items-center gap-3 text-amber-700">
+                <Trash2 className="h-8 w-8" />
+                Move to Bin
               </DialogTitle>
               <DialogDescription className="text-stone-600 font-medium">
-                You are about to delete <strong className="text-stone-900 font-bold">{productToDelete?.name}</strong>. This artisanal record will be erased from the global catalog.
+                Are you sure you want to move <strong className="text-stone-900 font-bold">{productToArchive?.name}</strong> to the Bin? 
+                It will be hidden from the catalog but can be restored later.
               </DialogDescription>
             </DialogHeader>
           </div>
-          <div className="p-10 space-y-6">
-            <div className="space-y-4">
-              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Security Verification</Label>
-              <p className="text-xs text-stone-500 italic">Type the word <span className="font-bold text-destructive underline">delete</span> manually to authorize this action.</p>
-              <Input 
-                placeholder="Type here..." 
-                value={deleteInput}
-                onChange={(e) => setDeleteInput(e.target.value)}
-                className="h-14 rounded-2xl border-2 border-stone-200 focus:border-destructive/40 focus:ring-destructive/10 text-center text-lg font-bold tracking-widest"
-              />
-            </div>
-            <div className="flex gap-4">
-               <Button variant="ghost" onClick={() => setProductToDelete(null)} className="flex-1 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest">Abort</Button>
-               <Button 
-                variant="destructive" 
-                className="flex-2 px-10 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest shadow-xl shadow-destructive/20" 
-                disabled={deleteInput.toLowerCase() !== 'delete'}
-                onClick={() => productToDelete && handleDelete(productToDelete.id)}
-               >
-                 Destroy Record
-               </Button>
-            </div>
+          <div className="p-10 flex gap-4">
+             <Button variant="ghost" onClick={() => setProductToArchive(null)} className="flex-1 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest">Abort</Button>
+             <Button 
+              className="flex-2 px-10 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest shadow-xl shadow-primary/20" 
+              onClick={() => productToArchive && handleMoveToBin(productToArchive.id)}
+             >
+               Confirm Move
+             </Button>
           </div>
         </DialogContent>
       </Dialog>
       
-      <PageHeader title="Artisan Portfolio" actions={<Button onClick={() => setIsAddDialogOpen(true)} className="rounded-xl h-11 px-6"><PlusCircle className="mr-2 h-4 w-4" />New Creation</Button>} />
+      <PageHeader 
+        title="Artisan Portfolio" 
+        actions={
+          <div className="flex gap-2">
+            <Button asChild variant="outline" className="rounded-xl h-11 px-6 border-2">
+              <Link href="/products/bin">
+                <Trash2 className="mr-2 h-4 w-4" /> View Bin
+              </Link>
+            </Button>
+            <Button onClick={() => setIsAddDialogOpen(true)} className="rounded-xl h-11 px-6 shadow-lg shadow-primary/20">
+              <PlusCircle className="mr-2 h-4 w-4" /> New Creation
+            </Button>
+          </div>
+        } 
+      />
       
       {loading ? (
         <div className="flex justify-center py-20"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>
@@ -698,7 +769,7 @@ export default function ProductsPage() {
                       variant="destructive" 
                       size="icon" 
                       className="h-8 w-8 rounded-full shadow-2xl bg-white/20 backdrop-blur-md border border-white/20 hover:bg-destructive hover:text-white"
-                      onClick={(e) => { e.stopPropagation(); setProductToDelete(product); }}
+                      onClick={(e) => { e.stopPropagation(); setProductToArchive(product); }}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -707,13 +778,13 @@ export default function ProductsPage() {
               <CardContent className="p-6 flex-grow space-y-6">
                 <div className="space-y-1">
                    <CardTitle className="font-headline text-2xl group-hover:text-primary transition-colors">{product.name}</CardTitle>
-                   <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">{product.flavor}</p>
+                   <p className="text-[10px] text-stone-400 uppercase tracking-widest font-black">{product.flavor}</p>
                 </div>
 
                 <div className="flex justify-between items-end pt-4 border-t">
                   <div className="space-y-0.5">
                     <p className="text-2xl font-bold">₹{product.price.toLocaleString()}</p>
-                    <p className="text-[9px] text-muted-foreground uppercase tracking-widest">W: ₹{product.wholesalePrice.toLocaleString()}</p>
+                    <p className="text-[9px] text-stone-400 uppercase tracking-widest">W: ₹{product.wholesalePrice.toLocaleString()}</p>
                   </div>
                   <Badge variant={product.availabilityStatus === 'In Stock' ? 'default' : 'destructive'} className="rounded-full uppercase tracking-widest text-[8px] py-1.5 px-4">
                     {product.availabilityStatus}
@@ -735,4 +806,3 @@ export default function ProductsPage() {
     </TooltipProvider>
   );
 }
-
