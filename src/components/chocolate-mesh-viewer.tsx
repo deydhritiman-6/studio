@@ -161,26 +161,18 @@ export function ChocolateMeshViewer({
         geometry = new THREE.CylinderGeometry(L / 2, L / 2, H, 3, 1);
         break;
       case 'Heart': {
-        const x = 0, y = 0;
         const heartShape = new THREE.Shape();
-        heartShape.moveTo(x + 0.25, y + 0.25);
-        heartShape.bezierCurveTo(x + 0.25, y + 0.25, x + 0.2, y, x, y);
-        heartShape.bezierCurveTo(x - 0.3, y, x - 0.3, y + 0.35, x - 0.3, y + 0.35);
-        heartShape.bezierCurveTo(x - 0.3, y + 0.55, x - 0.15, y + 0.77, x + 0.25, y + 0.95);
-        heartShape.bezierCurveTo(x + 0.6, y + 0.77, x + 0.8, y + 0.55, x + 0.8, y + 0.35);
-        heartShape.bezierCurveTo(x + 0.8, y + 0.35, x + 0.8, y, x + 0.5, y);
-        heartShape.bezierCurveTo(x + 0.35, y, x + 0.25, y + 0.25, x + 0.25, y + 0.25);
-        const extrudeSettings = { depth: H, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 0.05, bevelThickness: 0.05 };
+        heartShape.moveTo(0.25, 0.25);
+        heartShape.bezierCurveTo(0.25, 0.25, 0.2, 0, 0, 0);
+        heartShape.bezierCurveTo(-0.3, 0, -0.3, 0.35, -0.3, 0.35);
+        heartShape.bezierCurveTo(-0.3, 0.55, -0.15, 0.77, 0.25, 0.95);
+        heartShape.bezierCurveTo(0.6, 0.77, 0.8, 0.55, 0.8, 0.35);
+        heartShape.bezierCurveTo(0.8, 0.35, 0.8, 0, 0.5, 0);
+        heartShape.bezierCurveTo(0.35, 0, 0.25, 0.25, 0.25, 0.25);
+        const extrudeSettings = { depth: 0.4, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 0.05, bevelThickness: 0.05 };
         geometry = new THREE.ExtrudeGeometry(heartShape, extrudeSettings);
-        geometry.computeBoundingBox();
-        const center = new THREE.Vector3();
-        geometry.boundingBox?.getCenter(center);
-        geometry.translate(-center.x, -center.y, -center.z);
-        const size = new THREE.Vector3();
-        geometry.boundingBox?.getSize(size);
-        const s = L / size.x;
-        geometry.scale(s, s, 1);
         geometry.rotateX(Math.PI);
+        geometry.scale(L * 0.8, L * 0.8, H * 2.5);
         break;
       }
       case 'Oval':

@@ -1,15 +1,16 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import type { Product } from '@/lib/types';
+import type { Product, ProductGallery } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
-import { ShoppingCart, ArrowLeft, CheckCircle2, Star, ShieldCheck, Loader2, Box, Ruler } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, CheckCircle2, Star, ShieldCheck, Loader2, Ruler } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import { useDoc, useFirestore } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useDoc, useFirestore, useCollection } from '@/firebase';
+import { doc, collection, query, where } from 'firebase/firestore';
 import { ChocolateMeshViewer } from '@/components/chocolate-mesh-viewer';
 
 export default function ProductDetailPage() {
@@ -22,13 +23,30 @@ export default function ProductDetailPage() {
   const productRef = useMemo(() => firestore ? doc(firestore, 'products', productId) : null, [firestore, productId]);
   const { data: product, loading } = useDoc<Product>(productRef as any);
 
+  // Real-time sync with gallery entries for this product
+  const galleriesQuery = useMemo(() => {
+    if (!firestore || !product?.id) return null;
+    return query(collection(firestore, 'product-galleries'), where('productId', '==', product.id));
+  }, [firestore, product?.id]);
+  
+  const { data: galleries } = useCollection<ProductGallery>(galleriesQuery);
+
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
+  // Merge product-specific images with all gallery entry images
+  const allImages = useMemo(() => {
+    if (!product) return [];
+    const base = product.imageUrls || [];
+    const galleryImages = galleries?.flatMap(g => [g.mainImage, ...g.subImages]) || [];
+    // Deduplicate images
+    return Array.from(new Set([...base, ...galleryImages]));
+  }, [product, galleries]);
+
   useEffect(() => {
-    if (product && !selectedImage && product.imageUrls && product.imageUrls.length > 0) {
-      setSelectedImage(product.imageUrls[0]);
+    if (allImages.length > 0 && !selectedImage) {
+      setSelectedImage(allImages[0]);
     }
-  }, [product, selectedImage]);
+  }, [allImages, selectedImage]);
 
   if (loading) {
     return (
@@ -47,31 +65,6 @@ export default function ProductDetailPage() {
     );
   }
 
-  const productSchema = {
-    "@context": "https://schema.org/",
-    "@type": "Product",
-    "name": product.name,
-    "image": product.imageUrls,
-    "description": `Artisan ${product.flavor} chocolate. Hand-tempered luxury from Roseberry Kolkata.`,
-    "brand": {
-      "@type": "Brand",
-      "name": "Roseberry Chocolate"
-    },
-    "offers": {
-      "@type": "Offer",
-      "url": `https://roseberrychocolate.com/shop/product/${product.id}`,
-      "priceCurrency": "INR",
-      "price": product.price,
-      "availability": product.availabilityStatus === 'In Stock' ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-      "itemCondition": "https://schema.org/NewCondition"
-    },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "reviewCount": "128"
-    }
-  };
-
   const addToCart = () => {
     let cart = [];
     try {
@@ -80,9 +73,7 @@ export default function ProductDetailPage() {
         const parsed = JSON.parse(savedRaw);
         if (Array.isArray(parsed)) cart = parsed;
       }
-    } catch (e) {
-      console.error('Product detail cart parse error:', e);
-    }
+    } catch (e) {}
     
     const existingIndex = cart.findIndex((item: any) => item.id === product.id);
     let updatedCart = [...cart];
@@ -143,34 +134,19 @@ export default function ProductDetailPage() {
            <div className="pt-2">
              <ChocolateMeshViewer shape={product.productShape || 'Rectangular'} dimensions={dims} />
            </div>
-
-           {dims.additionalDescription && (
-              <p className="text-[10px] text-stone-500 italic pt-2 border-t border-stone-200">
-                Note: {dims.additionalDescription}
-              </p>
-           )}
         </div>
       );
     }
-    
-    if (product.dimensions) {
-      return <li className="flex items-start gap-4"><Box className="h-5 w-5 text-primary shrink-0 mt-1" /> <span>Dimensions: <strong>{product.dimensions}</strong></span></li>;
-    }
-    
     return null;
   };
 
   return (
     <div className="space-y-12 animate-in slide-in-from-bottom-8 duration-1000">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
-      />
       <div className="flex items-center justify-between">
-        <Button variant="ghost" className="text-stone-400 hover:text-stone-900 px-0 hover:bg-transparent transition-colors group" onClick={() => router.back()}>
+        <Button variant="ghost" className="text-stone-400 hover:text-stone-900 px-0 hover:bg-transparent group" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" /> Back to Collection
         </Button>
-        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-300">Product Ref: {product.id}</div>
+        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-300">Ref: {product.id}</div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 xl:gap-24">
@@ -178,8 +154,8 @@ export default function ProductDetailPage() {
           <div className="aspect-square relative rounded-[2.5rem] overflow-hidden shadow-2xl bg-white border border-stone-100 p-8">
             <div className="relative w-full h-full rounded-[1.5rem] overflow-hidden group">
               <Image 
-                src={selectedImage || product.imageUrls?.[0] || 'https://picsum.photos/seed/default/400/300'} 
-                alt={`${product.name} - ${product.flavor} Artisan Chocolate`} 
+                src={selectedImage || 'https://picsum.photos/seed/default/400/300'} 
+                alt={product.name} 
                 fill 
                 className="object-cover transition-all duration-[1s] group-hover:scale-110" 
                 priority
@@ -187,13 +163,12 @@ export default function ProductDetailPage() {
               />
             </div>
           </div>
-          <div className="grid grid-cols-4 gap-6 px-4">
-             {product.imageUrls?.map((url, i) => (
+          <div className="grid grid-cols-5 gap-4 px-4 overflow-x-auto pb-4 custom-scrollbar">
+             {allImages.map((url, i) => (
                 <button 
                   key={i} 
                   onClick={() => setSelectedImage(url)}
-                  aria-label={`View perspective ${i + 1} of ${product.name}`}
-                  className={`aspect-square relative rounded-2xl overflow-hidden border-2 transition-all duration-300 ${selectedImage === url ? 'border-primary shadow-lg ring-4 ring-primary/5' : 'border-transparent opacity-60 hover:opacity-100 hover:border-stone-200'}`}
+                  className={`aspect-square relative rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 w-20 md:w-full ${selectedImage === url ? 'border-primary shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'}`}
                 >
                    <Image src={url} alt={`${product.name} perspective ${i + 1}`} fill className="object-cover" data-ai-hint={product.imageHint} />
                 </button>
@@ -204,39 +179,30 @@ export default function ProductDetailPage() {
         <div className="lg:col-span-5 flex flex-col justify-center space-y-10">
           <div className="space-y-6">
             <div className="flex items-center gap-3 text-primary">
-                <div className="flex gap-1" aria-hidden="true">
+                <div className="flex gap-1">
                   {[...Array(5)].map((_, i) => <Star key={i} className="h-3 w-3 fill-current" />)}
                 </div>
                 <span className="text-[10px] font-black tracking-[0.3em] uppercase opacity-60">Hand-Crafted Excellence</span>
             </div>
-            <h1 className="text-5xl md:text-6xl font-bold font-headline text-stone-900 leading-tight">{product.name}</h1>
+            <h1 className="text-5xl font-bold font-headline text-stone-900 leading-tight">{product.name}</h1>
             <p className="text-2xl text-stone-400 font-light italic">{product.flavor}</p>
           </div>
 
           <div className="flex items-center gap-6">
-             <span className="text-5xl font-bold text-primary tabular-nums">₹{product.price}</span>
+             <span className="text-5xl font-bold text-primary">₹{product.price}</span>
              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 uppercase tracking-widest text-[10px] px-3 py-1 font-bold">
                {product.availabilityStatus}
              </Badge>
           </div>
 
           <div className="space-y-8 text-stone-600 leading-relaxed text-lg font-light">
-            <p className="border-l-4 border-primary/20 pl-6 italic">Our {product.name} is a testament to the pursuit of perfection. Every bar is carefully tempered and molded by our master chocolatiers in Kolkata, ensuring a flawless snap and a velvet-smooth melt that lingers on the palate.</p>
-            
-            <div className="space-y-4">
-               {renderDimensions()}
-            </div>
-
-            <ul className="space-y-4 pt-4">
-               <li className="flex items-start gap-4"><CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-1" /> <span>Ethically sourced, single-origin cocoa beans from select estates.</span></li>
-               <li className="flex items-start gap-4"><CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-1" /> <span>Zero artificial preservatives, colorants, or synthetic flavorings.</span></li>
-               <li className="flex items-start gap-4"><CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-1" /> <span>Presented in gold-embossed bespoke packaging, ready for gifting.</span></li>
-            </ul>
+            <p className="border-l-4 border-primary/20 pl-6 italic">Meticulously tempered in Kolkata for the true connoisseur. Zero artificial preservatives. Just pure artisan joy.</p>
+            {renderDimensions()}
           </div>
 
           <div className="pt-10 space-y-8">
-             <Button size="lg" className="w-full text-xl h-20 shadow-2xl shadow-primary/30 rounded-2xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98]" onClick={addToCart}>
-                <ShoppingCart className="h-6 w-6 mr-4" /> Reserve Your Indulgence
+             <Button size="lg" className="w-full text-xl h-20 shadow-2xl shadow-primary/30 rounded-2xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98]" onClick={addToCart} disabled={product.availabilityStatus === 'Out of Stock'}>
+                <ShoppingCart className="h-6 w-6 mr-4" /> {product.availabilityStatus === 'Out of Stock' ? 'Sold Out' : 'Reserve Your Indulgence'}
              </Button>
              <div className="grid grid-cols-3 gap-4 text-center">
                <div className="space-y-2">
@@ -248,8 +214,8 @@ export default function ProductDetailPage() {
                  <p className="text-[9px] text-stone-400 font-bold uppercase tracking-widest leading-tight">Artisan Made in India</p>
                </div>
                <div className="space-y-2">
-                 <div className="h-5 w-5 mx-auto text-stone-300 flex items-center justify-center text-[10px] font-bold">12h</div>
-                 <p className="text-[9px] text-stone-400 font-bold uppercase tracking-widest leading-tight">Freshly Prepared</p>
+                 <CheckCircle2 className="h-5 w-5 mx-auto text-stone-300" />
+                 <p className="text-[9px] text-stone-400 font-bold uppercase tracking-widest leading-tight">Zero Preservatives</p>
                </div>
              </div>
           </div>
