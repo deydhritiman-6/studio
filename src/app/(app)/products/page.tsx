@@ -500,11 +500,12 @@ export default function ProductsPage() {
                                   <SelectItem key={name} value={name}>{name}</SelectItem>
                                 ))}
                                 <Separator className="my-2" />
-                                <div className="p-2">
+                                <div className="p-2" onPointerDown={(e) => e.stopPropagation()}>
                                    <p className="text-[9px] font-black uppercase text-stone-400 mb-2">New Identity</p>
                                    <Input 
                                       placeholder="Type new name..." 
                                       className="h-8 text-xs" 
+                                      value={field.value}
                                       onChange={(e) => field.onChange(e.target.value)} 
                                       onKeyDown={(e) => e.stopPropagation()} 
                                    />
