@@ -18,6 +18,12 @@ export default function ShopPage() {
   const { data: products, loading } = useCollection<Product>(productsQuery);
   const { toast } = useToast();
 
+  const allProducts = useMemo(() => {
+    if (!products) return [];
+    // Filter out archived products in real-time
+    return products.filter(p => !p.isArchived);
+  }, [products]);
+
   const addToCart = (product: Product) => {
     if (product.availabilityStatus === 'Out of Stock') {
       toast({
@@ -60,8 +66,6 @@ export default function ShopPage() {
       </div>
     );
   }
-
-  const allProducts = products || [];
 
   return (
     <div className="space-y-4 md:space-y-10 animate-in fade-in duration-1000">

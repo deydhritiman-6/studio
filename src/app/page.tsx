@@ -30,9 +30,9 @@ export default function LandingPage() {
 
   const curatedIndulgences = useMemo(() => {
     if (!products) return [];
-    // Show products that are ready for display, limited to 3 for the main grid
+    // Show products that are ready for display and NOT archived, limited to 3 for the main grid
     return products
-      .filter(p => p.productionStatus === 'Product Ready')
+      .filter(p => p.productionStatus === 'Product Ready' && !p.isArchived)
       .slice(0, 3);
   }, [products]);
 

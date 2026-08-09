@@ -44,7 +44,7 @@ export default function ProductDetailPage() {
   // The primary image for the big preview (defaults to the first one in the collection)
   const mainPreviewImage = selectedImage || allImages[0] || 'https://picsum.photos/seed/default/400/300';
 
-  // Thumbnails: Take exactly three images starting from the second one (to avoid repeating the main image)
+  // Thumbnails: Take exactly three unique images excluding the main image (first in collection)
   const thumbnails = useMemo(() => {
     return allImages.slice(1, 4);
   }, [allImages]);
@@ -63,7 +63,8 @@ export default function ProductDetailPage() {
     );
   }
 
-  if (!product) {
+  // Handle real-time deletion or archival
+  if (!product || product.isArchived) {
     return (
       <div className="flex flex-col items-center justify-center py-32 space-y-6">
         <p className="text-stone-400 font-headline text-2xl italic">The flavor you seek is currently unavailable.</p>
