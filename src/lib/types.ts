@@ -156,19 +156,6 @@ export type TopProductData = {
   sales: number;
 };
 
-export type Distributor = {
-  id: string;
-  name: string;
-  contactPerson: string;
-  email: string;
-  phone: string;
-  region: string;
-  state: string;
-  district: string;
-  status: 'Active' | 'Inactive';
-  lastOrderDate: string;
-};
-
 export type PerformanceDataPoint = {
   month: string;
   previousMonthName: string;

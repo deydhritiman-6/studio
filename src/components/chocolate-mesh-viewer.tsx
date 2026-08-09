@@ -1,7 +1,7 @@
+
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import * as THREE from 'this'; // Error here in baseline, fixing to 'three'
 import * as THREE_LIB from 'three';
 import {
   Box,
@@ -162,17 +162,16 @@ export function ChocolateMeshViewer({
         break;
       case 'Heart': {
         const heartShape = new THREE_LIB.Shape();
-        heartShape.moveTo(0.25, 0.25);
-        heartShape.bezierCurveTo(0.25, 0.25, 0.2, 0, 0, 0);
-        heartShape.bezierCurveTo(-0.3, 0, -0.3, 0.35, -0.3, 0.35);
-        heartShape.bezierCurveTo(-0.3, 0.55, -0.15, 0.77, 0.25, 0.95);
-        heartShape.bezierCurveTo(0.6, 0.77, 0.8, 0.55, 0.8, 0.35);
-        heartShape.bezierCurveTo(0.8, 0.35, 0.8, 0, 0.5, 0);
-        heartShape.bezierCurveTo(0.35, 0, 0.25, 0.25, 0.25, 0.25);
+        heartShape.moveTo(0, 0);
+        heartShape.bezierCurveTo(0.5, 0.5, 1, 0.5, 1, 0);
+        heartShape.bezierCurveTo(1, -0.5, 0.5, -0.8, 0, -1);
+        heartShape.bezierCurveTo(-0.5, -0.8, -1, -0.5, -1, 0);
+        heartShape.bezierCurveTo(-1, 0.5, -0.5, 0.5, 0, 0);
+        
         const extrudeSettings = { depth: 0.4, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 0.05, bevelThickness: 0.05 };
         geometry = new THREE_LIB.ExtrudeGeometry(heartShape, extrudeSettings);
         geometry.rotateX(Math.PI);
-        geometry.scale(L * 0.8, L * 0.8, H * 2.5);
+        geometry.scale(L * 0.4, L * 0.4, H * 2);
         break;
       }
       case 'Oval':
@@ -249,14 +248,16 @@ export function ChocolateMeshViewer({
   }, []);
 
   const resetView = (e: React.MouseEvent) => {
-    e.preventDefault(); e.stopPropagation();
+    e.preventDefault(); 
+    e.stopPropagation();
     controlsRef.current.rotationX = -0.5;
     controlsRef.current.rotationY = 0.8;
     controlsRef.current.zoom = 1;
   };
 
   const handleZoom = (e: React.MouseEvent, delta: number) => {
-    e.preventDefault(); e.stopPropagation();
+    e.preventDefault(); 
+    e.stopPropagation();
     controlsRef.current.zoom = Math.max(0.55, Math.min(2.5, controlsRef.current.zoom + delta));
   };
 

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
@@ -8,7 +9,7 @@ import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Product, ProductDimensions } from '@/lib/types';
-import { PlusCircle, Loader2, Upload, Image as ImageIcon, PackageSearch, Trash2, Edit, Ruler, AlertCircle, RefreshCw } from 'lucide-react';
+import { PlusCircle, Loader2, Upload, Trash2, Edit, Ruler, AlertCircle, RefreshCw, PackageSearch } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
@@ -23,7 +24,7 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection, doc, setDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { ChocolateMeshViewer } from '@/components/chocolate-mesh-viewer';
 
 const SHAPE_CONFIG: Record<string, { fields: { name: string; label: string; placeholder?: string; type: 'number' | 'text' }[] }> = {
@@ -132,8 +133,8 @@ const productFormSchema = z.object({
     customLabel3: z.string().optional(),
     additionalDescription: z.string().optional(),
   }),
-  price: z.coerce.number().positive('Retail Value must be a positive number.'),
-  wholesalePrice: z.coerce.number().positive('Wholesale Value must be a positive number.'),
+  price: z.coerce.number().min(0, 'Retail Value must be at least 0.'),
+  wholesalePrice: z.coerce.number().min(0, 'Wholesale Value must be at least 0.'),
   availabilityStatus: z.enum(['In Stock', 'Out of Stock']),
   mainImage: z.string().min(1, 'Main Photo is required.'),
   subPhoto1: z.string().optional(),
@@ -144,14 +145,13 @@ const productFormSchema = z.object({
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
 
-// Helper to remove undefined values from an object recursively to prevent Firebase errors
 const sanitizeData = (obj: any): any => {
   if (Array.isArray(obj)) {
     return obj.map(sanitizeData);
   } else if (obj !== null && typeof obj === 'object') {
     return Object.fromEntries(
       Object.entries(obj)
-        .filter(([_, v]) => v !== undefined)
+        .filter(([_, v]) => v !== undefined && !Number.isNaN(v))
         .map(([k, v]) => [k, sanitizeData(v)])
     );
   }
@@ -264,7 +264,7 @@ export default function ProductsPage() {
     reader.readAsDataURL(file);
   };
 
-  const saveProduct = (values: ProductFormValues, id?: string) => {
+  const saveProduct = async (values: ProductFormValues, id?: string) => {
     if (!firestore) return;
 
     setIsSaving(true);
@@ -274,13 +274,12 @@ export default function ProductsPage() {
     const subImages = [values.subPhoto1, values.subPhoto2, values.subPhoto3].filter(Boolean) as string[];
     const imageUrls = [values.mainImage, ...subImages].filter(Boolean);
 
-    // Sanitize data to remove any undefined fields before Firestore write
     const productData = sanitizeData({ 
       ...values, 
       id: productId,
       imageUrls,
       subImages,
-      productionStatus: id ? (editingProduct?.productionStatus || 'Product Ready') : 'Product Ready'
+      productionStatus: 'Product Ready'
     });
 
     setDoc(productRef, productData, { merge: true })
@@ -292,6 +291,7 @@ export default function ProductsPage() {
       })
       .catch(async (serverError) => {
         setIsSaving(false);
+        console.error('Save Error:', serverError);
         const permissionError = new FirestorePermissionError({
           path: productRef.path,
           operation: id ? 'update' : 'create',
@@ -299,6 +299,11 @@ export default function ProductsPage() {
         });
         errorEmitter.emit('permission-error', permissionError);
       });
+  };
+
+  const onInvalid = (errs: any) => {
+    console.error('Form Validation Errors:', errs);
+    toast({ variant: 'destructive', title: 'Validation Error', description: 'Please check all required fields and ensure the Main Photo is uploaded.' });
   };
 
   const PhotoUploadSlot = ({ fieldName, label, required = false }: { fieldName: keyof ProductFormValues, label: string, required?: boolean }) => {
@@ -384,7 +389,7 @@ export default function ProductsPage() {
           </div>
           
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(activeDialog === 'edit' ? (v) => saveProduct(v, editingProduct!.id) : (v) => saveProduct(v))} className="flex flex-col flex-1 overflow-hidden">
+            <form onSubmit={form.handleSubmit((v) => saveProduct(v, editingProduct?.id), onInvalid)} className="flex flex-col flex-1 overflow-hidden">
               <div className="flex-1 overflow-y-auto px-10 custom-scrollbar">
                 <div className="space-y-10 py-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -512,17 +517,23 @@ export default function ProductsPage() {
                 {!isValid && Object.keys(errors).length > 0 && (
                   <div className="mb-4 p-4 bg-destructive/10 rounded-xl flex items-center gap-4 text-destructive w-full">
                     <AlertCircle className="h-5 w-5" />
-                    <div className="text-[10px] font-black uppercase tracking-widest">Please review required fields and photo assets.</div>
+                    <div className="text-[10px] font-black uppercase tracking-widest">Incomplete Specification Detected. Review required fields and photography.</div>
                   </div>
                 )}
                 
-                <DialogFooter className="w-full flex items-center justify-end gap-6 sm:justify-end">
+                <DialogFooter className="w-full flex items-center justify-end gap-6">
                   <DialogClose asChild>
                     <Button type="button" variant="secondary" className="h-12 px-8 rounded-xl font-bold uppercase text-[10px] tracking-widest">Discard</Button>
                   </DialogClose>
-                  <Button type="submit" disabled={isSaving} className="h-12 px-12 rounded-xl shadow-2xl shadow-primary/20 font-bold uppercase text-[10px] tracking-widest min-w-[200px]">
-                    {isSaving ? <Loader2 className="mr-3 h-4 w-4 animate-spin" /> : null}
-                    {activeDialog === 'edit' ? 'Save Refinement' : 'Register Creation'}
+                  <Button type="submit" disabled={isSaving} className="h-12 px-12 rounded-xl shadow-2xl shadow-primary/20 font-bold uppercase text-[10px] tracking-widest min-w-[220px]">
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="mr-3 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      activeDialog === 'edit' ? 'Save Refinement' : 'Register Creation'
+                    )}
                   </Button>
                 </DialogFooter>
               </div>
