@@ -1,5 +1,4 @@
 
-
 export type Customer = {
   id: string;
   name: string;
@@ -121,6 +120,15 @@ export type Product = {
   expiryDate?: string;
   productionStatus?: string;
   originalOrderId?: string;
+};
+
+export type ProductGallery = {
+  id: string;
+  productId: string;
+  productName: string;
+  mainImage: string;
+  subImages: string[];
+  createdAt: string;
 };
 
 export type Recipe = {

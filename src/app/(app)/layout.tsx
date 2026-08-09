@@ -44,7 +44,9 @@ import {
   Eye,
   Search,
   Globe,
-  ClipboardList
+  ClipboardList,
+  Images,
+  PlusCircle
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -72,6 +74,7 @@ const navItems = [
   { href: '/production', icon: Package, label: 'Production' },
   { href: '/recipes', icon: BookOpen, label: 'Recipes' },
   { href: '/products', icon: Package, label: 'Products' },
+  { href: '/photo-gallery', icon: Images, label: 'Photo Gallery' },
   { href: '/inventory', icon: Boxes, label: 'Inventory' },
   {
     icon: FileText,
@@ -112,8 +115,6 @@ const navItems = [
     ],
   },
 ];
-
-import { PlusCircle } from 'lucide-react';
 
 type User = {
   name: string;

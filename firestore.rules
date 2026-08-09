@@ -16,6 +16,12 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAuthenticated();
     }
+
+    // Galleries: Visible to everyone, management for staff
+    match /product-galleries/{galleryId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
     
     // Orders: Creation enabled for guests, management for authenticated staff
     match /orders/{orderId} {

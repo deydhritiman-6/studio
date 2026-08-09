@@ -106,9 +106,23 @@
                 "additionalDescription": { "type": "string" }
             }
         },
-        "productShape": { "type": "string", "enum": ["Square", "Rectangular", "Spherical", "Half Spherical", "Circular", "Cylindrical", "Oval", "Triangular", "Irregular", "Other"] }
+        "productShape": { "type": "string", "enum": ["Square", "Rectangular", "Spherical", "Half Spherical", "Circular", "Cylindrical", "Oval", "Heart", "Triangular", "Conical", "Irregular", "Other"] }
       },
       "required": ["name", "flavor", "price", "wholesalePrice", "availabilityStatus", "imageUrls"]
+    },
+    "ProductGallery": {
+      "title": "Product Gallery",
+      "description": "A set of photographs associated with a product.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "productId": { "type": "string" },
+        "productName": { "type": "string" },
+        "mainImage": { "type": "string" },
+        "subImages": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["productId", "productName", "mainImage", "createdAt"]
     },
     "Recipe": {
       "title": "Recipe",
@@ -212,6 +226,10 @@
     "/products/{productId}": {
       "schema": "#/backend/entities/Product",
       "description": "Collection of chocolate products."
+    },
+    "/product-galleries/{galleryId}": {
+      "schema": "#/backend/entities/ProductGallery",
+      "description": "Collection of product photo sets."
     },
     "/recipes/{recipeId}": {
       "schema": "#/backend/entities/Recipe",
