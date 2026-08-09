@@ -19,7 +19,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
@@ -406,7 +405,7 @@ export default function ProductsPage() {
           stopCamera();
         }
       }}>
-        <DialogContent className="sm:max-w-4xl rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden flex flex-col max-h-[90vh]">
+        <DialogContent className="sm:max-w-4xl rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden flex flex-col h-[90vh] max-h-[90vh]">
           <div className="p-8 bg-muted/30 border-b shrink-0">
             <DialogHeader>
               <DialogTitle className="text-3xl font-headline">{activeDialog === 'edit' ? 'Refine Creation' : 'Register New Creation'}</DialogTitle>
@@ -416,7 +415,7 @@ export default function ProductsPage() {
           
           <Form {...form}>
             <form onSubmit={form.handleSubmit(activeDialog === 'edit' ? onEditSubmit : onAddSubmit)} className="flex flex-col flex-1 overflow-hidden">
-              <ScrollArea className="flex-1 px-8">
+              <div className="flex-1 overflow-y-auto px-8 custom-scrollbar">
                 <div className="space-y-8 py-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <FormField control={form.control} name="name" render={({ field }) => (
@@ -634,7 +633,7 @@ export default function ProductsPage() {
                   </div>
                   <canvas ref={canvasRef} className="hidden" />
                 </div>
-              </ScrollArea>
+              </div>
 
               <div className="p-8 border-t shrink-0 bg-stone-50/50">
                 {!isValid && Object.keys(errors).length > 0 && (
