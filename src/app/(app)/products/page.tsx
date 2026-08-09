@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
@@ -350,7 +351,7 @@ export default function ProductsPage() {
 
   const onInvalid = (errs: any) => {
     console.error('Registration Validation Errors:', errs);
-    toast({ variant: 'destructive', title: 'Specification Error', description: 'Review required fields and ensure the Main Portrait is provided.' });
+    toast({ variant: 'destructive', title: 'Specification Error', description: 'Review required fields and ensure the Main Photo is provided.' });
   };
 
   const PhotoSlot = ({ fieldName, label, required = false }: { fieldName: keyof ProductFormValues, label: string, required?: boolean }) => {

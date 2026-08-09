@@ -163,12 +163,12 @@ export default function ProductDetailPage() {
               />
             </div>
           </div>
-          <div className="grid grid-cols-5 gap-4 px-4 overflow-x-auto pb-4 custom-scrollbar">
-             {allImages.map((url, i) => (
+          <div className="grid grid-cols-3 gap-6 px-4 md:px-12">
+             {allImages.slice(0, 3).map((url, i) => (
                 <button 
                   key={i} 
                   onClick={() => setSelectedImage(url)}
-                  className={`aspect-square relative rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 w-20 md:w-full ${selectedImage === url ? 'border-primary shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                  className={`aspect-square relative rounded-xl overflow-hidden border-2 transition-all ${selectedImage === url ? 'border-primary shadow-lg scale-105' : 'border-transparent opacity-60 hover:opacity-100 hover:scale-105'}`}
                 >
                    <Image src={url} alt={`${product.name} perspective ${i + 1}`} fill className="object-cover" data-ai-hint={product.imageHint} />
                 </button>
