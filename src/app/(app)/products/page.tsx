@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
@@ -411,7 +410,7 @@ export default function ProductsPage() {
         }
       }}>
         <DialogContent className="sm:max-w-4xl rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden flex flex-col h-[85vh] max-h-[90vh] bg-background">
-          <div className="px-10 py-6 border-b shrink-0 bg-background/50 backdrop-blur-sm">
+          <div className="px-10 py-4 border-b shrink-0 bg-background/50 backdrop-blur-sm">
             <DialogHeader className="space-y-1">
               <DialogTitle className="text-2xl font-headline font-bold tracking-tight text-foreground">{activeDialog === 'edit' ? 'Refine Creation' : 'Register New Creation'}</DialogTitle>
               <DialogDescription className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground/60">Identity & Design Specification</DialogDescription>
@@ -645,9 +644,9 @@ export default function ProductsPage() {
                 </div>
               </div>
 
-              <div className="px-10 py-8 shrink-0 bg-background border-t">
+              <div className="px-10 py-4 shrink-0 bg-background border-t">
                 {!isValid && Object.keys(errors).length > 0 && (
-                  <div className="mb-6 p-4 bg-destructive/5 border border-destructive/10 rounded-2xl flex items-center gap-4 text-destructive animate-in slide-in-from-bottom-2 duration-300">
+                  <div className="mb-4 p-4 bg-destructive/5 border border-destructive/10 rounded-2xl flex items-center gap-4 text-destructive animate-in slide-in-from-bottom-2 duration-300">
                     <AlertCircle className="h-5 w-5 shrink-0" />
                     <div className="text-[10px] font-black uppercase tracking-widest leading-normal">
                       {errors.name && <span>Missing product name. </span>}
