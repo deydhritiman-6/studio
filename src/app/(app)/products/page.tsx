@@ -7,8 +7,22 @@ import { z } from 'zod';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import type { Product, ProductDimensions, ProductGallery } from '@/lib/types';
-import { PlusCircle, Loader2, Upload, Trash2, Edit, Ruler, AlertCircle, RefreshCw, PackageSearch, Images, Search, CheckCircle2 } from 'lucide-react';
+import type { Product, ProductDimensions } from '@/lib/types';
+import { 
+  PlusCircle, 
+  Loader2, 
+  Upload, 
+  Trash2, 
+  Edit, 
+  Ruler, 
+  AlertCircle, 
+  RefreshCw, 
+  PackageSearch, 
+  Eye, 
+  CopyCheck,
+  Search,
+  CheckCircle2
+} from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
@@ -27,6 +41,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { ChocolateMeshViewer } from '@/components/chocolate-mesh-viewer';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const SHAPE_CONFIG: Record<string, { fields: { name: string; label: string; placeholder?: string; type: 'number' | 'text' }[] }> = {
   Square: {
@@ -162,32 +177,24 @@ const sanitizeData = (obj: any): any => {
 export default function ProductsPage() {
   const firestore = useFirestore();
   const productsQuery = useMemo(() => firestore ? collection(firestore, 'products') : null, [firestore]);
-  const galleriesQuery = useMemo(() => firestore ? collection(firestore, 'product-galleries') : null, [firestore]);
-
-  const { data: allProducts, loading: collectionLoading } = useCollection<Product>(productsQuery);
-  const { data: galleries } = useCollection<ProductGallery>(galleriesQuery);
+  const { data: allProducts, loading } = useCollection<Product>(productsQuery);
   
-  const loading = collectionLoading || !firestore;
-
-  const products = useMemo(() => {
-    return allProducts?.filter(p => p.productionStatus === 'Product Ready') || [];
-  }, [allProducts]);
-
-  const availableNamesFromGallery = useMemo(() => {
-    if (!galleries) return [];
-    const names = galleries.map(g => g.productName);
-    return Array.from(new Set(names)).sort();
-  }, [galleries]);
-
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+  
   const [viewingProduct, setViewingProduct] = useState<{images: string[], startIndex: number, productName: string, hint: string} | null>(null);
+  const [identityMode, setIdentityMode] = useState<'existing' | 'new'>('existing');
 
-  const [isGalleryPickerOpen, setIsGalleryPickerOpen] = useState(false);
-  const [pickerTargetField, setPickerTargetField] = useState<keyof ProductFormValues | null>(null);
-  const [gallerySearch, setGallerySearch] = useState('');
+  const uniqueProductNames = useMemo(() => {
+    if (!allProducts) return [];
+    return Array.from(new Set(allProducts.map(p => p.name))).sort();
+  }, [allProducts]);
+
+  const products = useMemo(() => {
+    return allProducts?.filter(p => p.productionStatus === 'Product Ready') || [];
+  }, [allProducts]);
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -224,12 +231,13 @@ export default function ProductsPage() {
         price: editingProduct.price,
         wholesalePrice: editingProduct.wholesalePrice,
         availabilityStatus: editingProduct.availabilityStatus,
-        mainImage: editingProduct.mainImage || urls[0] || '',
-        subPhoto1: editingProduct.subImages?.[0] || urls[1] || '',
-        subPhoto2: editingProduct.subImages?.[1] || urls[2] || '',
-        subPhoto3: editingProduct.subImages?.[2] || urls[3] || '',
+        mainImage: urls[0] || '',
+        subPhoto1: urls[1] || '',
+        subPhoto2: urls[2] || '',
+        subPhoto3: urls[3] || '',
         imageHint: editingProduct.imageHint || 'artisan chocolate',
       });
+      setIdentityMode('existing');
     } else if (isAddDialogOpen) {
       form.reset({
         name: '',
@@ -246,8 +254,36 @@ export default function ProductsPage() {
         subPhoto3: '',
         imageHint: 'artisan chocolate',
       });
+      setIdentityMode('new');
     }
   }, [editingProduct, form, isAddDialogOpen]);
+
+  const handleReEnroll = (product: Product) => {
+    // Re-enroll is "edit but as a new document"
+    setEditingProduct(null);
+    setIsAddDialogOpen(true);
+    
+    // Manual pre-fill of form
+    setTimeout(() => {
+      const urls = product.imageUrls || [];
+      form.reset({
+        name: product.name,
+        flavor: product.flavor,
+        weight: product.weight || '',
+        productShape: product.productShape || 'Rectangular',
+        productDimensions: product.productDimensions || { unit: 'mm' } as ProductDimensions,
+        price: product.price,
+        wholesalePrice: product.wholesalePrice,
+        availabilityStatus: product.availabilityStatus,
+        mainImage: urls[0] || '',
+        subPhoto1: urls[1] || '',
+        subPhoto2: urls[2] || '',
+        subPhoto3: urls[3] || '',
+        imageHint: product.imageHint || 'artisan chocolate',
+      });
+      setIdentityMode('existing');
+    }, 100);
+  };
 
   const optimizeImage = (dataUrl: string): Promise<string> => {
     return new Promise((resolve) => {
@@ -285,14 +321,12 @@ export default function ProductsPage() {
     const productId = id || `P${Date.now()}`;
     const productRef = doc(firestore, 'products', productId);
     
-    const subImages = [values.subPhoto1, values.subPhoto2, values.subPhoto3].filter(Boolean) as string[];
-    const imageUrls = [values.mainImage, ...subImages].filter(Boolean);
+    const imageUrls = [values.mainImage, values.subPhoto1, values.subPhoto2, values.subPhoto3].filter(Boolean) as string[];
 
     const productData = sanitizeData({ 
       ...values, 
       id: productId,
       imageUrls,
-      subImages,
       productionStatus: 'Product Ready'
     });
 
@@ -301,7 +335,7 @@ export default function ProductsPage() {
         setIsAddDialogOpen(false);
         setEditingProduct(null);
         setIsSaving(false);
-        toast({ title: id ? 'Creation Refined' : 'Creation Added' });
+        toast({ title: id ? 'Creation Refined' : 'Creation Registered' });
       })
       .catch(async (serverError) => {
         setIsSaving(false);
@@ -315,11 +349,11 @@ export default function ProductsPage() {
   };
 
   const onInvalid = (errs: any) => {
-    console.error('Form Validation Errors:', errs);
-    toast({ variant: 'destructive', title: 'Validation Error', description: 'Please check all required fields and ensure the Main Photo is provided.' });
+    console.error('Registration Validation Errors:', errs);
+    toast({ variant: 'destructive', title: 'Specification Error', description: 'Review required fields and ensure the Main Portrait is provided.' });
   };
 
-  const PhotoUploadSlot = ({ fieldName, label, required = false }: { fieldName: keyof ProductFormValues, label: string, required?: boolean }) => {
+  const PhotoSlot = ({ fieldName, label, required = false }: { fieldName: keyof ProductFormValues, label: string, required?: boolean }) => {
     const value = form.watch(fieldName) as string;
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -334,34 +368,23 @@ export default function ProductsPage() {
           )}
         </Label>
         <div 
+          onClick={() => fileInputRef.current?.click()}
           className={cn(
-            "aspect-[4/3] rounded-2xl border-2 border-dashed flex flex-col items-center justify-center transition-all duration-300 relative group overflow-hidden bg-muted/20",
-            value ? "border-primary/40 bg-background" : "border-stone-200"
+            "aspect-[4/3] rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group overflow-hidden bg-muted/20",
+            value ? "border-primary/40 bg-background" : "border-stone-200 hover:border-primary/30 hover:bg-muted/40"
           )}
         >
           {value ? (
             <>
               <Image src={value} alt={label} fill className="object-cover" />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                 <Button type="button" size="sm" variant="secondary" className="h-8 px-3 rounded-lg text-[10px] font-bold" onClick={() => fileInputRef.current?.click()}>
-                    <RefreshCw className="h-3 w-3 mr-1" /> Replace
-                 </Button>
-                 <Button type="button" size="sm" variant="secondary" className="h-8 px-3 rounded-lg text-[10px] font-bold" onClick={() => { setPickerTargetField(fieldName); setIsGalleryPickerOpen(true); }}>
-                    <Images className="h-3 w-3 mr-1" /> Gallery
-                 </Button>
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                 <RefreshCw className="text-white h-6 w-6" />
               </div>
             </>
           ) : (
-            <div className="flex flex-col items-center gap-3 p-4 text-center">
-               <div className="flex gap-2">
-                 <Button type="button" variant="outline" size="sm" className="h-10 px-4 rounded-xl border-stone-200 hover:border-primary/40 text-stone-500 hover:text-primary transition-all group/up" onClick={() => fileInputRef.current?.click()}>
-                    <Upload className="h-4 w-4 mr-2 group-hover/up:scale-110 transition-transform" /> Upload
-                 </Button>
-                 <Button type="button" variant="outline" size="sm" className="h-10 px-4 rounded-xl border-stone-200 hover:border-primary/40 text-stone-500 hover:text-primary transition-all group/gal" onClick={() => { setPickerTargetField(fieldName); setIsGalleryPickerOpen(true); }}>
-                    <Images className="h-4 w-4 mr-2 group-hover/gal:scale-110 transition-transform" /> Gallery
-                 </Button>
-               </div>
-               <span className="text-[9px] font-bold uppercase tracking-tight text-stone-400">Select Perspective</span>
+            <div className="flex flex-col items-center gap-2 text-stone-400 group-hover:text-primary transition-colors">
+               <Upload className="h-6 w-6" />
+               <span className="text-[9px] font-bold uppercase tracking-tight">Select Photo</span>
             </div>
           )}
           <input 
@@ -376,78 +399,8 @@ export default function ProductsPage() {
     );
   };
 
-  const filteredGalleries = useMemo(() => {
-    if (!galleries) return [];
-    return galleries.filter(g => g.productName.toLowerCase().includes(gallerySearch.toLowerCase()));
-  }, [galleries, gallerySearch]);
-
-  const activeDialog = editingProduct ? 'edit' : (isAddDialogOpen ? 'add' : null);
-
   return (
     <TooltipProvider>
-      <Dialog open={isGalleryPickerOpen} onOpenChange={setIsGalleryPickerOpen}>
-        <DialogContent className="sm:max-w-4xl rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden flex flex-col h-[80vh] bg-background">
-          <div className="px-10 py-6 border-b shrink-0 bg-muted/30">
-            <DialogHeader className="flex flex-row items-center justify-between gap-6">
-              <div className="space-y-1">
-                <DialogTitle className="text-2xl font-headline">Visual Asset Archive</DialogTitle>
-                <DialogDescription className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/60">Selecting for {pickerTargetField?.replace('subPhoto', 'Perspective ').replace('mainImage', 'Main Portrait')}</DialogDescription>
-              </div>
-              <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                <Input 
-                    placeholder="Search Artisan Galleries..." 
-                    className="pl-9 h-10 rounded-xl bg-background border-none shadow-inner text-xs" 
-                    value={gallerySearch}
-                    onChange={(e) => setGallerySearch(e.target.value)}
-                />
-              </div>
-            </DialogHeader>
-          </div>
-          
-          <ScrollArea className="flex-1 p-10 custom-scrollbar">
-            {filteredGalleries.length > 0 ? (
-                <div className="space-y-12">
-                    {filteredGalleries.map((gallery) => (
-                        <div key={gallery.id} className="space-y-4">
-                            <div className="flex items-center justify-between border-b pb-2">
-                                <h3 className="text-sm font-bold uppercase tracking-tight text-primary">{gallery.productName}</h3>
-                                <span className="text-[9px] font-medium text-muted-foreground">{gallery.id}</span>
-                            </div>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                {[gallery.mainImage, ...gallery.subImages].map((img, i) => (
-                                    <div 
-                                        key={i} 
-                                        className="aspect-square relative rounded-xl overflow-hidden border-2 border-transparent hover:border-primary cursor-pointer transition-all group"
-                                        onClick={() => {
-                                            if (pickerTargetField) form.setValue(pickerTargetField, img, { shouldValidate: true });
-                                            setIsGalleryPickerOpen(false);
-                                        }}
-                                    >
-                                        <Image src={img} alt="" fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                                        <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                            <CheckCircle2 className="text-white h-6 w-6 drop-shadow-lg" />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <div className="flex flex-col items-center justify-center h-64 text-center">
-                    <Images className="h-12 w-12 text-muted-foreground opacity-20 mb-4" />
-                    <p className="text-muted-foreground italic text-sm">No historical visual assets found.</p>
-                </div>
-            )}
-          </ScrollArea>
-          
-          <div className="px-10 py-4 border-t flex justify-end shrink-0">
-             <Button variant="secondary" className="rounded-xl h-10 px-6 font-bold uppercase text-[10px] tracking-widest" onClick={() => setIsGalleryPickerOpen(false)}>Close Archive</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
       <Dialog open={!!viewingProduct} onOpenChange={(open) => !open && setViewingProduct(null)}>
         <DialogContent className="sm:max-w-4xl p-0 border-0 bg-transparent shadow-none">
           <DialogHeader className="sr-only">
@@ -471,12 +424,12 @@ export default function ProductsPage() {
         </DialogContent>
       </Dialog>
       
-      <Dialog open={!!activeDialog} onOpenChange={(open) => { if (!open) { setEditingProduct(null); setIsAddDialogOpen(false); } }}>
+      <Dialog open={isAddDialogOpen || !!editingProduct} onOpenChange={(open) => { if (!open) { setEditingProduct(null); setIsAddDialogOpen(false); } }}>
         <DialogContent className="sm:max-w-4xl rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden flex flex-col h-[85vh] bg-background">
           <div className="px-10 py-4 border-b shrink-0 bg-background">
             <DialogHeader className="space-y-1 text-left">
-              <DialogTitle className="text-2xl font-headline text-foreground">{activeDialog === 'edit' ? 'Refine Creation' : 'Register New Creation'}</DialogTitle>
-              <DialogDescription className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground/60">Product Design Specification</DialogDescription>
+              <DialogTitle className="text-2xl font-headline text-foreground">{editingProduct ? 'Refine Creation' : 'Register New Creation'}</DialogTitle>
+              <DialogDescription className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground/60">Artisanal Specification Entry</DialogDescription>
             </DialogHeader>
           </div>
           
@@ -488,40 +441,38 @@ export default function ProductsPage() {
                     <FormField control={form.control} name="name" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Product Identity</FormLabel>
-                        {availableNamesFromGallery.length > 0 ? (
-                           <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger className="h-12 rounded-xl">
-                                  <SelectValue placeholder="Select from Gallery or existing..." />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {availableNamesFromGallery.map(name => (
-                                  <SelectItem key={name} value={name}>{name}</SelectItem>
-                                ))}
-                                <Separator className="my-2" />
-                                <div className="p-2" onPointerDown={(e) => e.stopPropagation()}>
-                                   <p className="text-[9px] font-black uppercase text-stone-400 mb-2">New Identity</p>
-                                   <Input 
-                                      placeholder="Type new name..." 
-                                      className="h-8 text-xs" 
-                                      value={field.value}
-                                      onChange={(e) => field.onChange(e.target.value)} 
-                                      onKeyDown={(e) => e.stopPropagation()} 
-                                   />
-                                </div>
-                              </SelectContent>
-                           </Select>
-                        ) : (
-                          <FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl>
-                        )}
+                        <Tabs value={identityMode} onValueChange={(v: any) => setIdentityMode(v)} className="w-full">
+                           <TabsList className="grid w-full grid-cols-2 bg-muted/30 h-9 rounded-xl p-1 mb-2">
+                             <TabsTrigger value="existing" className="rounded-lg text-[9px] uppercase font-bold">Select Existing</TabsTrigger>
+                             <TabsTrigger value="new" className="rounded-lg text-[9px] uppercase font-bold">Manual Entry</TabsTrigger>
+                           </TabsList>
+                           <TabsContent value="existing" className="mt-0">
+                             <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="h-12 rounded-xl">
+                                    <SelectValue placeholder="Search identities..." />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {uniqueProductNames.map(name => (
+                                    <SelectItem key={name} value={name}>{name}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                             </Select>
+                           </TabsContent>
+                           <TabsContent value="new" className="mt-0">
+                             <FormControl>
+                                <Input placeholder="Type new identity name..." className="h-12 rounded-xl" {...field} />
+                             </FormControl>
+                           </TabsContent>
+                        </Tabs>
                         <FormMessage />
                       </FormItem>
                     )} />
                     <FormField control={form.control} name="flavor" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Flavor Profile</FormLabel>
-                        <FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl>
+                        <FormControl><Input placeholder="e.g., Sea Salt Dark Truffle" className="h-12 rounded-xl" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
@@ -531,7 +482,7 @@ export default function ProductsPage() {
                     <FormField control={form.control} name="weight" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Net Weight</FormLabel>
-                        <FormControl><Input placeholder="e.g., 100g" className="h-12 rounded-xl" {...field} /></FormControl>
+                        <FormControl><Input placeholder="e.g., 120g" className="h-12 rounded-xl" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
@@ -555,7 +506,7 @@ export default function ProductsPage() {
                   <div className="bg-muted/20 p-10 rounded-[2.5rem] border-2 border-dashed space-y-8">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-[0.2em]">
-                        <Ruler className="h-4 w-4" /> Technical Dimensions
+                        <Ruler className="h-4 w-4" /> Dimension Logic
                       </div>
                       <FormField control={form.control} name="productDimensions.unit" render={({ field }) => (
                         <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
@@ -616,15 +567,15 @@ export default function ProductsPage() {
                   </div>
 
                   <div className="space-y-6">
-                    <h3 className="uppercase text-[10px] font-black tracking-widest text-muted-foreground border-b pb-2">Artisan Photography</h3>
+                    <h3 className="uppercase text-[10px] font-black tracking-widest text-muted-foreground border-b pb-2">Photography Asset Control</h3>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                        <div className="md:col-span-1">
-                          <PhotoUploadSlot fieldName="mainImage" label="Main Portrait" required />
+                          <PhotoSlot fieldName="mainImage" label="Main Portrait" required />
                        </div>
                        <div className="md:col-span-3 grid grid-cols-3 gap-6">
-                          <PhotoUploadSlot fieldName="subPhoto1" label="Perspective A" />
-                          <PhotoUploadSlot fieldName="subPhoto2" label="Perspective B" />
-                          <PhotoUploadSlot fieldName="subPhoto3" label="Perspective C" />
+                          <PhotoSlot fieldName="subPhoto1" label="Perspective A" />
+                          <PhotoSlot fieldName="subPhoto2" label="Perspective B" />
+                          <PhotoSlot fieldName="subPhoto3" label="Perspective C" />
                        </div>
                     </div>
                   </div>
@@ -635,7 +586,7 @@ export default function ProductsPage() {
                 {!isValid && Object.keys(errors).length > 0 && (
                   <div className="mb-4 p-4 bg-destructive/10 rounded-xl flex items-center gap-4 text-destructive w-full">
                     <AlertCircle className="h-5 w-5" />
-                    <div className="text-[10px] font-black uppercase tracking-widest">Incomplete Specification Detected. Review required fields and photography.</div>
+                    <div className="text-[10px] font-black uppercase tracking-widest">Incomplete Specification Detected. Check dimensions and photography.</div>
                   </div>
                 )}
                 
@@ -650,7 +601,7 @@ export default function ProductsPage() {
                         Processing...
                       </>
                     ) : (
-                      activeDialog === 'edit' ? 'Save Refinement' : 'Register Creation'
+                      editingProduct ? 'Save Refinement' : 'Register Creation'
                     )}
                   </Button>
                 </DialogFooter>
@@ -662,7 +613,9 @@ export default function ProductsPage() {
       
       <PageHeader title="Artisan Portfolio" actions={<Button onClick={() => setIsAddDialogOpen(true)} className="rounded-xl h-11 px-6"><PlusCircle className="mr-2 h-4 w-4" />New Creation</Button>} />
       
-      {(!products || products.length === 0) && !loading ? (
+      {loading ? (
+        <div className="flex justify-center py-20"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>
+      ) : products.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-80 border-2 border-dashed rounded-[2.5rem] bg-muted/50 text-center px-4">
            <PackageSearch className="h-16 w-16 text-muted-foreground mb-6" />
            <p className="text-muted-foreground font-headline text-2xl italic">The collection is currently awaiting its first production batch.</p>
@@ -670,17 +623,22 @@ export default function ProductsPage() {
         </div>
       ) : (
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {products?.map((product) => (
+          {products.map((product) => (
             <Card key={product.id} className="flex flex-col group overflow-hidden border-none shadow-sm hover:shadow-2xl transition-all duration-500 rounded-[2rem] bg-card">
               <CardHeader className="p-0 relative">
                  <button type="button" className="block w-full aspect-[4/3] relative overflow-hidden" onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: 0, productName: product.name, hint: product.imageHint })}>
                     <Image src={product.imageUrls?.[0] || 'https://picsum.photos/seed/default/400/300'} alt={product.name} fill className={`object-cover transition-transform duration-700 ${product.availabilityStatus === 'Out of Stock' ? 'grayscale' : 'group-hover:scale-110'}`} data-ai-hint={product.imageHint} />
                   </button>
-                  {product.sku && <div className="absolute top-4 left-4"><Badge variant="secondary" className="uppercase tracking-tighter text-[8px]">{product.sku}</Badge></div>}
+                  <div className="absolute top-4 left-4 flex gap-2">
+                    {product.sku && <Badge variant="secondary" className="uppercase tracking-tighter text-[8px]">{product.sku}</Badge>}
+                    <Badge variant="outline" className="bg-white/90 backdrop-blur-sm border-none shadow-sm uppercase tracking-widest text-[8px] font-black">{product.productShape}</Badge>
+                  </div>
               </CardHeader>
               <CardContent className="p-6 flex-grow space-y-6">
-                <CardTitle className="font-headline text-2xl group-hover:text-primary transition-colors">{product.name}</CardTitle>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">{product.flavor}</p>
+                <div className="space-y-1">
+                   <CardTitle className="font-headline text-2xl group-hover:text-primary transition-colors">{product.name}</CardTitle>
+                   <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">{product.flavor}</p>
+                </div>
 
                 <div className="flex justify-between items-end pt-4 border-t">
                   <div className="space-y-0.5">
@@ -692,7 +650,14 @@ export default function ProductsPage() {
                   </Badge>
                 </div>
               </CardContent>
-              <CardFooter className="p-6 pt-0"><Button variant="outline" className="w-full rounded-2xl h-12 font-bold uppercase text-[10px] tracking-widest" onClick={() => setEditingProduct(product)}><Edit className="h-3.5 w-3.5 mr-2" /> Modify Portfolio</Button></CardFooter>
+              <CardFooter className="p-6 pt-0 grid grid-cols-2 gap-3">
+                <Button variant="outline" className="rounded-2xl h-11 font-bold uppercase text-[9px] tracking-widest" onClick={() => setEditingProduct(product)}>
+                   <Edit className="h-3 w-3 mr-1.5" /> Refine
+                </Button>
+                <Button variant="secondary" className="rounded-2xl h-11 font-bold uppercase text-[9px] tracking-widest" onClick={() => handleReEnroll(product)}>
+                   <CopyCheck className="h-3 w-3 mr-1.5" /> Re-Enroll
+                </Button>
+              </CardFooter>
             </Card>
           ))}
         </div>
