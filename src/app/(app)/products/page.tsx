@@ -198,11 +198,11 @@ export default function ProductsPage() {
   const [viewingProduct, setViewingProduct] = useState<{images: string[], startIndex: number, productName: string, hint: string} | null>(null);
   const [identityMode, setIdentityMode] = useState<'existing' | 'new'>('existing');
 
-  const uniqueIdentities = useMemo(() => {
-    const fromProducts = allProductsRaw?.map(p => p.name) || [];
+  // Filter unique identities specifically from the photo gallery for the "Select Existing" dropdown
+  const galleryIdentities = useMemo(() => {
     const fromGalleries = galleries?.map(g => g.productName) || [];
-    return Array.from(new Set([...fromProducts, ...fromGalleries])).sort();
-  }, [allProductsRaw, galleries]);
+    return Array.from(new Set(fromGalleries)).sort();
+  }, [galleries]);
 
   const products = useMemo(() => {
     return allProductsRaw?.filter(p => p.productionStatus === 'Product Ready' && !p.isArchived) || [];
@@ -483,14 +483,29 @@ export default function ProductsPage() {
                              <TabsTrigger value="new" className="rounded-lg text-[9px] uppercase font-bold">Create New</TabsTrigger>
                            </TabsList>
                            <TabsContent value="existing" className="mt-0">
-                             <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                             <Select 
+                                onValueChange={(val) => {
+                                  field.onChange(val);
+                                  // Auto-populate photos from gallery when an identity is selected
+                                  const galleryEntry = galleries?.find(g => g.productName === val);
+                                  if (galleryEntry) {
+                                    form.setValue('mainImage', galleryEntry.mainImage, { shouldValidate: true });
+                                    form.setValue('subPhoto1', galleryEntry.subImages?.[0] || '', { shouldValidate: true });
+                                    form.setValue('subPhoto2', galleryEntry.subImages?.[1] || '', { shouldValidate: true });
+                                    form.setValue('subPhoto3', galleryEntry.subImages?.[2] || '', { shouldValidate: true });
+                                    toast({ title: 'Photography Synced', description: `Visual assets for ${val} have been imported from the gallery.` });
+                                  }
+                                }} 
+                                defaultValue={field.value} 
+                                value={field.value}
+                              >
                                 <FormControl>
                                   <SelectTrigger className="h-12 rounded-xl">
                                     <SelectValue placeholder="Search identities..." />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {uniqueIdentities.map(name => (
+                                  {galleryIdentities.map(name => (
                                     <SelectItem key={name} value={name}>{name}</SelectItem>
                                   ))}
                                 </SelectContent>
@@ -661,7 +676,7 @@ export default function ProductsPage() {
            
            <ScrollArea className="flex-1 p-10">
               <div className="space-y-12">
-                 {uniqueIdentities.map(productName => {
+                 {galleryIdentities.map(productName => {
                     const productGalleries = galleries?.filter(g => g.productName === productName) || [];
                     if (productGalleries.length === 0) return null;
 
