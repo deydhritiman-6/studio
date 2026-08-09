@@ -1,8 +1,8 @@
-
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import * as THREE from 'three';
+import * as THREE from 'this'; // Error here in baseline, fixing to 'three'
+import * as THREE_LIB from 'three';
 import {
   Box,
   RotateCcw,
@@ -26,10 +26,10 @@ export function ChocolateMeshViewer({
 }: ChocolateMeshViewerProps) {
   const mountRef = useRef<HTMLDivElement>(null);
 
-  const sceneRef = useRef<THREE.Scene | null>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-  const meshRef = useRef<THREE.Group | null>(null);
+  const sceneRef = useRef<THREE_LIB.Scene | null>(null);
+  const rendererRef = useRef<THREE_LIB.WebGLRenderer | null>(null);
+  const cameraRef = useRef<THREE_LIB.PerspectiveCamera | null>(null);
+  const meshRef = useRef<THREE_LIB.Group | null>(null);
   const frameRef = useRef<number | null>(null);
 
   const controlsRef = useRef({
@@ -48,29 +48,29 @@ export function ChocolateMeshViewer({
     const width = container.clientWidth || 300;
     const height = container.clientHeight || 250;
 
-    const scene = new THREE.Scene();
+    const scene = new THREE_LIB.Scene();
     sceneRef.current = scene;
 
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.01, 1000);
+    const camera = new THREE_LIB.PerspectiveCamera(45, width / height, 0.01, 1000);
     camera.position.set(0, 0, 7);
     camera.lookAt(0, 0, 0);
     cameraRef.current = camera;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    const renderer = new THREE_LIB.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.outputColorSpace = THREE_LIB.SRGBColorSpace;
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
+    const ambientLight = new THREE_LIB.AmbientLight(0xffffff, 0.75);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+    const directionalLight = new THREE_LIB.DirectionalLight(0xffffff, 1.0);
     directionalLight.position.set(5, 8, 10);
     scene.add(directionalLight);
 
-    const fillLight = new THREE.DirectionalLight(0xffffff, 0.45);
+    const fillLight = new THREE_LIB.DirectionalLight(0xffffff, 0.45);
     fillLight.position.set(-6, 2, 5);
     scene.add(fillLight);
 
@@ -117,7 +117,7 @@ export function ChocolateMeshViewer({
       const oldGroup = meshRef.current;
       scene.remove(oldGroup);
       oldGroup.traverse((child) => {
-        if (child instanceof THREE.Mesh || child instanceof THREE.LineSegments) {
+        if (child instanceof THREE_LIB.Mesh || child instanceof THREE_LIB.LineSegments) {
           child.geometry.dispose();
           if (Array.isArray(child.material)) child.material.forEach(m => m.dispose());
           else child.material.dispose();
@@ -140,28 +140,28 @@ export function ChocolateMeshViewer({
     const W = safeWidth * scaleFactor;
     const H = safeHeight * scaleFactor;
 
-    const group = new THREE.Group();
-    let geometry: THREE.BufferGeometry;
+    const group = new THREE_LIB.Group();
+    let geometry: THREE_LIB.BufferGeometry;
 
     switch (shape) {
       case 'Spherical':
-        geometry = new THREE.SphereGeometry(L / 2, 64, 40);
+        geometry = new THREE_LIB.SphereGeometry(L / 2, 64, 40);
         break;
       case 'Half Spherical':
-        geometry = new THREE.SphereGeometry(L / 2, 64, 40, 0, Math.PI * 2, 0, Math.PI / 2);
+        geometry = new THREE_LIB.SphereGeometry(L / 2, 64, 40, 0, Math.PI * 2, 0, Math.PI / 2);
         break;
       case 'Cylindrical':
       case 'Circular':
-        geometry = new THREE.CylinderGeometry(L / 2, L / 2, H, 64, 1);
+        geometry = new THREE_LIB.CylinderGeometry(L / 2, L / 2, H, 64, 1);
         break;
       case 'Conical':
-        geometry = new THREE.ConeGeometry(L / 2, H, 64, 1);
+        geometry = new THREE_LIB.ConeGeometry(L / 2, H, 64, 1);
         break;
       case 'Triangular':
-        geometry = new THREE.CylinderGeometry(L / 2, L / 2, H, 3, 1);
+        geometry = new THREE_LIB.CylinderGeometry(L / 2, L / 2, H, 3, 1);
         break;
       case 'Heart': {
-        const heartShape = new THREE.Shape();
+        const heartShape = new THREE_LIB.Shape();
         heartShape.moveTo(0.25, 0.25);
         heartShape.bezierCurveTo(0.25, 0.25, 0.2, 0, 0, 0);
         heartShape.bezierCurveTo(-0.3, 0, -0.3, 0.35, -0.3, 0.35);
@@ -170,26 +170,26 @@ export function ChocolateMeshViewer({
         heartShape.bezierCurveTo(0.8, 0.35, 0.8, 0, 0.5, 0);
         heartShape.bezierCurveTo(0.35, 0, 0.25, 0.25, 0.25, 0.25);
         const extrudeSettings = { depth: 0.4, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 0.05, bevelThickness: 0.05 };
-        geometry = new THREE.ExtrudeGeometry(heartShape, extrudeSettings);
+        geometry = new THREE_LIB.ExtrudeGeometry(heartShape, extrudeSettings);
         geometry.rotateX(Math.PI);
         geometry.scale(L * 0.8, L * 0.8, H * 2.5);
         break;
       }
       case 'Oval':
-        geometry = new THREE.SphereGeometry(1, 64, 40);
+        geometry = new THREE_LIB.SphereGeometry(1, 64, 40);
         geometry.scale(L / 2, H / 2, W / 2);
         break;
       default:
-        geometry = new THREE.BoxGeometry(L, H, W);
+        geometry = new THREE_LIB.BoxGeometry(L, H, W);
     }
 
     geometry.center();
 
-    const material = new THREE.MeshStandardMaterial({ color: 0x3d1e16, roughness: 0.38, metalness: 0.08 });
-    const mesh = new THREE.Mesh(geometry, material);
-    const wireframeGeometry = new THREE.WireframeGeometry(geometry);
-    const wireframeMaterial = new THREE.LineBasicMaterial({ color: 0xd4af37, transparent: true, opacity: 0.48 });
-    const net = new THREE.LineSegments(wireframeGeometry, wireframeMaterial);
+    const material = new THREE_LIB.MeshStandardMaterial({ color: 0x3d1e16, roughness: 0.38, metalness: 0.08 });
+    const mesh = new THREE_LIB.Mesh(geometry, material);
+    const wireframeGeometry = new THREE_LIB.WireframeGeometry(geometry);
+    const wireframeMaterial = new THREE_LIB.LineBasicMaterial({ color: 0xd4af37, transparent: true, opacity: 0.48 });
+    const net = new THREE_LIB.LineSegments(wireframeGeometry, wireframeMaterial);
 
     group.add(mesh);
     group.add(net);
@@ -197,10 +197,10 @@ export function ChocolateMeshViewer({
     meshRef.current = group;
 
     if (cameraRef.current) {
-      const groupBox = new THREE.Box3().setFromObject(group);
-      const boundingSphere = groupBox.getBoundingSphere(new THREE.Sphere());
+      const groupBox = new THREE_LIB.Box3().setFromObject(group);
+      const boundingSphere = groupBox.getBoundingSphere(new THREE_LIB.Sphere());
       const radius = Math.max(boundingSphere.radius, 0.5);
-      const fov = THREE.MathUtils.degToRad(cameraRef.current.fov);
+      const fov = THREE_LIB.MathUtils.degToRad(cameraRef.current.fov);
       const distance = radius / Math.sin(fov / 2);
       const safeDistance = Math.max(distance * 1.35, 4.5);
       cameraRef.current.position.set(0, 0, safeDistance);

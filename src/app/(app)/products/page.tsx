@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
@@ -145,6 +144,20 @@ const productFormSchema = z.object({
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
 
+// Helper to remove undefined values from an object recursively to prevent Firebase errors
+const sanitizeData = (obj: any): any => {
+  if (Array.isArray(obj)) {
+    return obj.map(sanitizeData);
+  } else if (obj !== null && typeof obj === 'object') {
+    return Object.fromEntries(
+      Object.entries(obj)
+        .filter(([_, v]) => v !== undefined)
+        .map(([k, v]) => [k, sanitizeData(v)])
+    );
+  }
+  return obj;
+};
+
 export default function ProductsPage() {
   const firestore = useFirestore();
   const productsQuery = useMemo(() => firestore ? collection(firestore, 'products') : null, [firestore]);
@@ -261,13 +274,14 @@ export default function ProductsPage() {
     const subImages = [values.subPhoto1, values.subPhoto2, values.subPhoto3].filter(Boolean) as string[];
     const imageUrls = [values.mainImage, ...subImages].filter(Boolean);
 
-    const productData = { 
+    // Sanitize data to remove any undefined fields before Firestore write
+    const productData = sanitizeData({ 
       ...values, 
       id: productId,
       imageUrls,
       subImages,
       productionStatus: id ? (editingProduct?.productionStatus || 'Product Ready') : 'Product Ready'
-    };
+    });
 
     setDoc(productRef, productData, { merge: true })
       .then(() => {
@@ -435,7 +449,7 @@ export default function ProductsPage() {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                      {SHAPE_CONFIG[watchShape]?.fields.map((f) => (
+                      {(SHAPE_CONFIG[watchShape] || SHAPE_CONFIG['Rectangular']).fields.map((f) => (
                         <FormField 
                           key={f.name} 
                           control={form.control} 
@@ -458,7 +472,7 @@ export default function ProductsPage() {
                       ))}
                     </div>
                     
-                    <ChocolateMeshViewer shape={watchShape} dimensions={watchDimensions} />
+                    <ChocolateMeshViewer shape={watchShape} dimensions={watchDimensions as any} />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
