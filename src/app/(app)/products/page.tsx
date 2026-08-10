@@ -23,9 +23,9 @@ import {
   CopyCheck,
   Search,
   CheckCircle2,
-  ShieldAlert,
   Images,
-  Palette
+  Palette,
+  Droplets
 } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
@@ -138,6 +138,7 @@ const productFormSchema = z.object({
   weight: z.string().optional(),
   productShape: z.enum(['Square', 'Rectangular', 'Spherical', 'Half Spherical', 'Circular', 'Cylindrical', 'Oval', 'Heart', 'Triangular', 'Conical', 'Irregular', 'Other']).default('Rectangular'),
   productSkin: z.enum(['Dark', 'Milk', 'White', 'Rose', 'Gold']).default('Dark'),
+  productTexture: z.enum(['Smooth', 'Velvet', 'Hammered', 'Ridged', 'Dusted']).default('Smooth'),
   productDimensions: z.object({
     unit: z.enum(['mm', 'cm', 'inch']).default('mm'),
     length: z.coerce.number().optional(),
@@ -217,6 +218,7 @@ export default function ProductsPage() {
       weight: '',
       productShape: 'Rectangular',
       productSkin: 'Dark',
+      productTexture: 'Smooth',
       productDimensions: { unit: 'mm' },
       price: 0,
       wholesalePrice: 0,
@@ -231,6 +233,7 @@ export default function ProductsPage() {
 
   const watchShape = useWatch({ control: form.control, name: 'productShape' });
   const watchSkin = useWatch({ control: form.control, name: 'productSkin' });
+  const watchTexture = useWatch({ control: form.control, name: 'productTexture' });
   const watchDimensions = useWatch({ control: form.control, name: 'productDimensions' });
   const { errors, isValid } = form.formState;
 
@@ -243,6 +246,7 @@ export default function ProductsPage() {
         weight: editingProduct.weight || '',
         productShape: editingProduct.productShape || 'Rectangular',
         productSkin: editingProduct.productSkin || 'Dark',
+        productTexture: editingProduct.productTexture || 'Smooth',
         productDimensions: editingProduct.productDimensions || { unit: 'mm' } as ProductDimensions,
         price: editingProduct.price,
         wholesalePrice: editingProduct.wholesalePrice,
@@ -261,6 +265,7 @@ export default function ProductsPage() {
         weight: '',
         productShape: 'Rectangular',
         productSkin: 'Dark',
+        productTexture: 'Smooth',
         productDimensions: { unit: 'mm' } as ProductDimensions,
         price: 0,
         wholesalePrice: 0,
@@ -287,6 +292,7 @@ export default function ProductsPage() {
         weight: product.weight || '',
         productShape: product.productShape || 'Rectangular',
         productSkin: product.productSkin || 'Dark',
+        productTexture: product.productTexture || 'Smooth',
         productDimensions: product.productDimensions || { unit: 'mm' } as ProductDimensions,
         price: product.price,
         wholesalePrice: product.wholesalePrice,
@@ -570,7 +576,7 @@ export default function ProductsPage() {
                             <Palette className="h-3 w-3 text-stone-400" />
                             <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                               <SelectTrigger className="h-8 w-32 rounded-lg bg-background text-[10px] font-bold">
-                                <SelectValue placeholder="Artisan Skin" />
+                                <SelectValue placeholder="Skin" />
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="Dark">Dark Chocolate</SelectItem>
@@ -578,6 +584,23 @@ export default function ProductsPage() {
                                 <SelectItem value="White">White Chocolate</SelectItem>
                                 <SelectItem value="Rose">Roseberry Pink</SelectItem>
                                 <SelectItem value="Gold">Gold Dusted</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )} />
+                        <FormField control={form.control} name="productTexture" render={({ field }) => (
+                          <div className="flex items-center gap-2">
+                            <Droplets className="h-3 w-3 text-stone-400" />
+                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                              <SelectTrigger className="h-8 w-32 rounded-lg bg-background text-[10px] font-bold">
+                                <SelectValue placeholder="Texture" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Smooth">Polished</SelectItem>
+                                <SelectItem value="Velvet">Velvet Grain</SelectItem>
+                                <SelectItem value="Hammered">Hammered</SelectItem>
+                                <SelectItem value="Ridged">Ridged</SelectItem>
+                                <SelectItem value="Dusted">Dusted</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
@@ -621,7 +644,12 @@ export default function ProductsPage() {
                       ))}
                     </div>
                     
-                    <ChocolateMeshViewer shape={watchShape} dimensions={watchDimensions as any} skin={watchSkin} />
+                    <ChocolateMeshViewer 
+                      shape={watchShape} 
+                      dimensions={watchDimensions as any} 
+                      skin={watchSkin} 
+                      texture={watchTexture}
+                    />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect, useRef } from 'react';
@@ -16,6 +17,7 @@ interface ChocolateMeshViewerProps {
   shape: string;
   dimensions: ProductDimensions;
   skin?: string;
+  texture?: string;
   className?: string;
 }
 
@@ -31,6 +33,7 @@ export function ChocolateMeshViewer({
   shape,
   dimensions,
   skin = 'Dark',
+  texture = 'Smooth',
   className,
 }: ChocolateMeshViewerProps) {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -49,6 +52,63 @@ export function ChocolateMeshViewer({
     lastMouseX: 0,
     lastMouseY: 0,
   });
+
+  // Helper to generate a procedural normal map
+  const createProceduralNormalMap = (type: string) => {
+    const size = 512;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+
+    // Fill with base normal (0.5, 0.5, 1.0) -> RGB (128, 128, 255)
+    ctx.fillStyle = 'rgb(128, 128, 255)';
+    ctx.fillRect(0, 0, size, size);
+
+    if (type === 'Velvet') {
+      for (let i = 0; i < 20000; i++) {
+        const x = Math.random() * size;
+        const y = Math.random() * size;
+        const r = 128 + (Math.random() - 0.5) * 40;
+        const g = 128 + (Math.random() - 0.5) * 40;
+        ctx.fillStyle = `rgb(${r}, ${g}, 255)`;
+        ctx.fillRect(x, y, 1, 1);
+      }
+    } else if (type === 'Hammered') {
+      for (let i = 0; i < 150; i++) {
+        const x = Math.random() * size;
+        const y = Math.random() * size;
+        const radius = 10 + Math.random() * 30;
+        const grad = ctx.createRadialGradient(x, y, 0, x, y, radius);
+        grad.addColorStop(0, 'rgb(100, 100, 255)');
+        grad.addColorStop(1, 'rgb(128, 128, 255)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    } else if (type === 'Ridged') {
+      for (let i = 0; i < size; i += 20) {
+        ctx.fillStyle = 'rgb(140, 140, 255)';
+        ctx.fillRect(i, 0, 10, size);
+      }
+    } else if (type === 'Dusted') {
+      for (let i = 0; i < 800; i++) {
+        const x = Math.random() * size;
+        const y = Math.random() * size;
+        const r = 50 + Math.random() * 50;
+        ctx.fillStyle = `rgba(${r}, ${r}, 255, 0.3)`;
+        ctx.beginPath();
+        ctx.arc(x, y, 2 + Math.random() * 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    const tex = new THREE_LIB.CanvasTexture(canvas);
+    tex.wrapS = tex.wrapT = THREE_LIB.RepeatWrapping;
+    return tex;
+  };
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -75,11 +135,11 @@ export function ChocolateMeshViewer({
     const ambientLight = new THREE_LIB.AmbientLight(0xffffff, 0.75);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE_LIB.DirectionalLight(0xffffff, 1.0);
+    const directionalLight = new THREE_LIB.DirectionalLight(0xffffff, 1.2);
     directionalLight.position.set(5, 8, 10);
     scene.add(directionalLight);
 
-    const fillLight = new THREE_LIB.DirectionalLight(0xffffff, 0.45);
+    const fillLight = new THREE_LIB.DirectionalLight(0xffffff, 0.6);
     fillLight.position.set(-6, 2, 5);
     scene.add(fillLight);
 
@@ -194,15 +254,19 @@ export function ChocolateMeshViewer({
     geometry.center();
 
     const skinProps = SKIN_MAP[skin] || SKIN_MAP.Dark;
+    const normalMap = createProceduralNormalMap(texture);
+    
     const material = new THREE_LIB.MeshStandardMaterial({ 
       color: skinProps.color, 
-      roughness: skinProps.roughness, 
-      metalness: skinProps.metalness 
+      roughness: texture === 'Smooth' ? skinProps.roughness : Math.min(skinProps.roughness + 0.2, 0.9), 
+      metalness: skinProps.metalness,
+      normalMap: normalMap,
+      normalScale: new THREE_LIB.Vector2(1.5, 1.5)
     });
     
     const mesh = new THREE_LIB.Mesh(geometry, material);
     const wireframeGeometry = new THREE_LIB.WireframeGeometry(geometry);
-    const wireframeMaterial = new THREE_LIB.LineBasicMaterial({ color: 0xd4af37, transparent: true, opacity: 0.48 });
+    const wireframeMaterial = new THREE_LIB.LineBasicMaterial({ color: 0xd4af37, transparent: true, opacity: 0.4 });
     const net = new THREE_LIB.LineSegments(wireframeGeometry, wireframeMaterial);
 
     group.add(mesh);
@@ -221,7 +285,7 @@ export function ChocolateMeshViewer({
       cameraRef.current.lookAt(0, 0, 0);
       cameraRef.current.updateProjectionMatrix();
     }
-  }, [shape, dimensions, skin]);
+  }, [shape, dimensions, skin, texture]);
 
   useEffect(() => {
     const el = mountRef.current;
