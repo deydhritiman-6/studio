@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
@@ -320,7 +321,7 @@ function NewCostingForm() {
         </div>
         <div className="flex gap-3">
           <Button variant="outline" className="h-12 rounded-xl px-8" onClick={() => router.back()}>Discard</Button>
-          <Button disabled={isSaving || !calculationResults} onClick={form.handleSubmit(onSubmit)} className="h-12 rounded-xl px-12 shadow-xl shadow-primary/20">
+          <Button disabled={isSaving || !calculationResults} id="btn-commit" onClick={form.handleSubmit(onSubmit)} className="h-12 rounded-xl px-12 shadow-xl shadow-primary/20">
              {isSaving ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2 h-4 w-4" />}
              Commit Costing
           </Button>
@@ -391,7 +392,7 @@ function NewCostingForm() {
                           </FormItem>
                         )} />
                         <FormField control={form.control} name="wastagePercent" render={({ field }) => (
-                          <FormItem>
+                          <FormItem id="field-wastagePercent">
                             <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground">Wastage Buffer (%)</FormLabel>
                             <FormControl><Input type="number" className="h-12 rounded-xl" {...field} /></FormControl>
                           </FormItem>
@@ -407,7 +408,7 @@ function NewCostingForm() {
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <FormField control={form.control} name="labourType" render={({ field }) => (
-                          <FormItem>
+                          <FormItem id="field-labourType">
                             <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground">Rate Basis</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                                <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
@@ -418,20 +419,20 @@ function NewCostingForm() {
                           </FormItem>
                         )} />
                         <FormField control={form.control} name="labourRate" render={({ field }) => (
-                          <FormItem>
+                          <FormItem id="field-labourRate">
                             <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground">Artisan Hourly Rate (₹)</FormLabel>
                             <FormControl><Input type="number" className="h-12 rounded-xl" {...field} /></FormControl>
                           </FormItem>
                         )} />
                         <div className="grid grid-cols-2 gap-4">
                             <FormField control={form.control} name="numWorkers" render={({ field }) => (
-                              <FormItem>
+                              <FormItem id="field-numWorkers">
                                 <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground">Staff</FormLabel>
                                 <FormControl><Input type="number" className="h-12 rounded-xl" {...field} /></FormControl>
                               </FormItem>
                             )} />
                             <FormField control={form.control} name="labourHours" render={({ field }) => (
-                              <FormItem>
+                              <FormItem id="field-labourHours">
                                 <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground">Hours</FormLabel>
                                 <FormControl><Input type="number" step="0.5" className="h-12 rounded-xl" {...field} /></FormControl>
                               </FormItem>
@@ -449,12 +450,42 @@ function NewCostingForm() {
                       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                          {['primary', 'secondary', 'label', 'box', 'other'].map(key => (
                            <FormField key={key} control={form.control} name={`packaging.${key}` as any} render={({ field }) => (
-                            <FormItem>
+                            <FormItem id={`field-packaging-${key}`}>
                               <FormLabel className="uppercase text-[8px] font-bold text-stone-400">{key} Cost</FormLabel>
                               <FormControl><Input type="number" className="h-10 rounded-xl" {...field} /></FormControl>
                             </FormItem>
                            )} />
                          ))}
+                      </div>
+                   </div>
+                   
+                   <Separator className="bg-stone-100" />
+                   
+                   <div className="space-y-6" id="field-overhead">
+                      <h3 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                        <Layers className="h-4 w-4" /> Manufacturing Overhead
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <FormField control={form.control} name="overheadType" render={({ field }) => (
+                          <FormItem id="field-overheadType">
+                            <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground">Overhead Strategy</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                               <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
+                               <SelectContent>
+                                  <SelectItem value="Percentage">Percentage of Direct Costs</SelectItem>
+                                  <SelectItem value="Fixed">Fixed Amount per Batch</SelectItem>
+                               </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="overheadRate" render={({ field }) => (
+                          <FormItem id="field-overheadRate">
+                            <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground">
+                                {watchAll.overheadType === 'Fixed' ? 'Fixed Overhead (₹)' : 'Overhead Rate (%)'}
+                            </FormLabel>
+                            <FormControl><Input type="number" className="h-12 rounded-xl" {...field} /></FormControl>
+                          </FormItem>
+                        )} />
                       </div>
                    </div>
                 </form>
@@ -524,7 +555,7 @@ function NewCostingForm() {
         </div>
 
         <div className="lg:col-span-4 space-y-8">
-           <Card className="rounded-[2.5rem] border-none shadow-2xl bg-stone-900 text-white overflow-hidden sticky top-28">
+           <Card id="live-cost-summary" className="rounded-[2.5rem] border-none shadow-2xl bg-stone-900 text-white overflow-hidden sticky top-28">
               <CardHeader className="p-10 bg-stone-800/50">
                  <CardTitle className="text-2xl font-headline">Live Cost Breakdown</CardTitle>
                  <CardDescription className="text-stone-400">Real-time simulation results.</CardDescription>
@@ -569,7 +600,7 @@ function NewCostingForm() {
 
                         <Separator className="bg-stone-800" />
 
-                        <div className="bg-stone-800/50 p-6 rounded-2xl border border-stone-700/50 space-y-4">
+                        <div id="field-pricing" className="bg-stone-800/50 p-6 rounded-2xl border border-stone-700/50 space-y-4">
                             <p className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2"><TrendingUp className="h-3 w-3" /> Pricing Strategy</p>
                             <div className="flex justify-between items-baseline">
                                <span className="text-xs text-stone-400 italic">Suggested Retail</span>
