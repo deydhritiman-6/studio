@@ -47,7 +47,8 @@ import {
   Images,
   PlusCircle,
   Trash2,
-  Droplets
+  Droplets,
+  Calculator
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -111,6 +112,7 @@ const navItems = [
   { href: '/billing/tracking-visibility', icon: Eye, label: 'Visibility Control' },
   { href: '/distributors', icon: Truck, label: 'Distributors' },
   { href: '/broadcast', icon: Radio, label: 'Broadcasts' },
+  { href: '/costing', icon: Calculator, label: 'Costing' },
   {
     icon: BrainCircuit,
     label: 'AI System',

@@ -268,3 +268,61 @@ export type PerformanceDataPoint = {
   previousCustomers: number;
   currentCustomers: number;
 };
+
+export type CostingSnapshot = {
+  ingredientPrices: Record<string, { purchasePrice: number; purchaseQuantity: number; purchaseUnit: string }>;
+  packagingCosts: {
+    primary?: number;
+    secondary?: number;
+    label?: number;
+    box?: number;
+    other?: number;
+  };
+  labourRate: number;
+  labourType: 'Hour' | 'Batch' | 'Unit';
+  overheadRate: number;
+  overheadType: 'Fixed' | 'Percentage';
+  wastagePercent: number;
+};
+
+export type Costing = {
+  id: string;
+  productId: string;
+  productName: string;
+  productCode?: string;
+  recipeId?: string;
+  recipeName?: string;
+  recipeVersion?: string;
+  version: string;
+  date: string;
+  status: 'Draft' | 'Calculated' | 'Reviewed' | 'Approved' | 'Archived';
+  
+  snapshot: CostingSnapshot;
+  
+  labourHours: number;
+  numWorkers: number;
+  productionYield: number;
+  
+  results: {
+    rawMaterialCost: number;
+    wastageAmount: number;
+    adjustedRawMaterialCost: number;
+    totalPackagingCost: number;
+    totalLabourCost: number;
+    totalOverheadCost: number;
+    basicManufacturingCost: number;
+    costPerUnit: number;
+    costPer100g: number;
+  };
+  
+  pricing?: {
+    desiredProfitPercent: number;
+    distributorMarginPercent: number;
+    suggestedRetailPrice: number;
+  };
+  
+  notes?: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+};
