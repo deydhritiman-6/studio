@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect, useRef } from 'react';
@@ -279,7 +278,7 @@ export function ChocolateMeshViewer({
 
   return (
     <div className={cn('mt-4 p-4 bg-muted/20 rounded-[2rem] border-2 border-dashed border-border flex flex-col items-center justify-center w-full max-w-md mx-auto overflow-hidden relative group shadow-inner', className)}>
-      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 bg-white/50 px-3 py-1 rounded-full shadow-sm z-10">
+      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary bg-background/90 backdrop-blur-md px-4 py-1.5 rounded-full shadow-md z-10 border border-border/50">
         <Box className="h-3 w-3" /> {shape} Mesh Preview
       </div>
       <div ref={mountRef} className="h-[250px] w-full flex items-center justify-center cursor-grab active:cursor-grabbing touch-none overflow-hidden relative [&>canvas]:block [&>canvas]:!w-full [&>canvas]:!h-full" />
@@ -288,7 +287,11 @@ export function ChocolateMeshViewer({
         <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-lg border-none" onClick={(e) => handleZoom(e, 0.2)} title="Zoom In"><Maximize2 className="h-4 w-4" /></Button>
         <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-lg border-none" onClick={(e) => handleZoom(e, -0.2)} title="Zoom Out"><Minimize2 className="h-4 w-4" /></Button>
       </div>
-      <div className="text-center"><p className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">Drag to Rotate • Scroll to Zoom</p></div>
+      <div className="text-center">
+        <p className="text-[9px] text-muted-foreground uppercase tracking-widest font-black opacity-60">
+          Drag to Rotate • Scroll to Zoom
+        </p>
+      </div>
     </div>
   );
 }
