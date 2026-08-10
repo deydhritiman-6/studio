@@ -95,6 +95,18 @@ export type ProductDimensions = {
   additionalDescription?: string;
 };
 
+export type ProductTexture = {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  color: number;
+  roughness: number;
+  metalness: number;
+  normalType?: 'Smooth' | 'Velvet' | 'Hammered' | 'Ridged' | 'Dusted' | 'Cracked' | 'Bubbles' | 'Rippled';
+  glossLevel?: 'Glossy' | 'Satin' | 'Matte' | 'Semi-Matte';
+};
+
 export type Product = {
   id: string;
   name: string;
@@ -103,8 +115,11 @@ export type Product = {
   dimensions?: string; // Legacy string format
   productDimensions?: ProductDimensions; // New structured format
   productShape?: 'Square' | 'Rectangular' | 'Spherical' | 'Half Spherical' | 'Circular' | 'Cylindrical' | 'Oval' | 'Heart' | 'Triangular' | 'Conical' | 'Irregular' | 'Other';
-  productSkin?: 'Dark' | 'Milk' | 'White' | 'Rose' | 'Gold';
-  productTexture?: 'Smooth' | 'Velvet' | 'Hammered' | 'Ridged' | 'Dusted';
+  productSkin?: 'Dark' | 'Milk' | 'White' | 'Rose' | 'Gold'; // Legacy skin field
+  productTexture?: string; // ID of the texture from the library
+  textureId?: string;
+  textureName?: string;
+  textureCategory?: string;
   price: number;
   wholesalePrice: number;
   availabilityStatus: 'In Stock' | 'Out of Stock';

@@ -1,42 +1,37 @@
 
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import * as THREE_LIB from 'three';
 import {
   Box,
   RotateCcw,
   Maximize2,
   Minimize2,
+  Layers,
+  Component,
+  Cuboid
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ProductDimensions } from '@/lib/types';
+import { ProductDimensions, ProductTexture } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { CHOCOLATE_TEXTURES, DEFAULT_TEXTURE } from '@/lib/textures';
 
 interface ChocolateMeshViewerProps {
   shape: string;
   dimensions: ProductDimensions;
-  skin?: string;
-  texture?: string;
+  textureId?: string;
   className?: string;
 }
-
-const SKIN_MAP: Record<string, { color: number, roughness: number, metalness: number }> = {
-  Dark: { color: 0x3d1e16, roughness: 0.38, metalness: 0.08 },
-  Milk: { color: 0x7b3f00, roughness: 0.45, metalness: 0.05 },
-  White: { color: 0xf3e5ab, roughness: 0.3, metalness: 0.02 },
-  Rose: { color: 0xe5a9a9, roughness: 0.4, metalness: 0.05 },
-  Gold: { color: 0xd4af37, roughness: 0.2, metalness: 0.8 },
-};
 
 export function ChocolateMeshViewer({
   shape,
   dimensions,
-  skin = 'Dark',
-  texture = 'Smooth',
+  textureId,
   className,
 }: ChocolateMeshViewerProps) {
   const mountRef = useRef<HTMLDivElement>(null);
+  const [viewMode, setViewMode] = useState<'material' | 'mesh' | 'technical'>('material');
 
   const sceneRef = useRef<THREE_LIB.Scene | null>(null);
   const rendererRef = useRef<THREE_LIB.WebGLRenderer | null>(null);
@@ -53,8 +48,12 @@ export function ChocolateMeshViewer({
     lastMouseY: 0,
   });
 
+  const activeTexture = useMemo(() => {
+    return CHOCOLATE_TEXTURES.find(t => t.id === textureId) || DEFAULT_TEXTURE;
+  }, [textureId]);
+
   // Helper to generate a procedural normal map
-  const createProceduralNormalMap = (type: string) => {
+  const createProceduralNormalMap = (type?: string) => {
     const size = 512;
     const canvas = document.createElement('canvas');
     canvas.width = size;
@@ -62,7 +61,6 @@ export function ChocolateMeshViewer({
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
 
-    // Fill with base normal (0.5, 0.5, 1.0) -> RGB (128, 128, 255)
     ctx.fillStyle = 'rgb(128, 128, 255)';
     ctx.fillRect(0, 0, size, size);
 
@@ -94,14 +92,40 @@ export function ChocolateMeshViewer({
         ctx.fillRect(i, 0, 10, size);
       }
     } else if (type === 'Dusted') {
-      for (let i = 0; i < 800; i++) {
+      for (let i = 0; i < 5000; i++) {
         const x = Math.random() * size;
         const y = Math.random() * size;
-        const r = 50 + Math.random() * 50;
-        ctx.fillStyle = `rgba(${r}, ${r}, 255, 0.3)`;
+        const noise = Math.random() * 60;
+        ctx.fillStyle = `rgb(${128 + noise}, ${128 + noise}, 255)`;
+        ctx.fillRect(x, y, 2, 2);
+      }
+    } else if (type === 'Bubbles') {
+      for (let i = 0; i < 80; i++) {
+        const x = Math.random() * size;
+        const y = Math.random() * size;
+        const radius = 2 + Math.random() * 8;
+        ctx.fillStyle = 'rgb(150, 150, 255)';
+        ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.fill();
+      }
+    } else if (type === 'Cracked') {
+      ctx.strokeStyle = 'rgb(100, 100, 255)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 20; i++) {
         ctx.beginPath();
-        ctx.arc(x, y, 2 + Math.random() * 4, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.moveTo(Math.random() * size, Math.random() * size);
+        for (let j = 0; j < 5; j++) {
+          ctx.lineTo(Math.random() * size, Math.random() * size);
+        }
+        ctx.stroke();
+      }
+    } else if (type === 'Rippled') {
+      for (let i = 0; i < size; i += 40) {
+        const grad = ctx.createLinearGradient(0, i, 0, i + 40);
+        grad.addColorStop(0, 'rgb(120, 120, 255)');
+        grad.addColorStop(0.5, 'rgb(160, 160, 255)');
+        grad.addColorStop(1, 'rgb(120, 120, 255)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, i, size, 40);
       }
     }
 
@@ -132,14 +156,14 @@ export function ChocolateMeshViewer({
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    const ambientLight = new THREE_LIB.AmbientLight(0xffffff, 0.75);
+    const ambientLight = new THREE_LIB.AmbientLight(0xffffff, 0.8);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE_LIB.DirectionalLight(0xffffff, 1.2);
+    const directionalLight = new THREE_LIB.DirectionalLight(0xffffff, 1.5);
     directionalLight.position.set(5, 8, 10);
     scene.add(directionalLight);
 
-    const fillLight = new THREE_LIB.DirectionalLight(0xffffff, 0.6);
+    const fillLight = new THREE_LIB.DirectionalLight(0xffffff, 0.5);
     fillLight.position.set(-6, 2, 5);
     scene.add(fillLight);
 
@@ -253,24 +277,32 @@ export function ChocolateMeshViewer({
 
     geometry.center();
 
-    const skinProps = SKIN_MAP[skin] || SKIN_MAP.Dark;
-    const normalMap = createProceduralNormalMap(texture);
-    
+    const normalMap = createProceduralNormalMap(activeTexture.normalType);
     const material = new THREE_LIB.MeshStandardMaterial({ 
-      color: skinProps.color, 
-      roughness: texture === 'Smooth' ? skinProps.roughness : Math.min(skinProps.roughness + 0.2, 0.9), 
-      metalness: skinProps.metalness,
+      color: activeTexture.color, 
+      roughness: activeTexture.roughness, 
+      metalness: activeTexture.metalness,
       normalMap: normalMap,
-      normalScale: new THREE_LIB.Vector2(1.5, 1.5)
+      normalScale: new THREE_LIB.Vector2(1.5, 1.5),
+      visible: viewMode !== 'mesh'
     });
     
     const mesh = new THREE_LIB.Mesh(geometry, material);
+    
+    // Wireframe for mesh/technical modes
     const wireframeGeometry = new THREE_LIB.WireframeGeometry(geometry);
-    const wireframeMaterial = new THREE_LIB.LineBasicMaterial({ color: 0xd4af37, transparent: true, opacity: 0.4 });
+    const wireframeMaterial = new THREE_LIB.LineBasicMaterial({ 
+      color: viewMode === 'technical' ? 0xffffff : 0xd4af37, 
+      transparent: true, 
+      opacity: viewMode === 'material' ? 0.3 : 0.8,
+      visible: viewMode !== 'material' || true
+    });
     const net = new THREE_LIB.LineSegments(wireframeGeometry, wireframeMaterial);
 
     group.add(mesh);
-    group.add(net);
+    if (viewMode !== 'material') group.add(net);
+    else group.add(net); // Keep subtle wireframe even in material mode for that "Artisan Mesh" look
+    
     scene.add(group);
     meshRef.current = group;
 
@@ -280,12 +312,11 @@ export function ChocolateMeshViewer({
       const radius = Math.max(boundingSphere.radius, 0.5);
       const fov = THREE_LIB.MathUtils.degToRad(cameraRef.current.fov);
       const distance = radius / Math.sin(fov / 2);
-      const safeDistance = Math.max(distance * 1.35, 4.5);
-      cameraRef.current.position.set(0, 0, safeDistance);
+      cameraRef.current.position.set(0, 0, Math.max(distance * 1.35, 4.5));
       cameraRef.current.lookAt(0, 0, 0);
       cameraRef.current.updateProjectionMatrix();
     }
-  }, [shape, dimensions, skin, texture]);
+  }, [shape, dimensions, activeTexture, viewMode]);
 
   useEffect(() => {
     const el = mountRef.current;
@@ -326,34 +357,56 @@ export function ChocolateMeshViewer({
     };
   }, []);
 
-  const resetView = (e: React.MouseEvent) => {
-    e.preventDefault(); 
-    e.stopPropagation();
-    controlsRef.current.rotationX = -0.5;
-    controlsRef.current.rotationY = 0.8;
-    controlsRef.current.zoom = 1;
-  };
-
-  const handleZoom = (e: React.MouseEvent, delta: number) => {
-    e.preventDefault(); 
-    e.stopPropagation();
-    controlsRef.current.zoom = Math.max(0.55, Math.min(2.5, controlsRef.current.zoom + delta));
-  };
-
   return (
-    <div className={cn('mt-4 p-4 bg-muted/20 rounded-[2rem] border-2 border-dashed border-border flex flex-col items-center justify-center w-full max-w-md mx-auto overflow-hidden relative group shadow-inner', className)}>
+    <div className={cn('mt-4 p-4 bg-muted/20 rounded-[2.5rem] border-2 border-dashed border-border flex flex-col items-center justify-center w-full max-w-md mx-auto overflow-hidden relative group shadow-inner', className)}>
+      <div className="absolute top-4 left-4 z-20 flex gap-2">
+         <Button 
+            type="button" 
+            variant={viewMode === 'material' ? 'default' : 'secondary'} 
+            size="icon" 
+            className="h-8 w-8 rounded-full shadow-md"
+            onClick={() => setViewMode('material')}
+            title="Realistic Material"
+         >
+            <Cuboid className="h-4 w-4" />
+         </Button>
+         <Button 
+            type="button" 
+            variant={viewMode === 'mesh' ? 'default' : 'secondary'} 
+            size="icon" 
+            className="h-8 w-8 rounded-full shadow-md"
+            onClick={() => setViewMode('mesh')}
+            title="Artisan Mesh"
+         >
+            <Layers className="h-4 w-4" />
+         </Button>
+         <Button 
+            type="button" 
+            variant={viewMode === 'technical' ? 'default' : 'secondary'} 
+            size="icon" 
+            className="h-8 w-8 rounded-full shadow-md"
+            onClick={() => setViewMode('technical')}
+            title="Technical Specs"
+         >
+            <Component className="h-4 w-4" />
+         </Button>
+      </div>
+
       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary bg-background/90 backdrop-blur-md px-4 py-1.5 rounded-full shadow-md z-10 border border-border/50">
-        <Box className="h-3 w-3" /> {shape} Mesh Preview
+        <Box className="h-3 w-3" /> {shape} {viewMode === 'material' ? 'Material' : 'Mesh'} Preview
       </div>
-      <div ref={mountRef} className="h-[250px] w-full flex items-center justify-center cursor-grab active:cursor-grabbing touch-none overflow-hidden relative [&>canvas]:block [&>canvas]:!w-full [&>canvas]:!h-full" />
+
+      <div ref={mountRef} className="h-[280px] w-full flex items-center justify-center cursor-grab active:cursor-grabbing touch-none overflow-hidden relative [&>canvas]:block [&>canvas]:!w-full [&>canvas]:!h-full" />
+      
       <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
-        <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-lg border-none" onClick={resetView} title="Reset View"><RotateCcw className="h-4 w-4" /></Button>
-        <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-lg border-none" onClick={(e) => handleZoom(e, 0.2)} title="Zoom In"><Maximize2 className="h-4 w-4" /></Button>
-        <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-lg border-none" onClick={(e) => handleZoom(e, -0.2)} title="Zoom Out"><Minimize2 className="h-4 w-4" /></Button>
+        <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-lg border-none" onClick={() => { controlsRef.current.rotationX = -0.5; controlsRef.current.rotationY = 0.8; controlsRef.current.zoom = 1; }} title="Reset View"><RotateCcw className="h-4 w-4" /></Button>
+        <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-lg border-none" onClick={() => controlsRef.current.zoom = Math.min(2.5, controlsRef.current.zoom + 0.2)} title="Zoom In"><Maximize2 className="h-4 w-4" /></Button>
+        <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-lg border-none" onClick={() => controlsRef.current.zoom = Math.max(0.55, controlsRef.current.zoom - 0.2)} title="Zoom Out"><Minimize2 className="h-4 w-4" /></Button>
       </div>
+      
       <div className="text-center">
         <p className="text-[9px] text-muted-foreground uppercase tracking-widest font-black opacity-60">
-          Drag to Rotate • Scroll to Zoom
+          {activeTexture.name} • {activeTexture.glossLevel} Finish
         </p>
       </div>
     </div>

@@ -25,7 +25,10 @@ import {
   CheckCircle2,
   Images,
   Palette,
-  Droplets
+  Droplets,
+  Sparkles,
+  Layers,
+  ArrowRight
 } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
@@ -43,9 +46,11 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ChocolateMeshViewer } from '@/components/chocolate-mesh-viewer';
+import { TextureSelector } from '@/components/texture-selector';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CHOCOLATE_TEXTURES, DEFAULT_TEXTURE } from '@/lib/textures';
 import Link from 'next/link';
 
 const SHAPE_CONFIG: Record<string, { fields: { name: string; label: string; placeholder?: string; type: 'number' | 'text' }[] }> = {
@@ -137,8 +142,7 @@ const productFormSchema = z.object({
   flavor: z.string().min(1, 'Flavor profile is required.'),
   weight: z.string().optional(),
   productShape: z.enum(['Square', 'Rectangular', 'Spherical', 'Half Spherical', 'Circular', 'Cylindrical', 'Oval', 'Heart', 'Triangular', 'Conical', 'Irregular', 'Other']).default('Rectangular'),
-  productSkin: z.enum(['Dark', 'Milk', 'White', 'Rose', 'Gold']).default('Dark'),
-  productTexture: z.enum(['Smooth', 'Velvet', 'Hammered', 'Ridged', 'Dusted']).default('Smooth'),
+  textureId: z.string().default(DEFAULT_TEXTURE.id),
   productDimensions: z.object({
     unit: z.enum(['mm', 'cm', 'inch']).default('mm'),
     length: z.coerce.number().optional(),
@@ -193,7 +197,6 @@ export default function ProductsPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isGalleryPickerOpen, setIsGalleryPickerOpen] = useState<{ open: boolean, field: keyof ProductFormValues } | null>(null);
-  
   const [productToArchive, setProductToArchive] = useState<Product | null>(null);
   
   const { toast } = useToast();
@@ -217,8 +220,7 @@ export default function ProductsPage() {
       flavor: '',
       weight: '',
       productShape: 'Rectangular',
-      productSkin: 'Dark',
-      productTexture: 'Smooth',
+      textureId: DEFAULT_TEXTURE.id,
       productDimensions: { unit: 'mm' },
       price: 0,
       wholesalePrice: 0,
@@ -232,10 +234,11 @@ export default function ProductsPage() {
   });
 
   const watchShape = useWatch({ control: form.control, name: 'productShape' });
-  const watchSkin = useWatch({ control: form.control, name: 'productSkin' });
-  const watchTexture = useWatch({ control: form.control, name: 'productTexture' });
+  const watchTextureId = useWatch({ control: form.control, name: 'textureId' });
   const watchDimensions = useWatch({ control: form.control, name: 'productDimensions' });
   const { errors, isValid } = form.formState;
+
+  const currentTexture = useMemo(() => CHOCOLATE_TEXTURES.find(t => t.id === watchTextureId) || DEFAULT_TEXTURE, [watchTextureId]);
 
   useEffect(() => {
     if (editingProduct) {
@@ -245,8 +248,7 @@ export default function ProductsPage() {
         flavor: editingProduct.flavor,
         weight: editingProduct.weight || '',
         productShape: editingProduct.productShape || 'Rectangular',
-        productSkin: editingProduct.productSkin || 'Dark',
-        productTexture: editingProduct.productTexture || 'Smooth',
+        textureId: editingProduct.textureId || DEFAULT_TEXTURE.id,
         productDimensions: editingProduct.productDimensions || { unit: 'mm' } as ProductDimensions,
         price: editingProduct.price,
         wholesalePrice: editingProduct.wholesalePrice,
@@ -264,8 +266,7 @@ export default function ProductsPage() {
         flavor: '',
         weight: '',
         productShape: 'Rectangular',
-        productSkin: 'Dark',
-        productTexture: 'Smooth',
+        textureId: DEFAULT_TEXTURE.id,
         productDimensions: { unit: 'mm' } as ProductDimensions,
         price: 0,
         wholesalePrice: 0,
@@ -291,8 +292,7 @@ export default function ProductsPage() {
         flavor: product.flavor,
         weight: product.weight || '',
         productShape: product.productShape || 'Rectangular',
-        productSkin: product.productSkin || 'Dark',
-        productTexture: product.productTexture || 'Smooth',
+        textureId: product.textureId || DEFAULT_TEXTURE.id,
         productDimensions: product.productDimensions || { unit: 'mm' } as ProductDimensions,
         price: product.price,
         wholesalePrice: product.wholesalePrice,
@@ -344,11 +344,14 @@ export default function ProductsPage() {
     const productRef = doc(firestore, 'products', productId);
     
     const imageUrls = [values.mainImage, values.subPhoto1, values.subPhoto2, values.subPhoto3].filter(Boolean) as string[];
+    const texture = CHOCOLATE_TEXTURES.find(t => t.id === values.textureId) || DEFAULT_TEXTURE;
 
     const productData = sanitizeData({ 
       ...values, 
       id: productId,
       imageUrls,
+      textureName: texture.name,
+      textureCategory: texture.category,
       productionStatus: 'Product Ready'
     });
 
@@ -373,26 +376,9 @@ export default function ProductsPage() {
   const handleMoveToBin = (id: string) => {
     if (!firestore) return;
     const productRef = doc(firestore, 'products', id);
-    const updateData = { isArchived: true, deletedAt: new Date().toISOString() };
-
-    updateDoc(productRef, updateData)
-      .then(() => {
-        toast({ title: 'Moved to Bin', description: 'Creation has been moved to the Product Bin.' });
-        setProductToArchive(null);
-      })
-      .catch(async (error) => {
-        const permissionError = new FirestorePermissionError({
-          path: productRef.path,
-          operation: 'update',
-          requestResourceData: updateData,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-      });
-  };
-
-  const onInvalid = (errs: any) => {
-    console.error('Registration Validation Errors:', errs);
-    toast({ variant: 'destructive', title: 'Specification Error', description: 'Review required fields and ensure the Main Photo is provided.' });
+    updateDoc(productRef, { isArchived: true, deletedAt: new Date().toISOString() })
+      .then(() => { toast({ title: 'Moved to Bin' }); setProductToArchive(null); })
+      .catch((e) => console.error(e));
   };
 
   const PhotoSlot = ({ fieldName, label, required = false }: { fieldName: keyof ProductFormValues, label: string, required?: boolean }) => {
@@ -435,13 +421,7 @@ export default function ProductsPage() {
                <span className="text-[8px] font-black uppercase tracking-widest text-stone-300">Select Acquisition Mode</span>
             </div>
           )}
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={(e) => handleFileSelect(e, fieldName)} 
-            className="hidden" 
-            accept="image/jpeg,image/png,image/webp" 
-          />
+          <input type="file" ref={fileInputRef} onChange={(e) => handleFileSelect(e, fieldName)} className="hidden" accept="image/jpeg,image/png,image/webp" />
         </div>
       </div>
     );
@@ -451,9 +431,6 @@ export default function ProductsPage() {
     <TooltipProvider>
       <Dialog open={!!viewingProduct} onOpenChange={(open) => !open && setViewingProduct(null)}>
         <DialogContent className="sm:max-w-4xl p-0 border-0 bg-transparent shadow-none">
-          <DialogHeader className="sr-only">
-            <DialogTitle>{viewingProduct?.productName || 'Gallery'}</DialogTitle>
-          </DialogHeader>
           {viewingProduct && (
             <Carousel opts={{ startIndex: viewingProduct.startIndex, loop: true }} className="w-full">
               <CarouselContent>
@@ -466,25 +443,25 @@ export default function ProductsPage() {
                 ))}
               </CarouselContent>
               <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 text-white bg-black/60 hover:bg-black/80 h-10 w-10 border-none rounded-full" />
-              <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-black/60 hover:bg-black/80 h-10 w-10 border-none rounded-full" />
+              <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-black/60 h-10 w-10 border-none rounded-full" />
             </Carousel>
           )}
         </DialogContent>
       </Dialog>
       
       <Dialog open={isAddDialogOpen || !!editingProduct} onOpenChange={(open) => { if (!open) { setEditingProduct(null); setIsAddDialogOpen(false); } }}>
-        <DialogContent className="sm:max-w-4xl rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden flex flex-col h-[85vh] bg-background">
-          <div className="px-10 py-4 border-b shrink-0 bg-background">
+        <DialogContent className="sm:max-w-4xl rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden flex flex-col h-[90vh] bg-background">
+          <div className="px-10 py-6 border-b shrink-0 bg-background z-20">
             <DialogHeader className="space-y-1 text-left">
-              <DialogTitle className="text-2xl font-headline text-foreground">{editingProduct ? 'Refine Creation' : 'Register New Creation'}</DialogTitle>
-              <DialogDescription className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground/60">Artisanal Specification Entry</DialogDescription>
+              <DialogTitle className="text-3xl font-headline text-foreground">{editingProduct ? 'Refine Creation' : 'Register New Creation'}</DialogTitle>
+              <DialogDescription className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground/60">Artisanal Visual & Technical Specification</DialogDescription>
             </DialogHeader>
           </div>
           
           <Form {...form}>
-            <form onSubmit={form.handleSubmit((v) => saveProduct(v, editingProduct?.id), onInvalid)} className="flex flex-col flex-1 overflow-hidden">
-              <div className="flex-1 overflow-y-auto px-10 custom-scrollbar">
-                <div className="space-y-10 py-8">
+            <form onSubmit={form.handleSubmit((v) => saveProduct(v, editingProduct?.id))} className="flex flex-col flex-1 overflow-hidden">
+              <ScrollArea className="flex-1 px-10 custom-scrollbar">
+                <div className="space-y-12 py-10">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <FormField control={form.control} name="name" render={({ field }) => (
                       <FormItem>
@@ -495,37 +472,13 @@ export default function ProductsPage() {
                              <TabsTrigger value="new" className="rounded-lg text-[9px] uppercase font-bold">Create New</TabsTrigger>
                            </TabsList>
                            <TabsContent value="existing" className="mt-0">
-                             <Select 
-                                onValueChange={(val) => {
-                                  field.onChange(val);
-                                  const galleryEntry = galleries?.find(g => g.productName === val);
-                                  if (galleryEntry) {
-                                    form.setValue('mainImage', galleryEntry.mainImage, { shouldValidate: true });
-                                    form.setValue('subPhoto1', galleryEntry.subImages?.[0] || '', { shouldValidate: true });
-                                    form.setValue('subPhoto2', galleryEntry.subImages?.[1] || '', { shouldValidate: true });
-                                    form.setValue('subPhoto3', galleryEntry.subImages?.[2] || '', { shouldValidate: true });
-                                    toast({ title: 'Photography Synced', description: `Visual assets for ${val} have been imported from the gallery.` });
-                                  }
-                                }} 
-                                defaultValue={field.value} 
-                                value={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger className="h-12 rounded-xl">
-                                    <SelectValue placeholder="Search identities..." />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {galleryIdentities.map(name => (
-                                    <SelectItem key={name} value={name}>{name}</SelectItem>
-                                  ))}
-                                </SelectContent>
+                             <Select onValueChange={(val) => { field.onChange(val); const gal = galleries?.find(g => g.productName === val); if (gal) { form.setValue('mainImage', gal.mainImage, { shouldValidate: true }); form.setValue('subPhoto1', gal.subImages?.[0] || '', { shouldValidate: true }); form.setValue('subPhoto2', gal.subImages?.[1] || '', { shouldValidate: true }); form.setValue('subPhoto3', gal.subImages?.[2] || '', { shouldValidate: true }); } }} defaultValue={field.value} value={field.value}>
+                                <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Search identities..." /></SelectTrigger></FormControl>
+                                <SelectContent>{galleryIdentities.map(name => (<SelectItem key={name} value={name}>{name}</SelectItem>))}</SelectContent>
                              </Select>
                            </TabsContent>
                            <TabsContent value="new" className="mt-0">
-                             <FormControl>
-                                <Input placeholder="Type new identity name..." className="h-12 rounded-xl" {...field} />
-                             </FormControl>
+                             <FormControl><Input placeholder="Type new identity name..." className="h-12 rounded-xl" {...field} /></FormControl>
                            </TabsContent>
                         </Tabs>
                         <FormMessage />
@@ -539,117 +492,73 @@ export default function ProductsPage() {
                       </FormItem>
                     )} />
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <FormField control={form.control} name="weight" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Net Weight</FormLabel>
-                        <FormControl><Input placeholder="e.g., 120g" className="h-12 rounded-xl" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
 
-                    <FormField control={form.control} name="productShape" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Artisan Shape</FormLabel>
-                        <Select onValueChange={(val: any) => field.onChange(val)} defaultValue={field.value} value={field.value}>
-                          <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
-                          <SelectContent>
-                            {Object.keys(SHAPE_CONFIG).map(shape => (
-                              <SelectItem key={shape} value={shape}>{shape}</SelectItem>
+                  <div className="bg-muted/20 p-10 rounded-[2.5rem] border-2 border-dashed space-y-10">
+                    <div className="flex flex-col lg:flex-row gap-10">
+                       <div className="lg:w-1/2 space-y-8">
+                          <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-[0.2em] mb-4">
+                            <Ruler className="h-4 w-4" /> Dimension Logic
+                          </div>
+                          
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <FormField control={form.control} name="productShape" render={({ field }) => (
+                              <FormItem className="col-span-2">
+                                <FormLabel className="uppercase text-[9px] font-bold text-muted-foreground">Artisan Shape</FormLabel>
+                                <Select onValueChange={(val: any) => field.onChange(val)} defaultValue={field.value} value={field.value}>
+                                  <FormControl><SelectTrigger className="h-10 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
+                                  <SelectContent>{Object.keys(SHAPE_CONFIG).map(shape => (<SelectItem key={shape} value={shape}>{shape}</SelectItem>))}</SelectContent>
+                                </Select>
+                              </FormItem>
+                            )} />
+                            {(SHAPE_CONFIG[watchShape] || SHAPE_CONFIG['Rectangular']).fields.map((f) => (
+                              <FormField key={f.name} control={form.control} name={`productDimensions.${f.name}` as any} render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="uppercase text-[9px] font-bold text-muted-foreground">{f.label}</FormLabel>
+                                  <FormControl><Input type={f.type} className="h-10 rounded-xl" {...field} value={field.value ?? ''} /></FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )} />
                             ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
+                          </div>
+                          <Separator className="bg-stone-200/50" />
+                          <div className="space-y-4">
+                             <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-[0.2em]">
+                                <Palette className="h-4 w-4" /> Design Specification Summary
+                             </div>
+                             <div className="grid grid-cols-2 gap-4 bg-background/50 p-6 rounded-2xl border">
+                                <div className="space-y-1">
+                                   <p className="text-[8px] font-black uppercase text-stone-400">Shape</p>
+                                   <p className="text-sm font-bold">{watchShape}</p>
+                                </div>
+                                <div className="space-y-1">
+                                   <p className="text-[8px] font-black uppercase text-stone-400">Texture</p>
+                                   <p className="text-sm font-bold text-primary">{currentTexture.name}</p>
+                                </div>
+                                <div className="space-y-1 col-span-2">
+                                   <p className="text-[8px] font-black uppercase text-stone-400">Dimensions</p>
+                                   <p className="text-xs font-medium text-stone-600">
+                                      {watchDimensions.length || watchDimensions.sideLength || watchDimensions.diameter || '0'} x {watchDimensions.width || watchDimensions.sideLength || watchDimensions.diameter || '0'} x {watchDimensions.height || '0'} {watchDimensions.unit}
+                                   </p>
+                                </div>
+                             </div>
+                          </div>
+                       </div>
+                       
+                       <div className="lg:w-1/2">
+                          <ChocolateMeshViewer shape={watchShape} dimensions={watchDimensions as any} textureId={watchTextureId} />
+                       </div>
+                    </div>
                   </div>
 
-                  <div className="bg-muted/20 p-10 rounded-[2.5rem] border-2 border-dashed space-y-8">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-[0.2em]">
-                        <Ruler className="h-4 w-4" /> Dimension Logic
-                      </div>
-                      <div className="flex gap-4">
-                        <FormField control={form.control} name="productSkin" render={({ field }) => (
-                          <div className="flex items-center gap-2">
-                            <Palette className="h-3 w-3 text-stone-400" />
-                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                              <SelectTrigger className="h-8 w-32 rounded-lg bg-background text-[10px] font-bold">
-                                <SelectValue placeholder="Skin" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Dark">Dark Chocolate</SelectItem>
-                                <SelectItem value="Milk">Milk Chocolate</SelectItem>
-                                <SelectItem value="White">White Chocolate</SelectItem>
-                                <SelectItem value="Rose">Roseberry Pink</SelectItem>
-                                <SelectItem value="Gold">Gold Dusted</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        )} />
-                        <FormField control={form.control} name="productTexture" render={({ field }) => (
-                          <div className="flex items-center gap-2">
-                            <Droplets className="h-3 w-3 text-stone-400" />
-                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                              <SelectTrigger className="h-8 w-32 rounded-lg bg-background text-[10px] font-bold">
-                                <SelectValue placeholder="Texture" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Smooth">Polished</SelectItem>
-                                <SelectItem value="Velvet">Velvet Grain</SelectItem>
-                                <SelectItem value="Hammered">Hammered</SelectItem>
-                                <SelectItem value="Ridged">Ridged</SelectItem>
-                                <SelectItem value="Dusted">Dusted</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        )} />
-                        <FormField control={form.control} name="productDimensions.unit" render={({ field }) => (
-                          <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                            <SelectTrigger className="h-8 w-24 rounded-lg bg-background text-[10px] font-bold">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="mm">mm</SelectItem>
-                              <SelectItem value="cm">cm</SelectItem>
-                              <SelectItem value="inch">inch</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )} />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                      {(SHAPE_CONFIG[watchShape] || SHAPE_CONFIG['Rectangular']).fields.map((f) => (
-                        <FormField 
-                          key={f.name} 
-                          control={form.control} 
-                          name={`productDimensions.${f.name}` as any} 
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="uppercase text-[9px] font-bold tracking-widest text-muted-foreground">{f.label}</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type={f.type} 
-                                  className="h-10 rounded-xl" 
-                                  {...field} 
-                                  value={field.value ?? ''}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )} 
-                        />
-                      ))}
-                    </div>
-                    
-                    <ChocolateMeshViewer 
-                      shape={watchShape} 
-                      dimensions={watchDimensions as any} 
-                      skin={watchSkin} 
-                      texture={watchTexture}
-                    />
+                  <div className="space-y-8">
+                     <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-[0.2em]">
+                        <Sparkles className="h-4 w-4" /> Artisan Texture Workspace
+                     </div>
+                     <TextureSelector 
+                        selectedId={watchTextureId} 
+                        onSelect={(id) => form.setValue('textureId', id)}
+                        onRemove={() => form.setValue('textureId', DEFAULT_TEXTURE.id)}
+                     />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -672,9 +581,7 @@ export default function ProductsPage() {
                   <div className="space-y-6">
                     <h3 className="uppercase text-[10px] font-black tracking-widest text-muted-foreground border-b pb-2">Photography Asset Control</h3>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                       <div className="md:col-span-1">
-                          <PhotoSlot fieldName="mainImage" label="Main Portrait" required />
-                       </div>
+                       <div className="md:col-span-1"><PhotoSlot fieldName="mainImage" label="Main Portrait" required /></div>
                        <div className="md:col-span-3 grid grid-cols-3 gap-6">
                           <PhotoSlot fieldName="subPhoto1" label="Perspective A" />
                           <PhotoSlot fieldName="subPhoto2" label="Perspective B" />
@@ -683,31 +590,13 @@ export default function ProductsPage() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </ScrollArea>
 
-              <div className="px-10 py-4 shrink-0 border-t flex flex-col items-end bg-background">
-                {!isValid && Object.keys(errors).length > 0 && (
-                  <div className="mb-4 p-4 bg-destructive/10 rounded-xl flex items-center gap-4 text-destructive w-full">
-                    <AlertCircle className="h-5 w-5" />
-                    <div className="text-[10px] font-black uppercase tracking-widest">Incomplete Specification Detected. Check dimensions and photography.</div>
-                  </div>
-                )}
-                
-                <DialogFooter className="w-full flex items-center justify-end gap-6 bg-transparent">
-                  <DialogClose asChild>
-                    <Button type="button" variant="secondary" className="h-12 px-8 rounded-xl font-bold uppercase text-[10px] tracking-widest">Discard</Button>
-                  </DialogClose>
-                  <Button type="submit" disabled={isSaving} className="h-12 px-12 rounded-xl shadow-2xl shadow-primary/20 font-bold uppercase text-[10px] tracking-widest min-w-[220px]">
-                    {isSaving ? (
-                      <>
-                        <Loader2 className="mr-3 h-4 w-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      editingProduct ? 'Save Refinement' : 'Register Creation'
-                    )}
-                  </Button>
-                </DialogFooter>
+              <div className="px-10 py-6 shrink-0 border-t flex items-center justify-end gap-6 bg-background">
+                <DialogClose asChild><Button type="button" variant="secondary" className="h-12 px-8 rounded-xl font-bold uppercase text-[10px] tracking-widest">Discard</Button></DialogClose>
+                <Button type="submit" disabled={isSaving} className="h-12 px-12 rounded-xl shadow-2xl shadow-primary/20 font-bold uppercase text-[10px] tracking-widest min-w-[220px]">
+                  {isSaving ? <><Loader2 className="mr-3 h-4 w-4 animate-spin" /> Processing...</> : (editingProduct ? 'Save Refinement' : 'Register Creation')}
+                </Button>
               </div>
             </form>
           </Form>
@@ -717,53 +606,29 @@ export default function ProductsPage() {
       <Dialog open={!!isGalleryPickerOpen} onOpenChange={(open) => !open && setIsGalleryPickerOpen(null)}>
         <DialogContent className="sm:max-w-4xl rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden flex flex-col h-[80vh] bg-stone-50">
            <div className="px-10 py-6 border-b bg-white shrink-0">
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-headline flex items-center gap-3">
-                  <Images className="h-6 w-6 text-primary" />
-                  Select from Artisan Gallery
-                </DialogTitle>
-                <DialogDescription>Browse and import photography from previous professional sessions.</DialogDescription>
-              </DialogHeader>
+              <DialogHeader><DialogTitle className="text-2xl font-headline flex items-center gap-3"><Images className="h-6 w-6 text-primary" /> Select from Artisan Gallery</DialogTitle></DialogHeader>
            </div>
-           
            <ScrollArea className="flex-1 p-10">
               <div className="space-y-12">
                  {galleryIdentities.map(productName => {
-                    const productGalleries = galleries?.filter(g => g.productName === productName) || [];
-                    if (productGalleries.length === 0) return null;
-
+                    const pg = galleries?.filter(g => g.productName === productName) || [];
+                    if (pg.length === 0) return null;
                     return (
                       <div key={productName} className="space-y-4">
                          <h3 className="text-lg font-headline font-bold text-stone-800 border-l-4 border-primary/40 pl-4">{productName}</h3>
                          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
-                            {productGalleries.map(entry => (
-                              [entry.mainImage, ...entry.subImages].map((img, idx) => (
-                                <button 
-                                  key={`${entry.id}-${idx}`}
-                                  type="button"
-                                  onClick={() => {
-                                    if (isGalleryPickerOpen?.field) {
-                                      form.setValue(isGalleryPickerOpen.field, img, { shouldValidate: true });
-                                      setIsGalleryPickerOpen(null);
-                                      toast({ title: 'Photography Imported' });
-                                    }
-                                  }}
-                                  className="aspect-square relative rounded-xl overflow-hidden group border-2 border-transparent hover:border-primary transition-all shadow-sm"
-                                >
+                            {pg.map(entry => ([entry.mainImage, ...entry.subImages].map((img, idx) => (
+                                <button key={`${entry.id}-${idx}`} type="button" onClick={() => { if (isGalleryPickerOpen?.field) { form.setValue(isGalleryPickerOpen.field, img, { shouldValidate: true }); setIsGalleryPickerOpen(null); } }} className="aspect-square relative rounded-xl overflow-hidden group border-2 border-transparent hover:border-primary transition-all shadow-sm">
                                   <Image src={img} alt="" fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
-                                  <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 flex items-center justify-center">
-                                     <CheckCircle2 className="text-white h-6 w-6" />
-                                  </div>
+                                  <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 flex items-center justify-center"><CheckCircle2 className="text-white h-6 w-6" /></div>
                                 </button>
-                              ))
-                            ))}
+                            ))))}
                          </div>
                       </div>
                     );
                  })}
               </div>
            </ScrollArea>
-           
            <div className="px-10 py-4 border-t bg-white shrink-0 flex justify-end">
               <Button variant="ghost" onClick={() => setIsGalleryPickerOpen(null)} className="rounded-xl font-bold uppercase text-[10px] tracking-widest">Close Gallery</Button>
            </div>
@@ -772,49 +637,22 @@ export default function ProductsPage() {
 
       <Dialog open={!!productToArchive} onOpenChange={(o) => !o && setProductToArchive(null)}>
         <DialogContent className="sm:max-w-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden p-0">
-          <div className="bg-amber-50 p-8 border-b border-amber-100">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-headline flex items-center gap-3 text-amber-700">
-                <Trash2 className="h-8 w-8" />
-                Move to Bin
-              </DialogTitle>
-              <DialogDescription className="text-stone-600 font-medium">
-                Are you sure you want to move <strong className="text-stone-900 font-bold">{productToArchive?.name}</strong> to the Bin? 
-                It will be hidden from the catalog but can be restored later.
-              </DialogDescription>
-            </DialogHeader>
-          </div>
+          <div className="bg-amber-50 p-8 border-b border-amber-100"><DialogHeader><DialogTitle className="text-2xl font-headline flex items-center gap-3 text-amber-700"><Trash2 className="h-8 w-8" /> Move to Bin</DialogTitle></DialogHeader></div>
           <div className="p-10 flex gap-4">
              <Button variant="ghost" onClick={() => setProductToArchive(null)} className="flex-1 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest">Abort</Button>
-             <Button 
-              className="flex-2 px-10 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest shadow-xl shadow-primary/20" 
-              onClick={() => productToArchive && handleMoveToBin(productToArchive.id)}
-             >
-               Confirm Move
-             </Button>
+             <Button className="flex-2 px-10 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest shadow-xl shadow-primary/20" onClick={() => productToArchive && handleMoveToBin(productToArchive.id)}>Confirm Move</Button>
           </div>
         </DialogContent>
       </Dialog>
       
-      <PageHeader 
-        title="Artisan Portfolio" 
-        actions={
+      <PageHeader title="Artisan Portfolio" actions={
           <div className="flex gap-2">
-            <Button asChild variant="outline" className="rounded-xl h-11 px-6 border-2">
-              <Link href="/products/bin">
-                <Trash2 className="mr-2 h-4 w-4" /> View Bin
-              </Link>
-            </Button>
-            <Button onClick={() => setIsAddDialogOpen(true)} className="rounded-xl h-11 px-6 shadow-lg shadow-primary/20">
-              <PlusCircle className="mr-2 h-4 w-4" /> New Creation
-            </Button>
+            <Button asChild variant="outline" className="rounded-xl h-11 px-6 border-2"><Link href="/products/bin"><Trash2 className="mr-2 h-4 w-4" /> View Bin</Link></Button>
+            <Button onClick={() => setIsAddDialogOpen(true)} className="rounded-xl h-11 px-6 shadow-lg shadow-primary/20"><PlusCircle className="mr-2 h-4 w-4" /> New Creation</Button>
           </div>
-        } 
-      />
+      } />
       
-      {loading ? (
-        <div className="flex justify-center py-20"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>
-      ) : products.length === 0 ? (
+      {loading ? (<div className="flex justify-center py-20"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>) : products.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-80 border-2 border-dashed rounded-[2.5rem] bg-muted/50 text-center px-4">
            <PackageSearch className="h-16 w-16 text-muted-foreground mb-6" />
            <p className="text-muted-foreground font-headline text-2xl italic">The collection is currently awaiting its first production batch.</p>
@@ -832,15 +670,8 @@ export default function ProductsPage() {
                     {product.sku && <Badge variant="secondary" className="uppercase tracking-tighter text-[8px]">{product.sku}</Badge>}
                     <Badge variant="outline" className="bg-white/90 backdrop-blur-sm border-none shadow-sm uppercase tracking-widest text-[8px] font-black">{product.productShape}</Badge>
                   </div>
-                  <div className="absolute top-4 right-4 flex gap-2 translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500">
-                    <Button 
-                      variant="destructive" 
-                      size="icon" 
-                      className="h-8 w-8 rounded-full shadow-2xl bg-white/20 backdrop-blur-md border border-white/20 hover:bg-destructive hover:text-white"
-                      onClick={(e) => { e.stopPropagation(); setProductToArchive(product); }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                  <div className="absolute top-4 right-4 translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500">
+                    <Button variant="destructive" size="icon" className="h-8 w-8 rounded-full shadow-2xl bg-white/20 backdrop-blur-md border border-white/20 hover:bg-destructive" onClick={(e) => { e.stopPropagation(); setProductToArchive(product); }}><Trash2 className="h-4 w-4" /></Button>
                   </div>
               </CardHeader>
               <CardContent className="p-6 flex-grow space-y-6">
@@ -848,24 +679,17 @@ export default function ProductsPage() {
                    <CardTitle className="font-headline text-2xl group-hover:text-primary transition-colors">{product.name}</CardTitle>
                    <p className="text-[10px] text-stone-400 uppercase tracking-[0.3em] font-black">{product.flavor}</p>
                 </div>
-
                 <div className="flex justify-between items-end pt-4 border-t">
                   <div className="space-y-0.5">
                     <p className="text-2xl font-bold">₹{product.price.toLocaleString()}</p>
-                    <p className="text-[9px] text-stone-400 uppercase tracking-widest">W: ₹{product.wholesalePrice.toLocaleString()}</p>
+                    <p className="text-[9px] text-stone-400 uppercase tracking-widest">{product.textureName || 'Smooth Milk'}</p>
                   </div>
-                  <Badge variant={product.availabilityStatus === 'In Stock' ? 'default' : 'destructive'} className="rounded-full uppercase tracking-widest text-[8px] py-1.5 px-4">
-                    {product.availabilityStatus}
-                  </Badge>
+                  <Badge variant={product.availabilityStatus === 'In Stock' ? 'default' : 'destructive'} className="rounded-full uppercase tracking-widest text-[8px] py-1.5 px-4">{product.availabilityStatus}</Badge>
                 </div>
               </CardContent>
               <CardFooter className="p-6 pt-0 grid grid-cols-2 gap-3">
-                <Button variant="outline" className="rounded-2xl h-11 font-bold uppercase text-[9px] tracking-widest" onClick={() => setEditingProduct(product)}>
-                   <Edit className="h-3 w-3 mr-1.5" /> Refine
-                </Button>
-                <Button variant="secondary" className="rounded-2xl h-11 font-bold uppercase text-[9px] tracking-widest" onClick={() => handleReEnroll(product)}>
-                   <CopyCheck className="h-3 w-3 mr-1.5" /> Re-Enroll
-                </Button>
+                <Button variant="outline" className="rounded-2xl h-11 font-bold uppercase text-[9px] tracking-widest" onClick={() => setEditingProduct(product)}><Edit className="h-3 w-3 mr-1.5" /> Refine</Button>
+                <Button variant="secondary" className="rounded-2xl h-11 font-bold uppercase text-[9px] tracking-widest" onClick={() => handleReEnroll(product)}><CopyCheck className="h-3 w-3 mr-1.5" /> Re-Enroll</Button>
               </CardFooter>
             </Card>
           ))}
