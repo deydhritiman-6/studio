@@ -22,7 +22,8 @@ import {
   BookOpen,
   Droplets,
   Zap,
-  Info
+  Info,
+  Truck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -84,7 +85,7 @@ export function CostingGuide({
       )
     },
     {
-      title: "Step 2 — Verify the Recipe",
+      title: "Step 2 — Load Recipe",
       instruction: "The system automatically loads the active recipe associated with the selected product.",
       validate: () => !!activeRecipe,
       missingLabel: "No active recipe linked",
