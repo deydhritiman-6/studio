@@ -13,7 +13,7 @@ import {
   Cuboid
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ProductDimensions, ProductTexture } from '@/lib/types';
+import { ProductDimensions, SurfacePattern, SegmentType } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { CHOCOLATE_TEXTURES, DEFAULT_TEXTURE } from '@/lib/textures';
 
@@ -21,6 +21,8 @@ interface ChocolateMeshViewerProps {
   shape: string;
   dimensions: ProductDimensions;
   textureId?: string;
+  surfacePattern?: SurfacePattern;
+  segmentType?: SegmentType;
   className?: string;
 }
 
@@ -28,6 +30,8 @@ export function ChocolateMeshViewer({
   shape,
   dimensions,
   textureId,
+  surfacePattern = 'None',
+  segmentType = 'Square',
   className,
 }: ChocolateMeshViewerProps) {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -52,7 +56,6 @@ export function ChocolateMeshViewer({
     return CHOCOLATE_TEXTURES.find(t => t.id === textureId) || DEFAULT_TEXTURE;
   }, [textureId]);
 
-  // Helper to generate a procedural normal map
   const createProceduralNormalMap = (type?: string) => {
     const size = 512;
     const canvas = document.createElement('canvas');
@@ -186,9 +189,9 @@ export function ChocolateMeshViewer({
       if (!entries[0] || !cameraRef.current || !rendererRef.current) return;
       const { width: w, height: h } = entries[0].contentRect;
       if (w <= 0 || h <= 0) return;
-      cameraRef.current.aspect = w / h;
-      cameraRef.current.updateProjectionMatrix();
-      rendererRef.current.setSize(w, h);
+      cameraRef.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
     });
     resizeObserver.observe(container);
 
@@ -234,48 +237,6 @@ export function ChocolateMeshViewer({
     const H = safeHeight * scaleFactor;
 
     const group = new THREE_LIB.Group();
-    let geometry: THREE_LIB.BufferGeometry;
-
-    switch (shape) {
-      case 'Spherical':
-        geometry = new THREE_LIB.SphereGeometry(L / 2, 64, 40);
-        break;
-      case 'Half Spherical':
-        geometry = new THREE_LIB.SphereGeometry(L / 2, 64, 40, 0, Math.PI * 2, 0, Math.PI / 2);
-        break;
-      case 'Cylindrical':
-      case 'Circular':
-        geometry = new THREE_LIB.CylinderGeometry(L / 2, L / 2, H, 64, 1);
-        break;
-      case 'Conical':
-        geometry = new THREE_LIB.ConeGeometry(L / 2, H, 64, 1);
-        break;
-      case 'Triangular':
-        geometry = new THREE_LIB.CylinderGeometry(L / 2, L / 2, H, 3, 1);
-        break;
-      case 'Heart': {
-        const heartShape = new THREE_LIB.Shape();
-        heartShape.moveTo(0, 0);
-        heartShape.bezierCurveTo(0.5, 0.5, 1, 0.5, 1, 0);
-        heartShape.bezierCurveTo(1, -0.5, 0.5, -0.8, 0, -1);
-        heartShape.bezierCurveTo(-0.5, -0.8, -1, -0.5, -1, 0);
-        heartShape.bezierCurveTo(-1, 0.5, -0.5, 0.5, 0, 0);
-        
-        const extrudeSettings = { depth: 0.4, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 0.05, bevelThickness: 0.05 };
-        geometry = new THREE_LIB.ExtrudeGeometry(heartShape, extrudeSettings);
-        geometry.rotateX(Math.PI);
-        geometry.scale(L * 0.4, L * 0.4, H * 2);
-        break;
-      }
-      case 'Oval':
-        geometry = new THREE_LIB.SphereGeometry(1, 64, 40);
-        geometry.scale(L / 2, H / 2, W / 2);
-        break;
-      default:
-        geometry = new THREE_LIB.BoxGeometry(L, H, W);
-    }
-
-    geometry.center();
 
     const normalMap = createProceduralNormalMap(activeTexture.normalType);
     const material = new THREE_LIB.MeshStandardMaterial({ 
@@ -286,23 +247,122 @@ export function ChocolateMeshViewer({
       normalScale: new THREE_LIB.Vector2(1.5, 1.5),
       visible: viewMode !== 'mesh'
     });
-    
-    const mesh = new THREE_LIB.Mesh(geometry, material);
-    
-    // Wireframe for mesh/technical modes
-    const wireframeGeometry = new THREE_LIB.WireframeGeometry(geometry);
-    const wireframeMaterial = new THREE_LIB.LineBasicMaterial({ 
-      color: viewMode === 'technical' ? 0xffffff : 0xd4af37, 
-      transparent: true, 
-      opacity: viewMode === 'material' ? 0.3 : 0.8,
-      visible: viewMode !== 'material' || true
-    });
-    const net = new THREE_LIB.LineSegments(wireframeGeometry, wireframeMaterial);
 
-    group.add(mesh);
-    if (viewMode !== 'material') group.add(net);
-    else group.add(net); // Keep subtle wireframe even in material mode for that "Artisan Mesh" look
-    
+    const createShapeGeometry = () => {
+      let geo: THREE_LIB.BufferGeometry;
+      switch (shape) {
+        case 'Spherical':
+          geo = new THREE_LIB.SphereGeometry(L / 2, 64, 40);
+          break;
+        case 'Half Spherical':
+        case 'Dome':
+          geo = new THREE_LIB.SphereGeometry(L / 2, 64, 40, 0, Math.PI * 2, 0, Math.PI / 2);
+          break;
+        case 'Cylindrical':
+        case 'Circular':
+        case 'Round':
+          geo = new THREE_LIB.CylinderGeometry(L / 2, L / 2, H, 64, 1);
+          break;
+        case 'Conical':
+          geo = new THREE_LIB.ConeGeometry(L / 2, H, 64, 1);
+          break;
+        case 'Triangular':
+          geo = new THREE_LIB.CylinderGeometry(L / 2, L / 2, H, 3, 1);
+          break;
+        case 'Heart': {
+          const heartShape = new THREE_LIB.Shape();
+          heartShape.moveTo(0, 0);
+          heartShape.bezierCurveTo(0.5, 0.5, 1, 0.5, 1, 0);
+          heartShape.bezierCurveTo(1, -0.5, 0.5, -0.8, 0, -1);
+          heartShape.bezierCurveTo(-0.5, -0.8, -1, -0.5, -1, 0);
+          heartShape.bezierCurveTo(-1, 0.5, -0.5, 0.5, 0, 0);
+          const extrudeSettings = { depth: 0.4, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 0.05, bevelThickness: 0.05 };
+          geo = new THREE_LIB.ExtrudeGeometry(heartShape, extrudeSettings);
+          geo.rotateX(Math.PI);
+          geo.scale(L * 0.4, L * 0.4, H * 2);
+          break;
+        }
+        case 'Oval':
+          geo = new THREE_LIB.SphereGeometry(1, 64, 40);
+          geo.scale(L / 2, H / 2, W / 2);
+          break;
+        default:
+          geo = new THREE_LIB.BoxGeometry(L, H, W);
+      }
+      return geo;
+    };
+
+    if (surfacePattern === 'Molded Chocolate Grid Texture' && (shape === 'Rectangular' || shape === 'Square' || shape === 'Bar')) {
+      // Logic for Grid Segmentation
+      const baseH = H * 0.4;
+      const topH = H * 0.6;
+      
+      // Base Slab
+      const baseGeo = new THREE_LIB.BoxGeometry(L, baseH, W);
+      baseGeo.translate(0, -topH / 2, 0);
+      const baseMesh = new THREE_LIB.Mesh(baseGeo, material);
+      group.add(baseMesh);
+
+      // Grid Blocks
+      const rows = shape === 'Square' ? Math.max(2, Math.floor(L / (H * 0.8))) : Math.max(1, Math.floor(W / (H * 1.5)));
+      const cols = Math.max(2, Math.floor(L / (H * 1.5)));
+      
+      const gutter = 0.05;
+      const blockL = (L / cols) - gutter;
+      const blockW = (W / rows) - gutter;
+
+      for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < rows; j++) {
+          const posX = (i * (blockL + gutter)) - (L / 2) + (blockL / 2) + (gutter / 2);
+          const posZ = (j * (blockW + gutter)) - (W / 2) + (blockW / 2) + (gutter / 2);
+          
+          let blockGeo: THREE_LIB.BufferGeometry;
+          if (segmentType === 'Rounded' || segmentType === 'Premium') {
+            const blockShape = new THREE_LIB.Shape();
+            const radius = 0.05;
+            blockShape.moveTo(-blockL/2 + radius, -blockW/2);
+            blockShape.lineTo(blockL/2 - radius, -blockW/2);
+            blockShape.quadraticCurveTo(blockL/2, -blockW/2, blockL/2, -blockW/2 + radius);
+            blockShape.lineTo(blockL/2, blockW/2 - radius);
+            blockShape.quadraticCurveTo(blockL/2, blockW/2, blockL/2 - radius, blockW/2);
+            blockShape.lineTo(-blockL/2 + radius, blockW/2);
+            blockShape.quadraticCurveTo(-blockL/2, blockW/2, -blockL/2, blockW/2 - radius);
+            blockShape.lineTo(-blockL/2, -blockW/2 + radius);
+            blockShape.quadraticCurveTo(-blockL/2, -blockW/2, -blockL/2 + radius, -blockW/2);
+            
+            const extSettings = { depth: topH, bevelEnabled: true, bevelSize: 0.03, bevelThickness: 0.03, bevelSegments: 3 };
+            blockGeo = new THREE_LIB.ExtrudeGeometry(blockShape, extSettings);
+            blockGeo.rotateX(Math.PI / 2);
+          } else {
+            blockGeo = new THREE_LIB.BoxGeometry(blockL, topH, blockW);
+          }
+          
+          blockGeo.translate(posX, topH / 2, posZ);
+          const blockMesh = new THREE_LIB.Mesh(blockGeo, material);
+          group.add(blockMesh);
+        }
+      }
+    } else {
+      const geometry = createShapeGeometry();
+      geometry.center();
+      const mesh = new THREE_LIB.Mesh(geometry, material);
+      group.add(mesh);
+    }
+
+    // Add Wireframes for all children
+    group.traverse((obj) => {
+      if (obj instanceof THREE_LIB.Mesh) {
+        const wireGeo = new THREE_LIB.WireframeGeometry(obj.geometry);
+        const wireMat = new THREE_LIB.LineBasicMaterial({ 
+          color: viewMode === 'technical' ? 0xffffff : 0xd4af37, 
+          transparent: true, 
+          opacity: viewMode === 'material' ? 0.2 : 0.8 
+        });
+        const line = new THREE_LIB.LineSegments(wireGeo, wireMat);
+        obj.add(line);
+      }
+    });
+
     scene.add(group);
     meshRef.current = group;
 
@@ -316,7 +376,7 @@ export function ChocolateMeshViewer({
       cameraRef.current.lookAt(0, 0, 0);
       cameraRef.current.updateProjectionMatrix();
     }
-  }, [shape, dimensions, activeTexture, viewMode]);
+  }, [shape, dimensions, activeTexture, viewMode, surfacePattern, segmentType]);
 
   useEffect(() => {
     const el = mountRef.current;
@@ -393,7 +453,7 @@ export function ChocolateMeshViewer({
       </div>
 
       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary bg-background/90 backdrop-blur-md px-4 py-1.5 rounded-full shadow-md z-10 border border-border/50">
-        <Box className="h-3 w-3" /> {shape} {viewMode === 'material' ? 'Material' : 'Mesh'} Preview
+        <Box className="h-3 w-3" /> {shape} {viewMode === 'material' ? 'Mould' : 'Mesh'} Preview
       </div>
 
       <div ref={mountRef} className="h-[280px] w-full flex items-center justify-center cursor-grab active:cursor-grabbing touch-none overflow-hidden relative [&>canvas]:block [&>canvas]:!w-full [&>canvas]:!h-full" />
@@ -406,7 +466,7 @@ export function ChocolateMeshViewer({
       
       <div className="text-center">
         <p className="text-[9px] text-muted-foreground uppercase tracking-widest font-black opacity-60">
-          {activeTexture.name} • {activeTexture.glossLevel} Finish
+          {surfacePattern !== 'None' ? `${surfacePattern} • ` : ''}{activeTexture.name}
         </p>
       </div>
     </div>

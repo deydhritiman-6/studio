@@ -107,6 +107,9 @@ export type ProductTexture = {
   glossLevel?: 'Glossy' | 'Satin' | 'Matte' | 'Semi-Matte';
 };
 
+export type SurfacePattern = 'None' | 'Molded Chocolate Grid Texture' | 'Rippled' | 'Ribbed' | 'Wavy' | 'Embossed Surface' | 'Debossed Surface';
+export type SegmentType = 'Square' | 'Rectangular' | 'Rounded' | 'Modular' | 'Premium';
+
 export type Product = {
   id: string;
   name: string;
@@ -114,12 +117,14 @@ export type Product = {
   weight?: string;
   dimensions?: string; // Legacy string format
   productDimensions?: ProductDimensions; // New structured format
-  productShape?: 'Square' | 'Rectangular' | 'Spherical' | 'Half Spherical' | 'Circular' | 'Cylindrical' | 'Oval' | 'Heart' | 'Triangular' | 'Conical' | 'Irregular' | 'Other';
+  productShape?: 'Square' | 'Rectangular' | 'Spherical' | 'Half Spherical' | 'Circular' | 'Cylindrical' | 'Oval' | 'Heart' | 'Triangular' | 'Conical' | 'Irregular' | 'Other' | 'Bar' | 'Dome';
   productSkin?: 'Dark' | 'Milk' | 'White' | 'Rose' | 'Gold'; // Legacy skin field
   productTexture?: string; // ID of the texture from the library
   textureId?: string;
   textureName?: string;
   textureCategory?: string;
+  surfacePattern?: SurfacePattern;
+  segmentType?: SegmentType;
   price: number;
   wholesalePrice: number;
   availabilityStatus: 'In Stock' | 'Out of Stock';

@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import type { Product, ProductDimensions, ProductGallery } from '@/lib/types';
+import type { Product, ProductDimensions, ProductGallery, SurfacePattern, SegmentType } from '@/lib/types';
 import { 
   PlusCircle, 
   Loader2, 
@@ -28,7 +28,8 @@ import {
   Droplets,
   Sparkles,
   Layers,
-  ArrowRight
+  ArrowRight,
+  LayoutGrid
 } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
@@ -67,6 +68,13 @@ const SHAPE_CONFIG: Record<string, { fields: { name: string; label: string; plac
       { name: 'height', label: 'Height / Thickness', type: 'number' },
     ]
   },
+  Bar: {
+    fields: [
+      { name: 'length', label: 'Bar Length', type: 'number' },
+      { name: 'width', label: 'Bar Width', type: 'number' },
+      { name: 'height', label: 'Thickness', type: 'number' },
+    ]
+  },
   Spherical: {
     fields: [
       { name: 'diameter', label: 'Diameter', type: 'number' },
@@ -78,7 +86,19 @@ const SHAPE_CONFIG: Record<string, { fields: { name: string; label: string; plac
       { name: 'height', label: 'Height', type: 'number' },
     ]
   },
+  Dome: {
+    fields: [
+      { name: 'diameter', label: 'Base Diameter', type: 'number' },
+      { name: 'height', label: 'Dome Height', type: 'number' },
+    ]
+  },
   Circular: {
+    fields: [
+      { name: 'diameter', label: 'Diameter', type: 'number' },
+      { name: 'height', label: 'Height / Thickness', type: 'number' },
+    ]
+  },
+  Round: {
     fields: [
       { name: 'diameter', label: 'Diameter', type: 'number' },
       { name: 'height', label: 'Height / Thickness', type: 'number' },
@@ -141,8 +161,10 @@ const productFormSchema = z.object({
   name: z.string().min(1, 'Name of the Product is required.'),
   flavor: z.string().min(1, 'Flavor profile is required.'),
   weight: z.string().optional(),
-  productShape: z.enum(['Square', 'Rectangular', 'Spherical', 'Half Spherical', 'Circular', 'Cylindrical', 'Oval', 'Heart', 'Triangular', 'Conical', 'Irregular', 'Other']).default('Rectangular'),
+  productShape: z.enum(['Square', 'Rectangular', 'Spherical', 'Half Spherical', 'Circular', 'Cylindrical', 'Oval', 'Heart', 'Triangular', 'Conical', 'Irregular', 'Other', 'Bar', 'Dome', 'Round']).default('Rectangular'),
   textureId: z.string().default(DEFAULT_TEXTURE.id),
+  surfacePattern: z.enum(['None', 'Molded Chocolate Grid Texture', 'Rippled', 'Ribbed', 'Wavy', 'Embossed Surface', 'Debossed Surface']).default('None'),
+  segmentType: z.enum(['Square', 'Rectangular', 'Rounded', 'Modular', 'Premium']).default('Square'),
   productDimensions: z.object({
     unit: z.enum(['mm', 'cm', 'inch']).default('mm'),
     length: z.coerce.number().optional(),
@@ -221,6 +243,8 @@ export default function ProductsPage() {
       weight: '',
       productShape: 'Rectangular',
       textureId: DEFAULT_TEXTURE.id,
+      surfacePattern: 'None',
+      segmentType: 'Square',
       productDimensions: { unit: 'mm' },
       price: 0,
       wholesalePrice: 0,
@@ -235,8 +259,9 @@ export default function ProductsPage() {
 
   const watchShape = useWatch({ control: form.control, name: 'productShape' });
   const watchTextureId = useWatch({ control: form.control, name: 'textureId' });
+  const watchPattern = useWatch({ control: form.control, name: 'surfacePattern' });
+  const watchSegment = useWatch({ control: form.control, name: 'segmentType' });
   const watchDimensions = useWatch({ control: form.control, name: 'productDimensions' });
-  const { errors, isValid } = form.formState;
 
   const currentTexture = useMemo(() => CHOCOLATE_TEXTURES.find(t => t.id === watchTextureId) || DEFAULT_TEXTURE, [watchTextureId]);
 
@@ -247,8 +272,10 @@ export default function ProductsPage() {
         name: editingProduct.name,
         flavor: editingProduct.flavor,
         weight: editingProduct.weight || '',
-        productShape: editingProduct.productShape || 'Rectangular',
+        productShape: (editingProduct.productShape as any) || 'Rectangular',
         textureId: editingProduct.textureId || DEFAULT_TEXTURE.id,
+        surfacePattern: editingProduct.surfacePattern || 'None',
+        segmentType: editingProduct.segmentType || 'Square',
         productDimensions: editingProduct.productDimensions || { unit: 'mm' } as ProductDimensions,
         price: editingProduct.price,
         wholesalePrice: editingProduct.wholesalePrice,
@@ -267,6 +294,8 @@ export default function ProductsPage() {
         weight: '',
         productShape: 'Rectangular',
         textureId: DEFAULT_TEXTURE.id,
+        surfacePattern: 'None',
+        segmentType: 'Square',
         productDimensions: { unit: 'mm' } as ProductDimensions,
         price: 0,
         wholesalePrice: 0,
@@ -291,8 +320,10 @@ export default function ProductsPage() {
         name: product.name,
         flavor: product.flavor,
         weight: product.weight || '',
-        productShape: product.productShape || 'Rectangular',
+        productShape: (product.productShape as any) || 'Rectangular',
         textureId: product.textureId || DEFAULT_TEXTURE.id,
+        surfacePattern: product.surfacePattern || 'None',
+        segmentType: product.segmentType || 'Square',
         productDimensions: product.productDimensions || { unit: 'mm' } as ProductDimensions,
         price: product.price,
         wholesalePrice: product.wholesalePrice,
@@ -450,7 +481,7 @@ export default function ProductsPage() {
       </Dialog>
       
       <Dialog open={isAddDialogOpen || !!editingProduct} onOpenChange={(open) => { if (!open) { setEditingProduct(null); setIsAddDialogOpen(false); } }}>
-        <DialogContent className="sm:max-w-4xl rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden flex flex-col h-[90vh] bg-background">
+        <DialogContent className="sm:max-w-6xl rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden flex flex-col h-[95vh] bg-background">
           <div className="px-10 py-6 border-b shrink-0 bg-background z-20">
             <DialogHeader className="space-y-1 text-left">
               <DialogTitle className="text-3xl font-headline text-foreground">{editingProduct ? 'Refine Creation' : 'Register New Creation'}</DialogTitle>
@@ -520,6 +551,39 @@ export default function ProductsPage() {
                               )} />
                             ))}
                           </div>
+
+                          <Separator className="bg-stone-200/50" />
+                          
+                          <div className="space-y-6">
+                            <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-[0.2em]">
+                                <LayoutGrid className="h-4 w-4" /> Surface Pattern Workspace
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <FormField control={form.control} name="surfacePattern" render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="uppercase text-[9px] font-bold text-muted-foreground">Surface Geometry</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                                      <FormControl><SelectTrigger className="h-10 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
+                                      <SelectContent>
+                                        {['None', 'Molded Chocolate Grid Texture', 'Rippled', 'Ribbed', 'Wavy', 'Embossed Surface', 'Debossed Surface'].map(p => (<SelectItem key={p} value={p}>{p}</SelectItem>))}
+                                      </SelectContent>
+                                    </Select>
+                                  </FormItem>
+                                )} />
+                                <FormField control={form.control} name="segmentType" render={({ field }) => (
+                                  <FormItem className={cn(watchPattern !== 'Molded Chocolate Grid Texture' && "opacity-40 pointer-events-none")}>
+                                    <FormLabel className="uppercase text-[9px] font-bold text-muted-foreground">Segment Geometry</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                                      <FormControl><SelectTrigger className="h-10 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
+                                      <SelectContent>
+                                        {['Square', 'Rectangular', 'Rounded', 'Modular', 'Premium'].map(s => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
+                                      </SelectContent>
+                                    </Select>
+                                  </FormItem>
+                                )} />
+                            </div>
+                          </div>
+
                           <Separator className="bg-stone-200/50" />
                           <div className="space-y-4">
                              <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-[0.2em]">
@@ -534,8 +598,18 @@ export default function ProductsPage() {
                                    <p className="text-[8px] font-black uppercase text-stone-400">Texture</p>
                                    <p className="text-sm font-bold text-primary">{currentTexture.name}</p>
                                 </div>
+                                <div className="space-y-1">
+                                   <p className="text-[8px] font-black uppercase text-stone-400">Surface Relief</p>
+                                   <p className="text-xs font-medium text-stone-600">{watchPattern}</p>
+                                </div>
+                                {watchPattern === 'Molded Chocolate Grid Texture' && (
+                                  <div className="space-y-1">
+                                    <p className="text-[8px] font-black uppercase text-stone-400">Segments</p>
+                                    <p className="text-xs font-medium text-stone-600">{watchSegment} Blocks</p>
+                                  </div>
+                                )}
                                 <div className="space-y-1 col-span-2">
-                                   <p className="text-[8px] font-black uppercase text-stone-400">Dimensions</p>
+                                   <p className="text-[8px] font-black uppercase text-stone-400">Exact Dimensions</p>
                                    <p className="text-xs font-medium text-stone-600">
                                       {watchDimensions.length || watchDimensions.sideLength || watchDimensions.diameter || '0'} x {watchDimensions.width || watchDimensions.sideLength || watchDimensions.diameter || '0'} x {watchDimensions.height || '0'} {watchDimensions.unit}
                                    </p>
@@ -545,7 +619,13 @@ export default function ProductsPage() {
                        </div>
                        
                        <div className="lg:w-1/2">
-                          <ChocolateMeshViewer shape={watchShape} dimensions={watchDimensions as any} textureId={watchTextureId} />
+                          <ChocolateMeshViewer 
+                            shape={watchShape} 
+                            dimensions={watchDimensions as any} 
+                            textureId={watchTextureId}
+                            surfacePattern={watchPattern as any}
+                            segmentType={watchSegment as any}
+                          />
                        </div>
                     </div>
                   </div>
