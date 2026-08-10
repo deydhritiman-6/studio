@@ -36,6 +36,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 interface CostingGuideProps {
   isOpen: boolean;
   onClose: () => void;
+  onNavigateToField: (fieldId: string) => void;
   selectedProduct: any;
   activeRecipe: any;
   results: any;
@@ -46,6 +47,7 @@ interface CostingGuideProps {
 export function CostingGuide({ 
   isOpen, 
   onClose, 
+  onNavigateToField,
   selectedProduct, 
   activeRecipe, 
   results, 
@@ -63,6 +65,7 @@ export function CostingGuide({
       instruction: "Select the product for which the final costing is being prepared. The system retrieves identity, weight, and shape data from the master registry.",
       validate: () => !!formValues.productId,
       missingLabel: "No product selected",
+      fieldId: "field-productId",
       animation: (
         <div className="flex flex-col items-center justify-center h-full space-y-6">
           <motion.div 
@@ -89,10 +92,11 @@ export function CostingGuide({
       instruction: "The system automatically loads the active recipe associated with the selected creation. Ensure the version is correct.",
       validate: () => !!activeRecipe,
       missingLabel: "No active recipe linked to this product",
+      fieldId: "field-productId",
       animation: (
         <div className="flex items-center justify-center h-full gap-8">
           <motion.div 
-            animate={{ x: [0, 20, 0] }}
+            animate={{ x: [0, 20, 0] }} 
             className="p-4 bg-muted rounded-xl"
           >
             <Package className="h-8 w-8 text-stone-400" />
@@ -115,8 +119,9 @@ export function CostingGuide({
     {
       title: "Step 3 — Review Ingredient Costs",
       instruction: "Examine every ingredient and its current market rate from the Library. Material cost is the foundation of your Basic Cost.",
-      validate: () => results?.ingredientBreakdown?.length > 0,
-      missingLabel: "No ingredients detected in matrix",
+      validate: () => results?.warnings?.length === 0,
+      missingLabel: "Some ingredients have no purchase price in library",
+      fieldId: "material-breakdown-section",
       animation: (
         <div className="w-full max-w-xs mx-auto space-y-3">
           {[0, 1, 2].map(i => (
@@ -146,6 +151,7 @@ export function CostingGuide({
     {
       title: "Step 4 — Verify Batch Size & Yield",
       instruction: "The total batch cost is divided by the number of finished units to determine the starting unit cost.",
+      fieldId: "field-productionYield",
       animation: (
         <div className="flex flex-col items-center justify-center h-full space-y-6">
           <div className="flex items-end gap-1">
@@ -163,6 +169,7 @@ export function CostingGuide({
     {
       title: "Step 5 — Account for Wastage",
       instruction: "Apply production buffers for tempering, handling, and process loss to adjust the material cost.",
+      fieldId: "field-productionYield",
       animation: (
         <div className="flex flex-col items-center justify-center h-full space-y-4">
           <div className="relative w-32 h-32">
@@ -182,6 +189,7 @@ export function CostingGuide({
     {
       title: "Step 6 — Add Packaging Cost",
       instruction: "Aggregate all physical containers, labels, and boxes required for a single production batch.",
+      fieldId: "field-packaging",
       animation: (
         <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto">
           {['Box', 'Foil', 'Label', 'Bag'].map((p, i) => (
@@ -205,6 +213,7 @@ export function CostingGuide({
     {
       title: "Step 7 — Add Direct Labour Cost",
       instruction: "Incorporate artisanal effort based on staffing levels and total processing time.",
+      fieldId: "field-labour",
       animation: (
         <div className="flex items-center justify-center h-full gap-6">
           <div className="text-center space-y-1">
@@ -226,6 +235,7 @@ export function CostingGuide({
     {
       title: "Step 8 — Add Production Costs",
       instruction: "Consider technical overheads such as energy, machine usage, and artisan consumables.",
+      fieldId: "field-labour",
       animation: (
         <div className="flex flex-col items-center justify-center h-full">
            <motion.div 
@@ -242,6 +252,7 @@ export function CostingGuide({
     {
       title: "Step 9 — Apply Manufacturing Overhead",
       instruction: "Apply factory-wide expenses based on your current percentage or fixed rate configuration.",
+      fieldId: "field-labour",
       animation: (
         <div className="relative w-48 h-24 flex items-center justify-center">
            <motion.div 
@@ -265,6 +276,7 @@ export function CostingGuide({
     {
       title: "Step 10 — Calculate Basic Manufacturing Cost",
       instruction: "The convergence of materials, labour, and overhead forms your Certified Basic Cost.",
+      fieldId: "field-productId",
       animation: (
         <div className="flex flex-col items-center justify-center h-full space-y-8">
            <div className="relative h-32 w-32 flex items-center justify-center">
@@ -285,6 +297,7 @@ export function CostingGuide({
     {
       title: "Step 11 — Calculate Cost Per Unit",
       instruction: "The final division that determines the baseline value of every individual artisan piece.",
+      fieldId: "field-productionYield",
       animation: (
         <div className="flex flex-col items-center justify-center h-full space-y-6">
            <div className="flex items-center gap-4">
@@ -307,6 +320,7 @@ export function CostingGuide({
     {
       title: "Step 12 — Calculate Cost Per Weight",
       instruction: "Benchmarking the creation against industry standards (Per Gram / Per 100g).",
+      fieldId: "field-productId",
       animation: (
         <div className="grid grid-cols-2 gap-4 w-full max-w-xs mx-auto">
            <div className="p-4 bg-muted/30 rounded-2xl border text-center">
@@ -323,6 +337,7 @@ export function CostingGuide({
     {
       title: "Step 13 — Review Additional Costs",
       instruction: "Verify non-manufacturing factors like transport or specific artisan commissions.",
+      fieldId: "field-labour",
       animation: (
         <div className="flex flex-col items-center justify-center h-full space-y-4">
            <div className="h-1 bg-muted w-32 rounded-full overflow-hidden">
@@ -339,6 +354,7 @@ export function CostingGuide({
     {
       title: "Step 14 — Optional Pricing Simulation",
       instruction: "Analyze how profit goals and channel margins influence the final consumer price.",
+      fieldId: "field-labour",
       animation: (
         <div className="flex flex-col items-center justify-center h-full space-y-4">
            <div className="flex justify-between w-48 p-2 border-b">
@@ -362,6 +378,7 @@ export function CostingGuide({
     {
       title: "Step 15 — Review Final Cost Summary",
       instruction: "One last audit of the simulation before committing to the historical archive.",
+      fieldId: "field-productId",
       animation: (
         <div className="space-y-2 w-full max-w-[200px] mx-auto text-[9px] font-bold">
            <div className="flex justify-between text-stone-400"><span>Materials Matrix</span> <span>₹{results?.rawMaterialCost?.toFixed(0)}</span></div>
@@ -375,6 +392,7 @@ export function CostingGuide({
     {
       title: "Step 16 — Save the Simulation",
       instruction: "Synchronize your findings with the secure artisan vault for future reference.",
+      fieldId: "field-productId",
       animation: (
         <div className="flex flex-col items-center justify-center h-full space-y-4">
            <motion.div 
@@ -390,6 +408,7 @@ export function CostingGuide({
     {
       title: "Step 17 — Final Cost Approval",
       instruction: "Finalize this version to create a permanent historical costing snapshot for executive review.",
+      fieldId: "field-productId",
       animation: (
         <div className="space-y-4 text-left p-6 bg-muted/20 rounded-[2rem] border border-dashed border-stone-200">
            <div className="flex items-center gap-3"><CheckCircle2 className="h-4 w-4 text-green-500" /> <span className="text-[10px] font-bold uppercase">Identity Verified</span></div>
@@ -461,7 +480,14 @@ export function CostingGuide({
                          <div className="space-y-1">
                             <p className="font-bold text-rose-900 text-sm">Information Required</p>
                             <p className="text-xs text-rose-700">{currentStepData.missingLabel}</p>
-                            <Button variant="link" size="sm" className="p-0 h-auto text-rose-600 font-bold uppercase text-[9px] tracking-widest" onClick={onClose}>Go to Required Information</Button>
+                            <Button 
+                              variant="link" 
+                              size="sm" 
+                              className="p-0 h-auto text-rose-600 font-bold uppercase text-[9px] tracking-widest" 
+                              onClick={() => onNavigateToField(currentStepData.fieldId || "field-productId")}
+                            >
+                              Go to Required Information
+                            </Button>
                          </div>
                       </div>
                     )}

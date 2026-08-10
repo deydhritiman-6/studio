@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, Suspense } from 'react';
+import { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -178,7 +178,6 @@ function NewCostingForm() {
       }
     });
 
-    // Attempt to extract numeric weight from weight string (e.g., "100g")
     const productWeightGrams = parseFloat(selectedProduct?.weight || '0') || 0;
 
     return calculateBasicManufacturingCost({
@@ -198,6 +197,41 @@ function NewCostingForm() {
     const withProfit = cost * (1 + (watchAll.pricing?.profitPercent || 0) / 100);
     return withProfit * (1 + (watchAll.pricing?.marginPercent || 0) / 100);
   }, [calculationResults, watchAll.pricing]);
+
+  const handleNavigateToField = useCallback((fieldId: string) => {
+    setIsGuideOpen(false);
+    
+    // Smooth delay to ensure Guide dialog closes first
+    setTimeout(() => {
+      const element = document.getElementById(fieldId);
+      if (element) {
+        // Expand material breakdown if targeted
+        if (fieldId === 'material-breakdown-section') {
+          setShowBreakdown(true);
+        }
+
+        // Scroll with precision
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        // Apply highlighting logic
+        element.classList.add('artisan-field-highlight');
+        
+        // Find and blink the label
+        const label = element.querySelector('label') || document.querySelector(`label[for="${fieldId}"]`);
+        if (label) label.classList.add('artisan-label-blink');
+
+        // Focus the specific input if applicable
+        const targetInput = element.querySelector('input, select, button') as HTMLElement;
+        if (targetInput) targetInput.focus();
+
+        // Cleanup visual attention cues
+        setTimeout(() => {
+          element.classList.remove('artisan-field-highlight');
+          if (label) label.classList.remove('artisan-label-blink');
+        }, 4000);
+      }
+    }, 400);
+  }, [setShowBreakdown]);
 
   const onSubmit = async (values: CostingFormValues) => {
     if (!firestore || !calculationResults || !selectedProduct) return;
@@ -268,6 +302,7 @@ function NewCostingForm() {
       <CostingGuide 
         isOpen={isGuideOpen} 
         onClose={() => setIsGuideOpen(false)}
+        onNavigateToField={handleNavigateToField}
         selectedProduct={selectedProduct}
         activeRecipe={activeRecipe}
         results={calculationResults}
@@ -292,7 +327,6 @@ function NewCostingForm() {
         </div>
       </div>
 
-      {/* Guide Banner Section */}
       <Card className="mb-8 rounded-[2rem] border-none shadow-lg bg-stone-900 text-white overflow-hidden">
         <CardContent className="p-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-1 text-center md:text-left">
@@ -310,7 +344,6 @@ function NewCostingForm() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-8 space-y-8">
-          {/* Integrity Warnings */}
           {calculationResults && calculationResults.warnings.length > 0 && (
             <Card className="border-none shadow-lg bg-amber-50 rounded-2xl overflow-hidden border-l-8 border-l-amber-500">
                <CardContent className="p-6 flex gap-4">
@@ -335,7 +368,7 @@ function NewCostingForm() {
                 <form className="space-y-10">
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <FormField control={form.control} name="productId" render={({ field }) => (
-                        <FormItem>
+                        <FormItem id="field-productId">
                           <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground">Target Product</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                              <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Select Product" /></SelectTrigger></FormControl>
@@ -352,7 +385,7 @@ function NewCostingForm() {
                       )} />
                       <div className="grid grid-cols-2 gap-4">
                         <FormField control={form.control} name="productionYield" render={({ field }) => (
-                          <FormItem>
+                          <FormItem id="field-productionYield">
                             <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground">Target Yield (Units)</FormLabel>
                             <FormControl><Input type="number" className="h-12 rounded-xl" {...field} /></FormControl>
                           </FormItem>
@@ -368,7 +401,7 @@ function NewCostingForm() {
 
                    <Separator className="bg-stone-100" />
 
-                   <div className="space-y-6">
+                   <div className="space-y-6" id="field-labour">
                       <h3 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
                         <Users className="h-4 w-4" /> Production & Labour Logic
                       </h3>
@@ -409,7 +442,7 @@ function NewCostingForm() {
 
                    <Separator className="bg-stone-100" />
 
-                   <div className="space-y-6">
+                   <div className="space-y-6" id="field-packaging">
                       <h3 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
                         <Package className="h-4 w-4" /> Packaging Materials (Per Batch)
                       </h3>
@@ -431,7 +464,7 @@ function NewCostingForm() {
 
           {calculationResults && (
             <Collapsible open={showBreakdown} onOpenChange={setShowBreakdown} className="space-y-2">
-              <Card className="rounded-[2rem] border-none shadow-xl overflow-hidden">
+              <Card className="rounded-[2rem] border-none shadow-xl overflow-hidden" id="material-breakdown-section">
                 <CardHeader className="p-10 bg-muted/20 border-b flex flex-row items-center justify-between">
                    <div className="space-y-1">
                       <CardTitle className="text-xl font-headline flex items-center gap-3">
