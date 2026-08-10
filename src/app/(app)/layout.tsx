@@ -38,7 +38,6 @@ import {
   Bell,
   TrendingUp,
   Radio,
-  ShieldCheck,
   Lock,
   Eye,
   Search,
@@ -69,8 +68,9 @@ import { useUser, useFirestore, useCollection, useAuth } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { signInAnonymously } from 'firebase/auth';
 import type { InventoryItem } from '@/lib/types';
-import { getWorkspaceConfig } from '@/lib/page-colors';
+import { getWorkspaceConfig, WORKSPACE_COLORS } from '@/lib/page-colors';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -198,36 +198,45 @@ function NavSidebar({ pathname }: { pathname: string }) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <SidebarHeader className="h-16 flex items-center justify-between px-4">
+      <SidebarHeader className="h-20 flex items-center justify-between px-4">
         <Link href="/dashboard" className="flex items-center gap-2 overflow-hidden">
-          <Logo className="h-8 w-auto min-w-[120px]" />
+          <Logo className="h-10 w-auto min-w-[140px]" />
         </Link>
         <SidebarTrigger className="hidden md:flex" />
       </SidebarHeader>
-      <SidebarContent className="flex-1 overflow-y-auto">
-        <SidebarMenu className="px-2 pt-4">
+      <SidebarContent className="flex-1 overflow-y-auto px-3">
+        <SidebarMenu className="pt-4 space-y-1">
           {navItems.map((item) => {
             const workspace = getWorkspaceConfig(item.href || item.subItems?.[0]?.href || '');
-            const isActive = item.subItems ? item.subItems.some((sub) => isItemActive(sub.href)) : isItemActive(item.href!);
+            const isActive = item.subItems 
+              ? item.subItems.some((sub) => isItemActive(sub.href)) 
+              : isItemActive(item.href!);
 
             return item.subItems ? (
               <SidebarMenuItem key={item.label}>
                 <SidebarMenuButton 
                   isActive={isActive}
-                  style={isActive ? { color: workspace.color } : {}}
+                  className={cn(
+                    "transition-all duration-300",
+                    isActive ? "font-bold shadow-md" : "hover:bg-sidebar-accent/50"
+                  )}
+                  style={isActive ? { backgroundColor: workspace.color, color: '#ffffff' } : { color: workspace.color }}
                 >
-                  <item.icon style={{ color: workspace.color }} />
-                  <span className="font-bold">{item.label}</span>
+                  <item.icon style={{ color: isActive ? '#ffffff' : workspace.color }} />
+                  <span>{item.label}</span>
                 </SidebarMenuButton>
-                <SidebarMenuSub>
+                <SidebarMenuSub className="border-l-2 ml-4 mt-1 space-y-0.5" style={{ borderColor: workspace.color + '33' }}>
                   {item.subItems.map((subItem) => {
-                    const subWorkspace = getWorkspaceConfig(subItem.href);
                     const isSubActive = isItemActive(subItem.href);
                     return (
                       <SidebarMenuSubItem key={subItem.href}>
                         <SidebarMenuSubButton isActive={isSubActive} asChild>
-                          <Link href={subItem.href} style={isSubActive ? { color: subWorkspace.color, fontWeight: 900 } : { color: subWorkspace.color + 'CC' }}>
-                            <subItem.icon className="h-3.5 w-3.5" style={{ color: subWorkspace.color }} />
+                          <Link 
+                            href={subItem.href} 
+                            className="transition-colors"
+                            style={isSubActive ? { color: workspace.color, fontWeight: 'bold' } : { color: 'inherit' }}
+                          >
+                            <subItem.icon className="h-3.5 w-3.5" style={{ color: workspace.color }} />
                             <span>{subItem.label}</span>
                           </Link>
                         </SidebarMenuSubButton>
@@ -238,10 +247,18 @@ function NavSidebar({ pathname }: { pathname: string }) {
               </SidebarMenuItem>
             ) : (
               <SidebarMenuItem key={item.href}>
-                 <SidebarMenuButton isActive={isActive} asChild style={isActive ? { color: workspace.color } : {}}>
+                 <SidebarMenuButton 
+                  isActive={isActive} 
+                  asChild
+                  className={cn(
+                    "transition-all duration-300",
+                    isActive ? "font-bold shadow-md" : "hover:bg-sidebar-accent/50"
+                  )}
+                  style={isActive ? { backgroundColor: workspace.color, color: '#ffffff' } : { color: workspace.color }}
+                >
                   <Link href={item.href!}>
-                    <item.icon style={{ color: workspace.color }} />
-                    <span className="font-bold">{item.label}</span>
+                    <item.icon style={{ color: isActive ? '#ffffff' : workspace.color }} />
+                    <span>{item.label}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -249,11 +266,11 @@ function NavSidebar({ pathname }: { pathname: string }) {
           })}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter className="p-2 border-t border-sidebar-border">
-         <SidebarMenu>
+      <SidebarFooter className="p-3 border-t border-sidebar-border bg-sidebar/50">
+         <SidebarMenu className="space-y-1">
            <SidebarMenuItem>
               <SidebarMenuButton isActive={pathname === '/user-guide'} asChild tooltip="User Guide">
-                <Link href="/user-guide" style={pathname === '/user-guide' ? { color: WORKSPACE_COLORS.optimization.color } : {}}>
+                <Link href="/user-guide" style={pathname === '/user-guide' ? { color: WORKSPACE_COLORS.optimization.color, fontWeight: 'bold' } : { color: WORKSPACE_COLORS.optimization.color }}>
                   <BookUser style={{ color: WORKSPACE_COLORS.optimization.color }} />
                   <span>User Guide</span>
                 </Link>
@@ -261,7 +278,7 @@ function NavSidebar({ pathname }: { pathname: string }) {
             </SidebarMenuItem>
            <SidebarMenuItem>
               <SidebarMenuButton isActive={pathname === '/guide'} asChild tooltip="Developer Guide">
-                <Link href="/guide" style={pathname === '/guide' ? { color: WORKSPACE_COLORS.optimization.color } : {}}>
+                <Link href="/guide" style={pathname === '/guide' ? { color: WORKSPACE_COLORS.optimization.color, fontWeight: 'bold' } : { color: WORKSPACE_COLORS.optimization.color }}>
                   <HelpCircle style={{ color: WORKSPACE_COLORS.optimization.color }} />
                   <span>Developer Guide</span>
                 </Link>
@@ -269,7 +286,7 @@ function NavSidebar({ pathname }: { pathname: string }) {
             </SidebarMenuItem>
           <SidebarMenuItem>
               <SidebarMenuButton isActive={isItemActive('/settings')} asChild tooltip="Settings">
-                <Link href="/settings" style={isItemActive('/settings') ? { color: WORKSPACE_COLORS.optimization.color } : {}}>
+                <Link href="/settings" style={isItemActive('/settings') ? { color: WORKSPACE_COLORS.optimization.color, fontWeight: 'bold' } : { color: WORKSPACE_COLORS.optimization.color }}>
                   <Settings style={{ color: WORKSPACE_COLORS.optimization.color }} />
                   <span>Settings</span>
                 </Link>
@@ -341,7 +358,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <NavSidebar pathname={pathname} />
       <div className="flex flex-1 flex-col">
-        <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b bg-background px-4 md:px-6">
+        <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b bg-background/80 backdrop-blur-md px-4 md:px-6">
             <SidebarTrigger className="md:hidden" />
             <div className="flex flex-1 items-center justify-end gap-2 md:gap-4">
                 {mounted && hasLowStock && (
@@ -395,7 +412,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
         </header>
         <div className="flex-1 bg-background overflow-y-auto">
-            <div className="p-4 sm:p-6 lg:p-8 pt-12 md:pt-16 lg:pt-20">
+            <div className="p-4 sm:p-6 lg:p-8 pt-8 md:pt-10">
               {isAuthReady && user ? children : (
                 <div className="space-y-6">
                   <Skeleton className="h-10 w-64" />
