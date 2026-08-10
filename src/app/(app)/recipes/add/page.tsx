@@ -119,10 +119,12 @@ export default function AddRecipePage() {
     resolver: zodResolver(recipeFormSchema),
     defaultValues: {
       name: '',
+      associatedProductId: '',
       status: 'Draft',
       difficulty: 'Professional',
       batchSize: 1,
       batchUnit: 'kg',
+      detailedDescription: '',
       ingredients: [],
       steps: [],
     }
@@ -144,8 +146,13 @@ export default function AddRecipePage() {
       name: '',
       category: '',
       defaultUnit: 'g',
+      description: '',
       allergens: [],
+      purchasePrice: 0,
+      purchaseQuantity: 0,
+      purchaseUnit: '',
       isActive: true,
+      isFavourite: false,
     }
   });
 
@@ -153,6 +160,8 @@ export default function AddRecipePage() {
     if (existingRecipe) {
       form.reset({
         ...existingRecipe,
+        associatedProductId: existingRecipe.associatedProductId || '',
+        detailedDescription: existingRecipe.detailedDescription || '',
         ingredients: existingRecipe.ingredients || [],
         steps: existingRecipe.steps || [],
       } as any);
@@ -162,7 +171,7 @@ export default function AddRecipePage() {
   const watchIngredients = useWatch({ control: form.control, name: 'ingredients' });
 
   const totals = useMemo(() => {
-    return watchIngredients.reduce((acc, ing) => {
+    return (watchIngredients || []).reduce((acc, ing) => {
       let weight = ing.quantity;
       if (ing.unit === 'kg' || ing.unit === 'L') weight *= 1000;
       if (ing.unit === 'mg') weight /= 1000;
@@ -172,7 +181,7 @@ export default function AddRecipePage() {
 
   const allergens = useMemo(() => {
     const set = new Set<string>();
-    watchIngredients.forEach(ri => {
+    (watchIngredients || []).forEach(ri => {
       const master = ingredientsMaster?.find(m => m.id === ri.ingredientId);
       master?.allergens?.forEach(a => set.add(a));
     });
@@ -207,14 +216,33 @@ export default function AddRecipePage() {
     if (!firestore) return;
     const id = `ING-${Date.now()}`;
     const ingRef = doc(firestore, 'ingredients', id);
-    const ingData = { ...values, id, updatedAt: new Date().toISOString(), createdAt: new Date().toISOString() };
+    const ingData = { 
+      ...values, 
+      id, 
+      description: values.description || '',
+      purchasePrice: values.purchasePrice || 0,
+      purchaseQuantity: values.purchaseQuantity || 0,
+      purchaseUnit: values.purchaseUnit || '',
+      updatedAt: new Date().toISOString(), 
+      createdAt: new Date().toISOString() 
+    };
 
     setDoc(ingRef, ingData)
       .then(() => {
         setIsAddIngDialogOpen(false);
-        ingForm.reset();
+        ingForm.reset({ 
+          name: '', 
+          category: '', 
+          defaultUnit: 'g', 
+          description: '', 
+          allergens: [], 
+          purchasePrice: 0, 
+          purchaseQuantity: 0, 
+          purchaseUnit: '', 
+          isActive: true, 
+          isFavourite: false 
+        });
         toast({ title: 'Ingredient Registered' });
-        // Automatically add to picker selection
         handleAddIngredient(ingData as any);
       })
       .catch((err) => toast({ variant: 'destructive', title: 'Library Sync Failed' }));
@@ -457,7 +485,7 @@ export default function AddRecipePage() {
                  <div className="space-y-6">
                     <div className="flex justify-between items-center">
                        <span className="text-[10px] font-black uppercase text-stone-500 tracking-widest">Ingredients Count</span>
-                       <span className="font-bold">{watchIngredients.length}</span>
+                       <span className="font-bold">{watchIngredients?.length || 0}</span>
                     </div>
                     <div className="flex justify-between items-center">
                        <span className="text-[10px] font-black uppercase text-stone-500 tracking-widest">Process Steps</span>

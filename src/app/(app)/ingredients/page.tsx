@@ -68,7 +68,11 @@ export default function IngredientLibraryPage() {
       name: '',
       category: '',
       defaultUnit: 'g',
+      description: '',
       allergens: [],
+      purchasePrice: 0,
+      purchaseQuantity: 0,
+      purchaseUnit: '',
       isActive: true,
       isFavourite: false,
     }
@@ -89,7 +93,18 @@ export default function IngredientLibraryPage() {
         isFavourite: editingIngredient.isFavourite || false,
       });
     } else {
-      form.reset({ name: '', category: '', defaultUnit: 'g', allergens: [], isActive: true, isFavourite: false });
+      form.reset({ 
+        name: '', 
+        category: '', 
+        defaultUnit: 'g', 
+        description: '', 
+        allergens: [], 
+        purchasePrice: 0, 
+        purchaseQuantity: 0, 
+        purchaseUnit: '', 
+        isActive: true, 
+        isFavourite: false 
+      });
     }
   }, [editingIngredient, form]);
 
