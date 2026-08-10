@@ -28,7 +28,8 @@ import {
   Users,
   Clock,
   ChevronDown,
-  AlertTriangle
+  AlertTriangle,
+  PlayCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCollection, useFirestore, useDoc } from '@/firebase';
@@ -43,6 +44,7 @@ import { saveCostingAction } from '../actions';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
+import { CostingGuide } from '@/components/costing-guide';
 
 const costingFormSchema = z.object({
   productId: z.string().min(1, 'Product selection is required'),
@@ -95,6 +97,7 @@ function NewCostingForm() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(true);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
 
   const form = useForm<CostingFormValues>({
     resolver: zodResolver(costingFormSchema),
@@ -262,6 +265,16 @@ function NewCostingForm() {
 
   return (
     <>
+      <CostingGuide 
+        isOpen={isGuideOpen} 
+        onClose={() => setIsGuideOpen(false)}
+        selectedProduct={selectedProduct}
+        activeRecipe={activeRecipe}
+        results={calculationResults}
+        formValues={watchAll}
+        suggestedPrice={suggestedPrice}
+      />
+
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full h-12 w-12 border-2"><ArrowLeft className="h-5 w-5" /></Button>
@@ -279,9 +292,25 @@ function NewCostingForm() {
         </div>
       </div>
 
+      {/* Guide Banner Section */}
+      <Card className="mb-8 rounded-[2rem] border-none shadow-lg bg-stone-900 text-white overflow-hidden">
+        <CardContent className="p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="space-y-1 text-center md:text-left">
+            <h3 className="text-xl font-headline font-bold flex items-center gap-3 justify-center md:justify-start">
+               <ShieldCheck className="h-6 w-6 text-primary" />
+               Final Costing Guide
+            </h3>
+            <p className="text-xs text-stone-400 font-light">Follow these steps to complete the final financial simulation and determine the Basic Cost of the selected product.</p>
+          </div>
+          <Button onClick={() => setIsGuideOpen(true)} className="rounded-xl h-12 px-8 shadow-2xl shadow-primary/20 bg-primary text-stone-950 font-bold uppercase text-[10px] tracking-widest hover:scale-105 transition-all">
+             <PlayCircle className="mr-2 h-4 w-4" /> Start Costing Guide
+          </Button>
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-8 space-y-8">
-          {/* Integrity Warnings (Step 31) */}
+          {/* Integrity Warnings */}
           {calculationResults && calculationResults.warnings.length > 0 && (
             <Card className="border-none shadow-lg bg-amber-50 rounded-2xl overflow-hidden border-l-8 border-l-amber-500">
                <CardContent className="p-6 flex gap-4">
