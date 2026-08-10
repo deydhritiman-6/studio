@@ -39,6 +39,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const galleryFormSchema = z.object({
   productId: z.string().optional(),
@@ -64,6 +65,7 @@ export default function PhotoGalleryManagementPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [viewingImage, setViewingImage] = useState<string | null>(null);
+  const [identityMode, setIdentityMode] = useState<'existing' | 'new'>('existing');
 
   const { toast } = useToast();
 
@@ -89,7 +91,8 @@ export default function PhotoGalleryManagementPage() {
         subPhoto2: editingGallery.subImages?.[1] || '',
         subPhoto3: editingGallery.subImages?.[2] || '',
       });
-    } else {
+      setIdentityMode('existing');
+    } else if (isAddDialogOpen) {
       form.reset({
         productId: '',
         productName: '',
@@ -98,6 +101,7 @@ export default function PhotoGalleryManagementPage() {
         subPhoto2: '',
         subPhoto3: '',
       });
+      setIdentityMode('new');
     }
   }, [editingGallery, isAddDialogOpen, form]);
 
@@ -347,35 +351,37 @@ export default function PhotoGalleryManagementPage() {
                        <FormField control={form.control} name="productName" render={({ field }) => (
                          <FormItem>
                             <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Target Identity</FormLabel>
-                            <Select 
-                              onValueChange={(val) => {
-                                const prod = products?.find(p => p.name === val);
-                                field.onChange(val);
-                                if (prod) form.setValue('productId', prod.id);
-                              }} 
-                              defaultValue={field.value} 
-                              value={field.value}
-                            >
-                               <FormControl>
-                                  <SelectTrigger className="h-12 rounded-xl border-stone-200">
-                                     <SelectValue placeholder="Select existing or enter new..." />
-                                  </SelectTrigger>
-                               </FormControl>
-                               <SelectContent>
-                                  {products?.map(p => <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>)}
-                                  <Separator className="my-2" />
-                                  <div className="p-2" onPointerDown={(e) => e.stopPropagation()}>
-                                     <p className="text-[9px] font-black uppercase text-stone-400 mb-2">New Identity</p>
-                                     <Input 
-                                        placeholder="Type new identity name..." 
-                                        className="h-8 text-xs" 
-                                        value={field.value}
-                                        onChange={(e) => field.onChange(e.target.value)} 
-                                        onKeyDown={(e) => e.stopPropagation()} 
-                                     />
-                                  </div>
-                               </SelectContent>
-                            </Select>
+                            <Tabs value={identityMode} onValueChange={(v: any) => setIdentityMode(v)} className="w-full">
+                               <TabsList className="grid w-full grid-cols-2 bg-muted/30 h-9 rounded-xl p-1 mb-2">
+                                  <TabsTrigger value="existing" className="rounded-lg text-[9px] uppercase font-bold">Select Existing</TabsTrigger>
+                                  <TabsTrigger value="new" className="rounded-lg text-[9px] uppercase font-bold">Manual Entry</TabsTrigger>
+                               </TabsList>
+                               <TabsContent value="existing" className="mt-0">
+                                  <Select 
+                                    onValueChange={(val) => {
+                                      const prod = products?.find(p => p.name === val);
+                                      field.onChange(val);
+                                      if (prod) form.setValue('productId', prod.id);
+                                    }} 
+                                    defaultValue={field.value} 
+                                    value={field.value}
+                                  >
+                                     <FormControl>
+                                        <SelectTrigger className="h-12 rounded-xl border-stone-200">
+                                           <SelectValue placeholder="Select existing product..." />
+                                        </SelectTrigger>
+                                     </FormControl>
+                                     <SelectContent>
+                                        {products?.map(p => <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>)}
+                                     </SelectContent>
+                                  </Select>
+                               </TabsContent>
+                               <TabsContent value="new" className="mt-0">
+                                  <FormControl>
+                                     <Input placeholder="Type new identity name..." className="h-12 rounded-xl" {...field} />
+                                  </FormControl>
+                               </TabsContent>
+                            </Tabs>
                             <FormMessage />
                          </FormItem>
                        )} />
