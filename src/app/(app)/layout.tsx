@@ -90,6 +90,7 @@ const navItems = [
     icon: Package,
     label: 'Products',
     subItems: [
+      { href: '/photo-gallery', icon: Images, label: 'Photo Gallery' },
       { href: '/products', icon: Package, label: 'Artisan Portfolio' },
       { href: '/products/bin', icon: Trash2, label: 'Product Bin' },
     ]
@@ -102,7 +103,6 @@ const navItems = [
       { href: '/material-purchase', icon: Wallet, label: 'Material Purchase' },
     ]
   },
-  { href: '/photo-gallery', icon: Images, label: 'Photo Gallery' },
   { href: '/inventory', icon: Boxes, label: 'Inventory' },
   {
     icon: FileText,
