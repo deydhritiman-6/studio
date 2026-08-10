@@ -93,6 +93,7 @@ export type ProductDimensions = {
   customLabel2?: string;
   customLabel3?: string;
   additionalDescription?: string;
+  patternSize?: number;
 };
 
 export type ProductTexture = {

@@ -182,6 +182,7 @@ const productFormSchema = z.object({
     customLabel2: z.string().optional(),
     customLabel3: z.string().optional(),
     additionalDescription: z.string().optional(),
+    patternSize: z.coerce.number().optional(),
   }),
   price: z.coerce.number().min(0, 'Retail Value must be at least 0.'),
   wholesalePrice: z.coerce.number().min(0, 'Wholesale Value must be at least 0.'),
@@ -592,6 +593,13 @@ export default function ProductsPage() {
                                     </Select>
                                   </FormItem>
                                 )} />
+                                <FormField control={form.control} name="productDimensions.patternSize" render={({ field }) => (
+                                  <FormItem className={cn(watchPattern === 'None' && "opacity-40 pointer-events-none")}>
+                                    <FormLabel className="uppercase text-[9px] font-bold text-muted-foreground">Pattern Relief Size (MM)</FormLabel>
+                                    <FormControl><Input type="number" className="h-10 rounded-xl" {...field} value={field.value ?? ''} /></FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )} />
                             </div>
                           </div>
 
@@ -613,6 +621,12 @@ export default function ProductsPage() {
                                    <p className="text-[8px] font-black uppercase text-stone-400">Surface Relief</p>
                                    <p className="text-xs font-medium text-stone-600">{watchPattern}</p>
                                 </div>
+                                {watchDimensions.patternSize && (
+                                  <div className="space-y-1">
+                                    <p className="text-[8px] font-black uppercase text-stone-400">Pattern Size</p>
+                                    <p className="text-xs font-medium text-stone-600">{watchDimensions.patternSize} mm</p>
+                                  </div>
+                                )}
                                 {watchPattern === 'Molded Chocolate Grid Texture' && (
                                   <div className="space-y-1">
                                     <p className="text-[8px] font-black uppercase text-stone-400">Segments</p>
