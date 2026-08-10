@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -392,8 +391,8 @@ export function CostingGuide({
     },
     {
       title: "Step 16 — Save the Simulation",
-      instruction: "Synchronize your findings with the secure artisan vault for future reference.",
-      fieldId: "field-productId",
+      instruction: "Synchronize your findings with the secure artisan vault for future reference by clicking the 'Commit Financial Simulation' button.",
+      fieldId: "btn-commit-sidebar",
       animation: (
         <div className="flex flex-col items-center justify-center h-full space-y-4">
            <motion.div 
@@ -408,8 +407,8 @@ export function CostingGuide({
     },
     {
       title: "Step 17 — Final Cost Approval",
-      instruction: "Finalize this version to create a permanent historical costing snapshot for executive review.",
-      fieldId: "field-productId",
+      instruction: "Finalize this version using the sidebar action to create a permanent historical costing snapshot for executive review.",
+      fieldId: "btn-commit-sidebar",
       animation: (
         <div className="space-y-4 text-left p-6 bg-muted/20 rounded-[2rem] border border-dashed border-stone-200">
            <div className="flex items-center gap-3"><CheckCircle2 className="h-4 w-4 text-green-500" /> <span className="text-[10px] font-bold uppercase">Identity Verified</span></div>
@@ -492,6 +491,19 @@ export function CostingGuide({
                          </div>
                       </div>
                     )}
+                    
+                    {/* Final Step Action Helper */}
+                    {(isLastStep || currentStep === 15) && !validationError && (
+                      <div className="pt-4 animate-in fade-in zoom-in-95 duration-700">
+                        <Button 
+                          variant="outline" 
+                          className="w-full border-primary/40 text-primary hover:bg-primary hover:text-stone-950 font-black uppercase text-[10px] tracking-widest h-12"
+                          onClick={() => onNavigateToField("btn-commit-sidebar")}
+                        >
+                          Show Me The Action Button
+                        </Button>
+                      </div>
+                    )}
                  </motion.div>
               </AnimatePresence>
 
@@ -542,4 +554,3 @@ export function CostingGuide({
     </div>
   );
 }
-

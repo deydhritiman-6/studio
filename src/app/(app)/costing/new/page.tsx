@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
@@ -606,6 +605,19 @@ function NewCostingForm() {
                                <span className="text-xs text-stone-400 italic">Suggested Retail</span>
                                <span className="text-2xl font-bold text-green-400 tabular-nums">₹{suggestedPrice.toFixed(0)}</span>
                             </div>
+                        </div>
+
+                        <div className="pt-6">
+                           <Button 
+                              disabled={isSaving || !calculationResults} 
+                              id="btn-commit-sidebar" 
+                              onClick={form.handleSubmit(onSubmit)} 
+                              className="w-full h-16 text-lg font-bold rounded-2xl shadow-2xl shadow-primary/30 bg-primary text-stone-950 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                           >
+                              {isSaving ? <Loader2 className="animate-spin mr-2" /> : <ShieldCheck className="mr-2 h-6 w-6" />}
+                              Commit Financial Simulation
+                           </Button>
+                           <p className="text-[9px] text-center text-stone-500 font-bold uppercase tracking-[0.2em] mt-4">Secure Artisan Vault Sync</p>
                         </div>
                     </div>
                  ) : (
