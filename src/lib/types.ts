@@ -103,6 +103,7 @@ export type Product = {
   dimensions?: string; // Legacy string format
   productDimensions?: ProductDimensions; // New structured format
   productShape?: 'Square' | 'Rectangular' | 'Spherical' | 'Half Spherical' | 'Circular' | 'Cylindrical' | 'Oval' | 'Heart' | 'Triangular' | 'Conical' | 'Irregular' | 'Other';
+  productSkin?: 'Dark' | 'Milk' | 'White' | 'Rose' | 'Gold';
   price: number;
   wholesalePrice: number;
   availabilityStatus: 'In Stock' | 'Out of Stock';

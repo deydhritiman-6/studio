@@ -16,12 +16,22 @@ import { cn } from '@/lib/utils';
 interface ChocolateMeshViewerProps {
   shape: string;
   dimensions: ProductDimensions;
+  skin?: string;
   className?: string;
 }
+
+const SKIN_MAP: Record<string, { color: number, roughness: number, metalness: number }> = {
+  Dark: { color: 0x3d1e16, roughness: 0.38, metalness: 0.08 },
+  Milk: { color: 0x7b3f00, roughness: 0.45, metalness: 0.05 },
+  White: { color: 0xf3e5ab, roughness: 0.3, metalness: 0.02 },
+  Rose: { color: 0xe5a9a9, roughness: 0.4, metalness: 0.05 },
+  Gold: { color: 0xd4af37, roughness: 0.2, metalness: 0.8 },
+};
 
 export function ChocolateMeshViewer({
   shape,
   dimensions,
+  skin = 'Dark',
   className,
 }: ChocolateMeshViewerProps) {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -184,7 +194,13 @@ export function ChocolateMeshViewer({
 
     geometry.center();
 
-    const material = new THREE_LIB.MeshStandardMaterial({ color: 0x3d1e16, roughness: 0.38, metalness: 0.08 });
+    const skinProps = SKIN_MAP[skin] || SKIN_MAP.Dark;
+    const material = new THREE_LIB.MeshStandardMaterial({ 
+      color: skinProps.color, 
+      roughness: skinProps.roughness, 
+      metalness: skinProps.metalness 
+    });
+    
     const mesh = new THREE_LIB.Mesh(geometry, material);
     const wireframeGeometry = new THREE_LIB.WireframeGeometry(geometry);
     const wireframeMaterial = new THREE_LIB.LineBasicMaterial({ color: 0xd4af37, transparent: true, opacity: 0.48 });
@@ -206,7 +222,7 @@ export function ChocolateMeshViewer({
       cameraRef.current.lookAt(0, 0, 0);
       cameraRef.current.updateProjectionMatrix();
     }
-  }, [shape, dimensions]);
+  }, [shape, dimensions, skin]);
 
   useEffect(() => {
     const el = mountRef.current;

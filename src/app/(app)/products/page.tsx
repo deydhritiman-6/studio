@@ -24,7 +24,8 @@ import {
   Search,
   CheckCircle2,
   ShieldAlert,
-  Images
+  Images,
+  Palette
 } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
@@ -136,6 +137,7 @@ const productFormSchema = z.object({
   flavor: z.string().min(1, 'Flavor profile is required.'),
   weight: z.string().optional(),
   productShape: z.enum(['Square', 'Rectangular', 'Spherical', 'Half Spherical', 'Circular', 'Cylindrical', 'Oval', 'Heart', 'Triangular', 'Conical', 'Irregular', 'Other']).default('Rectangular'),
+  productSkin: z.enum(['Dark', 'Milk', 'White', 'Rose', 'Gold']).default('Dark'),
   productDimensions: z.object({
     unit: z.enum(['mm', 'cm', 'inch']).default('mm'),
     length: z.coerce.number().optional(),
@@ -171,7 +173,7 @@ const sanitizeData = (obj: any): any => {
   } else if (obj !== null && typeof obj === 'object') {
     return Object.fromEntries(
       Object.entries(obj)
-        .filter(([_, v]) => v !== undefined && !Number.isNaN(v))
+        .filter(([_, v]) => v !== undefined && v !== null && (typeof v !== 'number' || !Number.isNaN(v)))
         .map(([k, v]) => [k, sanitizeData(v)])
     );
   }
@@ -198,7 +200,6 @@ export default function ProductsPage() {
   const [viewingProduct, setViewingProduct] = useState<{images: string[], startIndex: number, productName: string, hint: string} | null>(null);
   const [identityMode, setIdentityMode] = useState<'existing' | 'new'>('existing');
 
-  // Filter unique identities specifically from the photo gallery for the "Select Existing" dropdown
   const galleryIdentities = useMemo(() => {
     const fromGalleries = galleries?.map(g => g.productName) || [];
     return Array.from(new Set(fromGalleries)).sort();
@@ -215,6 +216,7 @@ export default function ProductsPage() {
       flavor: '',
       weight: '',
       productShape: 'Rectangular',
+      productSkin: 'Dark',
       productDimensions: { unit: 'mm' },
       price: 0,
       wholesalePrice: 0,
@@ -228,6 +230,7 @@ export default function ProductsPage() {
   });
 
   const watchShape = useWatch({ control: form.control, name: 'productShape' });
+  const watchSkin = useWatch({ control: form.control, name: 'productSkin' });
   const watchDimensions = useWatch({ control: form.control, name: 'productDimensions' });
   const { errors, isValid } = form.formState;
 
@@ -239,6 +242,7 @@ export default function ProductsPage() {
         flavor: editingProduct.flavor,
         weight: editingProduct.weight || '',
         productShape: editingProduct.productShape || 'Rectangular',
+        productSkin: editingProduct.productSkin || 'Dark',
         productDimensions: editingProduct.productDimensions || { unit: 'mm' } as ProductDimensions,
         price: editingProduct.price,
         wholesalePrice: editingProduct.wholesalePrice,
@@ -256,6 +260,7 @@ export default function ProductsPage() {
         flavor: '',
         weight: '',
         productShape: 'Rectangular',
+        productSkin: 'Dark',
         productDimensions: { unit: 'mm' } as ProductDimensions,
         price: 0,
         wholesalePrice: 0,
@@ -281,6 +286,7 @@ export default function ProductsPage() {
         flavor: product.flavor,
         weight: product.weight || '',
         productShape: product.productShape || 'Rectangular',
+        productSkin: product.productSkin || 'Dark',
         productDimensions: product.productDimensions || { unit: 'mm' } as ProductDimensions,
         price: product.price,
         wholesalePrice: product.wholesalePrice,
@@ -486,7 +492,6 @@ export default function ProductsPage() {
                              <Select 
                                 onValueChange={(val) => {
                                   field.onChange(val);
-                                  // Auto-populate photos from gallery when an identity is selected
                                   const galleryEntry = galleries?.find(g => g.productName === val);
                                   if (galleryEntry) {
                                     form.setValue('mainImage', galleryEntry.mainImage, { shouldValidate: true });
@@ -559,18 +564,37 @@ export default function ProductsPage() {
                       <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-[0.2em]">
                         <Ruler className="h-4 w-4" /> Dimension Logic
                       </div>
-                      <FormField control={form.control} name="productDimensions.unit" render={({ field }) => (
-                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                          <SelectTrigger className="h-8 w-24 rounded-lg bg-background text-[10px] font-bold">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="mm">mm</SelectItem>
-                            <SelectItem value="cm">cm</SelectItem>
-                            <SelectItem value="inch">inch</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )} />
+                      <div className="flex gap-4">
+                        <FormField control={form.control} name="productSkin" render={({ field }) => (
+                          <div className="flex items-center gap-2">
+                            <Palette className="h-3 w-3 text-stone-400" />
+                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                              <SelectTrigger className="h-8 w-32 rounded-lg bg-background text-[10px] font-bold">
+                                <SelectValue placeholder="Artisan Skin" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Dark">Dark Chocolate</SelectItem>
+                                <SelectItem value="Milk">Milk Chocolate</SelectItem>
+                                <SelectItem value="White">White Chocolate</SelectItem>
+                                <SelectItem value="Rose">Roseberry Pink</SelectItem>
+                                <SelectItem value="Gold">Gold Dusted</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )} />
+                        <FormField control={form.control} name="productDimensions.unit" render={({ field }) => (
+                          <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                            <SelectTrigger className="h-8 w-24 rounded-lg bg-background text-[10px] font-bold">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="mm">mm</SelectItem>
+                              <SelectItem value="cm">cm</SelectItem>
+                              <SelectItem value="inch">inch</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )} />
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -597,7 +621,7 @@ export default function ProductsPage() {
                       ))}
                     </div>
                     
-                    <ChocolateMeshViewer shape={watchShape} dimensions={watchDimensions as any} />
+                    <ChocolateMeshViewer shape={watchShape} dimensions={watchDimensions as any} skin={watchSkin} />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -688,6 +712,7 @@ export default function ProductsPage() {
                               [entry.mainImage, ...entry.subImages].map((img, idx) => (
                                 <button 
                                   key={`${entry.id}-${idx}`}
+                                  type="button"
                                   onClick={() => {
                                     if (isGalleryPickerOpen?.field) {
                                       form.setValue(isGalleryPickerOpen.field, img, { shouldValidate: true });
@@ -793,7 +818,7 @@ export default function ProductsPage() {
               <CardContent className="p-6 flex-grow space-y-6">
                 <div className="space-y-1">
                    <CardTitle className="font-headline text-2xl group-hover:text-primary transition-colors">{product.name}</CardTitle>
-                   <p className="text-[10px] text-stone-400 uppercase tracking-widest font-black">{product.flavor}</p>
+                   <p className="text-[10px] text-stone-400 uppercase tracking-[0.3em] font-black">{product.flavor}</p>
                 </div>
 
                 <div className="flex justify-between items-end pt-4 border-t">
