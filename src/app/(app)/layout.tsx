@@ -1,3 +1,4 @@
+
 'use client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -48,7 +49,9 @@ import {
   PlusCircle,
   Trash2,
   Droplets,
-  Calculator
+  Calculator,
+  Store,
+  Wallet
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -88,6 +91,14 @@ const navItems = [
     subItems: [
       { href: '/products', icon: Package, label: 'Artisan Portfolio' },
       { href: '/products/bin', icon: Trash2, label: 'Product Bin' },
+    ]
+  },
+  {
+    icon: Store,
+    label: 'Procurement',
+    subItems: [
+      { href: '/vendors', icon: Store, label: 'Vendors' },
+      { href: '/material-purchase', icon: Wallet, label: 'Material Purchase' },
     ]
   },
   { href: '/photo-gallery', icon: Images, label: 'Photo Gallery' },

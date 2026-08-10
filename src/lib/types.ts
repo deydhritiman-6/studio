@@ -1,3 +1,4 @@
+
 export type Customer = {
   id: string;
   name: string;
@@ -243,6 +244,40 @@ export type InventoryItem = {
   category: 'Raw Materials' | 'Packaging Materials' | 'Finished Products';
   stockLevel: number;
   status: 'In Stock' | 'Low Stock' | 'Out of Stock';
+};
+
+export type Vendor = {
+  id: string;
+  name: string;
+  contactPerson: string;
+  email: string;
+  phone: string;
+  address: string;
+  categories: string[];
+  status: 'Active' | 'Inactive';
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type PurchaseItem = {
+  ingredientId: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  price: number;
+};
+
+export type MaterialPurchase = {
+  id: string;
+  purchaseDate: string;
+  vendorId: string;
+  vendorName: string;
+  invoiceNumber: string;
+  totalAmount: number;
+  status: 'Ordered' | 'Received' | 'Cancelled';
+  items: PurchaseItem[];
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type SalesData = {

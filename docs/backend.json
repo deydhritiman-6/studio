@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "Ingredient": {
@@ -86,6 +87,54 @@
         "updatedAt": { "type": "string" }
       },
       "required": ["name", "status", "batchSize"]
+    },
+    "Vendor": {
+      "title": "Vendor",
+      "description": "A supplier for ingredients and materials.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "contactPerson": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "categories": { "type": "array", "items": { "type": "string" } },
+        "status": { "type": "string", "enum": ["Active", "Inactive"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["name", "status"]
+    },
+    "MaterialPurchase": {
+      "title": "Material Purchase",
+      "description": "A record of purchasing raw materials or ingredients.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "purchaseDate": { "type": "string" },
+        "vendorId": { "type": "string" },
+        "vendorName": { "type": "string" },
+        "invoiceNumber": { "type": "string" },
+        "totalAmount": { "type": "number" },
+        "status": { "type": "string", "enum": ["Ordered", "Received", "Cancelled"] },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ingredientId": { "type": "string" },
+              "name": { "type": "string" },
+              "quantity": { "type": "number" },
+              "unit": { "type": "string" },
+              "price": { "type": "number" }
+            }
+          }
+        },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["purchaseDate", "vendorId", "totalAmount"]
     }
   },
   "auth": {
@@ -116,10 +165,6 @@
       "schema": "#/backend/entities/Product",
       "description": "Collection of chocolate products."
     },
-    "/product-galleries/{galleryId}": {
-      "schema": "#/backend/entities/ProductGallery",
-      "description": "Collection of product photo sets."
-    },
     "/inventory/{itemId}": {
       "schema": "#/backend/entities/InventoryItem",
       "description": "Collection of inventory items."
@@ -131,6 +176,14 @@
     "/quotations/{quotationId}": {
       "schema": "#/backend/entities/Quotation",
       "description": "Collection of customer quotations."
+    },
+    "/vendors/{vendorId}": {
+      "schema": "#/backend/entities/Vendor",
+      "description": "Collection of material suppliers."
+    },
+    "/material-purchases/{purchaseId}": {
+      "schema": "#/backend/entities/MaterialPurchase",
+      "description": "Collection of raw material purchase records."
     }
   }
 }
