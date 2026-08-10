@@ -1,218 +1,105 @@
-
 {
   "entities": {
-    "Customer": {
-      "title": "Customer",
-      "description": "A customer profile.",
+    "Ingredient": {
+      "title": "Ingredient",
+      "description": "A master ingredient in the library.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
-        "email": { "type": "string", "format": "email" },
-        "phone": { "type": "string" },
-        "customerType": { "type": "string", "enum": ["VIP", "Regular", "Corporate", "Wholesale"] },
-        "vipLevel": { "type": "string", "enum": ["Gold", "Platinum", "Diamond", "Silver"] },
-        "totalPurchaseValue": { "type": "number" },
-        "joinedDate": { "type": "string", "format": "date" }
-      },
-      "required": ["name", "email", "customerType"]
-    },
-    "UserAccount": {
-      "title": "User Account",
-      "description": "An internal staff account.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "email": { "type": "string", "format": "email" },
-        "password": { "type": "string" },
-        "role": { "type": "string", "enum": ["Super Admin", "Store Manager", "Staff"] },
-        "photoUrl": { "type": "string" },
+        "category": { "type": "string" },
+        "subCategory": { "type": "string" },
+        "description": { "type": "string" },
+        "defaultUnit": { "type": "string", "enum": ["mg", "g", "kg", "ml", "L", "pcs", "tbsp", "tsp", "pinch"] },
+        "density": { "type": "number", "description": "g/ml for volume-to-weight conversions" },
+        "allergens": { "type": "array", "items": { "type": "string" } },
+        "purchasePrice": { "type": "number" },
+        "purchaseQuantity": { "type": "number" },
+        "purchaseUnit": { "type": "string" },
+        "isActive": { "type": "boolean" },
+        "isFavourite": { "type": "boolean" },
         "createdAt": { "type": "string" },
-        "permissions": { "type": "array", "items": { "type": "string" } }
+        "updatedAt": { "type": "string" }
       },
-      "required": ["name", "email", "role"]
-    },
-    "Order": {
-      "title": "Order",
-      "description": "A customer order.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "customerId": { "type": "string" },
-        "customerName": { "type": "string" },
-        "orderDate": { "type": "string", "format": "date" },
-        "totalAmount": { "type": "number" },
-        "products": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "productId": { "type": "string" },
-              "quantity": { "type": "number" }
-            }
-          }
-        },
-        "paymentStatus": { "type": "string", "enum": ["Paid", "Pending", "Failed"] },
-        "deliveryStatus": { "type": "string", "enum": ["Pending", "Confirmed", "Preparing", "Packed", "Shipped", "Delivered"] },
-        "shippingStatus": { "type": "string", "enum": ["Product Preparation in Progress", "Product Ready", "Product Dispatched"] },
-        "dispatchDetails": {
-          "type": "object",
-          "properties": {
-            "description": { "type": "string" },
-            "courierName": { "type": "string" },
-            "trackingNumber": { "type": "string" },
-            "dispatchDate": { "type": "string" },
-            "expectedDeliveryDate": { "type": "string" },
-            "updatedBy": { "type": "string" },
-            "updatedAt": { "type": "string" }
-          }
-        }
-      },
-      "required": ["customerId", "customerName", "orderDate", "totalAmount", "products", "paymentStatus", "deliveryStatus"]
-    },
-    "Product": {
-      "title": "Product",
-      "description": "A chocolate product.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "flavor": { "type": "string" },
-        "price": { "type": "number" },
-        "wholesalePrice": { "type": "number" },
-        "availabilityStatus": { "type": "string", "enum": ["In Stock", "Out of Stock"] },
-        "imageUrls": { "type": "array", "items": { "type": "string" } },
-        "imageHint": { "type": "string" },
-        "weight": { "type": "string" },
-        "dimensions": { "type": "string" },
-        "isArchived": { "type": "boolean" },
-        "deletedAt": { "type": "string" },
-        "productDimensions": {
-            "type": "object",
-            "properties": {
-                "unit": { "type": "string", "enum": ["mm", "cm", "inch"] },
-                "length": { "type": "number" },
-                "width": { "type": "number" },
-                "height": { "type": "number" },
-                "diameter": { "type": "number" },
-                "sideLength": { "type": "number" },
-                "base": { "type": "number" },
-                "radius": { "type": "number" },
-                "custom1": { "type": "number" },
-                "custom2": { "type": "number" },
-                "custom3": { "type": "number" },
-                "customLabel1": { "type": "string" },
-                "customLabel2": { "type": "string" },
-                "customLabel3": { "type": "string" },
-                "additionalDescription": { "type": "string" }
-            }
-        },
-        "productShape": { "type": "string", "enum": ["Square", "Rectangular", "Spherical", "Half Spherical", "Circular", "Cylindrical", "Oval", "Heart", "Triangular", "Conical", "Irregular", "Other"] }
-      },
-      "required": ["name", "flavor", "price", "wholesalePrice", "availabilityStatus", "imageUrls"]
-    },
-    "ProductGallery": {
-      "title": "Product Gallery",
-      "description": "A set of photographs associated with a product.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "productId": { "type": "string" },
-        "productName": { "type": "string" },
-        "mainImage": { "type": "string" },
-        "subImages": { "type": "array", "items": { "type": "string" } },
-        "createdAt": { "type": "string" }
-      },
-      "required": ["productId", "productName", "mainImage", "createdAt"]
+      "required": ["name", "category", "defaultUnit"]
     },
     "Recipe": {
       "title": "Recipe",
-      "description": "A product recipe.",
+      "description": "A professional chocolate recipe with versioning.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
-        "associatedProduct": { "type": "string" },
+        "code": { "type": "string" },
+        "associatedProductId": { "type": "string" },
+        "productName": { "type": "string" },
+        "chocolateType": { "type": "string" },
+        "currentVersion": { "type": "string" },
+        "status": { "type": "string", "enum": ["Draft", "Testing", "Approved", "Published", "Archived"] },
+        "difficulty": { "type": "string", "enum": ["Easy", "Intermediate", "Professional", "Master"] },
+        "prepTime": { "type": "number" },
+        "processTime": { "type": "number" },
+        "batchSize": { "type": "number" },
+        "batchUnit": { "type": "string" },
+        "yield": { "type": "number" },
+        "yieldUnit": { "type": "string" },
+        "shortDescription": { "type": "string" },
+        "detailedDescription": { "type": "string" },
+        "internalNotes": { "type": "string" },
         "ingredients": {
           "type": "array",
           "items": {
             "type": "object",
             "properties": {
+              "ingredientId": { "type": "string" },
               "name": { "type": "string" },
-              "quantity": { "type": "string" }
+              "quantity": { "type": "number" },
+              "unit": { "type": "string" },
+              "percentage": { "type": "number" },
+              "preparation": { "type": "string" },
+              "stage": { "type": "string" },
+              "notes": { "type": "string" },
+              "order": { "type": "number" }
             }
           }
-        }
-      },
-      "required": ["name", "associatedProduct", "ingredients"]
-    },
-    "InventoryItem": {
-      "title": "Inventory Item",
-      "description": "An item in inventory.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "category": { "type": "string", "enum": ["Raw Materials", "Packaging Materials", "Finished Products"] },
-        "stockLevel": { "type": "number" },
-        "status": { "type": "string", "enum": ["In Stock", "Low Stock", "Out of Stock"] }
-      },
-      "required": ["name", "category", "stockLevel", "status"]
-    },
-    "Distributor": {
-      "title": "Distributor",
-      "description": "A distribution partner.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "contactPerson": { "type": "string" },
-        "email": { "type": "string", "format": "email" },
-        "phone": { "type": "string" },
-        "region": { "type": "string" },
-        "state": { "type": "string" },
-        "district": { "type": "string" },
-        "status": { "type": "string", "enum": ["Active", "Inactive"] },
-        "lastOrderDate": { "type": "string", "format": "date" }
-      },
-      "required": ["name", "contactPerson", "email", "phone", "region", "state", "district", "status"]
-    },
-    "Quotation": {
-      "title": "Quotation",
-      "description": "A sales quotation for a customer.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "customerId": { "type": "string" },
-        "customerName": { "type": "string" },
-        "date": { "type": "string", "format": "date" },
-        "expiryDate": { "type": "string", "format": "date" },
-        "totalAmount": { "type": "number" },
-        "status": { "type": "string", "enum": ["Draft", "Sent", "Accepted", "Expired", "Converted to Order"] },
-        "items": {
+        },
+        "steps": {
           "type": "array",
           "items": {
             "type": "object",
             "properties": {
-              "productId": { "type": "string" },
-              "productName": { "type": "string" },
-              "quantity": { "type": "number" },
-              "pricePerUnit": { "type": "number" },
-              "total": { "type": "number" }
+              "id": { "type": "string" },
+              "title": { "type": "string" },
+              "instructions": { "type": "string" },
+              "temperature": { "type": "number" },
+              "tempUnit": { "type": "string", "enum": ["C", "F"] },
+              "time": { "type": "number" },
+              "equipment": { "type": "string" },
+              "order": { "type": "number" }
             }
           }
         },
-        "notes": { "type": "string" },
-        "terms": { "type": "string" }
+        "allergens": { "type": "array", "items": { "type": "string" } },
+        "totalCost": { "type": "number" },
+        "costPer100g": { "type": "number" },
+        "updatedBy": { "type": "string" },
+        "updatedAt": { "type": "string" }
       },
-      "required": ["customerId", "customerName", "date", "expiryDate", "totalAmount", "status", "items"]
+      "required": ["name", "status", "batchSize"]
     }
   },
   "auth": {
     "providers": ["password"]
   },
   "firestore": {
+    "/ingredients/{ingredientId}": {
+      "schema": "#/backend/entities/Ingredient",
+      "description": "Master library of artisan ingredients."
+    },
+    "/recipes/{recipeId}": {
+      "schema": "#/backend/entities/Recipe",
+      "description": "Collection of professional chocolate recipes."
+    },
     "/customers/{customerId}": {
       "schema": "#/backend/entities/Customer",
       "description": "Collection of customer profiles."
@@ -232,10 +119,6 @@
     "/product-galleries/{galleryId}": {
       "schema": "#/backend/entities/ProductGallery",
       "description": "Collection of product photo sets."
-    },
-    "/recipes/{recipeId}": {
-      "schema": "#/backend/entities/Recipe",
-      "description": "Collection of product recipes."
     },
     "/inventory/{itemId}": {
       "schema": "#/backend/entities/InventoryItem",

@@ -1,233 +1,174 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
-} from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import type { Recipe, Product } from '@/lib/types';
-import { PlusCircle, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { 
+  PlusCircle, 
+  Search, 
+  MoreHorizontal, 
+  Loader2, 
+  BookOpen, 
+  Copy, 
+  Archive, 
+  Trash2, 
+  ChevronRight,
+  Sparkles,
+  ShieldCheck,
+  History
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, doc, setDoc } from 'firebase/firestore';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { collection, query, orderBy } from 'firebase/firestore';
+import type { Recipe } from '@/lib/types';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { duplicateRecipeAction, archiveRecipeAction, deleteRecipeAction } from './actions';
+import { useToast } from '@/hooks/use-toast';
 
-const recipeFormSchema = z.object({
-  name: z.string().min(1, 'Associated recipe is required'),
-  associatedProduct: z.string().min(1, 'Product selection is required'),
-  ingredients: z.string().min(1, 'Ingredients are required. Please provide a comma-separated list, e.g., "Cocoa Beans (1kg), Sugar (500g)"'),
-});
+const statusColors: Record<string, string> = {
+  'Draft': 'bg-slate-500/10 text-slate-500 border-slate-500/20',
+  'Testing': 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+  'Approved': 'bg-green-600/10 text-green-600 border-green-600/20',
+  'Published': 'bg-primary/10 text-primary border-primary/20',
+  'Archived': 'bg-stone-500/10 text-stone-500 border-stone-500/20',
+};
 
-export default function RecipesPage() {
+export default function RecipeManagementPage() {
   const firestore = useFirestore();
-  const recipesQuery = useMemo(() => firestore ? collection(firestore, 'recipes') : null, [firestore]);
-  const { data: recipes, loading: recipesLoading } = useCollection<Recipe>(recipesQuery);
-
-  const productsQuery = useMemo(() => firestore ? collection(firestore, 'products') : null, [firestore]);
-  const { data: products, loading: productsLoading } = useCollection<Product>(productsQuery);
-
-  const [viewRecipe, setViewRecipe] = useState<Recipe | null>(null);
-  const [isAddRecipeOpen, setIsAddRecipeOpen] = useState(false);
+  const recipesQuery = useMemo(() => (firestore ? query(collection(firestore, 'recipes'), orderBy('updatedAt', 'desc')) : null), [firestore]);
+  const { data: recipes, loading } = useCollection<Recipe>(recipesQuery);
+  
+  const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
 
-  const form = useForm<z.infer<typeof recipeFormSchema>>({
-    resolver: zodResolver(recipeFormSchema),
-    defaultValues: {
-      name: '',
-      associatedProduct: '',
-      ingredients: '',
-    },
-  });
+  const filteredRecipes = useMemo(() => {
+    if (!recipes) return [];
+    return recipes.filter(r => 
+      r.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      r.productName?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [recipes, searchTerm]);
 
-  function onAddSubmit(values: z.infer<typeof recipeFormSchema>) {
-    if (!firestore) return;
-    
-    const id = `R${Date.now()}`;
-    const recipeRef = doc(firestore, 'recipes', id);
-    
-    const ingredients = values.ingredients.split(',').map(item => {
-      const parts = item.trim().split('(');
-      const name = parts[0].trim();
-      const quantity = parts.length > 1 ? parts[1].replace(')', '').trim() : '';
-      return { name, quantity };
-    }).filter(ing => ing.name);
+  const handleDuplicate = async (id: string) => {
+    try {
+      const res = await duplicateRecipeAction(id);
+      toast({ title: 'Recipe Duplicated', description: 'Draft version created.' });
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Action Failed' });
+    }
+  };
 
-    const recipeData = {
-      id,
-      name: values.name,
-      associatedProduct: values.associatedProduct,
-      ingredients,
-    };
-
-    setDoc(recipeRef, recipeData)
-      .then(() => {
-        setIsAddRecipeOpen(false);
-        form.reset();
-        toast({ title: 'Recipe Added', description: `${values.name} has been added to your recipes.` });
-      })
-      .catch(async (error) => {
-        const permissionError = new FirestorePermissionError({
-          path: recipeRef.path,
-          operation: 'create',
-          requestResourceData: recipeData,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-      });
-  }
-
-  if (recipesLoading || productsLoading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin" /></div>;
+  if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>;
 
   return (
     <>
-      <Dialog open={isAddRecipeOpen} onOpenChange={setIsAddRecipeOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Add New Recipe</DialogTitle>
-            <DialogDescription>
-              Fill in the details for the new recipe. Select a product from the collection first.
-            </DialogDescription>
-          </DialogHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onAddSubmit)} className="space-y-4 py-4">
-              <FormField
-                control={form.control}
-                name="associatedProduct"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Product Name</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a product" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {products && products.length > 0 ? (
-                          products.map((product) => (
-                            <SelectItem key={product.id} value={product.name}>
-                              {product.name}
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <div className="p-2 text-xs text-muted-foreground text-center">No products found</div>
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Associated Recipe</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., Spicy Chilli Chocolate Bar Formulation" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="ingredients"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Ingredients</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="e.g., Cocoa (1kg), Chilli Flakes (20g), Sugar (150g)" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button type="button" variant="secondary">Cancel</Button>
-                </DialogClose>
-                <Button type="submit">Save Recipe</Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-      
-      <Dialog open={!!viewRecipe} onOpenChange={(open) => !open && setViewRecipe(null)}>
-        {viewRecipe && (
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="font-headline">{viewRecipe.associatedProduct}</DialogTitle>
-              <DialogDescription>{viewRecipe.name}</DialogDescription>
-            </DialogHeader>
-            <div className="py-4">
-              <h4 className="font-semibold mb-2 text-foreground">Full Ingredient List:</h4>
-              <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                {viewRecipe.ingredients.map((ingredient, i) => (
-                  <li key={i}>{ingredient.name} <span className="text-xs">({ingredient.quantity})</span></li>
-                ))}
-              </ul>
-            </div>
-            <DialogFooter>
-              <Button type="button" onClick={() => setViewRecipe(null)}>Close</Button>
-            </DialogFooter>
-          </DialogContent>
-        )}
-      </Dialog>
+      <PageHeader 
+        title="Recipe Formulation Suite" 
+        actions={
+          <Button asChild className="rounded-xl shadow-lg shadow-primary/20">
+            <Link href="/recipes/add">
+              <PlusCircle className="mr-2 h-4 w-4" /> New Formulation
+            </Link>
+          </Button>
+        } 
+      />
 
-      <PageHeader title="Recipes" actions={
-        <Button onClick={() => setIsAddRecipeOpen(true)}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add Recipe
-        </Button>
-      } />
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {recipes?.map((recipe) => (
-          <Card key={recipe.id} className="flex flex-col">
-            <CardHeader>
-              <CardTitle className="font-headline">{recipe.associatedProduct}</CardTitle>
-              <CardDescription>{recipe.name}</CardDescription>
-            </CardHeader>
-            <CardContent className="flex-grow">
-              <h4 className="font-semibold mb-2">Key Ingredients:</h4>
-              <ul className="list-disc list-inside text-sm text-muted-foreground">
-                {recipe.ingredients.slice(0, 3).map((ingredient, i) => (
-                  <li key={i}>{ingredient.name} ({ingredient.quantity})</li>
-                ))}
-                {recipe.ingredients.length > 3 && <li>...and more</li>}
-              </ul>
-            </CardContent>
-            <CardFooter>
-              <Button variant="outline" className="w-full" onClick={() => setViewRecipe(recipe)}>
-                View Full Recipe
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
+      <div className="grid grid-cols-1 gap-8">
+        <div className="relative w-full md:w-96">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input 
+            placeholder="Search artisan recipes..." 
+            className="pl-10 h-11 rounded-xl bg-card border-none shadow-sm"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
+        <Card className="rounded-[2rem] overflow-hidden border-none shadow-xl">
+          <CardContent className="p-0">
+            {filteredRecipes.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/10">
+                    <TableHead className="p-8 uppercase text-[10px] font-black tracking-widest">Recipe Identity</TableHead>
+                    <TableHead className="p-8 uppercase text-[10px] font-black tracking-widest text-center">Batch Configuration</TableHead>
+                    <TableHead className="p-8 uppercase text-[10px] font-black tracking-widest">Allergens</TableHead>
+                    <TableHead className="p-8 uppercase text-[10px] font-black tracking-widest text-center">Formulation Status</TableHead>
+                    <TableHead className="p-8 uppercase text-[10px] font-black tracking-widest text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredRecipes.map((recipe) => (
+                    <TableRow key={recipe.id} className="group hover:bg-muted/5 transition-colors">
+                      <TableCell className="p-8">
+                        <div className="space-y-1">
+                          <h3 className="text-lg font-bold font-headline">{recipe.name}</h3>
+                          <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-stone-400">
+                             <Sparkles className="h-3 w-3 text-primary" /> {recipe.productName || 'General Formulation'}
+                             <Separator orientation="vertical" className="h-3" />
+                             <History className="h-3 w-3" /> Ver {recipe.currentVersion}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="p-8 text-center">
+                        <div className="inline-flex flex-col items-center bg-muted/30 px-6 py-2 rounded-2xl border">
+                           <span className="text-xl font-bold font-headline">{recipe.batchSize} {recipe.batchUnit}</span>
+                           <span className="text-[9px] font-black uppercase tracking-tighter text-stone-400">Standard Batch</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="p-8">
+                        <div className="flex flex-wrap gap-1 max-w-[200px]">
+                           {recipe.allergens?.length > 0 ? (
+                             recipe.allergens.map(a => <Badge key={a} variant="outline" className="text-[9px] border-rose-200 text-rose-600 bg-rose-50 font-bold">{a}</Badge>)
+                           ) : (
+                             <span className="text-[10px] italic text-stone-400">None detected</span>
+                           )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="p-8 text-center">
+                        <Badge variant="outline" className={cn("rounded-full px-4 py-1 text-[10px] font-black uppercase tracking-widest border-2", statusColors[recipe.status])}>
+                          {recipe.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="p-8 text-right">
+                        <div className="flex justify-end gap-2">
+                           <Button asChild variant="secondary" size="sm" className="rounded-xl h-10 px-6 hover:bg-primary hover:text-white transition-all shadow-sm">
+                             <Link href={`/recipes/edit/${recipe.id}`}>Edit</Link>
+                           </Button>
+                           <DropdownMenu>
+                              <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-56 rounded-xl border-2">
+                                <DropdownMenuItem onClick={() => handleDuplicate(recipe.id)}><Copy className="h-4 w-4 mr-2" /> Duplicate Draft</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => archiveRecipeAction(recipe.id)}><Archive className="h-4 w-4 mr-2" /> Archive Record</DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => deleteRecipeAction(recipe.id)} className="text-destructive"><Trash2 className="h-4 w-4 mr-2" /> Final Delete</DropdownMenuItem>
+                              </DropdownMenuContent>
+                           </DropdownMenu>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-32 space-y-6 text-center px-4">
+                 <BookOpen className="h-16 w-16 text-stone-200" />
+                 <div className="space-y-1">
+                    <h4 className="text-2xl font-headline italic text-stone-400">The formulation log is silent.</h4>
+                    <p className="text-[10px] uppercase font-black tracking-widest text-stone-300">Register your first artisan recipe to begin manufacturing.</p>
+                 </div>
+                 <Button asChild variant="outline" className="rounded-xl px-10 border-2">
+                   <Link href="/recipes/add">Initialize First Formula</Link>
+                 </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </>
   );

@@ -1,4 +1,3 @@
-
 'use client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -47,7 +46,8 @@ import {
   ClipboardList,
   Images,
   PlusCircle,
-  Trash2
+  Trash2,
+  Droplets
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -73,7 +73,14 @@ const navItems = [
   { href: '/customers', icon: Users, label: 'Customers' },
   { href: '/orders', icon: ShoppingCart, label: 'Orders' },
   { href: '/production', icon: Package, label: 'Production' },
-  { href: '/recipes', icon: BookOpen, label: 'Recipes' },
+  {
+    icon: BookOpen,
+    label: 'Recipes',
+    subItems: [
+      { href: '/recipes', icon: BookOpen, label: 'Recipe Manager' },
+      { href: '/ingredients', icon: Droplets, label: 'Ingredient Library' },
+    ]
+  },
   {
     icon: Package,
     label: 'Products',
@@ -150,19 +157,16 @@ function NavSidebar({ pathname }: { pathname: string }) {
   }, []);
 
   useEffect(() => {
-    // Initialize state
     startCollapseTimer();
     return () => stopCollapseTimer();
   }, [startCollapseTimer, stopCollapseTimer]);
 
   const handleMouseEnter = () => {
-    // Crucial: Stop any pending collapse when mouse enters
     stopCollapseTimer();
     setOpen(true);
   };
 
   const handleMouseLeave = () => {
-    // Resume auto-collapse logic when mouse leaves
     startCollapseTimer();
   };
 

@@ -1,4 +1,3 @@
-
 export type Customer = {
   id: string;
   name: string;
@@ -19,6 +18,76 @@ export type UserAccount = {
   photoUrl?: string;
   createdAt: string;
   permissions: string[];
+};
+
+export type Ingredient = {
+  id: string;
+  name: string;
+  category: string;
+  subCategory?: string;
+  description?: string;
+  defaultUnit: 'mg' | 'g' | 'kg' | 'ml' | 'L' | 'pcs' | 'tbsp' | 'tsp' | 'pinch';
+  density?: number;
+  allergens?: string[];
+  purchasePrice?: number;
+  purchaseQuantity?: number;
+  purchaseUnit?: string;
+  isActive: boolean;
+  isFavourite?: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type RecipeIngredient = {
+  ingredientId: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  percentage?: number;
+  preparation?: string;
+  stage?: string;
+  notes?: string;
+  order: number;
+};
+
+export type RecipeStep = {
+  id: string;
+  title: string;
+  instructions: string;
+  temperature?: number;
+  tempUnit: 'C' | 'F';
+  time?: number;
+  equipment?: string;
+  order: number;
+};
+
+export type Recipe = {
+  id: string;
+  name: string;
+  code?: string;
+  associatedProductId?: string;
+  productName?: string;
+  chocolateType?: string;
+  currentVersion: string;
+  status: 'Draft' | 'Testing' | 'Approved' | 'Published' | 'Archived';
+  difficulty?: 'Easy' | 'Intermediate' | 'Professional' | 'Master';
+  prepTime?: number;
+  processTime?: number;
+  batchSize: number;
+  batchUnit: string;
+  yield?: number;
+  yieldUnit?: string;
+  shortDescription?: string;
+  detailedDescription?: string;
+  internalNotes?: string;
+  ingredients: RecipeIngredient[];
+  steps: RecipeStep[];
+  allergens: string[];
+  totalCost?: number;
+  costPer100g?: number;
+  updatedBy: string;
+  updatedAt: string;
+  createdAt: string;
 };
 
 export type OrderHistoryItem = {
@@ -128,11 +197,11 @@ export type Product = {
   name: string;
   flavor: string;
   weight?: string;
-  dimensions?: string; // Legacy string format
-  productDimensions?: ProductDimensions; // New structured format
+  dimensions?: string;
+  productDimensions?: ProductDimensions;
   productShape?: 'Square' | 'Rectangular' | 'Spherical' | 'Half Spherical' | 'Circular' | 'Cylindrical' | 'Oval' | 'Heart' | 'Triangular' | 'Conical' | 'Irregular' | 'Other' | 'Bar' | 'Dome';
-  productSkin?: 'Dark' | 'Milk' | 'White' | 'Rose' | 'Gold'; // Legacy skin field
-  productTexture?: string; // ID of the texture from the library
+  productSkin?: 'Dark' | 'Milk' | 'White' | 'Rose' | 'Gold';
+  productTexture?: string;
   textureId?: string;
   textureName?: string;
   textureCategory?: string;
@@ -166,13 +235,6 @@ export type ProductGallery = {
   mainImage: string;
   subImages: string[];
   createdAt: string;
-};
-
-export type Recipe = {
-  id: string;
-  name: string;
-  associatedProduct: string;
-  ingredients: { name: string; quantity: string }[];
 };
 
 export type InventoryItem = {
