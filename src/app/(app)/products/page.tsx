@@ -29,7 +29,8 @@ import {
   Sparkles,
   Layers,
   ArrowRight,
-  LayoutGrid
+  LayoutGrid,
+  X
 } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
@@ -481,12 +482,22 @@ export default function ProductsPage() {
       </Dialog>
       
       <Dialog open={isAddDialogOpen || !!editingProduct} onOpenChange={(open) => { if (!open) { setEditingProduct(null); setIsAddDialogOpen(false); } }}>
-        <DialogContent className="sm:max-w-6xl rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden flex flex-col h-[95vh] bg-background">
-          <div className="px-10 py-6 border-b shrink-0 bg-background z-20">
+        <DialogContent 
+          onInteractOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+          className="sm:max-w-6xl rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden flex flex-col h-[95vh] bg-background"
+        >
+          <div className="px-10 py-6 border-b shrink-0 bg-background z-20 flex items-center justify-between">
             <DialogHeader className="space-y-1 text-left">
               <DialogTitle className="text-3xl font-headline text-foreground">{editingProduct ? 'Refine Creation' : 'Register New Creation'}</DialogTitle>
               <DialogDescription className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground/60">Artisanal Visual & Technical Specification</DialogDescription>
             </DialogHeader>
+            <DialogClose asChild>
+              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-muted transition-colors">
+                <X className="h-6 w-6" />
+                <span className="sr-only">Close</span>
+              </Button>
+            </DialogClose>
           </div>
           
           <Form {...form}>
@@ -744,7 +755,7 @@ export default function ProductsPage() {
             <Card key={product.id} className="flex flex-col group overflow-hidden border-none shadow-sm hover:shadow-2xl transition-all duration-500 rounded-[2rem] bg-card relative">
               <CardHeader className="p-0 relative">
                  <button type="button" className="block w-full aspect-[4/3] relative overflow-hidden" onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: 0, productName: product.name, hint: product.imageHint })}>
-                    <Image src={product.imageUrls?.[0] || 'https://picsum.photos/seed/default/400/300'} alt={product.name} fill className={`object-cover transition-transform duration-700 ${product.availabilityStatus === 'Out of Stock' ? 'grayscale' : 'group-hover:scale-110'}`} data-ai-hint={product.imageHint} />
+                    <Image src={product.imageUrls?.[0] || 'https://picsum.photos/seed/default/400/300'} alt={product.name} fill className={`object-cover transition-transform duration-700 ${product.availabilityStatus === 'Out of Stock' ? 'grayscale opacity-60' : 'group-hover:scale-110'}`} data-ai-hint={product.imageHint} />
                   </button>
                   <div className="absolute top-4 left-4 flex gap-2">
                     {product.sku && <Badge variant="secondary" className="uppercase tracking-tighter text-[8px]">{product.sku}</Badge>}
