@@ -58,100 +58,100 @@ import Link from 'next/link';
 const SHAPE_CONFIG: Record<string, { fields: { name: string; label: string; placeholder?: string; type: 'number' | 'text' }[] }> = {
   Square: {
     fields: [
-      { name: 'sideLength', label: 'Side Length', type: 'number' },
-      { name: 'height', label: 'Height / Thickness', type: 'number' },
+      { name: 'sideLength', label: 'Side Length (MM)', type: 'number' },
+      { name: 'height', label: 'Height (MM)', type: 'number' },
     ]
   },
   Rectangular: {
     fields: [
-      { name: 'length', label: 'Length', type: 'number' },
-      { name: 'width', label: 'Width', type: 'number' },
-      { name: 'height', label: 'Height / Thickness', type: 'number' },
+      { name: 'length', label: 'Length (MM)', type: 'number' },
+      { name: 'width', label: 'Width (MM)', type: 'number' },
+      { name: 'height', label: 'Height (MM)', type: 'number' },
     ]
   },
   Bar: {
     fields: [
-      { name: 'length', label: 'Bar Length', type: 'number' },
-      { name: 'width', label: 'Bar Width', type: 'number' },
-      { name: 'height', label: 'Thickness', type: 'number' },
+      { name: 'length', label: 'Bar Length (MM)', type: 'number' },
+      { name: 'width', label: 'Bar Width (MM)', type: 'number' },
+      { name: 'height', label: 'Thickness (MM)', type: 'number' },
     ]
   },
   Spherical: {
     fields: [
-      { name: 'diameter', label: 'Diameter', type: 'number' },
+      { name: 'diameter', label: 'Diameter (MM)', type: 'number' },
     ]
   },
   'Half Spherical': {
     fields: [
-      { name: 'diameter', label: 'Diameter', type: 'number' },
-      { name: 'height', label: 'Height', type: 'number' },
+      { name: 'diameter', label: 'Diameter (MM)', type: 'number' },
+      { name: 'height', label: 'Height (MM)', type: 'number' },
     ]
   },
   Dome: {
     fields: [
-      { name: 'diameter', label: 'Base Diameter', type: 'number' },
-      { name: 'height', label: 'Dome Height', type: 'number' },
+      { name: 'diameter', label: 'Base Diameter (MM)', type: 'number' },
+      { name: 'height', label: 'Dome Height (MM)', type: 'number' },
     ]
   },
   Circular: {
     fields: [
-      { name: 'diameter', label: 'Diameter', type: 'number' },
-      { name: 'height', label: 'Height / Thickness', type: 'number' },
+      { name: 'diameter', label: 'Diameter (MM)', type: 'number' },
+      { name: 'height', label: 'Height (MM)', type: 'number' },
     ]
   },
   Round: {
     fields: [
-      { name: 'diameter', label: 'Diameter', type: 'number' },
-      { name: 'height', label: 'Height / Thickness', type: 'number' },
+      { name: 'diameter', label: 'Diameter (MM)', type: 'number' },
+      { name: 'height', label: 'Height (MM)', type: 'number' },
     ]
   },
   Cylindrical: {
     fields: [
-      { name: 'diameter', label: 'Diameter', type: 'number' },
-      { name: 'height', label: 'Height', type: 'number' },
+      { name: 'diameter', label: 'Diameter (MM)', type: 'number' },
+      { name: 'height', label: 'Height (MM)', type: 'number' },
     ]
   },
   Oval: {
     fields: [
-      { name: 'length', label: 'Length', type: 'number' },
-      { name: 'width', label: 'Width', type: 'number' },
-      { name: 'height', label: 'Height / Thickness', type: 'number' },
+      { name: 'length', label: 'Length (MM)', type: 'number' },
+      { name: 'width', label: 'Width (MM)', type: 'number' },
+      { name: 'height', label: 'Height (MM)', type: 'number' },
     ]
   },
   Heart: {
     fields: [
-      { name: 'width', label: 'Width', type: 'number' },
-      { name: 'height', label: 'Height / Thickness', type: 'number' },
+      { name: 'width', label: 'Width (MM)', type: 'number' },
+      { name: 'height', label: 'Height (MM)', type: 'number' },
     ]
   },
   Triangular: {
     fields: [
-      { name: 'base', label: 'Base', type: 'number' },
-      { name: 'height', label: 'Height', type: 'number' },
-      { name: 'length', label: 'Length / Thickness', type: 'number' },
+      { name: 'base', label: 'Base (MM)', type: 'number' },
+      { name: 'height', label: 'Height (MM)', type: 'number' },
+      { name: 'length', label: 'Length (MM)', type: 'number' },
     ]
   },
   Conical: {
     fields: [
-      { name: 'diameter', label: 'Base Diameter', type: 'number' },
-      { name: 'height', label: 'Height', type: 'number' },
+      { name: 'diameter', label: 'Base Diameter (MM)', type: 'number' },
+      { name: 'height', label: 'Height (MM)', type: 'number' },
     ]
   },
   Irregular: {
     fields: [
-      { name: 'length', label: 'Length', type: 'number' },
-      { name: 'width', label: 'Width', type: 'number' },
-      { name: 'height', label: 'Height / Thickness', type: 'number' },
+      { name: 'length', label: 'Length (MM)', type: 'number' },
+      { name: 'width', label: 'Width (MM)', type: 'number' },
+      { name: 'height', label: 'Height (MM)', type: 'number' },
       { name: 'additionalDescription', label: 'Description', type: 'text' },
     ]
   },
   Other: {
     fields: [
-      { name: 'custom1', label: 'Custom Dimension 1', type: 'number' },
+      { name: 'custom1', label: 'Custom Dimension 1 (MM)', type: 'number' },
       { name: 'customLabel1', label: 'Label for Dim 1', type: 'text' },
-      { name: 'custom2', label: 'Custom Dimension 2', type: 'number' },
+      { name: 'custom2', label: 'Custom Dimension 2 (MM)', type: 'number' },
       { name: 'customLabel2', label: 'Label for Dim 2', type: 'text' },
-      { name: 'custom3', label: 'Custom Dimension 3', type: 'number' },
+      { name: 'custom3', label: 'Custom Dimension 3 (MM)', type: 'number' },
       { name: 'customLabel3', label: 'Label for Dim 3', type: 'text' },
       { name: 'additionalDescription', label: 'Description', type: 'text' },
     ]
@@ -622,7 +622,7 @@ export default function ProductsPage() {
                                 <div className="space-y-1 col-span-2">
                                    <p className="text-[8px] font-black uppercase text-stone-400">Exact Dimensions</p>
                                    <p className="text-xs font-medium text-stone-600">
-                                      {watchDimensions.length || watchDimensions.sideLength || watchDimensions.diameter || '0'} x {watchDimensions.width || watchDimensions.sideLength || watchDimensions.diameter || '0'} x {watchDimensions.height || '0'} {watchDimensions.unit}
+                                      {watchDimensions.length || watchDimensions.sideLength || watchDimensions.diameter || '0'} x {watchDimensions.width || watchDimensions.sideLength || watchDimensions.diameter || '0'} x {watchDimensions.height || '0'} mm
                                    </p>
                                 </div>
                              </div>
@@ -711,7 +711,7 @@ export default function ProductsPage() {
                             {pg.map(entry => ([entry.mainImage, ...entry.subImages].map((img, idx) => (
                                 <button key={`${entry.id}-${idx}`} type="button" onClick={() => { if (isGalleryPickerOpen?.field) { form.setValue(isGalleryPickerOpen.field, img, { shouldValidate: true }); setIsGalleryPickerOpen(null); } }} className="aspect-square relative rounded-xl overflow-hidden group border-2 border-transparent hover:border-primary transition-all shadow-sm">
                                   <Image src={img} alt="" fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
-                                  <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 flex items-center justify-center"><CheckCircle2 className="text-white h-6 w-6" /></div>
+                                  <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 flex items-center justify-center"><CheckCircle2 className="text-white h-8 w-8 drop-shadow-xl" /></div>
                                 </button>
                             ))))}
                          </div>
