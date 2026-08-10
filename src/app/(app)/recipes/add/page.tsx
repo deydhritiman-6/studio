@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   PlusCircle, 
@@ -174,7 +175,7 @@ export default function AddRecipePage() {
         updatedBy: 'Admin Artisan',
       };
 
-      const res = await saveRecipeAction(recipeData);
+      await saveRecipeAction(recipeData);
       toast({ title: isEditing ? 'Formulation Refined' : 'Formulation Registered' });
       if (!isEditing) router.push('/recipes');
     } catch (e) {

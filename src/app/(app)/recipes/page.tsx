@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
 import { 
   PlusCircle, 
   Search, 
@@ -29,6 +30,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { duplicateRecipeAction, archiveRecipeAction, deleteRecipeAction } from './actions';
 import { useToast } from '@/hooks/use-toast';
+import { Separator } from '@/components/ui/separator';
 
 const statusColors: Record<string, string> = {
   'Draft': 'bg-slate-500/10 text-slate-500 border-slate-500/20',
@@ -56,7 +58,7 @@ export default function RecipeManagementPage() {
 
   const handleDuplicate = async (id: string) => {
     try {
-      const res = await duplicateRecipeAction(id);
+      await duplicateRecipeAction(id);
       toast({ title: 'Recipe Duplicated', description: 'Draft version created.' });
     } catch (e) {
       toast({ variant: 'destructive', title: 'Action Failed' });
