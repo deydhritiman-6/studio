@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -26,7 +26,8 @@ import {
   TrendingUp,
   Package,
   Users,
-  Clock
+  Clock,
+  ChevronDown
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCollection, useFirestore, useDoc } from '@/firebase';
@@ -38,6 +39,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { calculateBasicManufacturingCost } from '../engine';
 import { saveCostingAction } from '../actions';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const costingFormSchema = z.object({
   productId: z.string().min(1, 'Product selection is required'),
@@ -70,7 +73,7 @@ const costingFormSchema = z.object({
 
 type CostingFormValues = z.infer<typeof costingFormSchema>;
 
-export default function NewCostingPage() {
+function NewCostingForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -89,6 +92,7 @@ export default function NewCostingPage() {
   const { data: sourceCosting } = useDoc<Costing>(costingRef as any);
 
   const [isSaving, setIsSaving] = useState(false);
+  const [showBreakdown, setShowBreakdown] = useState(true);
 
   const form = useForm<CostingFormValues>({
     resolver: zodResolver(costingFormSchema),
@@ -369,6 +373,59 @@ export default function NewCostingPage() {
               </Form>
             </CardContent>
           </Card>
+
+          {calculationResults && (
+            <Collapsible open={showBreakdown} onOpenChange={setShowBreakdown} className="space-y-2">
+              <Card className="rounded-[2rem] border-none shadow-xl overflow-hidden">
+                <CardHeader className="p-10 bg-muted/20 border-b flex flex-row items-center justify-between">
+                   <div className="space-y-1">
+                      <CardTitle className="text-xl font-headline flex items-center gap-3">
+                        <Layers className="h-5 w-5 text-primary" />
+                        Detailed Material Breakdown
+                      </CardTitle>
+                      <CardDescription className="text-[10px] uppercase font-black tracking-widest">Recipe: {activeRecipe?.name} (v{activeRecipe?.currentVersion})</CardDescription>
+                   </div>
+                   <CollapsibleTrigger asChild>
+                      <Button variant="ghost" size="icon" className="rounded-full"><ChevronDown className={cn("h-4 w-4 transition-transform", showBreakdown && "rotate-180")} /></Button>
+                   </CollapsibleTrigger>
+                </CardHeader>
+                <CollapsibleContent>
+                  <CardContent className="p-0">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-stone-50">
+                          <TableHead className="p-6 uppercase text-[9px] font-black tracking-widest">Artisan Component</TableHead>
+                          <TableHead className="p-6 uppercase text-[9px] font-black tracking-widest text-center">Measured Qty</TableHead>
+                          <TableHead className="p-6 uppercase text-[9px] font-black tracking-widest text-center">Market Rate</TableHead>
+                          <TableHead className="p-6 uppercase text-[9px] font-black tracking-widest text-right">Extended Cost</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {calculationResults.ingredientBreakdown.map((item) => (
+                          <TableRow key={item.ingredientId} className="hover:bg-muted/5">
+                            <TableCell className="p-6 font-bold text-stone-800">{item.name}</TableCell>
+                            <TableCell className="p-6 text-center text-xs tabular-nums">{item.quantity} {item.unit}</TableCell>
+                            <TableCell className="p-6 text-center text-xs tabular-nums text-stone-400">₹{item.rate} / {item.rateUnit}</TableCell>
+                            <TableCell className="p-6 text-right font-bold tabular-nums">₹{item.cost.toFixed(2)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                  <CardFooter className="p-8 bg-stone-50 border-t justify-end gap-10">
+                      <div className="text-right">
+                         <p className="text-[8px] font-black uppercase text-stone-400">Subtotal Raw Material</p>
+                         <p className="text-xl font-bold font-headline">₹{calculationResults.rawMaterialCost.toFixed(2)}</p>
+                      </div>
+                      <div className="text-right">
+                         <p className="text-[8px] font-black uppercase text-primary">With {watchAll.wastagePercent}% Wastage</p>
+                         <p className="text-xl font-bold font-headline text-primary">₹{calculationResults.adjustedRawMaterialCost.toFixed(2)}</p>
+                      </div>
+                  </CardFooter>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
+          )}
         </div>
 
         <div className="lg:col-span-4 space-y-8">
@@ -423,5 +480,13 @@ export default function NewCostingPage() {
         </div>
       </div>
     </>
+  );
+}
+
+export default function NewCostingPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center p-20"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>}>
+      <NewCostingForm />
+    </Suspense>
   );
 }

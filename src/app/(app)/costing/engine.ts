@@ -29,6 +29,16 @@ export function calculateIngredientCost(
   return baseUsed * costPerBase;
 }
 
+export type IngredientCostResult = {
+  ingredientId: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  rate: number;
+  rateUnit: string;
+  cost: number;
+};
+
 /**
  * Core Costing Calculation Logic
  */
@@ -42,19 +52,39 @@ export function calculateBasicManufacturingCost(params: {
 }) {
   const { recipe, ingredients, snapshot, labourHours, numWorkers, productionYield } = params;
 
-  // 1. Raw Material Cost
+  // 1. Raw Material Cost with Breakdown
   let rawMaterialCost = 0;
+  const ingredientBreakdown: IngredientCostResult[] = [];
+
   recipe.ingredients.forEach((ri) => {
     const master = ingredients.find((i) => i.id === ri.ingredientId);
+    let itemCost = 0;
+    let rate = 0;
+    let rateUnit = '';
+
     if (master && master.purchasePrice && master.purchaseQuantity) {
-      rawMaterialCost += calculateIngredientCost(
+      itemCost = calculateIngredientCost(
         ri.quantity,
         ri.unit,
         master.purchasePrice,
         master.purchaseQuantity,
         master.purchaseUnit || master.defaultUnit
       );
+      rate = master.purchasePrice;
+      rateUnit = `${master.purchaseQuantity}${master.purchaseUnit || master.defaultUnit}`;
     }
+
+    ingredientBreakdown.push({
+      ingredientId: ri.ingredientId,
+      name: ri.name || master?.name || 'Unknown Component',
+      quantity: ri.quantity,
+      unit: ri.unit,
+      rate,
+      rateUnit,
+      cost: itemCost
+    });
+
+    rawMaterialCost += itemCost;
   });
 
   // 2. Wastage Adjustment
@@ -95,6 +125,7 @@ export function calculateBasicManufacturingCost(params: {
     totalOverheadCost,
     basicManufacturingCost,
     costPerUnit,
-    costPer100g: 0, // Calculated separately based on product weight
+    ingredientBreakdown,
+    costPer100g: 0, 
   };
 }

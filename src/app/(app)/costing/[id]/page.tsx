@@ -2,12 +2,11 @@
 
 import { useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useDoc, useFirestore } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import type { Costing, Recipe } from '@/lib/types';
+import type { Costing } from '@/lib/types';
 import { 
   Printer, 
   Download, 
@@ -16,7 +15,6 @@ import {
   Calculator, 
   ShieldCheck, 
   History,
-  Info,
   Layers,
   Component,
   Users,
@@ -37,7 +35,7 @@ export default function CostingViewPage() {
   const { data: costing, loading } = useDoc<Costing>(costingRef as any);
 
   if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>;
-  if (!costing) return <div className="p-20 text-center">Costing record not found.</div>;
+  if (!costing) return <div className="p-20 text-center text-stone-400 font-headline text-xl italic">Costing record not found in the artisan vault.</div>;
 
   const handlePrint = () => {
     window.print();
@@ -100,24 +98,32 @@ export default function CostingViewPage() {
                       <TableHeader>
                         <TableRow className="bg-stone-100/50">
                           <TableHead className="text-[9px] font-black uppercase p-4">Component</TableHead>
+                          <TableHead className="text-[9px] font-black uppercase p-4 text-center">Measured Quantity</TableHead>
                           <TableHead className="text-[9px] font-black uppercase p-4 text-center">Market Rate (Snapshot)</TableHead>
                           <TableHead className="text-[9px] font-black uppercase p-4 text-right">Extended Cost</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {Object.entries(costing.snapshot.ingredientPrices).map(([id, p]) => (
-                          <TableRow key={id}>
-                            <TableCell className="p-4 font-medium text-xs">Component {id.slice(-4)}</TableCell>
-                            <TableCell className="p-4 text-center text-xs tabular-nums">₹{p.purchasePrice} / {p.purchaseQuantity}{p.purchaseUnit}</TableCell>
-                            <TableCell className="p-4 text-right text-xs font-bold tabular-nums">PRO-RATA</TableCell>
+                        {costing.results.ingredientBreakdown?.map((item) => (
+                          <TableRow key={item.ingredientId}>
+                            <TableCell className="p-4 font-bold text-xs">{item.name}</TableCell>
+                            <TableCell className="p-4 text-center text-xs tabular-nums">{item.quantity} {item.unit}</TableCell>
+                            <TableCell className="p-4 text-center text-xs tabular-nums text-stone-400">₹{item.rate} / {item.rateUnit}</TableCell>
+                            <TableCell className="p-4 text-right text-xs font-bold tabular-nums">₹{item.cost.toFixed(2)}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
                     </Table>
                   </div>
-                  <div className="flex justify-end gap-6 text-xs">
-                     <span className="text-stone-400 uppercase font-black tracking-widest">Base Material Cost:</span>
-                     <span className="font-bold">₹{costing.results.rawMaterialCost.toFixed(2)}</span>
+                  <div className="flex justify-end gap-10 text-xs">
+                     <div className="text-right">
+                        <span className="text-stone-400 uppercase font-black tracking-widest block text-[8px] mb-1">Base Material Load</span>
+                        <span className="font-bold text-lg">₹{costing.results.rawMaterialCost.toFixed(2)}</span>
+                     </div>
+                     <div className="text-right">
+                        <span className="text-stone-400 uppercase font-black tracking-widest block text-[8px] mb-1">With {costing.snapshot.wastagePercent}% Wastage</span>
+                        <span className="font-bold text-lg text-primary">₹{costing.results.adjustedRawMaterialCost.toFixed(2)}</span>
+                     </div>
                   </div>
                </div>
 
@@ -151,7 +157,7 @@ export default function CostingViewPage() {
                        {Object.entries(costing.snapshot.packagingCosts).map(([type, cost]) => (
                          <div key={type} className="flex justify-between">
                             <span className="text-stone-500 capitalize">{type} Packaging:</span>
-                            <span className="font-bold">₹{cost.toFixed(2)}</span>
+                            <span className="font-bold">₹{(cost as number).toFixed(2)}</span>
                          </div>
                        ))}
                        <div className="flex justify-between border-t pt-2">
