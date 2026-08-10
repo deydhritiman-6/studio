@@ -14,6 +14,7 @@ export function Logo({ className }: LogoProps) {
         fill
         className="object-contain"
         priority
+        sizes="(max-width: 768px) 150px, 200px"
       />
     </div>
   );

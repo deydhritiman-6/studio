@@ -1,4 +1,3 @@
-
 'use client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -70,6 +69,8 @@ import { useUser, useFirestore, useCollection, useAuth } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { signInAnonymously } from 'firebase/auth';
 import type { InventoryItem } from '@/lib/types';
+import { getWorkspaceConfig } from '@/lib/page-colors';
+import { Separator } from '@/components/ui/separator';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -159,7 +160,7 @@ function NavSidebar({ pathname }: { pathname: string }) {
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
       setOpen(false);
-    }, 8000); // 8 seconds auto-collapse when not hovered
+    }, 8000);
   }, [isMobile, setOpen]);
 
   const stopCollapseTimer = useCallback(() => {
@@ -205,61 +206,71 @@ function NavSidebar({ pathname }: { pathname: string }) {
       </SidebarHeader>
       <SidebarContent className="flex-1 overflow-y-auto">
         <SidebarMenu className="px-2 pt-4">
-          {navItems.map((item) =>
-            item.subItems ? (
+          {navItems.map((item) => {
+            const workspace = getWorkspaceConfig(item.href || item.subItems?.[0]?.href || '');
+            const isActive = item.subItems ? item.subItems.some((sub) => isItemActive(sub.href)) : isItemActive(item.href!);
+
+            return item.subItems ? (
               <SidebarMenuItem key={item.label}>
-                <SidebarMenuButton isActive={item.subItems.some((sub) => isItemActive(sub.href))}>
-                  <item.icon />
-                  <span>{item.label}</span>
+                <SidebarMenuButton 
+                  isActive={isActive}
+                  style={isActive ? { color: workspace.color } : {}}
+                >
+                  <item.icon style={{ color: workspace.color }} />
+                  <span className="font-bold">{item.label}</span>
                 </SidebarMenuButton>
                 <SidebarMenuSub>
-                  {item.subItems.map((subItem) => (
-                    <SidebarMenuSubItem key={subItem.href}>
-                      <SidebarMenuSubButton isActive={isItemActive(subItem.href)} asChild>
-                        <Link href={subItem.href}>
-                          <subItem.icon />
-                          <span>{subItem.label}</span>
-                        </Link>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  ))}
+                  {item.subItems.map((subItem) => {
+                    const subWorkspace = getWorkspaceConfig(subItem.href);
+                    const isSubActive = isItemActive(subItem.href);
+                    return (
+                      <SidebarMenuSubItem key={subItem.href}>
+                        <SidebarMenuSubButton isActive={isSubActive} asChild>
+                          <Link href={subItem.href} style={isSubActive ? { color: subWorkspace.color, fontWeight: 900 } : { color: subWorkspace.color + 'CC' }}>
+                            <subItem.icon className="h-3.5 w-3.5" style={{ color: subWorkspace.color }} />
+                            <span>{subItem.label}</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    );
+                  })}
                 </SidebarMenuSub>
               </SidebarMenuItem>
             ) : (
               <SidebarMenuItem key={item.href}>
-                 <SidebarMenuButton isActive={isItemActive(item.href!)} asChild>
+                 <SidebarMenuButton isActive={isActive} asChild style={isActive ? { color: workspace.color } : {}}>
                   <Link href={item.href!}>
-                    <item.icon />
-                    <span>{item.label}</span>
+                    <item.icon style={{ color: workspace.color }} />
+                    <span className="font-bold">{item.label}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-            )
-          )}
+            );
+          })}
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="p-2 border-t border-sidebar-border">
          <SidebarMenu>
            <SidebarMenuItem>
               <SidebarMenuButton isActive={pathname === '/user-guide'} asChild tooltip="User Guide">
-                <Link href="/user-guide">
-                  <BookUser />
+                <Link href="/user-guide" style={pathname === '/user-guide' ? { color: WORKSPACE_COLORS.optimization.color } : {}}>
+                  <BookUser style={{ color: WORKSPACE_COLORS.optimization.color }} />
                   <span>User Guide</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
            <SidebarMenuItem>
               <SidebarMenuButton isActive={pathname === '/guide'} asChild tooltip="Developer Guide">
-                <Link href="/guide">
-                  <HelpCircle />
+                <Link href="/guide" style={pathname === '/guide' ? { color: WORKSPACE_COLORS.optimization.color } : {}}>
+                  <HelpCircle style={{ color: WORKSPACE_COLORS.optimization.color }} />
                   <span>Developer Guide</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           <SidebarMenuItem>
               <SidebarMenuButton isActive={isItemActive('/settings')} asChild tooltip="Settings">
-                <Link href="/settings">
-                  <Settings />
+                <Link href="/settings" style={isItemActive('/settings') ? { color: WORKSPACE_COLORS.optimization.color } : {}}>
+                  <Settings style={{ color: WORKSPACE_COLORS.optimization.color }} />
                   <span>Settings</span>
                 </Link>
               </SidebarMenuButton>
@@ -348,6 +359,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     {user.role}
                   </Badge>
                 )}
+                
+                <Separator orientation="vertical" className="h-8 mx-2 hidden sm:block opacity-10" />
+
                 {mounted ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

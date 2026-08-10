@@ -53,6 +53,7 @@ export function FloatingChocolates() {
             width={item.size}
             height={item.size}
             className="object-contain"
+            sizes={`${item.size}px`}
           />
         </div>
       ))}
