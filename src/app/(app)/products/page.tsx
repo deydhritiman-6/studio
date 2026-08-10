@@ -49,7 +49,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ChocolateMeshViewer } from '@/components/chocolate-mesh-viewer';
 import { TextureSelector } from '@/components/texture-selector';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CHOCOLATE_TEXTURES, DEFAULT_TEXTURE } from '@/lib/textures';
@@ -503,7 +503,7 @@ export default function ProductsPage() {
           
           <Form {...form}>
             <form onSubmit={form.handleSubmit((v) => saveProduct(v, editingProduct?.id))} className="flex flex-col flex-1 overflow-hidden">
-              <ScrollArea className="flex-1 px-10 custom-scrollbar">
+              <ScrollArea className="flex-1 px-10 custom-scrollbar" dual>
                 <div className="space-y-12 py-10">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <FormField control={form.control} name="name" render={({ field }) => (
