@@ -164,7 +164,7 @@ const productFormSchema = z.object({
   weight: z.string().optional(),
   productShape: z.enum(['Square', 'Rectangular', 'Spherical', 'Half Spherical', 'Circular', 'Cylindrical', 'Oval', 'Heart', 'Triangular', 'Conical', 'Irregular', 'Other', 'Bar', 'Dome', 'Round']).default('Rectangular'),
   textureId: z.string().default(DEFAULT_TEXTURE.id),
-  surfacePattern: z.enum(['None', 'Molded Chocolate Grid Texture', 'Rippled', 'Ribbed', 'Wavy', 'Embossed Surface', 'Debossed Surface']).default('None'),
+  surfacePattern: z.enum(['None', 'Molded Chocolate Grid Texture', 'Rippled Surface', 'Wavy Surface', 'Ribbed Surface', 'Striped Surface', 'Crosshatch Surface', 'Polka Dot Surface', 'Granular Surface', 'Embossed Surface', 'Debossed Surface']).default('None'),
   segmentType: z.enum(['Square', 'Rectangular', 'Rounded', 'Modular', 'Premium']).default('Square'),
   productDimensions: z.object({
     unit: z.enum(['mm', 'cm', 'inch']).default('mm'),
@@ -229,8 +229,8 @@ export default function ProductsPage() {
   const [identityMode, setIdentityMode] = useState<'existing' | 'new'>('existing');
 
   const galleryIdentities = useMemo(() => {
-    const fromGalleries = galleries?.map(g => g.productName) || [];
-    return Array.from(new Set(fromGalleries)).sort();
+    const namesWithGalleries = galleries?.map(g => g.productName) || [];
+    return Array.from(new Set(namesWithGalleries)).sort();
   }, [galleries]);
 
   const products = useMemo(() => {
@@ -247,7 +247,7 @@ export default function ProductsPage() {
       textureId: DEFAULT_TEXTURE.id,
       surfacePattern: 'None',
       segmentType: 'Square',
-      productDimensions: { unit: 'mm' },
+      productDimensions: { unit: 'mm', patternSize: 10 },
       price: 0,
       wholesalePrice: 0,
       availabilityStatus: 'In Stock',
@@ -278,7 +278,7 @@ export default function ProductsPage() {
         textureId: editingProduct.textureId || DEFAULT_TEXTURE.id,
         surfacePattern: editingProduct.surfacePattern || 'None',
         segmentType: editingProduct.segmentType || 'Square',
-        productDimensions: editingProduct.productDimensions || { unit: 'mm' } as ProductDimensions,
+        productDimensions: editingProduct.productDimensions || { unit: 'mm', patternSize: 10 } as ProductDimensions,
         price: editingProduct.price,
         wholesalePrice: editingProduct.wholesalePrice,
         availabilityStatus: editingProduct.availabilityStatus,
@@ -298,7 +298,7 @@ export default function ProductsPage() {
         textureId: DEFAULT_TEXTURE.id,
         surfacePattern: 'None',
         segmentType: 'Square',
-        productDimensions: { unit: 'mm' } as ProductDimensions,
+        productDimensions: { unit: 'mm', patternSize: 10 } as ProductDimensions,
         price: 0,
         wholesalePrice: 0,
         availabilityStatus: 'In Stock',
@@ -326,7 +326,7 @@ export default function ProductsPage() {
         textureId: product.textureId || DEFAULT_TEXTURE.id,
         surfacePattern: product.surfacePattern || 'None',
         segmentType: product.segmentType || 'Square',
-        productDimensions: product.productDimensions || { unit: 'mm' } as ProductDimensions,
+        productDimensions: product.productDimensions || { unit: 'mm', patternSize: 10 } as ProductDimensions,
         price: product.price,
         wholesalePrice: product.wholesalePrice,
         availabilityStatus: product.availabilityStatus,
@@ -577,7 +577,17 @@ export default function ProductsPage() {
                                     <Select onValueChange={field.onChange} value={field.value}>
                                       <FormControl><SelectTrigger className="h-10 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
                                       <SelectContent>
-                                        {['None', 'Molded Chocolate Grid Texture', 'Rippled', 'Ribbed', 'Wavy', 'Embossed Surface', 'Debossed Surface'].map(p => (<SelectItem key={p} value={p}>{p}</SelectItem>))}
+                                        <SelectItem value="None">None</SelectItem>
+                                        <SelectItem value="Molded Chocolate Grid Texture">Signature Grid</SelectItem>
+                                        <SelectItem value="Rippled Surface">Rippled</SelectItem>
+                                        <SelectItem value="Wavy Surface">Wavy</SelectItem>
+                                        <SelectItem value="Ribbed Surface">Ribbed</SelectItem>
+                                        <SelectItem value="Striped Surface">Striped</SelectItem>
+                                        <SelectItem value="Crosshatch Surface">Crosshatch</SelectItem>
+                                        <SelectItem value="Polka Dot Surface">Polka Dot</SelectItem>
+                                        <SelectItem value="Granular Surface">Granular</SelectItem>
+                                        <SelectItem value="Embossed Surface">Embossed</SelectItem>
+                                        <SelectItem value="Debossed Surface">Debossed</SelectItem>
                                       </SelectContent>
                                     </Select>
                                   </FormItem>
@@ -781,7 +791,7 @@ export default function ProductsPage() {
               </CardHeader>
               <CardContent className="p-6 flex-grow space-y-6">
                 <div className="space-y-1">
-                   <CardTitle className="font-headline text-2xl group-hover:text-primary transition-colors">{product.name}</CardTitle>
+                   <CardTitle className="font-headline text-2xl group-hover:text-primary transition-colors duration-300 leading-none">{product.name}</CardTitle>
                    <p className="text-[10px] text-stone-400 uppercase tracking-[0.3em] font-black">{product.flavor}</p>
                 </div>
                 <div className="flex justify-between items-end pt-4 border-t">

@@ -56,7 +56,7 @@ export function ChocolateMeshViewer({
     return CHOCOLATE_TEXTURES.find(t => t.id === textureId) || DEFAULT_TEXTURE;
   }, [textureId]);
 
-  const createProceduralNormalMap = (type?: string, tiling = 1) => {
+  const createProceduralNormalMap = (type?: string, patternSize = 10) => {
     const size = 512;
     const canvas = document.createElement('canvas');
     canvas.width = size;
@@ -64,12 +64,16 @@ export function ChocolateMeshViewer({
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
 
+    // Neutral normal color
     ctx.fillStyle = 'rgb(128, 128, 255)';
     ctx.fillRect(0, 0, size, size);
 
-    const repeat = Math.max(1, Math.floor(10 / (tiling || 1)));
+    // patternSize typically range 5-50. Convert to a repetition count.
+    // Smaller patternSize = more frequent pattern.
+    const safeSize = Math.max(1, patternSize);
+    const repeat = Math.max(1, Math.floor(100 / safeSize));
 
-    if (type === 'Velvet') {
+    if (type?.includes('Velvet')) {
       for (let i = 0; i < 20000; i++) {
         const x = Math.random() * size;
         const y = Math.random() * size;
@@ -78,7 +82,7 @@ export function ChocolateMeshViewer({
         ctx.fillStyle = `rgb(${r}, ${g}, 255)`;
         ctx.fillRect(x, y, 1, 1);
       }
-    } else if (type === 'Hammered') {
+    } else if (type?.includes('Hammered')) {
       for (let i = 0; i < 150; i++) {
         const x = Math.random() * size;
         const y = Math.random() * size;
@@ -91,28 +95,28 @@ export function ChocolateMeshViewer({
         ctx.arc(x, y, radius, 0, Math.PI * 2);
         ctx.fill();
       }
-    } else if (type === 'Ridged' || type === 'Ribbed Surface') {
+    } else if (type?.includes('Ribbed') || type?.includes('Ridged')) {
       const step = size / repeat;
       for (let i = 0; i < size; i += step) {
         ctx.fillStyle = 'rgb(140, 140, 255)';
         ctx.fillRect(i, 0, step / 2, size);
       }
-    } else if (type === 'Wavy' || type === 'Wavy Surface') {
+    } else if (type?.includes('Wavy')) {
       const step = size / repeat;
       for (let i = 0; i < size; i += 2) {
         const y = (Math.sin((i / size) * Math.PI * 2 * repeat) + 1) / 2;
         ctx.fillStyle = `rgb(${128 + y * 60}, 128, 255)`;
         ctx.fillRect(i, 0, 2, size);
       }
-    } else if (type === 'Dusted') {
-      for (let i = 0; i < 5000; i++) {
+    } else if (type?.includes('Dusted') || type?.includes('Granular')) {
+      for (let i = 0; i < 15000; i++) {
         const x = Math.random() * size;
         const y = Math.random() * size;
-        const noise = Math.random() * 60;
+        const noise = Math.random() * 80;
         ctx.fillStyle = `rgb(${128 + noise}, ${128 + noise}, 255)`;
         ctx.fillRect(x, y, 2, 2);
       }
-    } else if (type === 'Bubbles') {
+    } else if (type?.includes('Bubbles')) {
       for (let i = 0; i < 80; i++) {
         const x = Math.random() * size;
         const y = Math.random() * size;
@@ -120,7 +124,7 @@ export function ChocolateMeshViewer({
         ctx.fillStyle = 'rgb(150, 150, 255)';
         ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.fill();
       }
-    } else if (type === 'Cracked') {
+    } else if (type?.includes('Cracked')) {
       ctx.strokeStyle = 'rgb(100, 100, 255)';
       ctx.lineWidth = 1;
       for (let i = 0; i < 20; i++) {
@@ -131,7 +135,7 @@ export function ChocolateMeshViewer({
         }
         ctx.stroke();
       }
-    } else if (type === 'Rippled' || type === 'Rippled Surface') {
+    } else if (type?.includes('Rippled')) {
       const step = size / repeat;
       for (let i = 0; i < size; i += step) {
         const grad = ctx.createLinearGradient(0, i, 0, i + step);
@@ -140,6 +144,29 @@ export function ChocolateMeshViewer({
         grad.addColorStop(1, 'rgb(120, 120, 255)');
         ctx.fillStyle = grad;
         ctx.fillRect(0, i, size, step);
+      }
+    } else if (type?.includes('Striped')) {
+      const step = size / repeat;
+      for (let i = 0; i < size; i += step) {
+        ctx.fillStyle = 'rgb(100, 100, 255)';
+        ctx.fillRect(i, 0, step / 3, size);
+      }
+    } else if (type?.includes('Crosshatch')) {
+      const step = size / repeat;
+      ctx.fillStyle = 'rgb(110, 110, 255)';
+      for (let i = 0; i < size; i += step) {
+        ctx.fillRect(i, 0, step / 4, size);
+        ctx.fillRect(0, i, size, step / 4);
+      }
+    } else if (type?.includes('Polka Dot')) {
+      const step = size / repeat;
+      ctx.fillStyle = 'rgb(140, 140, 255)';
+      for (let i = 0; i < size; i += step) {
+        for (let j = 0; j < size; j += step) {
+          ctx.beginPath();
+          ctx.arc(i + step / 2, j + step / 2, step / 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
     }
 
@@ -249,7 +276,7 @@ export function ChocolateMeshViewer({
 
     const group = new THREE_LIB.Group();
 
-    // Priority for surface pattern mapping
+    // Pattern override logic
     const effectiveNormalType = surfacePattern !== 'None' && surfacePattern !== 'Molded Chocolate Grid Texture' 
       ? surfacePattern 
       : activeTexture.normalType;

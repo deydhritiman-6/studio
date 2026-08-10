@@ -108,7 +108,19 @@ export type ProductTexture = {
   glossLevel?: 'Glossy' | 'Satin' | 'Matte' | 'Semi-Matte';
 };
 
-export type SurfacePattern = 'None' | 'Molded Chocolate Grid Texture' | 'Rippled' | 'Ribbed' | 'Wavy' | 'Embossed Surface' | 'Debossed Surface';
+export type SurfacePattern = 
+  | 'None' 
+  | 'Molded Chocolate Grid Texture' 
+  | 'Rippled Surface' 
+  | 'Wavy Surface' 
+  | 'Ribbed Surface' 
+  | 'Striped Surface'
+  | 'Crosshatch Surface'
+  | 'Polka Dot Surface'
+  | 'Granular Surface'
+  | 'Embossed Surface' 
+  | 'Debossed Surface';
+
 export type SegmentType = 'Square' | 'Rectangular' | 'Rounded' | 'Modular' | 'Premium';
 
 export type Product = {
