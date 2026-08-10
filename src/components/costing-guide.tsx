@@ -60,7 +60,7 @@ export function CostingGuide({
   const steps = [
     {
       title: "Step 1 — Select the Product",
-      instruction: "Select the product for which the final costing is being prepared.",
+      instruction: "Select the product for which the final costing is being prepared. The system retrieves identity, weight, and shape data from the master registry.",
       validate: () => !!formValues.productId,
       missingLabel: "No product selected",
       animation: (
@@ -85,10 +85,10 @@ export function CostingGuide({
       )
     },
     {
-      title: "Step 2 — Load Recipe",
-      instruction: "The system automatically loads the active recipe associated with the selected product.",
+      title: "Step 2 — Verify the Recipe",
+      instruction: "The system automatically loads the active recipe associated with the selected creation. Ensure the version is correct.",
       validate: () => !!activeRecipe,
-      missingLabel: "No active recipe linked",
+      missingLabel: "No active recipe linked to this product",
       animation: (
         <div className="flex items-center justify-center h-full gap-8">
           <motion.div 
@@ -114,9 +114,9 @@ export function CostingGuide({
     },
     {
       title: "Step 3 — Review Ingredient Costs",
-      instruction: "Review every ingredient used in the recipe and verify its current purchase cost.",
+      instruction: "Examine every ingredient and its current market rate from the Library. Material cost is the foundation of your Basic Cost.",
       validate: () => results?.ingredientBreakdown?.length > 0,
-      missingLabel: "No ingredients in recipe",
+      missingLabel: "No ingredients detected in matrix",
       animation: (
         <div className="w-full max-w-xs mx-auto space-y-3">
           {[0, 1, 2].map(i => (
@@ -145,7 +145,7 @@ export function CostingGuide({
     },
     {
       title: "Step 4 — Verify Batch Size & Yield",
-      instruction: "Verify the relationship between the recipe batch size and the number of finished units produced.",
+      instruction: "The total batch cost is divided by the number of finished units to determine the starting unit cost.",
       animation: (
         <div className="flex flex-col items-center justify-center h-full space-y-6">
           <div className="flex items-end gap-1">
@@ -162,7 +162,7 @@ export function CostingGuide({
     },
     {
       title: "Step 5 — Account for Wastage",
-      instruction: "Apply production losses (tempering, handling, etc.) to the raw material load.",
+      instruction: "Apply production buffers for tempering, handling, and process loss to adjust the material cost.",
       animation: (
         <div className="flex flex-col items-center justify-center h-full space-y-4">
           <div className="relative w-32 h-32">
@@ -175,13 +175,13 @@ export function CostingGuide({
               <Droplets className="h-8 w-8 text-primary animate-pulse" />
             </div>
           </div>
-          <Badge className="bg-amber-500/20 text-amber-600 border-none">+{formValues.wastagePercent}% Buffer</Badge>
+          <Badge className="bg-amber-500/20 text-amber-600 border-none">+{formValues.wastagePercent}% Process Buffer</Badge>
         </div>
       )
     },
     {
-      title: "Step 6 — Calculate Packaging Cost",
-      instruction: "Add all applicable packaging components (primary, secondary, labels, boxes).",
+      title: "Step 6 — Add Packaging Cost",
+      instruction: "Aggregate all physical containers, labels, and boxes required for a single production batch.",
       animation: (
         <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto">
           {['Box', 'Foil', 'Label', 'Bag'].map((p, i) => (
@@ -203,13 +203,13 @@ export function CostingGuide({
       )
     },
     {
-      title: "Step 7 — Calculate Direct Labour",
-      instruction: "Include the cost of artisanal effort based on worker count and production time.",
+      title: "Step 7 — Add Direct Labour Cost",
+      instruction: "Incorporate artisanal effort based on staffing levels and total processing time.",
       animation: (
         <div className="flex items-center justify-center h-full gap-6">
           <div className="text-center space-y-1">
              <div className="h-10 w-10 bg-accent/20 rounded-full flex items-center justify-center mx-auto"><Users className="h-5 w-5 text-accent" /></div>
-             <p className="text-[8px] font-bold">{formValues.numWorkers} Staff</p>
+             <p className="text-[8px] font-bold">{formValues.numWorkers} Artisans</p>
           </div>
           <div className="text-xl font-light text-stone-300">×</div>
           <div className="text-center space-y-1">
@@ -225,7 +225,7 @@ export function CostingGuide({
     },
     {
       title: "Step 8 — Add Production Costs",
-      instruction: "Consider electricity, water, and equipment usage necessary for this batch.",
+      instruction: "Consider technical overheads such as energy, machine usage, and artisan consumables.",
       animation: (
         <div className="flex flex-col items-center justify-center h-full">
            <motion.div 
@@ -235,13 +235,13 @@ export function CostingGuide({
            >
               <Zap className="h-10 w-10 text-amber-500" />
            </motion.div>
-           <p className="mt-4 text-[10px] font-black uppercase text-stone-400 tracking-widest">Equipment Power Load</p>
+           <p className="mt-4 text-[10px] font-black uppercase text-stone-400 tracking-widest">Facility Operations</p>
         </div>
       )
     },
     {
       title: "Step 9 — Apply Manufacturing Overhead",
-      instruction: "Apply general factory overheads as per your current simulation settings.",
+      instruction: "Apply factory-wide expenses based on your current percentage or fixed rate configuration.",
       animation: (
         <div className="relative w-48 h-24 flex items-center justify-center">
            <motion.div 
@@ -264,7 +264,7 @@ export function CostingGuide({
     },
     {
       title: "Step 10 — Calculate Basic Manufacturing Cost",
-      instruction: "All components merge to form the certified basic manufacturing cost.",
+      instruction: "The convergence of materials, labour, and overhead forms your Certified Basic Cost.",
       animation: (
         <div className="flex flex-col items-center justify-center h-full space-y-8">
            <div className="relative h-32 w-32 flex items-center justify-center">
@@ -278,19 +278,19 @@ export function CostingGuide({
                 <span className="text-[7px] font-black uppercase mt-1">Total Logic</span>
               </motion.div>
            </div>
-           <p className="text-3xl font-bold font-headline">₹{results?.basicManufacturingCost?.toFixed(2)}</p>
+           <p className="text-3xl font-bold font-headline text-stone-900">₹{results?.basicManufacturingCost?.toFixed(2)}</p>
         </div>
       )
     },
     {
       title: "Step 11 — Calculate Cost Per Unit",
-      instruction: "Divide total manufacturing cost by yield to determine the individual unit cost.",
+      instruction: "The final division that determines the baseline value of every individual artisan piece.",
       animation: (
         <div className="flex flex-col items-center justify-center h-full space-y-6">
            <div className="flex items-center gap-4">
-              <div className="p-3 bg-muted rounded-lg font-bold text-xs">Total Cost</div>
+              <div className="p-3 bg-muted rounded-lg font-bold text-[10px] uppercase">Batch Total</div>
               <div className="text-xl">÷</div>
-              <div className="p-3 bg-muted rounded-lg font-bold text-xs">Yield</div>
+              <div className="p-3 bg-muted rounded-lg font-bold text-[10px] uppercase">Yield</div>
            </div>
            <motion.div 
             initial={{ scale: 1 }}
@@ -299,14 +299,14 @@ export function CostingGuide({
             className="text-center"
            >
               <p className="text-4xl font-bold text-primary tracking-tighter">₹{results?.costPerUnit?.toFixed(2)}</p>
-              <p className="text-[10px] font-black uppercase text-stone-400">Cost / Finished Unit</p>
+              <p className="text-[10px] font-black uppercase text-stone-400">Final Cost / Unit</p>
            </motion.div>
         </div>
       )
     },
     {
       title: "Step 12 — Calculate Cost Per Weight",
-      instruction: "View standardized costs per gram and per 100g for benchmarking.",
+      instruction: "Benchmarking the creation against industry standards (Per Gram / Per 100g).",
       animation: (
         <div className="grid grid-cols-2 gap-4 w-full max-w-xs mx-auto">
            <div className="p-4 bg-muted/30 rounded-2xl border text-center">
@@ -322,7 +322,7 @@ export function CostingGuide({
     },
     {
       title: "Step 13 — Review Additional Costs",
-      instruction: "Consider non-manufacturing costs such as logistics and marketing separately.",
+      instruction: "Verify non-manufacturing factors like transport or specific artisan commissions.",
       animation: (
         <div className="flex flex-col items-center justify-center h-full space-y-4">
            <div className="h-1 bg-muted w-32 rounded-full overflow-hidden">
@@ -337,17 +337,17 @@ export function CostingGuide({
       )
     },
     {
-      title: "Step 14 — Optional Selling Price Simulation",
-      instruction: "Simulate a retail price based on your desired profit and channel margins.",
+      title: "Step 14 — Optional Pricing Simulation",
+      instruction: "Analyze how profit goals and channel margins influence the final consumer price.",
       animation: (
         <div className="flex flex-col items-center justify-center h-full space-y-4">
            <div className="flex justify-between w-48 p-2 border-b">
-              <span className="text-[10px] font-bold">Cost</span>
+              <span className="text-[10px] font-bold uppercase text-stone-400">Basic Cost</span>
               <span className="text-[10px] font-bold">₹{results?.costPerUnit?.toFixed(0)}</span>
            </div>
            <div className="flex justify-between w-48 p-2 border-b text-green-600">
-              <span className="text-[10px] font-bold">Profit ({formValues.pricing.profitPercent}%)</span>
-              <span className="text-[10px] font-bold">Included</span>
+              <span className="text-[10px] font-bold uppercase">Profit Margin</span>
+              <span className="text-[10px] font-bold">Applied</span>
            </div>
            <motion.div 
             animate={{ scale: [1, 1.05, 1] }} 
@@ -361,12 +361,12 @@ export function CostingGuide({
     },
     {
       title: "Step 15 — Review Final Cost Summary",
-      instruction: "Finalize your audit of the entire financial simulation.",
+      instruction: "One last audit of the simulation before committing to the historical archive.",
       animation: (
         <div className="space-y-2 w-full max-w-[200px] mx-auto text-[9px] font-bold">
-           <div className="flex justify-between text-stone-400"><span>Materials</span> <span>₹{results?.rawMaterialCost?.toFixed(0)}</span></div>
-           <div className="flex justify-between text-stone-400"><span>Labour</span> <span>₹{results?.totalLabourCost?.toFixed(0)}</span></div>
-           <div className="flex justify-between text-stone-400"><span>Overhead</span> <span>₹{results?.totalOverheadCost?.toFixed(0)}</span></div>
+           <div className="flex justify-between text-stone-400"><span>Materials Matrix</span> <span>₹{results?.rawMaterialCost?.toFixed(0)}</span></div>
+           <div className="flex justify-between text-stone-400"><span>Labour Effort</span> <span>₹{results?.totalLabourCost?.toFixed(0)}</span></div>
+           <div className="flex justify-between text-stone-400"><span>Operational Overhead</span> <span>₹{results?.totalOverheadCost?.toFixed(0)}</span></div>
            <Separator className="my-2" />
            <div className="flex justify-between text-primary text-sm font-black uppercase tracking-tighter"><span>Basic Cost</span> <span>₹{results?.costPerUnit?.toFixed(2)}</span></div>
         </div>
@@ -374,7 +374,7 @@ export function CostingGuide({
     },
     {
       title: "Step 16 — Save the Simulation",
-      instruction: "Commit your simulation to the encrypted artisan database.",
+      instruction: "Synchronize your findings with the secure artisan vault for future reference.",
       animation: (
         <div className="flex flex-col items-center justify-center h-full space-y-4">
            <motion.div 
@@ -383,20 +383,20 @@ export function CostingGuide({
            >
               <ShieldCheck className="h-12 w-12" />
            </motion.div>
-           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary animate-pulse">Ready to Synchronize</p>
+           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary animate-pulse">Ready to Sync</p>
         </div>
       )
     },
     {
       title: "Step 17 — Final Cost Approval",
-      instruction: "Finalize this record to create a permanent historical costing snapshot.",
+      instruction: "Finalize this version to create a permanent historical costing snapshot for executive review.",
       animation: (
         <div className="space-y-4 text-left p-6 bg-muted/20 rounded-[2rem] border border-dashed border-stone-200">
-           <div className="flex items-center gap-3"><CheckCircle2 className="h-4 w-4 text-green-500" /> <span className="text-[10px] font-bold">Product Identity Verified</span></div>
-           <div className="flex items-center gap-3"><CheckCircle2 className="h-4 w-4 text-green-500" /> <span className="text-[10px] font-bold">Recipe Logic Validated</span></div>
-           <div className="flex items-center gap-3"><CheckCircle2 className="h-4 w-4 text-green-500" /> <span className="text-[10px] font-bold">Price Snapshots Ready</span></div>
+           <div className="flex items-center gap-3"><CheckCircle2 className="h-4 w-4 text-green-500" /> <span className="text-[10px] font-bold uppercase">Identity Verified</span></div>
+           <div className="flex items-center gap-3"><CheckCircle2 className="h-4 w-4 text-green-500" /> <span className="text-[10px] font-bold uppercase">Recipe Logic Validated</span></div>
+           <div className="flex items-center gap-3"><CheckCircle2 className="h-4 w-4 text-green-500" /> <span className="text-[10px] font-bold uppercase">Market Rates Snapshotted</span></div>
            <Separator className="my-2" />
-           <p className="text-[9px] text-stone-500 italic">"Once finalized, this version will be preserved as a historical costing snapshot."</p>
+           <p className="text-[9px] text-stone-500 italic">"Once finalized, this record is preserved as a permanent historical anchor."</p>
         </div>
       )
     }
