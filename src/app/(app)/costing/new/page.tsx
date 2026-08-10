@@ -27,7 +27,8 @@ import {
   Package,
   Users,
   Clock,
-  ChevronDown
+  ChevronDown,
+  AlertTriangle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCollection, useFirestore, useDoc } from '@/firebase';
@@ -41,6 +42,7 @@ import { calculateBasicManufacturingCost } from '../engine';
 import { saveCostingAction } from '../actions';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { cn } from '@/lib/utils';
 
 const costingFormSchema = z.object({
   productId: z.string().min(1, 'Product selection is required'),
@@ -143,7 +145,11 @@ function NewCostingForm() {
 
   const watchAll = useWatch({ control: form.control });
   const selectedProduct = useMemo(() => products?.find(p => p.id === watchAll.productId), [products, watchAll.productId]);
-  const activeRecipe = useMemo(() => recipes?.find(r => r.associatedProductId === watchAll.productId || r.id === selectedProduct?.recipeUsed), [recipes, watchAll.productId, selectedProduct]);
+  
+  const activeRecipe = useMemo(() => {
+    if (!watchAll.productId || !recipes) return null;
+    return recipes.find(r => r.associatedProductId === watchAll.productId || r.id === selectedProduct?.recipeUsed);
+  }, [recipes, watchAll.productId, selectedProduct]);
 
   const calculationResults = useMemo(() => {
     if (!activeRecipe || !ingredients || !watchAll.productId) return null;
@@ -169,6 +175,9 @@ function NewCostingForm() {
       }
     });
 
+    // Attempt to extract numeric weight from weight string (e.g., "100g")
+    const productWeightGrams = parseFloat(selectedProduct?.weight || '0') || 0;
+
     return calculateBasicManufacturingCost({
       recipe: activeRecipe,
       ingredients,
@@ -176,8 +185,9 @@ function NewCostingForm() {
       labourHours: watchAll.labourHours || 0,
       numWorkers: watchAll.numWorkers || 1,
       productionYield: watchAll.productionYield || activeRecipe.yield || 1,
+      productWeightGrams,
     });
-  }, [activeRecipe, ingredients, watchAll]);
+  }, [activeRecipe, ingredients, watchAll, selectedProduct]);
 
   const suggestedPrice = useMemo(() => {
     if (!calculationResults) return 0;
@@ -271,6 +281,22 @@ function NewCostingForm() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-8 space-y-8">
+          {/* Integrity Warnings (Step 31) */}
+          {calculationResults && calculationResults.warnings.length > 0 && (
+            <Card className="border-none shadow-lg bg-amber-50 rounded-2xl overflow-hidden border-l-8 border-l-amber-500">
+               <CardContent className="p-6 flex gap-4">
+                  <AlertTriangle className="h-6 w-6 text-amber-600 shrink-0" />
+                  <div className="space-y-1">
+                    <p className="font-bold text-amber-900 text-sm">Data Integrity Warning</p>
+                    <p className="text-xs text-amber-700">Costing cannot be fully calculated because the following parameters are missing:</p>
+                    <ul className="mt-2 list-disc list-inside text-[10px] text-amber-800 font-medium">
+                       {calculationResults.warnings.map((w, i) => <li key={i}>{w}</li>)}
+                    </ul>
+                  </div>
+               </CardContent>
+            </Card>
+          )}
+
           <Card className="rounded-[2rem] border-none shadow-xl">
             <CardHeader className="p-10 border-b bg-muted/30">
                <CardTitle className="text-2xl font-headline">Artisan Simulation Parameters</CardTitle>
@@ -403,10 +429,17 @@ function NewCostingForm() {
                       <TableBody>
                         {calculationResults.ingredientBreakdown.map((item) => (
                           <TableRow key={item.ingredientId} className="hover:bg-muted/5">
-                            <TableCell className="p-6 font-bold text-stone-800">{item.name}</TableCell>
+                            <TableCell className="p-6 font-bold text-stone-800">
+                                {item.name}
+                                {item.missingPrice && <Badge variant="destructive" className="ml-2 text-[8px] px-1 h-3 font-black">Price Missing</Badge>}
+                            </TableCell>
                             <TableCell className="p-6 text-center text-xs tabular-nums">{item.quantity} {item.unit}</TableCell>
-                            <TableCell className="p-6 text-center text-xs tabular-nums text-stone-400">₹{item.rate} / {item.rateUnit}</TableCell>
-                            <TableCell className="p-6 text-right font-bold tabular-nums">₹{item.cost.toFixed(2)}</TableCell>
+                            <TableCell className="p-6 text-center text-xs tabular-nums text-stone-400">
+                                {item.missingPrice ? '---' : `₹${item.rate} / ${item.rateUnit}`}
+                            </TableCell>
+                            <TableCell className="p-6 text-right font-bold tabular-nums">
+                                {item.missingPrice ? '₹0.00' : `₹${item.cost.toFixed(2)}`}
+                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -440,18 +473,31 @@ function NewCostingForm() {
                         <div className="text-center space-y-2">
                             <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Basic Cost Per Unit</p>
                             <p className="text-6xl font-bold font-headline tabular-nums">₹{calculationResults.costPerUnit.toFixed(2)}</p>
+                            {calculationResults.costPer100g > 0 && (
+                                <p className="text-[10px] text-stone-500 font-bold uppercase tracking-widest mt-2">
+                                    ₹{calculationResults.costPer100g.toFixed(2)} per 100g
+                                </p>
+                            )}
                         </div>
                         
                         <Separator className="bg-stone-800" />
 
                         <div className="space-y-4">
                            <div className="flex justify-between items-center">
-                              <span className="text-[10px] font-black uppercase text-stone-500 tracking-widest">Material Load</span>
-                              <span className="font-bold">₹{calculationResults.adjustedRawMaterialCost.toFixed(2)}</span>
+                              <span className="text-[10px] font-black uppercase text-stone-500 tracking-widest">Base Material</span>
+                              <span className="font-bold">₹{calculationResults.rawMaterialCost.toFixed(2)}</span>
+                           </div>
+                           <div className="flex justify-between items-center">
+                              <span className="text-[10px] font-black uppercase text-stone-500 tracking-widest">Wastage Buffer</span>
+                              <span className="font-bold text-amber-500">+₹{calculationResults.wastageAmount.toFixed(2)}</span>
                            </div>
                            <div className="flex justify-between items-center">
                               <span className="text-[10px] font-black uppercase text-stone-500 tracking-widest">Labour Input</span>
                               <span className="font-bold">₹{calculationResults.totalLabourCost.toFixed(2)}</span>
+                           </div>
+                           <div className="flex justify-between items-center">
+                              <span className="text-[10px] font-black uppercase text-stone-500 tracking-widest">Packaging Set</span>
+                              <span className="font-bold">₹{calculationResults.totalPackagingCost.toFixed(2)}</span>
                            </div>
                            <div className="flex justify-between items-center">
                               <span className="text-[10px] font-black uppercase text-stone-500 tracking-widest">Overhead ({watchAll.overheadRate}%)</span>

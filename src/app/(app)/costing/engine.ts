@@ -37,6 +37,7 @@ export type IngredientCostResult = {
   rate: number;
   rateUnit: string;
   cost: number;
+  missingPrice?: boolean;
 };
 
 /**
@@ -49,18 +50,21 @@ export function calculateBasicManufacturingCost(params: {
   labourHours: number;
   numWorkers: number;
   productionYield: number; // How many units this batch produces
+  productWeightGrams?: number;
 }) {
-  const { recipe, ingredients, snapshot, labourHours, numWorkers, productionYield } = params;
+  const { recipe, ingredients, snapshot, labourHours, numWorkers, productionYield, productWeightGrams } = params;
 
   // 1. Raw Material Cost with Breakdown
   let rawMaterialCost = 0;
   const ingredientBreakdown: IngredientCostResult[] = [];
+  const warnings: string[] = [];
 
   recipe.ingredients.forEach((ri) => {
     const master = ingredients.find((i) => i.id === ri.ingredientId);
     let itemCost = 0;
     let rate = 0;
     let rateUnit = '';
+    let missingPrice = false;
 
     if (master && master.purchasePrice && master.purchaseQuantity) {
       itemCost = calculateIngredientCost(
@@ -72,6 +76,9 @@ export function calculateBasicManufacturingCost(params: {
       );
       rate = master.purchasePrice;
       rateUnit = `${master.purchaseQuantity}${master.purchaseUnit || master.defaultUnit}`;
+    } else {
+      missingPrice = true;
+      warnings.push(`Market price missing for: ${ri.name}`);
     }
 
     ingredientBreakdown.push({
@@ -81,7 +88,8 @@ export function calculateBasicManufacturingCost(params: {
       unit: ri.unit,
       rate,
       rateUnit,
-      cost: itemCost
+      cost: itemCost,
+      missingPrice
     });
 
     rawMaterialCost += itemCost;
@@ -116,6 +124,13 @@ export function calculateBasicManufacturingCost(params: {
   const basicManufacturingCost = adjustedRawMaterialCost + totalPackagingCost + totalLabourCost + totalOverheadCost;
   const costPerUnit = productionYield > 0 ? basicManufacturingCost / productionYield : basicManufacturingCost;
 
+  // Cost per 100g
+  let costPer100g = 0;
+  if (productWeightGrams && productWeightGrams > 0) {
+    const costPerGram = costPerUnit / productWeightGrams;
+    costPer100g = costPerGram * 100;
+  }
+
   return {
     rawMaterialCost,
     wastageAmount,
@@ -125,7 +140,8 @@ export function calculateBasicManufacturingCost(params: {
     totalOverheadCost,
     basicManufacturingCost,
     costPerUnit,
+    costPer100g,
     ingredientBreakdown,
-    costPer100g: 0, 
+    warnings,
   };
 }

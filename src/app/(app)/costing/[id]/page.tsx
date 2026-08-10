@@ -18,7 +18,8 @@ import {
   Layers,
   Component,
   Users,
-  Package
+  Package,
+  AlertTriangle
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
@@ -106,7 +107,10 @@ export default function CostingViewPage() {
                       <TableBody>
                         {costing.results.ingredientBreakdown?.map((item) => (
                           <TableRow key={item.ingredientId}>
-                            <TableCell className="p-4 font-bold text-xs">{item.name}</TableCell>
+                            <TableCell className="p-4 font-bold text-xs">
+                                {item.name}
+                                {item.missingPrice && <AlertTriangle className="inline h-3 w-3 ml-2 text-amber-500" />}
+                            </TableCell>
                             <TableCell className="p-4 text-center text-xs tabular-nums">{item.quantity} {item.unit}</TableCell>
                             <TableCell className="p-4 text-center text-xs tabular-nums text-stone-400">₹{item.rate} / {item.rateUnit}</TableCell>
                             <TableCell className="p-4 text-right text-xs font-bold tabular-nums">₹{item.cost.toFixed(2)}</TableCell>
@@ -169,10 +173,18 @@ export default function CostingViewPage() {
                </div>
             </CardContent>
             <CardFooter className="bg-stone-900 text-white p-10 flex flex-col items-center gap-6">
-                <div className="flex flex-col items-center gap-2">
+                <div className="flex flex-col items-center gap-2 text-center">
                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Certified Basic Manufacturing Cost</p>
                     <p className="text-7xl font-bold font-headline tabular-nums">₹{costing.results.costPerUnit.toFixed(2)}</p>
-                    <p className="text-[10px] font-bold text-stone-500 uppercase tracking-widest">Value Per Finished Unit</p>
+                    <div className="flex items-center gap-4">
+                        <p className="text-[10px] font-bold text-stone-500 uppercase tracking-widest">Value Per Finished Unit</p>
+                        {costing.results.costPer100g > 0 && (
+                            <>
+                                <Separator orientation="vertical" className="h-3 bg-stone-700" />
+                                <p className="text-[10px] font-bold text-primary uppercase tracking-widest">₹{costing.results.costPer100g.toFixed(2)} / 100g</p>
+                            </>
+                        )}
+                    </div>
                 </div>
             </CardFooter>
           </Card>
