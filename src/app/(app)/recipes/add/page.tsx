@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -18,58 +18,65 @@ import {
   Trash2, 
   Save, 
   Loader2, 
-  ChevronRight, 
   Search, 
-  Scale, 
-  Droplets, 
-  Thermometer, 
-  Clock, 
   ShieldAlert, 
-  CheckCircle2,
   Sparkles,
   Layers,
   ArrowLeft,
   X,
-  History,
-  LayoutGrid
+  History
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCollection, useFirestore, useDoc } from '@/firebase';
-import { collection, doc, query, where, orderBy } from 'firebase/firestore';
-import type { Recipe, Ingredient, Product, RecipeIngredient, RecipeStep } from '@/lib/types';
+import { collection, doc, setDoc } from 'firebase/firestore';
+import type { Recipe, Ingredient, Product } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { cn } from '@/lib/utils';
+import { Checkbox } from '@/components/ui/checkbox';
 import { saveRecipeAction } from '../actions';
 import { useParams, useRouter } from 'next/navigation';
 
+const ingredientCategories = [
+  'Chocolate Base', 'Cocoa Ingredients', 'Dairy & Milk', 'Sweeteners', 'Nuts', 'Seeds & Grains', 
+  'Fruits', 'Fruit Preparations', 'Indian Flavours', 'Coffee & Beverage', 'Herbs & Spices', 
+  'Caramel & Praline', 'Chocolate Fillings', 'Natural Flavours', 'Colours', 'Decoration', 
+  'Texture & Stability', 'Salt & Finishing'
+];
+
+const allergenOptions = ['Milk', 'Soy', 'Nuts', 'Peanuts', 'Gluten', 'Sesame', 'Egg', 'Gelatin'];
+
+const ingredientSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  category: z.string().min(1, 'Category is required'),
+  defaultUnit: z.enum(['mg', 'g', 'kg', 'ml', 'L', 'pcs', 'tbsp', 'tsp', 'pinch']),
+  description: z.string().optional(),
+  allergens: z.array(z.string()).default([]),
+  purchasePrice: z.coerce.number().min(0).optional(),
+  purchaseQuantity: z.coerce.number().min(0).optional(),
+  purchaseUnit: z.string().optional(),
+  isActive: z.boolean().default(true),
+  isFavourite: z.boolean().default(false),
+});
+
+type IngredientFormValues = z.infer<typeof ingredientSchema>;
+
 const recipeFormSchema = z.object({
   name: z.string().min(1, 'Recipe name is required'),
-  code: z.string().optional(),
   associatedProductId: z.string().optional(),
-  chocolateType: z.string().optional(),
   status: z.enum(['Draft', 'Testing', 'Approved', 'Published', 'Archived']).default('Draft'),
   difficulty: z.enum(['Easy', 'Intermediate', 'Professional', 'Master']).default('Professional'),
-  prepTime: z.coerce.number().min(0).default(0),
-  processTime: z.coerce.number().min(0).default(0),
   batchSize: z.coerce.number().min(0.001, 'Batch size must be positive'),
   batchUnit: z.string().default('kg'),
-  yield: z.coerce.number().min(0).optional(),
-  yieldUnit: z.string().optional(),
-  shortDescription: z.string().optional(),
   detailedDescription: z.string().optional(),
-  internalNotes: z.string().optional(),
   ingredients: z.array(z.object({
     ingredientId: z.string(),
     name: z.string(),
     quantity: z.coerce.number().min(0.0001),
     unit: z.string(),
     preparation: z.string().optional(),
-    stage: z.string().optional(),
-    notes: z.string().optional(),
     order: z.number(),
   })).min(1, 'At least one ingredient is required'),
   steps: z.array(z.object({
@@ -79,7 +86,6 @@ const recipeFormSchema = z.object({
     temperature: z.coerce.number().optional(),
     tempUnit: z.enum(['C', 'F']).default('C'),
     time: z.coerce.number().optional(),
-    equipment: z.string().optional(),
     order: z.number(),
   })).default([]),
 });
@@ -105,6 +111,7 @@ export default function AddRecipePage() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [isIngPickerOpen, setIsIngPickerOpen] = useState(false);
+  const [isAddIngDialogOpen, setIsAddIngDialogOpen] = useState(false);
   const [ingSearch, setIngPickerSearch] = useState('');
   const [activeTab, setActiveTab] = useState('info');
 
@@ -121,14 +128,25 @@ export default function AddRecipePage() {
     }
   });
 
-  const { fields: ingFields, append: ingAppend, remove: ingRemove, move: ingMove } = useFieldArray({
+  const { fields: ingFields, append: ingAppend, remove: ingRemove } = useFieldArray({
     control: form.control,
     name: 'ingredients',
   });
 
-  const { fields: stepFields, append: stepAppend, remove: stepRemove, move: stepMove } = useFieldArray({
+  const { fields: stepFields, append: stepAppend, remove: stepRemove } = useFieldArray({
     control: form.control,
     name: 'steps',
+  });
+
+  const ingForm = useForm<IngredientFormValues>({
+    resolver: zodResolver(ingredientSchema),
+    defaultValues: {
+      name: '',
+      category: '',
+      defaultUnit: 'g',
+      allergens: [],
+      isActive: true,
+    }
   });
 
   useEffect(() => {
@@ -142,7 +160,6 @@ export default function AddRecipePage() {
   }, [existingRecipe, form]);
 
   const watchIngredients = useWatch({ control: form.control, name: 'ingredients' });
-  const watchBatchSize = useWatch({ control: form.control, name: 'batchSize' });
 
   const totals = useMemo(() => {
     return watchIngredients.reduce((acc, ing) => {
@@ -184,6 +201,23 @@ export default function AddRecipePage() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const onIngSave = (values: IngredientFormValues) => {
+    if (!firestore) return;
+    const id = `ING-${Date.now()}`;
+    const ingRef = doc(firestore, 'ingredients', id);
+    const ingData = { ...values, id, updatedAt: new Date().toISOString(), createdAt: new Date().toISOString() };
+
+    setDoc(ingRef, ingData)
+      .then(() => {
+        setIsAddIngDialogOpen(false);
+        ingForm.reset();
+        toast({ title: 'Ingredient Registered' });
+        // Automatically add to picker selection
+        handleAddIngredient(ingData as any);
+      })
+      .catch((err) => toast({ variant: 'destructive', title: 'Library Sync Failed' }));
   };
 
   const filteredMaster = useMemo(() => {
@@ -446,17 +480,27 @@ export default function AddRecipePage() {
       </div>
 
       <Dialog open={isIngPickerOpen} onOpenChange={setIsIngPickerOpen}>
-        <DialogContent className="sm:max-w-3xl rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl bg-stone-50 h-[80vh] flex flex-col">
-           <div className="p-8 border-b bg-white">
-              <DialogHeader>
+        <DialogContent 
+          onInteractOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+          className="sm:max-w-3xl rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl bg-stone-50 h-[80vh] flex flex-col"
+        >
+           <div className="p-8 border-b bg-white shrink-0 flex items-center justify-between">
+              <DialogHeader className="text-left">
                  <DialogTitle className="text-2xl font-headline">Master Library Access</DialogTitle>
                  <DialogDescription>Select an artisan component to add to the formulation.</DialogDescription>
               </DialogHeader>
-              <div className="relative mt-6">
+              <DialogClose asChild>
+                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-muted"><X className="h-5 w-5" /></Button>
+              </DialogClose>
+           </div>
+
+           <div className="px-8 pt-6 pb-2 shrink-0">
+              <div className="relative">
                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                  <Input 
                    placeholder="Search library..." 
-                   className="pl-10 h-12 rounded-xl"
+                   className="pl-10 h-12 rounded-xl bg-white border-2"
                    value={ingSearch}
                    onChange={(e) => setIngPickerSearch(e.target.value)}
                  />
@@ -478,18 +522,95 @@ export default function AddRecipePage() {
                      <PlusCircle className="h-5 w-5 text-stone-200 group-hover:text-primary" />
                    </button>
                  ))}
-                 {filteredMaster.length === 0 && (
-                   <div className="col-span-2 text-center py-20">
-                      <p className="text-stone-400 italic">No components found matching your search.</p>
-                      <Button variant="link" className="text-primary mt-2" onClick={() => router.push('/ingredients')}>Add to Library</Button>
-                   </div>
-                 )}
+                 <div className="col-span-full pt-4">
+                    <Card className="border-dashed border-2 bg-muted/20 rounded-2xl p-6 text-center hover:bg-muted/40 transition-all group cursor-pointer" onClick={() => setIsAddIngDialogOpen(true)}>
+                        <PlusCircle className="h-8 w-8 mx-auto mb-2 text-stone-300 group-hover:text-primary" />
+                        <p className="font-bold text-sm">Register New Ingredient</p>
+                        <p className="text-[10px] uppercase text-stone-400 font-black">Add missing component to Master Library</p>
+                    </Card>
+                 </div>
               </div>
            </ScrollArea>
            
-           <div className="p-6 border-t bg-white flex justify-end">
+           <div className="p-6 border-t bg-white shrink-0 flex justify-end">
               <Button variant="ghost" onClick={() => setIsIngPickerOpen(false)} className="rounded-xl font-bold uppercase text-[10px] tracking-widest">Close Library</Button>
            </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isAddIngDialogOpen} onOpenChange={setIsAddIngDialogOpen}>
+        <DialogContent 
+          onInteractOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+          className="sm:max-w-xl rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl flex flex-col h-[85vh] bg-background z-[100]"
+        >
+          <div className="bg-muted/30 p-8 border-b shrink-0 flex items-center justify-between">
+            <DialogHeader className="text-left">
+              <DialogTitle className="text-2xl font-headline">Register Component</DialogTitle>
+              <DialogDescription className="text-[10px] uppercase font-black text-muted-foreground/60">Library Extension</DialogDescription>
+            </DialogHeader>
+            <DialogClose asChild>
+              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-muted"><X className="h-5 w-5" /></Button>
+            </DialogClose>
+          </div>
+
+          <Form {...ingForm}>
+            <form onSubmit={ingForm.handleSubmit(onIngSave)} className="flex flex-col flex-1 overflow-hidden">
+              <ScrollArea className="flex-1 px-8 py-10" dual>
+                <div className="space-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField control={ingForm.control} name="name" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground">Component Name</FormLabel>
+                        <FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={ingForm.control} name="category" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground">Category</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                           <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
+                           <SelectContent>{ingredientCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </FormItem>
+                    )} />
+                  </div>
+                  <FormField control={ingForm.control} name="defaultUnit" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground">Measured Unit</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
+                          <SelectContent>{['mg', 'g', 'kg', 'ml', 'L', 'pcs', 'tbsp', 'tsp', 'pinch'].map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </FormItem>
+                  )} />
+                   <div className="space-y-4">
+                    <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground">Allergen Data</Label>
+                    <div className="grid grid-cols-2 gap-3">
+                       {allergenOptions.map(allergen => (
+                         <div key={allergen} className="flex items-center gap-2 p-3 bg-muted/20 rounded-xl border border-transparent hover:border-primary/20 transition-all cursor-pointer">
+                            <Checkbox 
+                              id={`add-ing-all-${allergen}`}
+                              checked={ingForm.watch('allergens').includes(allergen)}
+                              onCheckedChange={(checked) => {
+                                const current = ingForm.getValues('allergens');
+                                ingForm.setValue('allergens', checked ? [...current, allergen] : current.filter(a => a !== allergen));
+                              }}
+                            />
+                            <label htmlFor={`add-ing-all-${allergen}`} className="text-xs font-bold text-stone-600 cursor-pointer">{allergen}</label>
+                         </div>
+                       ))}
+                    </div>
+                  </div>
+                </div>
+              </ScrollArea>
+              <div className="p-8 border-t bg-background flex gap-4 shrink-0">
+                 <Button type="button" variant="ghost" className="flex-1" onClick={() => setIsAddIngDialogOpen(false)}>Abort</Button>
+                 <Button type="submit" className="flex-2 px-10 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest shadow-xl shadow-primary/20">Sync to Library</Button>
+              </div>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
     </>

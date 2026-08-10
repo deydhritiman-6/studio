@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { Ingredient } from '@/lib/types';
-import { MoreHorizontal, PlusCircle, Loader2, Search, Filter, Trash2, Edit, Star, Download, Upload } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Loader2, Search, Filter, Trash2, Edit, Star, Download, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
@@ -225,18 +225,25 @@ export default function IngredientLibraryPage() {
         </Card>
       </div>
 
-      <Dialog open={isAddDialogOpen} onOpenChange={(o) => !o && setIsAddDialogOpen(false)}>
-        <DialogContent className="sm:max-w-xl rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
-          <div className="bg-muted/30 p-8 border-b">
-            <DialogHeader>
+      <Dialog open={isAddDialogOpen} onOpenChange={(o) => { if (!o) { setIsAddDialogOpen(false); setEditingIngredient(null); } }}>
+        <DialogContent 
+          onInteractOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+          className="sm:max-w-xl rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl flex flex-col h-[85vh] bg-background"
+        >
+          <div className="bg-muted/30 p-8 border-b shrink-0 flex items-center justify-between">
+            <DialogHeader className="text-left">
               <DialogTitle className="text-3xl font-headline">{editingIngredient ? 'Edit Ingredient' : 'Register Ingredient'}</DialogTitle>
               <DialogDescription className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground/60">Artisan Master Library Entry</DialogDescription>
             </DialogHeader>
+            <DialogClose asChild>
+              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-muted"><X className="h-5 w-5" /></Button>
+            </DialogClose>
           </div>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSave)}>
-              <ScrollArea className="max-h-[60vh] px-8 py-10" dual>
+            <form onSubmit={form.handleSubmit(onSave)} className="flex flex-col flex-1 overflow-hidden">
+              <ScrollArea className="flex-1 px-8 py-10" dual>
                 <div className="space-y-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField control={form.control} name="name" render={({ field }) => (
@@ -305,7 +312,7 @@ export default function IngredientLibraryPage() {
                 </div>
               </ScrollArea>
 
-              <div className="p-8 border-t bg-background flex gap-4">
+              <div className="p-8 border-t bg-background flex gap-4 shrink-0">
                  <DialogClose asChild><Button type="button" variant="ghost" className="flex-1 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest">Discard</Button></DialogClose>
                  <Button type="submit" className="flex-2 px-10 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest shadow-xl shadow-primary/20">
                    Commit to Master Library
