@@ -56,7 +56,7 @@ export function ChocolateMeshViewer({
     return CHOCOLATE_TEXTURES.find(t => t.id === textureId) || DEFAULT_TEXTURE;
   }, [textureId]);
 
-  const createProceduralNormalMap = (type?: string) => {
+  const createProceduralNormalMap = (type?: string, tiling = 1) => {
     const size = 512;
     const canvas = document.createElement('canvas');
     canvas.width = size;
@@ -66,6 +66,8 @@ export function ChocolateMeshViewer({
 
     ctx.fillStyle = 'rgb(128, 128, 255)';
     ctx.fillRect(0, 0, size, size);
+
+    const repeat = Math.max(1, Math.floor(10 / (tiling || 1)));
 
     if (type === 'Velvet') {
       for (let i = 0; i < 20000; i++) {
@@ -89,10 +91,18 @@ export function ChocolateMeshViewer({
         ctx.arc(x, y, radius, 0, Math.PI * 2);
         ctx.fill();
       }
-    } else if (type === 'Ridged') {
-      for (let i = 0; i < size; i += 20) {
+    } else if (type === 'Ridged' || type === 'Ribbed Surface') {
+      const step = size / repeat;
+      for (let i = 0; i < size; i += step) {
         ctx.fillStyle = 'rgb(140, 140, 255)';
-        ctx.fillRect(i, 0, 10, size);
+        ctx.fillRect(i, 0, step / 2, size);
+      }
+    } else if (type === 'Wavy' || type === 'Wavy Surface') {
+      const step = size / repeat;
+      for (let i = 0; i < size; i += 2) {
+        const y = (Math.sin((i / size) * Math.PI * 2 * repeat) + 1) / 2;
+        ctx.fillStyle = `rgb(${128 + y * 60}, 128, 255)`;
+        ctx.fillRect(i, 0, 2, size);
       }
     } else if (type === 'Dusted') {
       for (let i = 0; i < 5000; i++) {
@@ -121,14 +131,15 @@ export function ChocolateMeshViewer({
         }
         ctx.stroke();
       }
-    } else if (type === 'Rippled') {
-      for (let i = 0; i < size; i += 40) {
-        const grad = ctx.createLinearGradient(0, i, 0, i + 40);
+    } else if (type === 'Rippled' || type === 'Rippled Surface') {
+      const step = size / repeat;
+      for (let i = 0; i < size; i += step) {
+        const grad = ctx.createLinearGradient(0, i, 0, i + step);
         grad.addColorStop(0, 'rgb(120, 120, 255)');
         grad.addColorStop(0.5, 'rgb(160, 160, 255)');
         grad.addColorStop(1, 'rgb(120, 120, 255)');
         ctx.fillStyle = grad;
-        ctx.fillRect(0, i, size, 40);
+        ctx.fillRect(0, i, size, step);
       }
     }
 
@@ -238,13 +249,19 @@ export function ChocolateMeshViewer({
 
     const group = new THREE_LIB.Group();
 
-    const normalMap = createProceduralNormalMap(activeTexture.normalType);
+    // Priority for surface pattern mapping
+    const effectiveNormalType = surfacePattern !== 'None' && surfacePattern !== 'Molded Chocolate Grid Texture' 
+      ? surfacePattern 
+      : activeTexture.normalType;
+
+    const normalMap = createProceduralNormalMap(effectiveNormalType, dimensions.patternSize);
+    
     const material = new THREE_LIB.MeshStandardMaterial({ 
       color: activeTexture.color, 
       roughness: activeTexture.roughness, 
       metalness: activeTexture.metalness,
       normalMap: normalMap,
-      normalScale: new THREE_LIB.Vector2(1.5, 1.5),
+      normalScale: new THREE_LIB.Vector2(1.8, 1.8),
       visible: viewMode !== 'mesh'
     });
 
@@ -293,17 +310,14 @@ export function ChocolateMeshViewer({
     };
 
     if (surfacePattern === 'Molded Chocolate Grid Texture' && (shape === 'Rectangular' || shape === 'Square' || shape === 'Bar')) {
-      // Logic for Grid Segmentation
       const baseH = H * 0.4;
       const topH = H * 0.6;
       
-      // Base Slab
       const baseGeo = new THREE_LIB.BoxGeometry(L, baseH, W);
       baseGeo.translate(0, -topH / 2, 0);
       const baseMesh = new THREE_LIB.Mesh(baseGeo, material);
       group.add(baseMesh);
 
-      // Grid Blocks
       const rows = shape === 'Square' ? Math.max(2, Math.floor(L / (H * 0.8))) : Math.max(1, Math.floor(W / (H * 1.5)));
       const cols = Math.max(2, Math.floor(L / (H * 1.5)));
       
@@ -349,7 +363,6 @@ export function ChocolateMeshViewer({
       group.add(mesh);
     }
 
-    // Add Wireframes for all children
     group.traverse((obj) => {
       if (obj instanceof THREE_LIB.Mesh) {
         const wireGeo = new THREE_LIB.WireframeGeometry(obj.geometry);

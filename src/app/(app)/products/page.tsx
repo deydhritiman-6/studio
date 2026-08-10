@@ -515,7 +515,7 @@ export default function ProductsPage() {
                              <TabsTrigger value="new" className="rounded-lg text-[9px] uppercase font-bold">Create New</TabsTrigger>
                            </TabsList>
                            <TabsContent value="existing" className="mt-0">
-                             <Select onValueChange={(val) => { field.onChange(val); const gal = galleries?.find(g => g.productName === val); if (gal) { form.setValue('mainImage', gal.mainImage, { shouldValidate: true }); form.setValue('subPhoto1', gal.subImages?.[0] || '', { shouldValidate: true }); form.setValue('subPhoto2', gal.subImages?.[1] || '', { shouldValidate: true }); form.setValue('subPhoto3', gal.subImages?.[2] || '', { shouldValidate: true }); } }} defaultValue={field.value} value={field.value}>
+                             <Select onValueChange={(val) => { field.onChange(val); const gal = galleries?.find(g => g.productName === val); if (gal) { form.setValue('mainImage', gal.mainImage, { shouldValidate: true }); form.setValue('subPhoto1', gal.subImages?.[0] || '', { shouldValidate: true }); form.setValue('subPhoto2', gal.subImages?.[1] || '', { shouldValidate: true }); form.setValue('subPhoto3', gal.subImages?.[2] || '', { shouldValidate: true }); } }} value={field.value}>
                                 <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Search identities..." /></SelectTrigger></FormControl>
                                 <SelectContent>{galleryIdentities.map(name => (<SelectItem key={name} value={name}>{name}</SelectItem>))}</SelectContent>
                              </Select>
@@ -547,7 +547,7 @@ export default function ProductsPage() {
                             <FormField control={form.control} name="productShape" render={({ field }) => (
                               <FormItem className="col-span-2">
                                 <FormLabel className="uppercase text-[9px] font-bold text-muted-foreground">Artisan Shape</FormLabel>
-                                <Select onValueChange={(val: any) => field.onChange(val)} defaultValue={field.value} value={field.value}>
+                                <Select onValueChange={(val: any) => field.onChange(val)} value={field.value}>
                                   <FormControl><SelectTrigger className="h-10 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
                                   <SelectContent>{Object.keys(SHAPE_CONFIG).map(shape => (<SelectItem key={shape} value={shape}>{shape}</SelectItem>))}</SelectContent>
                                 </Select>
@@ -574,7 +574,7 @@ export default function ProductsPage() {
                                 <FormField control={form.control} name="surfacePattern" render={({ field }) => (
                                   <FormItem>
                                     <FormLabel className="uppercase text-[9px] font-bold text-muted-foreground">Surface Geometry</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                                    <Select onValueChange={field.onChange} value={field.value}>
                                       <FormControl><SelectTrigger className="h-10 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
                                       <SelectContent>
                                         {['None', 'Molded Chocolate Grid Texture', 'Rippled', 'Ribbed', 'Wavy', 'Embossed Surface', 'Debossed Surface'].map(p => (<SelectItem key={p} value={p}>{p}</SelectItem>))}
@@ -585,7 +585,7 @@ export default function ProductsPage() {
                                 <FormField control={form.control} name="segmentType" render={({ field }) => (
                                   <FormItem className={cn(watchPattern !== 'Molded Chocolate Grid Texture' && "opacity-40 pointer-events-none")}>
                                     <FormLabel className="uppercase text-[9px] font-bold text-muted-foreground">Segment Geometry</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                                    <Select onValueChange={field.onChange} value={field.value}>
                                       <FormControl><SelectTrigger className="h-10 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
                                       <SelectContent>
                                         {['Square', 'Rectangular', 'Rounded', 'Modular', 'Premium'].map(s => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
