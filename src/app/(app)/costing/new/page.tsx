@@ -29,7 +29,7 @@ import {
   Clock
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useDoc } from '@/firebase';
 import { collection, doc, getDoc } from 'firebase/firestore';
 import type { Product, Recipe, Ingredient, Costing, CostingSnapshot } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
@@ -84,8 +84,11 @@ export default function NewCostingPage() {
   const { data: recipes } = useCollection<Recipe>(recipesQuery);
   const { data: ingredients } = useCollection<Ingredient>(ingredientsQuery);
 
+  const duplicateId = searchParams.get('duplicate');
+  const costingRef = useMemo(() => (firestore && duplicateId ? doc(firestore, 'costings', duplicateId) : null), [firestore, duplicateId]);
+  const { data: sourceCosting } = useDoc<Costing>(costingRef as any);
+
   const [isSaving, setIsSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState('simulation');
 
   const form = useForm<CostingFormValues>({
     resolver: zodResolver(costingFormSchema),
@@ -104,6 +107,35 @@ export default function NewCostingPage() {
       pricing: { profitPercent: 40, marginPercent: 20 }
     }
   });
+
+  useEffect(() => {
+    if (sourceCosting) {
+      form.reset({
+        productId: sourceCosting.productId,
+        status: 'Calculated',
+        labourHours: sourceCosting.labourHours,
+        numWorkers: sourceCosting.numWorkers,
+        productionYield: sourceCosting.productionYield,
+        wastagePercent: sourceCosting.snapshot.wastagePercent,
+        labourRate: sourceCosting.snapshot.labourRate,
+        labourType: sourceCosting.snapshot.labourType,
+        overheadRate: sourceCosting.snapshot.overheadRate,
+        overheadType: sourceCosting.snapshot.overheadType,
+        packaging: {
+          primary: sourceCosting.snapshot.packagingCosts.primary || 0,
+          secondary: sourceCosting.snapshot.packagingCosts.secondary || 0,
+          label: sourceCosting.snapshot.packagingCosts.label || 0,
+          box: sourceCosting.snapshot.packagingCosts.box || 0,
+          other: sourceCosting.snapshot.packagingCosts.other || 0,
+        },
+        pricing: {
+          profitPercent: sourceCosting.pricing?.desiredProfitPercent || 40,
+          marginPercent: sourceCosting.pricing?.distributorMarginPercent || 20,
+        },
+        notes: `Duplicated from ${sourceCosting.id}. ${sourceCosting.notes || ''}`,
+      });
+    }
+  }, [sourceCosting, form]);
 
   const watchAll = useWatch({ control: form.control });
   const selectedProduct = useMemo(() => products?.find(p => p.id === watchAll.productId), [products, watchAll.productId]);

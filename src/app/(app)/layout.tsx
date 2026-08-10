@@ -172,6 +172,13 @@ function NavSidebar({ pathname }: { pathname: string }) {
     startCollapseTimer();
   };
 
+  const isItemActive = (href: string) => {
+    if (href === '/dashboard' || href === '/') {
+        return pathname === href;
+    }
+    return pathname === href || pathname.startsWith(href + '/');
+  };
+
   return (
     <Sidebar 
       collapsible="icon" 
@@ -190,14 +197,14 @@ function NavSidebar({ pathname }: { pathname: string }) {
           {navItems.map((item) =>
             item.subItems ? (
               <SidebarMenuItem key={item.label}>
-                <SidebarMenuButton isActive={item.subItems.some((sub) => pathname.startsWith(sub.href))}>
+                <SidebarMenuButton isActive={item.subItems.some((sub) => isItemActive(sub.href))}>
                   <item.icon />
                   <span>{item.label}</span>
                 </SidebarMenuButton>
                 <SidebarMenuSub>
                   {item.subItems.map((subItem) => (
                     <SidebarMenuSubItem key={subItem.href}>
-                      <SidebarMenuSubButton isActive={pathname === subItem.href} asChild>
+                      <SidebarMenuSubButton isActive={isItemActive(subItem.href)} asChild>
                         <Link href={subItem.href}>
                           <subItem.icon />
                           <span>{subItem.label}</span>
@@ -209,7 +216,7 @@ function NavSidebar({ pathname }: { pathname: string }) {
               </SidebarMenuItem>
             ) : (
               <SidebarMenuItem key={item.href}>
-                 <SidebarMenuButton isActive={pathname === item.href} asChild>
+                 <SidebarMenuButton isActive={isItemActive(item.href!)} asChild>
                   <Link href={item.href!}>
                     <item.icon />
                     <span>{item.label}</span>
@@ -239,7 +246,7 @@ function NavSidebar({ pathname }: { pathname: string }) {
               </SidebarMenuButton>
             </SidebarMenuItem>
           <SidebarMenuItem>
-              <SidebarMenuButton isActive={pathname === '/settings'} asChild tooltip="Settings">
+              <SidebarMenuButton isActive={isItemActive('/settings')} asChild tooltip="Settings">
                 <Link href="/settings">
                   <Settings />
                   <span>Settings</span>
