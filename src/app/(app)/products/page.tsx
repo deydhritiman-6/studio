@@ -939,12 +939,18 @@ export default function ProductsPage() {
                       fill 
                       className={`object-cover transition-transform duration-700 ${product.availabilityStatus === 'Out of Stock' ? 'grayscale opacity-60' : 'group-hover:scale-110'}`}
                       data-ai-hint={product.imageHint}
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                     />
                   </button>
-                  <div className="absolute top-4 left-4 flex gap-2 z-20">
-                    {product.sku && <Badge variant="secondary" className="uppercase tracking-tighter text-[8px]">{product.sku}</Badge>}
-                    <Badge variant="outline" className="bg-white/90 backdrop-blur-sm border-none shadow-sm uppercase tracking-widest text-[8px] font-black">{product.productShape}</Badge>
+                  <div className="absolute top-4 left-4 flex flex-col gap-2 z-20">
+                    {product.sku && (
+                      <Badge className="bg-stone-900/90 text-white border-none uppercase tracking-[0.1em] text-[9px] font-bold px-2 py-0.5 backdrop-blur-sm shadow-md w-fit">
+                        {product.sku}
+                      </Badge>
+                    )}
+                    <Badge className="bg-primary/90 text-white border-none shadow-md uppercase tracking-[0.15em] text-[9px] font-black px-2.5 py-1 backdrop-blur-sm w-fit">
+                      {product.productShape}
+                    </Badge>
                   </div>
                   <div className="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                     <Button variant="destructive" size="icon" className="h-8 w-8 rounded-full shadow-2xl bg-stone-900/60 backdrop-blur-md border border-white/10 hover:bg-destructive" onClick={(e) => { e.stopPropagation(); setProductToArchive(product); }}><Trash2 className="h-4 w-4 text-white" /></Button>
@@ -957,7 +963,7 @@ export default function ProductsPage() {
                       <p className="text-[10px] text-stone-400 uppercase tracking-wider font-black">{product.flavor}</p>
                    </div>
                    {product.description && (
-                      <p className="text-xs text-muted-foreground line-clamp-2 italic leading-relaxed">
+                      <p className="text-xs text-stone-600 font-medium line-clamp-2 italic leading-relaxed">
                         {product.description}
                       </p>
                    )}
