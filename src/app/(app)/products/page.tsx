@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
@@ -42,6 +43,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
@@ -164,6 +166,7 @@ const SHAPE_CONFIG: Record<string, { fields: { name: string; label: string; plac
 const productFormSchema = z.object({
   name: z.string().min(1, 'Name of the Product is required.'),
   flavor: z.string().min(1, 'Flavor profile is required.'),
+  description: z.string().optional(),
   weight: z.string().optional(),
   productShape: z.enum(['Square', 'Rectangular', 'Spherical', 'Half Spherical', 'Circular', 'Cylindrical', 'Oval', 'Heart', 'Triangular', 'Conical', 'Irregular', 'Other', 'Bar', 'Dome', 'Round']).default('Rectangular'),
   textureId: z.string().default(DEFAULT_TEXTURE.id),
@@ -263,6 +266,7 @@ export default function ProductsPage() {
         id: base?.id || g.id,
         name: g.productName,
         flavor: base?.flavor || 'Artisan Selection',
+        description: base?.description,
         price: base?.price || 0,
         wholesalePrice: base?.wholesalePrice || 0,
         availabilityStatus: base?.availabilityStatus || 'In Stock',
@@ -293,6 +297,7 @@ export default function ProductsPage() {
     defaultValues: {
       name: '',
       flavor: '',
+      description: '',
       weight: '',
       productShape: 'Rectangular',
       textureId: DEFAULT_TEXTURE.id,
@@ -328,6 +333,7 @@ export default function ProductsPage() {
       form.reset({
         name: editingProduct.name,
         flavor: editingProduct.flavor,
+        description: editingProduct.description || '',
         weight: editingProduct.weight || '',
         productShape: (editingProduct.productShape as any) || 'Rectangular',
         textureId: editingProduct.textureId || DEFAULT_TEXTURE.id,
@@ -359,6 +365,7 @@ export default function ProductsPage() {
       form.reset({
         name: product.name,
         flavor: product.flavor,
+        description: product.description || '',
         weight: product.weight || '',
         productShape: (product.productShape as any) || 'Rectangular',
         textureId: product.textureId || DEFAULT_TEXTURE.id,
@@ -487,7 +494,7 @@ export default function ProductsPage() {
           )}>
           {value ? (
             <>
-              <Image src={value} alt={label} fill className="object-cover" />
+              <Image src={value} alt={label} fill className="object-cover" sizes="(max-width: 768px) 100vw, 300px" />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                  <Button type="button" size="sm" variant="secondary" className="h-8 rounded-lg text-[9px] font-bold uppercase" onClick={() => fileInputRef.current?.click()}>
                     <RefreshCw className="h-3 w-3 mr-1" /> Replace
@@ -520,6 +527,9 @@ export default function ProductsPage() {
           <DialogHeader className="sr-only">
             <DialogTitle>Product Image Gallery</DialogTitle>
           </DialogHeader>
+          <div className="sr-only">
+            <DialogTitle>Viewing Images for {viewingProduct?.productName}</DialogTitle>
+          </div>
           {viewingProduct && (
             <Carousel opts={{ startIndex: viewingProduct.startIndex, loop: true }} className="w-full">
               <CarouselContent>
@@ -591,6 +601,14 @@ export default function ProductsPage() {
                       </FormItem>
                     )} />
                   </div>
+
+                  <FormField control={form.control} name="description" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Product Narrative / Description</FormLabel>
+                      <FormControl><Textarea placeholder="Describe the sensory experience, cocoa origin, and artisan notes..." className="rounded-xl min-h-[120px]" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
 
                   <div className="bg-muted/20 p-10 rounded-[2.5rem] border-2 border-dashed space-y-10">
                     <div className="flex flex-col lg:flex-row gap-10">
@@ -924,18 +942,25 @@ export default function ProductsPage() {
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                   </button>
-                  <div className="absolute top-4 left-4 flex gap-2">
+                  <div className="absolute top-4 left-4 flex gap-2 z-20">
                     {product.sku && <Badge variant="secondary" className="uppercase tracking-tighter text-[8px]">{product.sku}</Badge>}
                     <Badge variant="outline" className="bg-white/90 backdrop-blur-sm border-none shadow-sm uppercase tracking-widest text-[8px] font-black">{product.productShape}</Badge>
                   </div>
-                  <div className="absolute top-4 right-4 translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500">
-                    <Button variant="destructive" size="icon" className="h-8 w-8 rounded-full shadow-2xl bg-white/20 backdrop-blur-md border border-white/20 hover:bg-destructive" onClick={(e) => { e.stopPropagation(); setProductToArchive(product); }}><Trash2 className="h-4 w-4" /></Button>
+                  <div className="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <Button variant="destructive" size="icon" className="h-8 w-8 rounded-full shadow-2xl bg-stone-900/60 backdrop-blur-md border border-white/10 hover:bg-destructive" onClick={(e) => { e.stopPropagation(); setProductToArchive(product); }}><Trash2 className="h-4 w-4 text-white" /></Button>
                   </div>
               </CardHeader>
               <CardContent className="p-6 flex-grow space-y-6">
-                <div className="space-y-1">
-                   <CardTitle className="font-headline text-2xl group-hover:text-primary transition-colors duration-300 leading-none">{product.name}</CardTitle>
-                   <p className="text-[10px] text-stone-400 uppercase tracking-[0.3em] font-black">{product.flavor}</p>
+                <div className="space-y-2">
+                   <div className="space-y-0.5">
+                      <CardTitle className="font-headline text-2xl group-hover:text-primary transition-colors duration-300 leading-none">{product.name}</CardTitle>
+                      <p className="text-[10px] text-stone-400 uppercase tracking-wider font-black">{product.flavor}</p>
+                   </div>
+                   {product.description && (
+                      <p className="text-xs text-muted-foreground line-clamp-2 italic leading-relaxed">
+                        {product.description}
+                      </p>
+                   )}
                 </div>
                 <div className="flex justify-between items-end pt-4 border-t">
                   <div className="space-y-0.5">
@@ -945,8 +970,8 @@ export default function ProductsPage() {
                   <Badge variant={product.availabilityStatus === 'In Stock' ? 'default' : 'destructive'} className="rounded-full uppercase tracking-widest text-[8px] py-1.5 px-4">{product.availabilityStatus}</Badge>
                 </div>
               </CardContent>
-              <CardFooter className="p-6 pt-0 grid grid-cols-2 gap-3">
-                <Button variant="outline" className="rounded-2xl h-11 font-bold uppercase text-[9px] tracking-widest" onClick={() => setEditingProduct(product)}><Edit className="h-3 w-3 mr-1.5" /> Refine</Button>
+              <CardFooter className="p-6 pt-0 grid grid-cols-2 gap-3 z-10">
+                <Button variant="outline" className="rounded-2xl h-11 font-bold uppercase text-[9px] tracking-widest border-2" onClick={() => setEditingProduct(product)}><Edit className="h-3 w-3 mr-1.5" /> Refine</Button>
                 <Button variant="secondary" className="rounded-2xl h-11 font-bold uppercase text-[9px] tracking-widest" onClick={() => handleReEnroll(product)}><CopyCheck className="h-3 w-3 mr-1.5" /> Re-Enroll</Button>
               </CardFooter>
             </Card>

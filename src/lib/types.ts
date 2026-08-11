@@ -209,6 +209,7 @@ export type Product = {
   id: string;
   name: string;
   flavor: string;
+  description?: string;
   weight?: string;
   dimensions?: string;
   productDimensions?: ProductDimensions;

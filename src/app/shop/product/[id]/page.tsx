@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -116,7 +117,9 @@ export default function ProductDetailPage() {
           </div>
 
           <div className="space-y-8 text-stone-600 leading-relaxed text-lg font-light">
-            <p className="border-l-4 border-primary/20 pl-6 italic">Meticulously tempered in Kolkata for the true connoisseur. Zero artificial preservatives. Just pure artisan joy.</p>
+            <p className="border-l-4 border-primary/20 pl-6 italic">
+              {product.description || "Meticulously tempered in Kolkata for the true connoisseur. Zero artificial preservatives. Just pure artisan joy."}
+            </p>
             
             {product.productDimensions && (
               <div className="bg-stone-50 p-8 rounded-[2rem] border border-stone-100 space-y-8">
