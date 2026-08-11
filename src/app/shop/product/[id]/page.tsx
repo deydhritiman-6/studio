@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
-import { ShoppingCart, ArrowLeft, CheckCircle2, Star, ShieldCheck, Loader2, Ruler, Cuboid } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, CheckCircle2, Star, ShieldCheck, Loader2, Ruler, Cuboid, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useDoc, useFirestore, useCollection } from '@/firebase';
 import { doc, collection, query, where } from 'firebase/firestore';
@@ -77,13 +77,14 @@ export default function ProductDetailPage() {
 
   const allImages = useMemo(() => product?.imageUrls || [], [product]);
   const mainPreviewImage = selectedImage || allImages[0] || 'https://picsum.photos/seed/default/400/300';
-  const thumbnails = useMemo(() => allImages.slice(1, 4), [allImages]);
+  
+  // Thumbnails now include ALL images so the user can always return to the first one
+  const thumbnails = allImages;
 
+  // Reset gallery state when product changes to ensure it opens with primary image
   useEffect(() => {
-    if (allImages.length > 0 && !selectedImage) {
-      setSelectedImage(allImages[0]);
-    }
-  }, [allImages, selectedImage]);
+    setSelectedImage(null);
+  }, [productId]);
 
   if (productLoading || galleriesLoading) return <div className="flex items-center justify-center py-32"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
   
@@ -112,6 +113,18 @@ export default function ProductDetailPage() {
     window.dispatchEvent(new Event('cart-updated'));
   };
 
+  const handleNextImage = () => {
+    const currentIndex = allImages.indexOf(mainPreviewImage);
+    const nextIndex = (currentIndex + 1) % allImages.length;
+    setSelectedImage(allImages[nextIndex]);
+  };
+
+  const handlePrevImage = () => {
+    const currentIndex = allImages.indexOf(mainPreviewImage);
+    const prevIndex = (currentIndex - 1 + allImages.length) % allImages.length;
+    setSelectedImage(allImages[prevIndex]);
+  };
+
   return (
     <div className="space-y-12 animate-in slide-in-from-bottom-8 duration-1000">
       <div className="flex items-center justify-between">
@@ -134,13 +147,36 @@ export default function ProductDetailPage() {
                 data-ai-hint={product.imageHint} 
                 sizes="(max-width: 1024px) 100vw, 800px" 
               />
+              
+              {allImages.length > 1 && (
+                <>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); handlePrevImage(); }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white hover:text-stone-900 z-10"
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft className="h-6 w-6" />
+                  </button>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); handleNextImage(); }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white hover:text-stone-900 z-10"
+                    aria-label="Next image"
+                  >
+                    <ChevronRight className="h-6 w-6" />
+                  </button>
+                </>
+              )}
             </div>
           </div>
-          {thumbnails.length > 0 && (
-            <div className="grid grid-cols-3 gap-6 px-4 md:px-12">
+          {thumbnails.length > 1 && (
+            <div className="flex flex-wrap justify-center gap-6 px-4">
                {thumbnails.map((url, i) => (
-                  <button key={i} onClick={() => setSelectedImage(url)} className={`aspect-square relative rounded-xl overflow-hidden border-2 transition-all ${selectedImage === url ? 'border-primary shadow-lg scale-105' : 'border-transparent opacity-60 hover:opacity-100 hover:scale-105'}`}>
-                     <Image src={url} alt={`${product.name} perspective ${i + 1}`} fill className="object-cover" data-ai-hint={product.imageHint} sizes="(max-width: 768px) 33vw, 200px" />
+                  <button 
+                    key={i} 
+                    onClick={() => setSelectedImage(url)} 
+                    className={`h-20 w-20 md:h-24 md:w-24 relative rounded-xl overflow-hidden border-2 transition-all ${mainPreviewImage === url ? 'border-primary shadow-lg scale-105' : 'border-transparent opacity-60 hover:opacity-100 hover:scale-105'}`}
+                  >
+                     <Image src={url} alt={`${product.name} perspective ${i + 1}`} fill className="object-cover" data-ai-hint={product.imageHint} sizes="100px" />
                   </button>
                ))}
             </div>
