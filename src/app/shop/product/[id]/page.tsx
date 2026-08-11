@@ -146,7 +146,6 @@ export default function ProductDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 xl:gap-24">
         <div className="lg:col-span-7 space-y-8">
           <div className="aspect-square relative rounded-[2.5rem] overflow-hidden shadow-2xl bg-white border border-stone-100 p-8 flex flex-col">
-            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-4">Primary Product Image</p>
             <div className="relative flex-1 w-full rounded-[1.5rem] overflow-hidden group">
               <Image 
                 src={mainPreviewImage} 
@@ -158,6 +157,15 @@ export default function ProductDetailPage() {
                 sizes="(max-width: 1024px) 100vw, 800px" 
               />
               
+              {/* Primary Label Overlay */}
+              <div className="absolute top-6 left-6 z-20">
+                <div className="bg-stone-900/60 backdrop-blur-md border border-white/20 rounded-full px-5 py-2 shadow-2xl">
+                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white">
+                    Primary Product Image
+                  </p>
+                </div>
+              </div>
+
               {allImages.length > 1 && (
                 <>
                   <button 
