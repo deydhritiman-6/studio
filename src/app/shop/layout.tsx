@@ -78,7 +78,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
     <div className="min-h-screen flex flex-col bg-stone-50 font-body">
       <header 
         className={cn(
-          "sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-xl px-4 md:px-6 flex items-center animate-in fade-in duration-1000 overflow-hidden shadow-sm transition-all duration-500 ease-in-out",
+          "sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-xl px-4 md:px-6 flex items-center animate-in fade-in duration-1000 overflow-hidden shadow-sm",
           isShrunk ? "h-8 md:h-11" : "h-24 md:h-32"
         )}
         onMouseEnter={() => setIsHovered(true)}
@@ -88,7 +88,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
         <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-1/3 h-20 bg-primary/10 blur-[80px] rounded-full pointer-events-none animate-pulse"></div>
 
         <div className={cn(
-          "flex w-full items-center justify-between gap-2 relative z-10 transition-all duration-500",
+          "flex w-full items-center justify-between gap-2 relative z-10",
           isShrunk ? "scale-50 opacity-80" : "scale-100 opacity-100"
         )}>
           <div className="flex-1 flex justify-start items-center gap-2 md:gap-4">
