@@ -103,7 +103,7 @@ export default function ProductDetailPage() {
       const savedRaw = localStorage.getItem('roseberry-cart');
       if (savedRaw && savedRaw.trim()) {
         const parsed = JSON.parse(savedRaw);
-        if (Array.isArray(parsed)) cart = parsed;
+        if (Array.isArray(parsed)) cart = savedRaw ? JSON.parse(savedRaw) : [];
       }
     } catch (e) {}
     const existingIndex = cart.findIndex((item: any) => item.id === product.id);
@@ -138,8 +138,9 @@ export default function ProductDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 xl:gap-24">
         <div className="lg:col-span-7 space-y-8">
-          <div className="aspect-square relative rounded-[2.5rem] overflow-hidden shadow-2xl bg-white border border-stone-100 p-8">
-            <div className="relative w-full h-full rounded-[1.5rem] overflow-hidden group">
+          <div className="aspect-square relative rounded-[2.5rem] overflow-hidden shadow-2xl bg-white border border-stone-100 p-8 flex flex-col">
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-4">Primary Product Image</p>
+            <div className="relative flex-1 w-full rounded-[1.5rem] overflow-hidden group">
               <Image 
                 src={mainPreviewImage} 
                 alt={product.name} 
