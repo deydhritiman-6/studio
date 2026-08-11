@@ -78,8 +78,10 @@ export default function ProductDetailPage() {
   const allImages = useMemo(() => product?.imageUrls || [], [product]);
   const mainPreviewImage = selectedImage || allImages[0] || 'https://picsum.photos/seed/default/400/300';
   
-  // Thumbnails now include ALL images so the user can always return to the first one
-  const thumbnails = allImages;
+  // Display alternative images in thumbnails (exclude the one currently featured on top)
+  const thumbnails = useMemo(() => {
+    return allImages.filter(url => url !== mainPreviewImage);
+  }, [allImages, mainPreviewImage]);
 
   // Reset gallery state when product changes to ensure it opens with primary image
   useEffect(() => {
@@ -168,13 +170,13 @@ export default function ProductDetailPage() {
               )}
             </div>
           </div>
-          {thumbnails.length > 1 && (
+          {thumbnails.length > 0 && (
             <div className="flex flex-wrap justify-center gap-6 px-4">
                {thumbnails.map((url, i) => (
                   <button 
                     key={i} 
                     onClick={() => setSelectedImage(url)} 
-                    className={`h-20 w-20 md:h-24 md:w-24 relative rounded-xl overflow-hidden border-2 transition-all ${mainPreviewImage === url ? 'border-primary shadow-lg scale-105' : 'border-transparent opacity-60 hover:opacity-100 hover:scale-105'}`}
+                    className={`h-20 w-20 md:h-24 md:w-24 relative rounded-xl overflow-hidden border-2 transition-all border-transparent opacity-60 hover:opacity-100 hover:scale-105`}
                   >
                      <Image src={url} alt={`${product.name} perspective ${i + 1}`} fill className="object-cover" data-ai-hint={product.imageHint} sizes="100px" />
                   </button>
