@@ -83,6 +83,9 @@ export default function ProductDetailPage() {
     return allImages.filter(url => url !== mainPreviewImage);
   }, [allImages, mainPreviewImage]);
 
+  // Label logic
+  const isMainImagePrimary = mainPreviewImage === allImages[0];
+
   // Reset gallery state when product changes to ensure it opens with primary image
   useEffect(() => {
     setSelectedImage(null);
@@ -157,11 +160,11 @@ export default function ProductDetailPage() {
                 sizes="(max-width: 1024px) 100vw, 800px" 
               />
               
-              {/* Primary Label Overlay */}
+              {/* Image Label Overlay */}
               <div className="absolute top-6 left-6 z-20">
                 <div className="bg-stone-900/60 backdrop-blur-md border border-white/20 rounded-full px-5 py-2 shadow-2xl">
                   <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white">
-                    Primary Product Image
+                    {isMainImagePrimary ? "Primary Product Image" : "Other Images"}
                   </p>
                 </div>
               </div>
@@ -188,15 +191,27 @@ export default function ProductDetailPage() {
           </div>
           {thumbnails.length > 0 && (
             <div className="flex flex-wrap justify-center gap-8 px-4">
-               {thumbnails.map((url, i) => (
-                  <button 
-                    key={i} 
-                    onClick={() => setSelectedImage(url)} 
-                    className={`h-28 w-28 md:h-40 md:w-40 relative rounded-[1.5rem] overflow-hidden border-2 transition-all border-transparent opacity-60 hover:opacity-100 hover:scale-105 shadow-md`}
-                  >
-                     <Image src={url} alt={`${product.name} perspective ${i + 1}`} fill className="object-cover" data-ai-hint={product.imageHint} sizes="(max-width: 768px) 120px, 200px" />
-                  </button>
-               ))}
+               {thumbnails.map((url, i) => {
+                  const isThisThumbnailPrimary = url === allImages[0];
+                  return (
+                    <button 
+                      key={i} 
+                      onClick={() => setSelectedImage(url)} 
+                      className={`h-28 w-28 md:h-40 md:w-40 relative rounded-[1.5rem] overflow-hidden border-2 transition-all border-transparent opacity-60 hover:opacity-100 hover:scale-105 shadow-md`}
+                    >
+                       <Image src={url} alt={`${product.name} perspective ${i + 1}`} fill className="object-cover" data-ai-hint={product.imageHint} sizes="(max-width: 768px) 120px, 200px" />
+                       
+                       {/* Label Overlay for Thumbnails */}
+                       <div className="absolute bottom-2 left-2 z-10">
+                          <div className="bg-stone-900/60 backdrop-blur-md border border-white/20 rounded-full px-2 py-0.5 shadow-lg">
+                            <p className="text-[6px] font-black uppercase tracking-widest text-white whitespace-nowrap">
+                              {isThisThumbnailPrimary ? "Primary Product Image" : "Other Images"}
+                            </p>
+                          </div>
+                       </div>
+                    </button>
+                  );
+               })}
             </div>
           )}
         </div>
