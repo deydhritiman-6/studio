@@ -69,6 +69,45 @@ export default function PhotoGalleryManagementPage() {
 
   const { toast } = useToast();
 
+  const portfolioProducts = useMemo(() => {
+    return products?.filter(p => p.productionStatus === 'Product Ready' && !p.isArchived) || [];
+  }, [products]);
+
+  const galleryIdentities = useMemo(() => {
+    const productNames = portfolioProducts.map(p => p.name);
+    return Array.from(new Set(productNames)).sort();
+  }, [portfolioProducts]);
+
+  const combinedGalleries = useMemo(() => {
+    if (galleriesLoading) return [];
+    
+    // 1. Start with existing manual gallery entries
+    const list = [...(galleries || [])];
+    
+    // 2. Add portfolio products that don't have a specific gallery entry yet
+    portfolioProducts.forEach(p => {
+      const hasGallery = list.some(g => g.productId === p.id || g.productName === p.name);
+      if (!hasGallery) {
+        list.push({
+          id: `VIRTUAL-${p.id}`, // Mark as virtual
+          productId: p.id,
+          productName: p.name,
+          mainImage: p.imageUrls?.[0] || 'https://picsum.photos/seed/default/400/300',
+          subImages: p.imageUrls?.slice(1, 4) || [],
+          createdAt: p.productionDate || new Date().toISOString(),
+        } as any);
+      }
+    });
+
+    return list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }, [galleries, portfolioProducts, galleriesLoading]);
+
+  const filteredGalleries = useMemo(() => {
+    return combinedGalleries.filter(g => 
+      g.productName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [combinedGalleries, searchTerm]);
+
   const form = useForm<GalleryFormValues>({
     resolver: zodResolver(galleryFormSchema),
     defaultValues: {
@@ -105,13 +144,6 @@ export default function PhotoGalleryManagementPage() {
     }
   }, [editingGallery, isAddDialogOpen, form]);
 
-  const filteredGalleries = useMemo(() => {
-    if (!galleries) return [];
-    return galleries.filter(g => 
-      g.productName.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [galleries, searchTerm]);
-
   const optimizeImage = (dataUrl: string): Promise<string> => {
     return new Promise((resolve) => {
       const img = new window.Image();
@@ -145,7 +177,9 @@ export default function PhotoGalleryManagementPage() {
     if (!firestore) return;
 
     setIsSaving(true);
-    const galleryId = editingGallery?.id || `GAL-${Date.now()}`;
+    // Use real ID if editing a real doc, or generate one if creating/saving a virtual entry
+    const isVirtual = editingGallery?.id?.startsWith('VIRTUAL-');
+    const galleryId = (editingGallery && !isVirtual) ? editingGallery.id : `GAL-${Date.now()}`;
     const galleryRef = doc(firestore, 'product-galleries', galleryId);
     
     const subImages = [values.subPhoto1, values.subPhoto2, values.subPhoto3].filter(Boolean) as string[];
@@ -156,7 +190,7 @@ export default function PhotoGalleryManagementPage() {
       productName: values.productName,
       mainImage: values.mainImage,
       subImages: subImages,
-      createdAt: editingGallery?.createdAt || new Date().toISOString(),
+      createdAt: (editingGallery && !isVirtual) ? editingGallery.createdAt : new Date().toISOString(),
     };
 
     setDoc(galleryRef, galleryData, { merge: true })
@@ -168,7 +202,7 @@ export default function PhotoGalleryManagementPage() {
       .catch(async (error) => {
         const permissionError = new FirestorePermissionError({
           path: galleryRef.path,
-          operation: editingGallery ? 'update' : 'create',
+          operation: 'write',
           requestResourceData: galleryData,
         });
         errorEmitter.emit('permission-error', permissionError);
@@ -176,11 +210,15 @@ export default function PhotoGalleryManagementPage() {
       .finally(() => setIsSaving(false));
   };
 
-  const handleDeleteGallery = (id: string) => {
+  const handleDeleteGallery = (gallery: any) => {
     if (!firestore) return;
-    if (!confirm('Are you sure you want to permanently remove this gallery set?')) return;
+    if (gallery.id.startsWith('VIRTUAL-')) {
+        toast({ title: 'Virtual Entry', description: 'This entry is generated from a Portfolio product and cannot be deleted here. Archive the product instead.' });
+        return;
+    }
+    if (!confirm('Are you sure you want to permanently remove this specific gallery set?')) return;
 
-    const galleryRef = doc(firestore, 'product-galleries', id);
+    const galleryRef = doc(firestore, 'product-galleries', gallery.id);
     deleteDoc(galleryRef)
       .then(() => toast({ title: 'Set Removed' }))
       .catch(async (error) => {
@@ -254,14 +292,14 @@ export default function PhotoGalleryManagementPage() {
            <div className="relative w-full md:w-96">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input 
-                placeholder="Search Product Galleries..." 
+                placeholder="Search visual archive..." 
                 className="pl-10 h-11 rounded-xl bg-card border-none shadow-sm"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
            </div>
            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-             <Images className="h-4 w-4" /> {filteredGalleries.length} Photographic Sets
+             <Images className="h-4 w-4" /> {filteredGalleries.length} Product Sets
            </div>
         </div>
 
@@ -270,13 +308,13 @@ export default function PhotoGalleryManagementPage() {
         ) : filteredGalleries.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredGalleries.map((gallery) => (
-              <Card key={gallery.id} className="rounded-[2rem] border-none shadow-sm hover:shadow-2xl transition-all duration-500 bg-card overflow-hidden group">
+              <Card key={gallery.id} className="rounded-[2.5rem] border-none shadow-sm hover:shadow-2xl transition-all duration-500 bg-card overflow-hidden group">
                 <div className="aspect-video relative overflow-hidden bg-stone-900">
                     <Image src={gallery.mainImage} alt={gallery.productName} fill className="object-cover transition-transform duration-[2s] group-hover:scale-110 opacity-90 group-hover:opacity-100" />
                     <div className="absolute inset-0 bg-gradient-to-t from-stone-900 via-transparent to-transparent opacity-60"></div>
                     <div className="absolute bottom-4 left-6">
-                        <Badge className="bg-primary text-stone-950 border-none font-black uppercase text-[8px] tracking-[0.2em]">Main Perspective</Badge>
-                        <h3 className="text-xl font-headline text-white mt-1">{gallery.productName}</h3>
+                        {gallery.id.startsWith('VIRTUAL-') && <Badge className="bg-amber-500 text-stone-950 border-none font-black uppercase text-[7px] tracking-[0.2em] mb-1">Portfolio Sync</Badge>}
+                        <h3 className="text-xl font-headline text-white mt-0.5">{gallery.productName}</h3>
                     </div>
                     <button 
                       onClick={() => setViewingImage(gallery.mainImage)}
@@ -288,7 +326,7 @@ export default function PhotoGalleryManagementPage() {
                 <CardContent className="p-6">
                    <div className="grid grid-cols-3 gap-4 mb-6">
                       {[0, 1, 2].map((i) => (
-                        <div key={i} className="aspect-square relative rounded-xl overflow-hidden bg-muted border border-border/50 group/sub">
+                        <div key={i} className="aspect-square relative rounded-2xl overflow-hidden bg-muted border border-border/50 group/sub shadow-inner">
                            {gallery.subImages[i] ? (
                              <>
                                 <Image src={gallery.subImages[i]} alt="" fill className="object-cover" />
@@ -301,7 +339,7 @@ export default function PhotoGalleryManagementPage() {
                              </>
                            ) : (
                              <div className="h-full w-full flex items-center justify-center text-muted-foreground/20">
-                               <Package className="h-4 w-4" />
+                               <Package className="h-4 w-4 opacity-50" />
                              </div>
                            )}
                         </div>
@@ -315,7 +353,13 @@ export default function PhotoGalleryManagementPage() {
                         <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/10 hover:text-primary" onClick={() => setEditingGallery(gallery)}>
                             <RefreshCw className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-destructive/10 hover:text-destructive" onClick={() => handleDeleteGallery(gallery.id)}>
+                        <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-9 w-9 rounded-xl hover:bg-destructive/10 hover:text-destructive" 
+                            onClick={() => handleDeleteGallery(gallery)}
+                            disabled={gallery.id.startsWith('VIRTUAL-')}
+                        >
                             <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -327,7 +371,7 @@ export default function PhotoGalleryManagementPage() {
         ) : (
           <div className="flex flex-col items-center justify-center h-80 border-2 border-dashed rounded-[2.5rem] bg-muted/30 border-border text-center px-4">
              <Images className="h-16 w-16 text-muted-foreground opacity-20 mb-6" />
-             <p className="text-muted-foreground font-headline text-2xl italic">The visual archive is currently empty.</p>
+             <p className="text-muted-foreground font-headline text-2xl italic">The visual archive is currently quiet.</p>
              <p className="text-xs uppercase tracking-widest text-muted-foreground mt-2">Initialize your first photographic set to begin asset management.</p>
              <Button variant="link" className="text-primary mt-4" onClick={() => setIsAddDialogOpen(true)}>Define First Set</Button>
           </div>
@@ -353,15 +397,19 @@ export default function PhotoGalleryManagementPage() {
                             <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Target Identity</FormLabel>
                             <Tabs value={identityMode} onValueChange={(v: any) => setIdentityMode(v)} className="w-full">
                                <TabsList className="grid w-full grid-cols-2 bg-muted/30 h-9 rounded-xl p-1 mb-2">
-                                  <TabsTrigger value="existing" className="rounded-lg text-[9px] uppercase font-bold">Select Existing</TabsTrigger>
+                                  <TabsTrigger value="existing" className="rounded-lg text-[9px] uppercase font-bold">From Portfolio</TabsTrigger>
                                   <TabsTrigger value="new" className="rounded-lg text-[9px] uppercase font-bold">Manual Entry</TabsTrigger>
                                </TabsList>
                                <TabsContent value="existing" className="mt-0">
                                   <Select 
                                     onValueChange={(val) => {
-                                      const prod = products?.find(p => p.name === val);
+                                      const prod = portfolioProducts.find(p => p.name === val);
                                       field.onChange(val);
-                                      if (prod) form.setValue('productId', prod.id);
+                                      if (prod) {
+                                          form.setValue('productId', prod.id);
+                                          // Pre-fill with product images if gallery is empty
+                                          if (!form.getValues('mainImage')) form.setValue('mainImage', prod.imageUrls?.[0] || '');
+                                      }
                                     }} 
                                     defaultValue={field.value} 
                                     value={field.value}
@@ -372,7 +420,7 @@ export default function PhotoGalleryManagementPage() {
                                         </SelectTrigger>
                                      </FormControl>
                                      <SelectContent>
-                                        {products?.map(p => <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>)}
+                                        {galleryIdentities.map(name => <SelectItem key={name} value={name}>{name}</SelectItem>)}
                                      </SelectContent>
                                   </Select>
                                </TabsContent>
@@ -408,13 +456,13 @@ export default function PhotoGalleryManagementPage() {
                   </div>
                </ScrollArea>
 
-               <div className="px-10 py-6 border-t shrink-0 flex items-center justify-end gap-6">
+               <div className="px-10 py-6 border-t shrink-0 flex items-center justify-end gap-6 bg-background">
                   <DialogClose asChild>
                     <Button type="button" variant="secondary" className="h-12 px-8 rounded-xl font-bold uppercase text-[10px] tracking-widest">Discard</Button>
                   </DialogClose>
                   <Button type="submit" disabled={isSaving} className="h-12 px-12 rounded-xl shadow-2xl shadow-primary/20 font-bold uppercase text-[10px] tracking-widest min-w-[220px]">
                     {isSaving ? <Loader2 className="mr-3 h-4 w-4 animate-spin" /> : null}
-                    {editingGallery ? 'Save Adjustments' : 'Commit Photographic Set'}
+                    Commit photographic set
                   </Button>
                </div>
             </form>
