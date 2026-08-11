@@ -171,14 +171,14 @@ export default function ProductDetailPage() {
             </div>
           </div>
           {thumbnails.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-6 px-4">
+            <div className="flex flex-wrap justify-center gap-8 px-4">
                {thumbnails.map((url, i) => (
                   <button 
                     key={i} 
                     onClick={() => setSelectedImage(url)} 
-                    className={`h-20 w-20 md:h-24 md:w-24 relative rounded-xl overflow-hidden border-2 transition-all border-transparent opacity-60 hover:opacity-100 hover:scale-105`}
+                    className={`h-28 w-28 md:h-40 md:w-40 relative rounded-[1.5rem] overflow-hidden border-2 transition-all border-transparent opacity-60 hover:opacity-100 hover:scale-105 shadow-md`}
                   >
-                     <Image src={url} alt={`${product.name} perspective ${i + 1}`} fill className="object-cover" data-ai-hint={product.imageHint} sizes="100px" />
+                     <Image src={url} alt={`${product.name} perspective ${i + 1}`} fill className="object-cover" data-ai-hint={product.imageHint} sizes="(max-width: 768px) 120px, 200px" />
                   </button>
                ))}
             </div>
