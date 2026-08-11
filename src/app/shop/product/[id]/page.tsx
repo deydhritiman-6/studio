@@ -135,12 +135,15 @@ export default function ProductDetailPage() {
       <div className="flex items-center justify-between">
         <Button 
           variant="ghost" 
-          className="text-primary hover:text-rose-700 px-4 h-12 rounded-full hover:bg-primary/5 group transition-all duration-300 transform hover:scale-105" 
+          className="text-primary hover:text-rose-700 px-0 h-12 rounded-full hover:bg-transparent group transition-all duration-300 transform hover:scale-105" 
           onClick={() => router.back()}
         >
-          <div className="flex items-center gap-2">
-            <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-2 duration-300" /> 
-            <span className="text-sm md:text-base font-black uppercase tracking-[0.15em] font-headline">Back to Collection</span>
+          <div className="flex items-center gap-3">
+            <ArrowLeft className="h-6 w-6 transition-transform group-hover:-translate-x-2 duration-300" /> 
+            <span className="text-base md:text-xl font-black uppercase tracking-[0.15em] font-headline relative">
+              Back to Collection
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-rose-700 transition-all duration-300 group-hover:w-full"></span>
+            </span>
           </div>
         </Button>
         <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-300">Ref: {product.id}</div>
