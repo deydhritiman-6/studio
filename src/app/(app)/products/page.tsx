@@ -248,8 +248,44 @@ export default function ProductsPage() {
   }, [galleries]);
 
   const products = useMemo(() => {
-    return allProductsRaw?.filter(p => p.productionStatus === 'Product Ready' && !p.isArchived) || [];
-  }, [allProductsRaw]);
+    if (!allProductsRaw || !galleries) return [];
+    
+    const list: Product[] = [];
+    
+    // 1. Incorporate every single entry from the Photo Gallery into the Portfolio
+    galleries.forEach(g => {
+      const base = allProductsRaw.find(p => p.id === g.productId || p.name === g.productName);
+      
+      list.push({
+        ...(base || {}),
+        id: base?.id || g.id,
+        name: g.productName,
+        flavor: base?.flavor || 'Artisan Selection',
+        price: base?.price || 0,
+        wholesalePrice: base?.wholesalePrice || 0,
+        availabilityStatus: base?.availabilityStatus || 'In Stock',
+        imageUrls: [g.mainImage, ...g.subImages], // Use images from the Gallery
+        imageHint: base?.imageHint || 'artisan chocolate',
+        productShape: base?.productShape || 'Rectangular',
+        sku: base?.sku,
+        textureName: base?.textureName,
+        productionStatus: 'Product Ready',
+        isArchived: false,
+      } as Product);
+    });
+
+    // 2. Add technical products that are "Product Ready" but don't have a manual Gallery entry yet
+    allProductsRaw.forEach(p => {
+      if (p.productionStatus === 'Product Ready' && !p.isArchived) {
+        const alreadyInList = list.some(item => item.id === p.id || item.name === p.name);
+        if (!alreadyInList) {
+          list.push(p);
+        }
+      }
+    });
+
+    return list.sort((a, b) => a.name.localeCompare(b.name));
+  }, [allProductsRaw, galleries]);
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -474,7 +510,11 @@ export default function ProductsPage() {
     const productRef = doc(firestore, 'products', id);
     updateDoc(productRef, { isArchived: true, deletedAt: new Date().toISOString() })
       .then(() => { toast({ title: 'Moved to Bin' }); setProductToArchive(null); })
-      .catch((e) => console.error(e));
+      .catch((e) => {
+        console.error('Archive failed - likely gallery-only item:', e);
+        setProductToArchive(null);
+        toast({ variant: 'destructive', title: 'Action Failed', description: 'This item is currently only managed in the Photo Gallery.' });
+      });
   };
 
   const PhotoSlot = ({ fieldName, label, required = false }: { fieldName: keyof ProductFormValues, label: string, required?: boolean }) => {
@@ -533,7 +573,7 @@ export default function ProductsPage() {
                 {viewingProduct.images.map((url, index) => (
                   <CarouselItem key={index}>
                     <div className="aspect-video relative">
-                      <Image src={url} alt={`Preview ${index + 1}`} fill className="object-contain" data-ai-hint={viewingProduct.hint} />
+                      <Image src={url} alt={`Preview ${index + 1}`} fill className="object-contain" data-ai-hint={viewingProduct.hint} sizes="(max-width: 768px) 100vw, 800px" />
                     </div>
                   </CarouselItem>
                 ))}
@@ -855,7 +895,7 @@ export default function ProductsPage() {
                          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
                             {pg.map(entry => ([entry.mainImage, ...entry.subImages].map((img, idx) => (
                                 <button key={`${entry.id}-${idx}`} type="button" onClick={() => { if (isGalleryPickerOpen?.field) { form.setValue(isGalleryPickerOpen.field, img, { shouldValidate: true }); setIsGalleryPickerOpen(null); } }} className="aspect-square relative rounded-xl overflow-hidden group border-2 border-transparent hover:border-primary transition-all shadow-sm">
-                                  <Image src={img} alt="" fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
+                                  <Image src={img} alt="" fill className="object-cover group-hover:scale-110 transition-transform duration-500" sizes="(max-width: 768px) 150px, 200px" />
                                   <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 flex items-center justify-center"><CheckCircle2 className="text-white h-8 w-8 drop-shadow-xl" /></div>
                                 </button>
                             ))))}
@@ -900,7 +940,14 @@ export default function ProductsPage() {
             <Card key={product.id} className="flex flex-col group overflow-hidden border-none shadow-sm hover:shadow-2xl transition-all duration-500 rounded-[2rem] bg-card relative">
               <CardHeader className="p-0 relative">
                  <button type="button" className="block w-full aspect-[4/3] relative overflow-hidden" onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: 0, productName: product.name, hint: product.imageHint })}>
-                    <Image src={product.imageUrls?.[0] || 'https://picsum.photos/seed/default/400/300'} alt={product.name} fill className={`object-cover transition-transform duration-700 ${product.availabilityStatus === 'Out of Stock' ? 'grayscale opacity-60' : 'group-hover:scale-110'}`} data-ai-hint={product.imageHint} />
+                    <Image 
+                      src={product.imageUrls?.[0] || 'https://picsum.photos/seed/default/400/300'} 
+                      alt={product.name} 
+                      fill 
+                      className={`object-cover transition-transform duration-700 ${product.availabilityStatus === 'Out of Stock' ? 'grayscale opacity-60' : 'group-hover:scale-110'}`}
+                      data-ai-hint={product.imageHint}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
                   </button>
                   <div className="absolute top-4 left-4 flex gap-2">
                     {product.sku && <Badge variant="secondary" className="uppercase tracking-tighter text-[8px]">{product.sku}</Badge>}
