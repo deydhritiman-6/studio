@@ -163,7 +163,19 @@ export type ProductDimensions = {
   customLabel2?: string;
   customLabel3?: string;
   additionalDescription?: string;
-  patternSize?: number;
+};
+
+export type SurfacePatternParams = {
+  length?: number;
+  width?: number;
+  depth?: number;
+  scale?: number;
+  repeatX?: number;
+  repeatY?: number;
+  spacing?: number;
+  offsetX?: number;
+  offsetY?: number;
+  rotation?: number;
 };
 
 export type ProductTexture = {
@@ -200,6 +212,7 @@ export type Product = {
   weight?: string;
   dimensions?: string;
   productDimensions?: ProductDimensions;
+  surfacePatternParams?: SurfacePatternParams;
   productShape?: 'Square' | 'Rectangular' | 'Spherical' | 'Half Spherical' | 'Circular' | 'Cylindrical' | 'Oval' | 'Heart' | 'Triangular' | 'Conical' | 'Irregular' | 'Other' | 'Bar' | 'Dome';
   productSkin?: 'Dark' | 'Milk' | 'White' | 'Rose' | 'Gold';
   productTexture?: string;

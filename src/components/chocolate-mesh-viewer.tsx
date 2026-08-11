@@ -13,7 +13,7 @@ import {
   Cuboid
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ProductDimensions, SurfacePattern, SegmentType } from '@/lib/types';
+import { ProductDimensions, SurfacePattern, SegmentType, SurfacePatternParams } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { CHOCOLATE_TEXTURES, DEFAULT_TEXTURE } from '@/lib/textures';
 
@@ -23,6 +23,7 @@ interface ChocolateMeshViewerProps {
   textureId?: string;
   surfacePattern?: SurfacePattern;
   segmentType?: SegmentType;
+  patternParams?: SurfacePatternParams;
   className?: string;
 }
 
@@ -32,6 +33,18 @@ export function ChocolateMeshViewer({
   textureId,
   surfacePattern = 'None',
   segmentType = 'Square',
+  patternParams = {
+    length: 10,
+    width: 10,
+    depth: 1,
+    scale: 1,
+    repeatX: 4,
+    repeatY: 4,
+    spacing: 0,
+    offsetX: 0,
+    offsetY: 0,
+    rotation: 0
+  },
   className,
 }: ChocolateMeshViewerProps) {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -56,7 +69,7 @@ export function ChocolateMeshViewer({
     return CHOCOLATE_TEXTURES.find(t => t.id === textureId) || DEFAULT_TEXTURE;
   }, [textureId]);
 
-  const createProceduralNormalMap = (type?: string, patternSize = 10) => {
+  const createProceduralNormalMap = (type?: string, params: SurfacePatternParams = patternParams) => {
     const size = 512;
     const canvas = document.createElement('canvas');
     canvas.width = size;
@@ -68,10 +81,9 @@ export function ChocolateMeshViewer({
     ctx.fillStyle = 'rgb(128, 128, 255)';
     ctx.fillRect(0, 0, size, size);
 
-    // patternSize typically range 5-50. Convert to a repetition count.
-    // Smaller patternSize = more frequent pattern.
-    const safeSize = Math.max(1, patternSize);
-    const repeat = Math.max(1, Math.floor(100 / safeSize));
+    // Apply scaling based on independent pattern params
+    const repeatX = (params.repeatX || 4) * (params.scale || 1);
+    const repeatY = (params.repeatY || 4) * (params.scale || 1);
 
     if (type?.includes('Velvet')) {
       for (let i = 0; i < 20000; i++) {
@@ -86,25 +98,22 @@ export function ChocolateMeshViewer({
       for (let i = 0; i < 150; i++) {
         const x = Math.random() * size;
         const y = Math.random() * size;
-        const radius = 10 + Math.random() * 30;
+        const radius = (10 + Math.random() * 30) / (params.scale || 1);
         const grad = ctx.createRadialGradient(x, y, 0, x, y, radius);
         grad.addColorStop(0, 'rgb(100, 100, 255)');
         grad.addColorStop(1, 'rgb(128, 128, 255)');
         ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.fill();
       }
     } else if (type?.includes('Ribbed') || type?.includes('Ridged')) {
-      const step = size / repeat;
+      const step = size / repeatX;
       for (let i = 0; i < size; i += step) {
         ctx.fillStyle = 'rgb(140, 140, 255)';
         ctx.fillRect(i, 0, step / 2, size);
       }
     } else if (type?.includes('Wavy')) {
-      const step = size / repeat;
       for (let i = 0; i < size; i += 2) {
-        const y = (Math.sin((i / size) * Math.PI * 2 * repeat) + 1) / 2;
+        const y = (Math.sin((i / size) * Math.PI * 2 * repeatX) + 1) / 2;
         ctx.fillStyle = `rgb(${128 + y * 60}, 128, 255)`;
         ctx.fillRect(i, 0, 2, size);
       }
@@ -116,27 +125,8 @@ export function ChocolateMeshViewer({
         ctx.fillStyle = `rgb(${128 + noise}, ${128 + noise}, 255)`;
         ctx.fillRect(x, y, 2, 2);
       }
-    } else if (type?.includes('Bubbles')) {
-      for (let i = 0; i < 80; i++) {
-        const x = Math.random() * size;
-        const y = Math.random() * size;
-        const radius = 2 + Math.random() * 8;
-        ctx.fillStyle = 'rgb(150, 150, 255)';
-        ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.fill();
-      }
-    } else if (type?.includes('Cracked')) {
-      ctx.strokeStyle = 'rgb(100, 100, 255)';
-      ctx.lineWidth = 1;
-      for (let i = 0; i < 20; i++) {
-        ctx.beginPath();
-        ctx.moveTo(Math.random() * size, Math.random() * size);
-        for (let j = 0; j < 5; j++) {
-          ctx.lineTo(Math.random() * size, Math.random() * size);
-        }
-        ctx.stroke();
-      }
     } else if (type?.includes('Rippled')) {
-      const step = size / repeat;
+      const step = size / repeatY;
       for (let i = 0; i < size; i += step) {
         const grad = ctx.createLinearGradient(0, i, 0, i + step);
         grad.addColorStop(0, 'rgb(120, 120, 255)');
@@ -146,25 +136,26 @@ export function ChocolateMeshViewer({
         ctx.fillRect(0, i, size, step);
       }
     } else if (type?.includes('Striped')) {
-      const step = size / repeat;
+      const step = size / repeatX;
       for (let i = 0; i < size; i += step) {
         ctx.fillStyle = 'rgb(100, 100, 255)';
         ctx.fillRect(i, 0, step / 3, size);
       }
     } else if (type?.includes('Crosshatch')) {
-      const step = size / repeat;
+      const step = size / Math.max(repeatX, repeatY);
       ctx.fillStyle = 'rgb(110, 110, 255)';
       for (let i = 0; i < size; i += step) {
         ctx.fillRect(i, 0, step / 4, size);
         ctx.fillRect(0, i, size, step / 4);
       }
     } else if (type?.includes('Polka Dot')) {
-      const step = size / repeat;
+      const stepX = size / repeatX;
+      const stepY = size / repeatY;
       ctx.fillStyle = 'rgb(140, 140, 255)';
-      for (let i = 0; i < size; i += step) {
-        for (let j = 0; j < size; j += step) {
+      for (let i = 0; i < size; i += stepX) {
+        for (let j = 0; j < size; j += stepY) {
           ctx.beginPath();
-          ctx.arc(i + step / 2, j + step / 2, step / 4, 0, Math.PI * 2);
+          ctx.arc(i + stepX / 2, j + stepY / 2, Math.min(stepX, stepY) / 4, 0, Math.PI * 2);
           ctx.fill();
         }
       }
@@ -172,6 +163,11 @@ export function ChocolateMeshViewer({
 
     const tex = new THREE_LIB.CanvasTexture(canvas);
     tex.wrapS = tex.wrapT = THREE_LIB.RepeatWrapping;
+    
+    // Apply offset and rotation directly to texture matrix
+    tex.offset.set(params.offsetX || 0, params.offsetY || 0);
+    tex.rotation = (params.rotation || 0) * (Math.PI / 180);
+    
     return tex;
   };
 
@@ -281,14 +277,14 @@ export function ChocolateMeshViewer({
       ? surfacePattern 
       : activeTexture.normalType;
 
-    const normalMap = createProceduralNormalMap(effectiveNormalType, dimensions.patternSize);
+    const normalMap = createProceduralNormalMap(effectiveNormalType, patternParams);
     
     const material = new THREE_LIB.MeshStandardMaterial({ 
       color: activeTexture.color, 
       roughness: activeTexture.roughness, 
       metalness: activeTexture.metalness,
       normalMap: normalMap,
-      normalScale: new THREE_LIB.Vector2(1.8, 1.8),
+      normalScale: new THREE_LIB.Vector2(patternParams.depth || 1, patternParams.depth || 1),
       visible: viewMode !== 'mesh'
     });
 
@@ -345,22 +341,23 @@ export function ChocolateMeshViewer({
       const baseMesh = new THREE_LIB.Mesh(baseGeo, material);
       group.add(baseMesh);
 
-      const rows = shape === 'Square' ? Math.max(2, Math.floor(L / (H * 0.8))) : Math.max(1, Math.floor(W / (H * 1.5)));
-      const cols = Math.max(2, Math.floor(L / (H * 1.5)));
+      // Use independent pattern params for grid count
+      const cols = Math.max(1, patternParams.repeatX || 4);
+      const rows = Math.max(1, patternParams.repeatY || 4);
       
-      const gutter = 0.05;
+      const gutter = (patternParams.spacing || 0) * scaleFactor || 0.05;
       const blockL = (L / cols) - gutter;
       const blockW = (W / rows) - gutter;
 
       for (let i = 0; i < cols; i++) {
         for (let j = 0; j < rows; j++) {
-          const posX = (i * (blockL + gutter)) - (L / 2) + (blockL / 2) + (gutter / 2);
-          const posZ = (j * (blockW + gutter)) - (W / 2) + (blockW / 2) + (gutter / 2);
+          const posX = (i * (blockL + gutter)) - (L / 2) + (blockL / 2) + (gutter / 2) + ((patternParams.offsetX || 0) * scaleFactor);
+          const posZ = (j * (blockW + gutter)) - (W / 2) + (blockW / 2) + (gutter / 2) + ((patternParams.offsetY || 0) * scaleFactor);
           
           let blockGeo: THREE_LIB.BufferGeometry;
           if (segmentType === 'Rounded' || segmentType === 'Premium') {
             const blockShape = new THREE_LIB.Shape();
-            const radius = 0.05;
+            const radius = Math.min(blockL, blockW) * 0.2;
             blockShape.moveTo(-blockL/2 + radius, -blockW/2);
             blockShape.lineTo(blockL/2 - radius, -blockW/2);
             blockShape.quadraticCurveTo(blockL/2, -blockW/2, blockL/2, -blockW/2 + radius);
@@ -416,7 +413,7 @@ export function ChocolateMeshViewer({
       cameraRef.current.lookAt(0, 0, 0);
       cameraRef.current.updateProjectionMatrix();
     }
-  }, [shape, dimensions, activeTexture, viewMode, surfacePattern, segmentType]);
+  }, [shape, dimensions, activeTexture, viewMode, surfacePattern, segmentType, patternParams]);
 
   useEffect(() => {
     const el = mountRef.current;

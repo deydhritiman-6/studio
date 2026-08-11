@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import type { Product, ProductDimensions, ProductGallery, SurfacePattern, SegmentType } from '@/lib/types';
+import type { Product, ProductDimensions, ProductGallery, SurfacePattern, SegmentType, SurfacePatternParams } from '@/lib/types';
 import { 
   PlusCircle, 
   Loader2, 
@@ -30,7 +30,10 @@ import {
   Layers,
   ArrowRight,
   LayoutGrid,
-  X
+  X,
+  RotateCw,
+  Maximize,
+  Move
 } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
@@ -49,7 +52,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ChocolateMeshViewer } from '@/components/chocolate-mesh-viewer';
 import { TextureSelector } from '@/components/texture-selector';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CHOCOLATE_TEXTURES, DEFAULT_TEXTURE } from '@/lib/textures';
@@ -182,8 +185,19 @@ const productFormSchema = z.object({
     customLabel2: z.string().optional(),
     customLabel3: z.string().optional(),
     additionalDescription: z.string().optional(),
-    patternSize: z.coerce.number().optional(),
   }),
+  surfacePatternParams: z.object({
+    length: z.coerce.number().optional().default(10),
+    width: z.coerce.number().optional().default(10),
+    depth: z.coerce.number().optional().default(1),
+    scale: z.coerce.number().optional().default(1),
+    repeatX: z.coerce.number().optional().default(4),
+    repeatY: z.coerce.number().optional().default(4),
+    spacing: z.coerce.number().optional().default(0),
+    offsetX: z.coerce.number().optional().default(0),
+    offsetY: z.coerce.number().optional().default(0),
+    rotation: z.coerce.number().optional().default(0),
+  }).default({}),
   price: z.coerce.number().min(0, 'Retail Value must be at least 0.'),
   wholesalePrice: z.coerce.number().min(0, 'Wholesale Value must be at least 0.'),
   availabilityStatus: z.enum(['In Stock', 'Out of Stock']),
@@ -247,7 +261,19 @@ export default function ProductsPage() {
       textureId: DEFAULT_TEXTURE.id,
       surfacePattern: 'None',
       segmentType: 'Square',
-      productDimensions: { unit: 'mm', patternSize: 10 },
+      productDimensions: { unit: 'mm' },
+      surfacePatternParams: {
+        length: 10,
+        width: 10,
+        depth: 1,
+        scale: 1,
+        repeatX: 4,
+        repeatY: 4,
+        spacing: 0,
+        offsetX: 0,
+        offsetY: 0,
+        rotation: 0,
+      },
       price: 0,
       wholesalePrice: 0,
       availabilityStatus: 'In Stock',
@@ -264,6 +290,7 @@ export default function ProductsPage() {
   const watchPattern = useWatch({ control: form.control, name: 'surfacePattern' });
   const watchSegment = useWatch({ control: form.control, name: 'segmentType' });
   const watchDimensions = useWatch({ control: form.control, name: 'productDimensions' });
+  const watchPatternParams = useWatch({ control: form.control, name: 'surfacePatternParams' });
 
   const currentTexture = useMemo(() => CHOCOLATE_TEXTURES.find(t => t.id === watchTextureId) || DEFAULT_TEXTURE, [watchTextureId]);
 
@@ -278,7 +305,19 @@ export default function ProductsPage() {
         textureId: editingProduct.textureId || DEFAULT_TEXTURE.id,
         surfacePattern: editingProduct.surfacePattern || 'None',
         segmentType: editingProduct.segmentType || 'Square',
-        productDimensions: editingProduct.productDimensions || { unit: 'mm', patternSize: 10 } as ProductDimensions,
+        productDimensions: editingProduct.productDimensions || { unit: 'mm' } as ProductDimensions,
+        surfacePatternParams: editingProduct.surfacePatternParams || {
+          length: 10,
+          width: 10,
+          depth: 1,
+          scale: 1,
+          repeatX: 4,
+          repeatY: 4,
+          spacing: 0,
+          offsetX: 0,
+          offsetY: 0,
+          rotation: 0,
+        },
         price: editingProduct.price,
         wholesalePrice: editingProduct.wholesalePrice,
         availabilityStatus: editingProduct.availabilityStatus,
@@ -298,7 +337,19 @@ export default function ProductsPage() {
         textureId: DEFAULT_TEXTURE.id,
         surfacePattern: 'None',
         segmentType: 'Square',
-        productDimensions: { unit: 'mm', patternSize: 10 } as ProductDimensions,
+        productDimensions: { unit: 'mm' } as ProductDimensions,
+        surfacePatternParams: {
+          length: 10,
+          width: 10,
+          depth: 1,
+          scale: 1,
+          repeatX: 4,
+          repeatY: 4,
+          spacing: 0,
+          offsetX: 0,
+          offsetY: 0,
+          rotation: 0,
+        },
         price: 0,
         wholesalePrice: 0,
         availabilityStatus: 'In Stock',
@@ -326,7 +377,19 @@ export default function ProductsPage() {
         textureId: product.textureId || DEFAULT_TEXTURE.id,
         surfacePattern: product.surfacePattern || 'None',
         segmentType: product.segmentType || 'Square',
-        productDimensions: product.productDimensions || { unit: 'mm', patternSize: 10 } as ProductDimensions,
+        productDimensions: product.productDimensions || { unit: 'mm' } as ProductDimensions,
+        surfacePatternParams: product.surfacePatternParams || {
+          length: 10,
+          width: 10,
+          depth: 1,
+          scale: 1,
+          repeatX: 4,
+          repeatY: 4,
+          spacing: 0,
+          offsetX: 0,
+          offsetY: 0,
+          rotation: 0,
+        },
         price: product.price,
         wholesalePrice: product.wholesalePrice,
         availabilityStatus: product.availabilityStatus,
@@ -572,7 +635,7 @@ export default function ProductsPage() {
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <FormField control={form.control} name="surfacePattern" render={({ field }) => (
-                                  <FormItem>
+                                  <FormItem className="col-span-2">
                                     <FormLabel className="uppercase text-[9px] font-bold text-muted-foreground">Surface Geometry</FormLabel>
                                     <Select onValueChange={field.onChange} value={field.value}>
                                       <FormControl><SelectTrigger className="h-10 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
@@ -592,24 +655,81 @@ export default function ProductsPage() {
                                     </Select>
                                   </FormItem>
                                 )} />
-                                <FormField control={form.control} name="segmentType" render={({ field }) => (
-                                  <FormItem className={cn(watchPattern !== 'Molded Chocolate Grid Texture' && "opacity-40 pointer-events-none")}>
-                                    <FormLabel className="uppercase text-[9px] font-bold text-muted-foreground">Segment Geometry</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value}>
-                                      <FormControl><SelectTrigger className="h-10 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
-                                      <SelectContent>
-                                        {['Square', 'Rectangular', 'Rounded', 'Modular', 'Premium'].map(s => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
-                                      </SelectContent>
-                                    </Select>
-                                  </FormItem>
-                                )} />
-                                <FormField control={form.control} name="productDimensions.patternSize" render={({ field }) => (
-                                  <FormItem className={cn(watchPattern === 'None' && "opacity-40 pointer-events-none")}>
-                                    <FormLabel className="uppercase text-[9px] font-bold text-muted-foreground">Pattern Relief Size (MM)</FormLabel>
-                                    <FormControl><Input type="number" className="h-10 rounded-xl" {...field} value={field.value ?? ''} /></FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )} />
+
+                                {watchPattern !== 'None' && (
+                                  <div className="col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6 animate-in fade-in slide-in-from-top-4 duration-300">
+                                     {watchPattern === 'Molded Chocolate Grid Texture' && (
+                                       <FormField control={form.control} name="segmentType" render={({ field }) => (
+                                          <FormItem>
+                                            <FormLabel className="uppercase text-[9px] font-bold text-muted-foreground">Segment Geometry</FormLabel>
+                                            <Select onValueChange={field.onChange} value={field.value}>
+                                              <FormControl><SelectTrigger className="h-10 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
+                                              <SelectContent>
+                                                {['Square', 'Rectangular', 'Rounded', 'Modular', 'Premium'].map(s => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
+                                              </SelectContent>
+                                            </Select>
+                                          </FormItem>
+                                        )} />
+                                     )}
+
+                                     <div className="col-span-2 border-t pt-6 mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        <FormField control={form.control} name="surfacePatternParams.length" render={({ field }) => (
+                                          <FormItem>
+                                            <FormLabel className="uppercase text-[8px] font-black text-stone-400 flex items-center gap-1"><Maximize className="h-3 w-3" /> Unit Length (MM)</FormLabel>
+                                            <FormControl><Input type="number" className="h-10 rounded-xl" {...field} /></FormControl>
+                                          </FormItem>
+                                        )} />
+                                        <FormField control={form.control} name="surfacePatternParams.width" render={({ field }) => (
+                                          <FormItem>
+                                            <FormLabel className="uppercase text-[8px] font-black text-stone-400 flex items-center gap-1"><Maximize className="h-3 w-3 rotate-90" /> Unit Width (MM)</FormLabel>
+                                            <FormControl><Input type="number" className="h-10 rounded-xl" {...field} /></FormControl>
+                                          </FormItem>
+                                        )} />
+                                        <FormField control={form.control} name="surfacePatternParams.depth" render={({ field }) => (
+                                          <FormItem>
+                                            <FormLabel className="uppercase text-[8px] font-black text-stone-400 flex items-center gap-1"><Layers className="h-3 w-3" /> Relief Depth (MM)</FormLabel>
+                                            <FormControl><Input type="number" className="h-10 rounded-xl" {...field} /></FormControl>
+                                          </FormItem>
+                                        )} />
+                                        <FormField control={form.control} name="surfacePatternParams.repeatX" render={({ field }) => (
+                                          <FormItem>
+                                            <FormLabel className="uppercase text-[8px] font-black text-stone-400">Repeat X (Tiling)</FormLabel>
+                                            <FormControl><Input type="number" className="h-10 rounded-xl" {...field} /></FormControl>
+                                          </FormItem>
+                                        )} />
+                                        <FormField control={form.control} name="surfacePatternParams.repeatY" render={({ field }) => (
+                                          <FormItem>
+                                            <FormLabel className="uppercase text-[8px] font-black text-stone-400">Repeat Y (Tiling)</FormLabel>
+                                            <FormControl><Input type="number" className="h-10 rounded-xl" {...field} /></FormControl>
+                                          </FormItem>
+                                        )} />
+                                        <FormField control={form.control} name="surfacePatternParams.rotation" render={({ field }) => (
+                                          <FormItem>
+                                            <FormLabel className="uppercase text-[8px] font-black text-stone-400 flex items-center gap-1"><RotateCw className="h-3 w-3" /> Rotation (°)</FormLabel>
+                                            <FormControl><Input type="number" className="h-10 rounded-xl" {...field} /></FormControl>
+                                          </FormItem>
+                                        )} />
+                                        <FormField control={form.control} name="surfacePatternParams.offsetX" render={({ field }) => (
+                                          <FormItem>
+                                            <FormLabel className="uppercase text-[8px] font-black text-stone-400 flex items-center gap-1"><Move className="h-3 w-3" /> Offset X</FormLabel>
+                                            <FormControl><Input type="number" className="h-10 rounded-xl" {...field} /></FormControl>
+                                          </FormItem>
+                                        )} />
+                                        <FormField control={form.control} name="surfacePatternParams.offsetY" render={({ field }) => (
+                                          <FormItem>
+                                            <FormLabel className="uppercase text-[8px] font-black text-stone-400 flex items-center gap-1"><Move className="h-3 w-3 rotate-90" /> Offset Y</FormLabel>
+                                            <FormControl><Input type="number" className="h-10 rounded-xl" {...field} /></FormControl>
+                                          </FormItem>
+                                        )} />
+                                        <FormField control={form.control} name="surfacePatternParams.spacing" render={({ field }) => (
+                                          <FormItem>
+                                            <FormLabel className="uppercase text-[8px] font-black text-stone-400">Element Spacing</FormLabel>
+                                            <FormControl><Input type="number" className="h-10 rounded-xl" {...field} /></FormControl>
+                                          </FormItem>
+                                        )} />
+                                     </div>
+                                  </div>
+                                )}
                             </div>
                           </div>
 
@@ -631,16 +751,16 @@ export default function ProductsPage() {
                                    <p className="text-[8px] font-black uppercase text-stone-400">Surface Relief</p>
                                    <p className="text-xs font-medium text-stone-600">{watchPattern}</p>
                                 </div>
-                                {watchDimensions.patternSize && (
+                                {watchPattern !== 'None' && (
                                   <div className="space-y-1">
-                                    <p className="text-[8px] font-black uppercase text-stone-400">Pattern Size</p>
-                                    <p className="text-xs font-medium text-stone-600">{watchDimensions.patternSize} mm</p>
+                                    <p className="text-[8px] font-black uppercase text-stone-400">Unit Size</p>
+                                    <p className="text-xs font-medium text-stone-600">{watchPatternParams.length}x{watchPatternParams.width} mm</p>
                                   </div>
                                 )}
                                 {watchPattern === 'Molded Chocolate Grid Texture' && (
                                   <div className="space-y-1">
                                     <p className="text-[8px] font-black uppercase text-stone-400">Segments</p>
-                                    <p className="text-xs font-medium text-stone-600">{watchSegment} Blocks</p>
+                                    <p className="text-xs font-medium text-stone-600">{watchSegment}</p>
                                   </div>
                                 )}
                                 <div className="space-y-1 col-span-2">
@@ -660,6 +780,7 @@ export default function ProductsPage() {
                             textureId={watchTextureId}
                             surfacePattern={watchPattern as any}
                             segmentType={watchSegment as any}
+                            patternParams={watchPatternParams as SurfacePatternParams}
                           />
                        </div>
                     </div>
