@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import type { Product } from '@/lib/types';
+import type { Product, ProductGallery } from '@/lib/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
@@ -15,14 +15,53 @@ import { Badge } from '@/components/ui/badge';
 export default function ShopPage() {
   const firestore = useFirestore();
   const productsQuery = useMemo(() => firestore ? collection(firestore, 'products') : null, [firestore]);
-  const { data: products, loading } = useCollection<Product>(productsQuery);
+  const galleriesQuery = useMemo(() => firestore ? collection(firestore, 'product-galleries') : null, [firestore]);
+  
+  const { data: allProductsRaw, loading: productsLoading } = useCollection<Product>(productsQuery);
+  const { data: galleries, loading: galleriesLoading } = useCollection<ProductGallery>(galleriesQuery);
+  
   const { toast } = useToast();
 
   const allProducts = useMemo(() => {
-    if (!products) return [];
-    // Filter out archived products in real-time
-    return products.filter(p => !p.isArchived);
-  }, [products]);
+    if (!allProductsRaw || !galleries) return [];
+    
+    const list: Product[] = [];
+    
+    // Merge Gallery entries (prioritizing visual assets)
+    galleries.forEach(g => {
+      const base = allProductsRaw.find(p => p.id === g.productId || p.name === g.productName);
+      
+      list.push({
+        ...(base || {}),
+        id: base?.id || g.id,
+        name: g.productName,
+        flavor: base?.flavor || 'Artisan Selection',
+        description: base?.description,
+        price: base?.price || 0,
+        wholesalePrice: base?.wholesalePrice || 0,
+        availabilityStatus: base?.availabilityStatus || 'In Stock',
+        imageUrls: [g.mainImage, ...g.subImages],
+        imageHint: base?.imageHint || 'artisan chocolate',
+        productShape: base?.productShape || 'Rectangular',
+        sku: base?.sku,
+        textureName: base?.textureName,
+        productionStatus: 'Product Ready',
+        isArchived: base?.isArchived ?? false,
+      } as Product);
+    });
+
+    // Add portfolio products not yet in the gallery
+    allProductsRaw.forEach(p => {
+      if (p.productionStatus === 'Product Ready' && !p.isArchived) {
+        const alreadyInList = list.some(item => item.id === p.id || item.name === p.name);
+        if (!alreadyInList) {
+          list.push(p);
+        }
+      }
+    });
+
+    return list.filter(p => !p.isArchived).sort((a, b) => a.name.localeCompare(b.name));
+  }, [allProductsRaw, galleries]);
 
   const addToCart = (product: Product) => {
     if (product.availabilityStatus === 'Out of Stock') {
@@ -59,7 +98,7 @@ export default function ShopPage() {
     window.dispatchEvent(new Event('cart-updated'));
   };
 
-  if (loading || !firestore) {
+  if ((productsLoading || galleriesLoading) || !firestore) {
     return (
       <div className="flex items-center justify-center py-32">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -95,9 +134,9 @@ export default function ShopPage() {
       </div>
 
       {allProducts.length > 0 ? (
-        <div className="grid gap-6 md:gap-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-8 md:gap-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {allProducts.map((product) => (
-            <Card key={product.id} className="group overflow-hidden flex flex-col border-stone-100 shadow-sm hover:shadow-2xl transition-all duration-700 rounded-[2rem] bg-white border-2 hover:border-primary/20">
+            <Card key={product.id} className="group overflow-hidden flex flex-col border-stone-100 shadow-sm hover:shadow-2xl transition-all duration-500 rounded-[2rem] bg-card border-2 hover:border-primary/20">
               <div className="aspect-[4/3] relative overflow-hidden bg-stone-50">
                 <Image 
                   src={product.imageUrls?.[0] || 'https://picsum.photos/seed/default/400/300'} 
@@ -108,8 +147,21 @@ export default function ShopPage() {
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                 />
                 
+                <div className="absolute top-4 left-4 flex flex-col gap-2 z-20">
+                  {product.sku && (
+                    <Badge className="bg-stone-900/90 text-white border-none uppercase tracking-[0.1em] text-[9px] font-bold px-2 py-0.5 backdrop-blur-sm shadow-md w-fit">
+                      {product.sku}
+                    </Badge>
+                  )}
+                  {product.productShape && (
+                    <Badge className="bg-primary/90 text-white border-none shadow-md uppercase tracking-[0.15em] text-[9px] font-black px-2.5 py-1 backdrop-blur-sm w-fit">
+                      {product.productShape}
+                    </Badge>
+                  )}
+                </div>
+
                 {product.availabilityStatus === 'Out of Stock' && (
-                  <div className="absolute top-6 right-6 z-20">
+                  <div className="absolute top-4 right-4 z-20">
                     <Badge variant="destructive" className="uppercase tracking-widest text-[9px] py-1.5 px-4 shadow-xl font-black">Out of Stock</Badge>
                   </div>
                 )}
@@ -130,16 +182,26 @@ export default function ShopPage() {
                    </Button>
                 </div>
               </div>
+              
               <CardHeader className="p-8 pb-3">
-                 <CardTitle className="font-headline text-3xl text-stone-800 line-clamp-1 group-hover:text-primary transition-colors duration-300 leading-none">{product.name}</CardTitle>
-                 <p className="text-[10px] text-stone-400 font-black tracking-[0.3em] uppercase mt-3">{product.flavor}</p>
+                 <div className="space-y-0.5">
+                    <CardTitle className="font-headline text-3xl text-stone-800 line-clamp-1 group-hover:text-primary transition-colors duration-300 leading-none">{product.name}</CardTitle>
+                    <p className="text-[10px] text-stone-400 font-black tracking-[0.15em] uppercase mt-3">{product.flavor}</p>
+                 </div>
               </CardHeader>
-              <CardContent className="p-8 pt-0 flex-grow">
-                 <div className="flex items-baseline gap-3 mt-6">
+              
+              <CardContent className="p-8 pt-0 flex-grow space-y-4">
+                 {product.description && (
+                    <p className="text-xs text-stone-800 font-medium line-clamp-2 italic leading-relaxed">
+                      {product.description}
+                    </p>
+                 )}
+                 <div className="flex items-baseline gap-3 pt-2">
                    <span className={`text-3xl font-bold tracking-tighter ${product.availabilityStatus === 'Out of Stock' ? 'text-stone-300 line-through' : 'text-primary'}`}>₹{product.price}</span>
                    <span className="text-[10px] text-stone-400 font-bold uppercase tracking-widest opacity-60">Tax Inc.</span>
                  </div>
               </CardContent>
+              
               <CardFooter className="p-8 pt-0">
                  <Button variant="outline" className="w-full border-stone-100 hover:bg-stone-50 text-stone-600 rounded-2xl h-14 transition-all hover:border-primary/50 group-hover:bg-stone-900 group-hover:text-white group-hover:border-stone-900 font-bold uppercase text-xs tracking-widest" asChild>
                     <Link href={`/shop/product/${product.id}`}>

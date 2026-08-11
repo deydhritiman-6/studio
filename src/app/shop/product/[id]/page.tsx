@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -20,25 +19,63 @@ export default function ProductDetailPage() {
   const { toast } = useToast();
   
   const firestore = useFirestore();
-  const productRef = useMemo(() => firestore ? doc(firestore, 'products', productId) : null, [firestore, productId]);
-  const { data: product, loading } = useDoc<Product>(productRef as any);
-
-  const galleriesQuery = useMemo(() => {
-    if (!firestore || !product?.id) return null;
-    return query(collection(firestore, 'product-galleries'), where('productId', '==', product.id));
-  }, [firestore, product?.id]);
   
-  const { data: galleries } = useCollection<ProductGallery>(galleriesQuery);
+  // Attempt to fetch from primary products collection
+  const productRef = useMemo(() => firestore ? doc(firestore, 'products', productId) : null, [firestore, productId]);
+  const { data: productRaw, loading: productLoading } = useDoc<Product>(productRef as any);
+
+  // Fetch associated gallery entries
+  const galleriesQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'product-galleries'), where('productId', '==', productId));
+  }, [firestore, productId]);
+  
+  const { data: galleries, loading: galleriesLoading } = useCollection<ProductGallery>(galleriesQuery);
+
+  // Fallback: If product doc doesn't exist, it might be a virtual product from gallery
+  const virtualGalleryQuery = useMemo(() => {
+    if (!firestore || (productRaw && !productRaw.isArchived)) return null;
+    return query(collection(firestore, 'product-galleries'), where('id', '==', productId));
+  }, [firestore, productId, productRaw]);
+  
+  const { data: virtualGalleries } = useCollection<ProductGallery>(virtualGalleryQuery);
+
+  const product = useMemo(() => {
+    const galleryEntry = virtualGalleries?.[0] || galleries?.[0];
+    
+    if (productRaw && !productRaw.isArchived) {
+      return {
+        ...productRaw,
+        imageUrls: Array.from(new Set([
+          ...(productRaw.imageUrls || []),
+          ...(galleryEntry ? [galleryEntry.mainImage, ...galleryEntry.subImages] : [])
+        ]))
+      };
+    }
+    
+    if (galleryEntry) {
+      return {
+        id: galleryEntry.id,
+        name: galleryEntry.productName,
+        flavor: 'Artisan Selection',
+        description: 'Meticulously tempered in Kolkata for the true connoisseur. Zero artificial preservatives. Just pure artisan joy.',
+        price: 0,
+        wholesalePrice: 0,
+        availabilityStatus: 'In Stock',
+        imageUrls: [galleryEntry.mainImage, ...galleryEntry.subImages],
+        imageHint: 'artisan chocolate',
+        productShape: 'Rectangular',
+        productionStatus: 'Product Ready',
+        isArchived: false,
+      } as Product;
+    }
+
+    return null;
+  }, [productRaw, galleries, virtualGalleries]);
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const allImages = useMemo(() => {
-    if (!product) return [];
-    const base = product.imageUrls || [];
-    const galleryImages = galleries?.flatMap(g => [g.mainImage, ...g.subImages]) || [];
-    return Array.from(new Set([...base, ...galleryImages]));
-  }, [product, galleries]);
-
+  const allImages = useMemo(() => product?.imageUrls || [], [product]);
   const mainPreviewImage = selectedImage || allImages[0] || 'https://picsum.photos/seed/default/400/300';
   const thumbnails = useMemo(() => allImages.slice(1, 4), [allImages]);
 
@@ -48,7 +85,8 @@ export default function ProductDetailPage() {
     }
   }, [allImages, selectedImage]);
 
-  if (loading) return <div className="flex items-center justify-center py-32"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
+  if (productLoading || galleriesLoading) return <div className="flex items-center justify-center py-32"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
+  
   if (!product || product.isArchived) return (
     <div className="flex flex-col items-center justify-center py-32 space-y-6">
       <p className="text-stone-400 font-headline text-2xl italic">The flavor you seek is currently unavailable.</p>
@@ -87,7 +125,15 @@ export default function ProductDetailPage() {
         <div className="lg:col-span-7 space-y-8">
           <div className="aspect-square relative rounded-[2.5rem] overflow-hidden shadow-2xl bg-white border border-stone-100 p-8">
             <div className="relative w-full h-full rounded-[1.5rem] overflow-hidden group">
-              <Image src={mainPreviewImage} alt={product.name} fill className="object-cover transition-all duration-[1s] group-hover:scale-110" priority data-ai-hint={product.imageHint} sizes="(max-width: 1024px) 100vw, 800px" />
+              <Image 
+                src={mainPreviewImage} 
+                alt={product.name} 
+                fill 
+                className="object-cover transition-all duration-[1s] group-hover:scale-110" 
+                priority 
+                data-ai-hint={product.imageHint} 
+                sizes="(max-width: 1024px) 100vw, 800px" 
+              />
             </div>
           </div>
           {thumbnails.length > 0 && (
@@ -121,56 +167,51 @@ export default function ProductDetailPage() {
               {product.description || "Meticulously tempered in Kolkata for the true connoisseur. Zero artificial preservatives. Just pure artisan joy."}
             </p>
             
-            {product.productDimensions && (
-              <div className="bg-stone-50 p-8 rounded-[2rem] border border-stone-100 space-y-8">
-                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-                        <Ruler className="h-4 w-4" /> Technical Specifications
-                    </div>
-                    <Badge variant="secondary" className="text-[9px] font-black uppercase tracking-widest bg-white border shadow-sm">
-                       {product.textureName || 'Smooth Milk'}
-                    </Badge>
-                 </div>
-                 
-                 <div className="grid grid-cols-2 gap-y-6">
+            <div className="bg-stone-50 p-8 rounded-[2rem] border border-stone-100 space-y-8">
+               <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+                      <Ruler className="h-4 w-4" /> Technical Specifications
+                  </div>
+                  <Badge variant="secondary" className="text-[9px] font-black uppercase tracking-widest bg-white border shadow-sm">
+                     {product.textureName || 'Smooth Milk'}
+                  </Badge>
+               </div>
+               
+               <div className="grid grid-cols-2 gap-y-6">
+                  <div className="space-y-1">
+                     <p className="text-[9px] font-bold text-stone-400 uppercase tracking-tighter">Artisan Shape</p>
+                     <p className="text-sm font-bold text-stone-900">{product.productShape || 'Rectangular'}</p>
+                  </div>
+                  {product.weight && (
                     <div className="space-y-1">
-                       <p className="text-[9px] font-bold text-stone-400 uppercase tracking-tighter">Artisan Shape</p>
-                       <p className="text-sm font-bold text-stone-900">{product.productShape}</p>
+                       <p className="text-[9px] font-bold text-stone-400 uppercase tracking-tighter">Approx. Weight</p>
+                       <p className="text-sm font-bold text-stone-900">{product.weight}</p>
                     </div>
-                    {product.productDimensions.diameter && (
-                      <div className="space-y-1">
-                         <p className="text-[9px] font-bold text-stone-400 uppercase tracking-tighter">Diameter</p>
-                         <p className="text-sm font-bold text-stone-900">{product.productDimensions.diameter} {product.productDimensions.unit}</p>
-                      </div>
-                    )}
-                    {(product.productDimensions.length || product.productDimensions.sideLength) && (
-                      <div className="space-y-1">
-                         <p className="text-[9px] font-bold text-stone-400 uppercase tracking-tighter">Length</p>
-                         <p className="text-sm font-bold text-stone-900">{product.productDimensions.length || product.productDimensions.sideLength} {product.productDimensions.unit}</p>
-                      </div>
-                    )}
-                    {product.productDimensions.width && (
-                      <div className="space-y-1">
-                         <p className="text-[9px] font-bold text-stone-400 uppercase tracking-tighter">Width</p>
-                         <p className="text-sm font-bold text-stone-900">{product.productDimensions.width} {product.productDimensions.unit}</p>
-                      </div>
-                    )}
-                    {product.productDimensions.height && (
-                      <div className="space-y-1">
-                         <p className="text-[9px] font-bold text-stone-400 uppercase tracking-tighter">Thickness</p>
-                         <p className="text-sm font-bold text-stone-900">{product.productDimensions.height} {product.productDimensions.unit}</p>
-                      </div>
-                    )}
-                 </div>
-                 
+                  )}
+                  {product.sku && (
+                    <div className="space-y-1">
+                       <p className="text-[9px] font-bold text-stone-400 uppercase tracking-tighter">Artisan ID</p>
+                       <p className="text-sm font-bold text-stone-900 font-mono">{product.sku}</p>
+                    </div>
+                  )}
+               </div>
+               
+               {product.productDimensions && (
                  <div className="pt-4 border-t border-stone-200/50">
                     <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-4">
                        <Cuboid className="h-3 w-3" /> Interactive 3D Model
                     </div>
-                    <ChocolateMeshViewer shape={product.productShape || 'Rectangular'} dimensions={product.productDimensions} textureId={product.textureId} />
+                    <ChocolateMeshViewer 
+                      shape={product.productShape || 'Rectangular'} 
+                      dimensions={product.productDimensions} 
+                      textureId={product.textureId} 
+                      surfacePattern={product.surfacePattern}
+                      segmentType={product.segmentType}
+                      patternParams={product.surfacePatternParams}
+                    />
                  </div>
-              </div>
-            )}
+               )}
+            </div>
           </div>
 
           <div className="pt-10 space-y-8">
