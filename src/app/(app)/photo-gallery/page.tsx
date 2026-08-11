@@ -25,7 +25,8 @@ import {
   Package, 
   Search,
   X,
-  Sparkles
+  Sparkles,
+  ShieldAlert
 } from 'lucide-react';
 import Image from 'next/image';
 import { useCollection, useFirestore } from '@/firebase';
@@ -67,6 +68,10 @@ export default function PhotoGalleryManagementPage() {
   const [viewingImage, setViewingImage] = useState<string | null>(null);
   const [identityMode, setIdentityMode] = useState<'existing' | 'new'>('existing');
 
+  const [itemToDelete, setItemToDelete] = useState<ProductGallery | null>(null);
+  const [deleteInput, setDeleteInput] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const { toast } = useToast();
 
   const portfolioProducts = useMemo(() => {
@@ -81,15 +86,13 @@ export default function PhotoGalleryManagementPage() {
   const combinedGalleries = useMemo(() => {
     if (galleriesLoading) return [];
     
-    // 1. Start with existing manual gallery entries
     const list = [...(galleries || [])];
     
-    // 2. Add portfolio products that don't have a specific gallery entry yet
     portfolioProducts.forEach(p => {
       const hasGallery = list.some(g => g.productId === p.id || g.productName === p.name);
       if (!hasGallery) {
         list.push({
-          id: `VIRTUAL-${p.id}`, // Mark as virtual
+          id: `VIRTUAL-${p.id}`, 
           productId: p.id,
           productName: p.name,
           mainImage: p.imageUrls?.[0] || 'https://picsum.photos/seed/default/400/300',
@@ -177,7 +180,6 @@ export default function PhotoGalleryManagementPage() {
     if (!firestore) return;
 
     setIsSaving(true);
-    // Use real ID if editing a real doc, or generate one if creating/saving a virtual entry
     const isVirtual = editingGallery?.id?.startsWith('VIRTUAL-');
     const galleryId = (editingGallery && !isVirtual) ? editingGallery.id : `GAL-${Date.now()}`;
     const galleryRef = doc(firestore, 'product-galleries', galleryId);
@@ -210,24 +212,25 @@ export default function PhotoGalleryManagementPage() {
       .finally(() => setIsSaving(false));
   };
 
-  const handleDeleteGallery = (gallery: any) => {
-    if (!firestore) return;
-    if (gallery.id.startsWith('VIRTUAL-')) {
-        toast({ title: 'Virtual Entry', description: 'This entry is generated from a Portfolio product and cannot be deleted here. Archive the product instead.' });
-        return;
-    }
-    if (!confirm('Are you sure you want to permanently remove this specific gallery set?')) return;
+  const confirmDelete = async () => {
+    if (!firestore || !itemToDelete) return;
+    setIsDeleting(true);
 
-    const galleryRef = doc(firestore, 'product-galleries', gallery.id);
+    const galleryRef = doc(firestore, 'product-galleries', itemToDelete.id);
     deleteDoc(galleryRef)
-      .then(() => toast({ title: 'Set Removed' }))
+      .then(() => {
+        toast({ title: 'Set Removed' });
+        setItemToDelete(null);
+        setDeleteInput('');
+      })
       .catch(async (error) => {
         const permissionError = new FirestorePermissionError({
           path: galleryRef.path,
           operation: 'delete',
         });
         errorEmitter.emit('permission-error', permissionError);
-      });
+      })
+      .finally(() => setIsDeleting(false));
   };
 
   const PhotoSlot = ({ fieldName, label, required = false }: { fieldName: keyof GalleryFormValues, label: string, required?: boolean }) => {
@@ -357,7 +360,7 @@ export default function PhotoGalleryManagementPage() {
                             variant="ghost" 
                             size="icon" 
                             className="h-9 w-9 rounded-xl hover:bg-destructive/10 hover:text-destructive" 
-                            onClick={() => handleDeleteGallery(gallery)}
+                            onClick={() => setItemToDelete(gallery)}
                             disabled={gallery.id.startsWith('VIRTUAL-')}
                         >
                             <Trash2 className="h-4 w-4" />
@@ -407,7 +410,6 @@ export default function PhotoGalleryManagementPage() {
                                       field.onChange(val);
                                       if (prod) {
                                           form.setValue('productId', prod.id);
-                                          // Pre-fill with product images if gallery is empty
                                           if (!form.getValues('mainImage')) form.setValue('mainImage', prod.imageUrls?.[0] || '');
                                       }
                                     }} 
@@ -484,6 +486,45 @@ export default function PhotoGalleryManagementPage() {
                 </button>
              </div>
            )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!itemToDelete} onOpenChange={(o) => { if(!o) { setItemToDelete(null); setDeleteInput(''); } }}>
+        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden p-0">
+          <div className="bg-destructive/10 p-8 border-b border-destructive/20">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-headline flex items-center gap-3 text-destructive">
+                <ShieldAlert className="h-8 w-8" />
+                Confirm Deletion
+              </DialogTitle>
+              <DialogDescription className="text-stone-600 font-medium">
+                Are you sure you want to permanently remove visual set for <strong className="text-stone-900">{itemToDelete?.productName}</strong>?
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+          <div className="p-10 space-y-6">
+            <div className="space-y-4">
+              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Security Verification</Label>
+              <p className="text-xs text-stone-500 italic">Type the word <span className="font-bold text-destructive underline">delete</span> manually to authorize removal.</p>
+              <Input 
+                placeholder="Type here..." 
+                value={deleteInput}
+                onChange={(e) => setDeleteInput(e.target.value)}
+                className="h-14 rounded-2xl border-2 border-stone-200 focus:border-destructive/40 focus:ring-destructive/10 text-center text-lg font-bold tracking-widest"
+              />
+            </div>
+            <div className="flex gap-4">
+               <Button variant="ghost" onClick={() => setItemToDelete(null)} className="flex-1 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest" disabled={isDeleting}>Abort</Button>
+               <Button 
+                variant="destructive" 
+                className="flex-2 px-10 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest shadow-xl shadow-destructive/20" 
+                disabled={deleteInput.toLowerCase() !== 'delete' || isDeleting}
+                onClick={confirmDelete}
+               >
+                 {isDeleting ? <Loader2 className="animate-spin h-4 w-4" /> : 'Final Destroy'}
+               </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </>

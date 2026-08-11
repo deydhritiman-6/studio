@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { Ingredient } from '@/lib/types';
-import { MoreHorizontal, PlusCircle, Loader2, Search, Filter, Trash2, Edit, Star, Download, X } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Loader2, Search, Filter, Trash2, Edit, Star, Download, X, ShieldAlert } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
@@ -60,6 +60,10 @@ export default function IngredientLibraryPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(null);
   
+  const [itemToDelete, setItemToDelete] = useState<Ingredient | null>(null);
+  const [deleteInput, setDeleteInput] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const { toast } = useToast();
 
   const form = useForm<IngredientFormValues>({
@@ -141,10 +145,16 @@ export default function IngredientLibraryPage() {
     updateDoc(doc(firestore, 'ingredients', ing.id), { isFavourite: !ing.isFavourite });
   };
 
-  const handleDelete = (ing: Ingredient) => {
-    if (!firestore || !confirm('Permanently delete this ingredient?')) return;
-    deleteDoc(doc(firestore, 'ingredients', ing.id))
-      .then(() => toast({ title: 'Ingredient Removed' }));
+  const confirmDelete = async () => {
+    if (!firestore || !itemToDelete) return;
+    setIsDeleting(true);
+    deleteDoc(doc(firestore, 'ingredients', itemToDelete.id))
+      .then(() => {
+        toast({ title: 'Ingredient Removed' });
+        setItemToDelete(null);
+        setDeleteInput('');
+      })
+      .finally(() => setIsDeleting(false));
   };
 
   const filteredIngredients = useMemo(() => {
@@ -228,7 +238,7 @@ export default function IngredientLibraryPage() {
                           <DropdownMenuContent align="end" className="w-48 rounded-xl">
                             <DropdownMenuItem onClick={() => { setEditingIngredient(ing); setIsAddDialogOpen(true); }}><Edit className="h-4 w-4 mr-2" /> Edit Details</DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleDelete(ing)} className="text-destructive"><Trash2 className="h-4 w-4 mr-2" /> Delete Permanent</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setItemToDelete(ing)} className="text-destructive"><Trash2 className="h-4 w-4 mr-2" /> Delete Permanent</DropdownMenuItem>
                           </DropdownMenuContent>
                        </DropdownMenu>
                     </TableCell>
@@ -335,6 +345,45 @@ export default function IngredientLibraryPage() {
               </div>
             </form>
           </Form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!itemToDelete} onOpenChange={(o) => { if(!o) { setItemToDelete(null); setDeleteInput(''); } }}>
+        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden p-0">
+          <div className="bg-destructive/10 p-8 border-b border-destructive/20">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-headline flex items-center gap-3 text-destructive">
+                <ShieldAlert className="h-8 w-8" />
+                Confirm Removal
+              </DialogTitle>
+              <DialogDescription className="text-stone-600 font-medium">
+                Are you sure you want to permanently remove <strong className="text-stone-900">{itemToDelete?.name}</strong> from the Ingredient Master Library?
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+          <div className="p-10 space-y-6">
+            <div className="space-y-4">
+              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Security Verification</Label>
+              <p className="text-xs text-stone-500 italic">Type the word <span className="font-bold text-destructive underline">delete</span> manually to authorize removal.</p>
+              <Input 
+                placeholder="Type here..." 
+                value={deleteInput}
+                onChange={(e) => setDeleteInput(e.target.value)}
+                className="h-14 rounded-2xl border-2 border-stone-200 focus:border-destructive/40 focus:ring-destructive/10 text-center text-lg font-bold tracking-widest"
+              />
+            </div>
+            <div className="flex gap-4">
+               <Button variant="ghost" onClick={() => setItemToDelete(null)} className="flex-1 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest" disabled={isDeleting}>Abort</Button>
+               <Button 
+                variant="destructive" 
+                className="flex-2 px-10 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest shadow-xl shadow-destructive/20" 
+                disabled={deleteInput.toLowerCase() !== 'delete' || isDeleting}
+                onClick={confirmDelete}
+               >
+                 {isDeleting ? <Loader2 className="animate-spin h-4 w-4" /> : 'Final Destroy'}
+               </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </>

@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { InventoryItem, Product } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, MoreHorizontal, Loader2, Trash2, Edit } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, Loader2, Trash2, Edit, ShieldAlert } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -50,6 +50,7 @@ import { collection, doc, setDoc, deleteDoc, query, where, getDocs, updateDoc } 
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Label } from '@/components/ui/label';
 
 const inventoryFormSchema = z.object({
   name: z.string().min(1, 'Item name is required'),
@@ -70,6 +71,11 @@ export default function InventoryPage() {
 
   const [isAddOrEditDialogOpen, setIsAddOrEditDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
+  
+  const [itemToDelete, setItemToDelete] = useState<InventoryItem | null>(null);
+  const [deleteInput, setDeleteInput] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const { toast } = useToast();
 
   const form = useForm<InventoryFormValues>({
@@ -118,7 +124,6 @@ export default function InventoryPage() {
           description: `${values.name} has been saved to inventory.`,
         });
 
-        // Sync with products collection if it's a finished product
         if (values.category === 'Finished Products') {
           const productsRef = collection(firestore, 'products');
           const q = query(productsRef, where('name', '==', values.name));
@@ -142,27 +147,29 @@ export default function InventoryPage() {
       });
   };
 
-  const handleDeleteItem = (item: InventoryItem) => {
-    if (!firestore) return;
+  const confirmDelete = async () => {
+    if (!firestore || !itemToDelete) return;
+    setIsDeleting(true);
 
-    const itemRef = doc(firestore, 'inventory', item.id);
+    const itemRef = doc(firestore, 'inventory', itemToDelete.id);
     deleteDoc(itemRef)
       .then(() => {
         toast({
           title: 'Item Deleted',
-          description: `${item.name} has been removed from inventory.`,
+          description: `${itemToDelete.name} has been removed from inventory.`,
         });
 
-        // If it was a finished product, mark it as out of stock in products
-        if (item.category === 'Finished Products') {
+        if (itemToDelete.category === 'Finished Products') {
            const productsRef = collection(firestore, 'products');
-           const q = query(productsRef, where('name', '==', item.name));
+           const q = query(productsRef, where('name', '==', itemToDelete.name));
            getDocs(q).then(snapshot => {
               snapshot.forEach(productDoc => {
                 updateDoc(productDoc.ref, { availabilityStatus: 'Out of Stock' });
               });
            });
         }
+        setItemToDelete(null);
+        setDeleteInput('');
       })
       .catch(async (error) => {
         const permissionError = new FirestorePermissionError({
@@ -170,7 +177,8 @@ export default function InventoryPage() {
           operation: 'delete',
         });
         errorEmitter.emit('permission-error', permissionError);
-      });
+      })
+      .finally(() => setIsDeleting(false));
   };
 
   const renderInventoryTable = (items: InventoryItem[]) => (
@@ -215,7 +223,7 @@ export default function InventoryPage() {
                       <Edit className="mr-2 h-4 w-4" /> Edit Item
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteItem(item)}>
+                    <DropdownMenuItem className="text-destructive" onClick={() => setItemToDelete(item)}>
                       <Trash2 className="mr-2 h-4 w-4" /> Delete Item
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -381,6 +389,45 @@ export default function InventoryPage() {
               </DialogFooter>
             </form>
           </Form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!itemToDelete} onOpenChange={(o) => { if(!o) { setItemToDelete(null); setDeleteInput(''); } }}>
+        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden p-0">
+          <div className="bg-destructive/10 p-8 border-b border-destructive/20">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-headline flex items-center gap-3 text-destructive">
+                <ShieldAlert className="h-8 w-8" />
+                Confirm Removal
+              </DialogTitle>
+              <DialogDescription className="text-stone-600 font-medium">
+                Are you sure you want to remove <strong className="text-stone-900">{itemToDelete?.name}</strong> from inventory?
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+          <div className="p-10 space-y-6">
+            <div className="space-y-4">
+              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Security Verification</Label>
+              <p className="text-xs text-stone-500 italic">Type the word <span className="font-bold text-destructive underline">delete</span> manually to authorize removal.</p>
+              <Input 
+                placeholder="Type here..." 
+                value={deleteInput}
+                onChange={(e) => setDeleteInput(e.target.value)}
+                className="h-14 rounded-2xl border-2 border-stone-200 focus:border-destructive/40 focus:ring-destructive/10 text-center text-lg font-bold tracking-widest"
+              />
+            </div>
+            <div className="flex gap-4">
+               <Button variant="ghost" onClick={() => setItemToDelete(null)} className="flex-1 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest" disabled={isDeleting}>Abort</Button>
+               <Button 
+                variant="destructive" 
+                className="flex-2 px-10 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest shadow-xl shadow-destructive/20" 
+                disabled={deleteInput.toLowerCase() !== 'delete' || isDeleting}
+                onClick={confirmDelete}
+               >
+                 {isDeleting ? <Loader2 className="animate-spin h-4 w-4" /> : 'Final Remove'}
+               </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 

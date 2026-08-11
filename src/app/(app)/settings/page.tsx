@@ -94,6 +94,10 @@ export default function SettingsPage() {
   const [isSyncingMatrix, setIsSyncingMatrix] = useState(false);
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
 
+  const [itemToDelete, setItemToDelete] = useState<UserAccount | null>(null);
+  const [deleteInput, setDeleteInput] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const usersQuery = useMemo(() => (firestore ? collection(firestore, 'users') : null), [firestore]);
   const { data: users, loading: usersLoading } = useCollection<UserAccount>(usersQuery);
 
@@ -113,7 +117,6 @@ export default function SettingsPage() {
     },
   });
 
-  // Handle activeMatrixUser changes
   useEffect(() => {
     if (activeMatrixUser) {
       setSelectedPermissions(activeMatrixUser.permissions || []);
@@ -122,7 +125,6 @@ export default function SettingsPage() {
     }
   }, [activeMatrixUser]);
 
-  // --- Photo Upload Logic ---
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -201,7 +203,7 @@ export default function SettingsPage() {
       ...values,
       id: userId,
       createdAt: editingUser?.createdAt || new Date().toISOString(),
-      permissions: editingUser?.permissions || [], // Retain existing permissions
+      permissions: editingUser?.permissions || [],
     };
 
     setDoc(userRef, userData)
@@ -260,12 +262,15 @@ export default function SettingsPage() {
       .finally(() => setIsSyncingMatrix(false));
   };
 
-  const handleDeleteUser = (id: string) => {
-    if (!firestore) return;
-    deleteDoc(doc(firestore, 'users', id)).then(() => {
+  const confirmDeleteUser = async () => {
+    if (!firestore || !itemToDelete) return;
+    setIsDeleting(true);
+    deleteDoc(doc(firestore, 'users', itemToDelete.id)).then(() => {
       toast({ title: 'Staff Removed' });
-      if (activeMatrixUser?.id === id) setActiveMatrixUser(null);
-    });
+      if (activeMatrixUser?.id === itemToDelete.id) setActiveMatrixUser(null);
+      setItemToDelete(null);
+      setDeleteInput('');
+    }).finally(() => setIsDeleting(false));
   };
 
   useEffect(() => {
@@ -402,7 +407,7 @@ export default function SettingsPage() {
                                <Key className="h-4 w-4" />
                            </Button>
                            <Button variant="ghost" size="icon" onClick={() => { setEditingUser(u); setIsAddUserOpen(true); }} className="rounded-xl hover:bg-primary/10 hover:text-primary transition-colors"><UserIcon className="h-4 w-4" /></Button>
-                           <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(u.id)} className="rounded-xl hover:bg-destructive/10 hover:text-destructive transition-colors"><Trash2 className="h-4 w-4" /></Button>
+                           <Button variant="ghost" size="icon" onClick={() => setItemToDelete(u)} className="rounded-xl hover:bg-destructive/10 hover:text-destructive transition-colors"><Trash2 className="h-4 w-4" /></Button>
                          </div>
                        </TableCell>
                      </TableRow>
@@ -689,6 +694,45 @@ export default function SettingsPage() {
               </Form>
             </div>
           </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!itemToDelete} onOpenChange={(o) => { if(!o) { setItemToDelete(null); setDeleteInput(''); } }}>
+        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden p-0">
+          <div className="bg-destructive/10 p-8 border-b border-destructive/20">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-headline flex items-center gap-3 text-destructive">
+                <ShieldAlert className="h-8 w-8" />
+                Confirm Deletion
+              </DialogTitle>
+              <DialogDescription className="text-stone-600 font-medium">
+                Are you sure you want to remove <strong className="text-stone-900">{itemToDelete?.name}</strong> from the team?
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+          <div className="p-10 space-y-6">
+            <div className="space-y-4">
+              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Security Verification</Label>
+              <p className="text-xs text-stone-500 italic">Type the word <span className="font-bold text-destructive underline">delete</span> manually to authorize removal.</p>
+              <Input 
+                placeholder="Type here..." 
+                value={deleteInput}
+                onChange={(e) => setDeleteInput(e.target.value)}
+                className="h-14 rounded-2xl border-2 border-stone-200 focus:border-destructive/40 focus:ring-destructive/10 text-center text-lg font-bold tracking-widest"
+              />
+            </div>
+            <div className="flex gap-4">
+               <Button variant="ghost" onClick={() => setItemToDelete(null)} className="flex-1 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest" disabled={isDeleting}>Abort</Button>
+               <Button 
+                variant="destructive" 
+                className="flex-2 px-10 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest shadow-xl shadow-destructive/20" 
+                disabled={deleteInput.toLowerCase() !== 'delete' || isDeleting}
+                onClick={confirmDeleteUser}
+               >
+                 {isDeleting ? <Loader2 className="animate-spin h-4 w-4" /> : 'Final Destroy'}
+               </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </>

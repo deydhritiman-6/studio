@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
@@ -33,7 +32,8 @@ import {
   X,
   RotateCw,
   Maximize,
-  Move
+  Move,
+  ShieldAlert
 } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
@@ -235,7 +235,10 @@ export default function ProductsPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isGalleryPickerOpen, setIsGalleryPickerOpen] = useState<{ open: boolean, field: keyof ProductFormValues } | null>(null);
+  
   const [productToArchive, setProductToArchive] = useState<Product | null>(null);
+  const [deleteInput, setDeleteInput] = useState('');
+  const [isArchiving, setIsArchiving] = useState(false);
   
   const { toast } = useToast();
   
@@ -252,7 +255,6 @@ export default function ProductsPage() {
     
     const list: Product[] = [];
     
-    // 1. Incorporate every single entry from the Photo Gallery into the Portfolio
     galleries.forEach(g => {
       const base = allProductsRaw.find(p => p.id === g.productId || p.name === g.productName);
       
@@ -264,17 +266,16 @@ export default function ProductsPage() {
         price: base?.price || 0,
         wholesalePrice: base?.wholesalePrice || 0,
         availabilityStatus: base?.availabilityStatus || 'In Stock',
-        imageUrls: [g.mainImage, ...g.subImages], // Use images from the Gallery
+        imageUrls: [g.mainImage, ...g.subImages],
         imageHint: base?.imageHint || 'artisan chocolate',
         productShape: base?.productShape || 'Rectangular',
         sku: base?.sku,
         textureName: base?.textureName,
         productionStatus: 'Product Ready',
-        isArchived: false,
+        isArchived: base?.isArchived ?? false,
       } as Product);
     });
 
-    // 2. Add technical products that are "Product Ready" but don't have a manual Gallery entry yet
     allProductsRaw.forEach(p => {
       if (p.productionStatus === 'Product Ready' && !p.isArchived) {
         const alreadyInList = list.some(item => item.id === p.id || item.name === p.name);
@@ -284,7 +285,7 @@ export default function ProductsPage() {
       }
     });
 
-    return list.sort((a, b) => a.name.localeCompare(b.name));
+    return list.filter(p => !p.isArchived).sort((a, b) => a.name.localeCompare(b.name));
   }, [allProductsRaw, galleries]);
 
   const form = useForm<ProductFormValues>({
@@ -299,16 +300,7 @@ export default function ProductsPage() {
       segmentType: 'Square',
       productDimensions: { unit: 'mm' },
       surfacePatternParams: {
-        length: 10,
-        width: 10,
-        depth: 1,
-        scale: 1,
-        repeatX: 4,
-        repeatY: 4,
-        spacing: 0,
-        offsetX: 0,
-        offsetY: 0,
-        rotation: 0,
+        length: 10, width: 10, depth: 1, scale: 1, repeatX: 4, repeatY: 4, spacing: 0, offsetX: 0, offsetY: 0, rotation: 0,
       },
       price: 0,
       wholesalePrice: 0,
@@ -343,16 +335,7 @@ export default function ProductsPage() {
         segmentType: editingProduct.segmentType || 'Square',
         productDimensions: editingProduct.productDimensions || { unit: 'mm' } as ProductDimensions,
         surfacePatternParams: editingProduct.surfacePatternParams || {
-          length: 10,
-          width: 10,
-          depth: 1,
-          scale: 1,
-          repeatX: 4,
-          repeatY: 4,
-          spacing: 0,
-          offsetX: 0,
-          offsetY: 0,
-          rotation: 0,
+          length: 10, width: 10, depth: 1, scale: 1, repeatX: 4, repeatY: 4, spacing: 0, offsetX: 0, offsetY: 0, rotation: 0,
         },
         price: editingProduct.price,
         wholesalePrice: editingProduct.wholesalePrice,
@@ -364,40 +347,8 @@ export default function ProductsPage() {
         imageHint: editingProduct.imageHint || 'artisan chocolate',
       });
       setIdentityMode('existing');
-    } else if (isAddDialogOpen) {
-      form.reset({
-        name: '',
-        flavor: '',
-        weight: '',
-        productShape: 'Rectangular',
-        textureId: DEFAULT_TEXTURE.id,
-        surfacePattern: 'None',
-        segmentType: 'Square',
-        productDimensions: { unit: 'mm' } as ProductDimensions,
-        surfacePatternParams: {
-          length: 10,
-          width: 10,
-          depth: 1,
-          scale: 1,
-          repeatX: 4,
-          repeatY: 4,
-          spacing: 0,
-          offsetX: 0,
-          offsetY: 0,
-          rotation: 0,
-        },
-        price: 0,
-        wholesalePrice: 0,
-        availabilityStatus: 'In Stock',
-        mainImage: '',
-        subPhoto1: '',
-        subPhoto2: '',
-        subPhoto3: '',
-        imageHint: 'artisan chocolate',
-      });
-      setIdentityMode('new');
     }
-  }, [editingProduct, form, isAddDialogOpen]);
+  }, [editingProduct, form]);
 
   const handleReEnroll = (product: Product) => {
     setEditingProduct(null);
@@ -415,16 +366,7 @@ export default function ProductsPage() {
         segmentType: product.segmentType || 'Square',
         productDimensions: product.productDimensions || { unit: 'mm' } as ProductDimensions,
         surfacePatternParams: product.surfacePatternParams || {
-          length: 10,
-          width: 10,
-          depth: 1,
-          scale: 1,
-          repeatX: 4,
-          repeatY: 4,
-          spacing: 0,
-          offsetX: 0,
-          offsetY: 0,
-          rotation: 0,
+          length: 10, width: 10, depth: 1, scale: 1, repeatX: 4, repeatY: 4, spacing: 0, offsetX: 0, offsetY: 0, rotation: 0,
         },
         price: product.price,
         wholesalePrice: product.wholesalePrice,
@@ -505,16 +447,24 @@ export default function ProductsPage() {
       });
   };
 
-  const handleMoveToBin = (id: string) => {
-    if (!firestore) return;
-    const productRef = doc(firestore, 'products', id);
+  const confirmArchive = async () => {
+    if (!firestore || !productToArchive) return;
+    setIsArchiving(true);
+
+    const productRef = doc(firestore, 'products', productToArchive.id);
     updateDoc(productRef, { isArchived: true, deletedAt: new Date().toISOString() })
-      .then(() => { toast({ title: 'Moved to Bin' }); setProductToArchive(null); })
+      .then(() => { 
+        toast({ title: 'Moved to Bin' }); 
+        setProductToArchive(null);
+        setDeleteInput('');
+      })
       .catch((e) => {
         console.error('Archive failed - likely gallery-only item:', e);
-        setProductToArchive(null);
         toast({ variant: 'destructive', title: 'Action Failed', description: 'This item is currently only managed in the Photo Gallery.' });
-      });
+        setProductToArchive(null);
+        setDeleteInput('');
+      })
+      .finally(() => setIsArchiving(false));
   };
 
   const PhotoSlot = ({ fieldName, label, required = false }: { fieldName: keyof ProductFormValues, label: string, required?: boolean }) => {
@@ -733,13 +683,13 @@ export default function ProductsPage() {
                                         )} />
                                         <FormField control={form.control} name="surfacePatternParams.repeatX" render={({ field }) => (
                                           <FormItem>
-                                            <FormLabel className="uppercase text-[8px] font-black text-stone-400">Repeat X (Tiling)</FormLabel>
+                                            <FormLabel className="uppercase text-[8px] font-black text-stone-400">Repeat X</FormLabel>
                                             <FormControl><Input type="number" className="h-10 rounded-xl" {...field} /></FormControl>
                                           </FormItem>
                                         )} />
                                         <FormField control={form.control} name="surfacePatternParams.repeatY" render={({ field }) => (
                                           <FormItem>
-                                            <FormLabel className="uppercase text-[8px] font-black text-stone-400">Repeat Y (Tiling)</FormLabel>
+                                            <FormLabel className="uppercase text-[8px] font-black text-stone-400">Repeat Y</FormLabel>
                                             <FormControl><Input type="number" className="h-10 rounded-xl" {...field} /></FormControl>
                                           </FormItem>
                                         )} />
@@ -763,7 +713,7 @@ export default function ProductsPage() {
                                         )} />
                                         <FormField control={form.control} name="surfacePatternParams.spacing" render={({ field }) => (
                                           <FormItem>
-                                            <FormLabel className="uppercase text-[8px] font-black text-stone-400">Element Spacing</FormLabel>
+                                            <FormLabel className="uppercase text-[8px] font-black text-stone-400">Spacing</FormLabel>
                                             <FormControl><Input type="number" className="h-10 rounded-xl" {...field} /></FormControl>
                                           </FormItem>
                                         )} />
@@ -776,7 +726,7 @@ export default function ProductsPage() {
                           <Separator className="bg-stone-200/50" />
                           <div className="space-y-4">
                              <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-[0.2em]">
-                                <Palette className="h-4 w-4" /> Design Specification Summary
+                                <Palette className="h-4 w-4" /> Design Summary
                              </div>
                              <div className="grid grid-cols-2 gap-4 bg-background/50 p-6 rounded-2xl border">
                                 <div className="space-y-1">
@@ -795,12 +745,6 @@ export default function ProductsPage() {
                                   <div className="space-y-1">
                                     <p className="text-[8px] font-black uppercase text-stone-400">Unit Size</p>
                                     <p className="text-xs font-medium text-stone-600">{watchPatternParams.length}x{watchPatternParams.width} mm</p>
-                                  </div>
-                                )}
-                                {watchPattern === 'Molded Chocolate Grid Texture' && (
-                                  <div className="space-y-1">
-                                    <p className="text-[8px] font-black uppercase text-stone-400">Segments</p>
-                                    <p className="text-xs font-medium text-stone-600">{watchSegment}</p>
                                   </div>
                                 )}
                                 <div className="space-y-1 col-span-2">
@@ -828,7 +772,7 @@ export default function ProductsPage() {
 
                   <div className="space-y-8">
                      <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-[0.2em]">
-                        <Sparkles className="h-4 w-4" /> Artisan Texture Workspace
+                        <Sparkles className="h-4 w-4" /> Texture Workspace
                      </div>
                      <TextureSelector 
                         selectedId={watchTextureId} 
@@ -882,7 +826,7 @@ export default function ProductsPage() {
       <Dialog open={!!isGalleryPickerOpen} onOpenChange={(open) => !open && setIsGalleryPickerOpen(null)}>
         <DialogContent className="sm:max-w-4xl rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden flex flex-col h-[80vh] bg-stone-50">
            <div className="px-10 py-6 border-b bg-white shrink-0">
-              <DialogHeader><DialogTitle className="text-2xl font-headline flex items-center gap-3"><Images className="h-6 w-6 text-primary" /> Select from Artisan Gallery</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle className="text-2xl font-headline flex items-center gap-3"><Images className="h-6 w-6 text-primary" /> Select from Gallery</DialogTitle></DialogHeader>
            </div>
            <ScrollArea className="flex-1 p-10">
               <div className="space-y-12">
@@ -911,12 +855,40 @@ export default function ProductsPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!productToArchive} onOpenChange={(o) => !o && setProductToArchive(null)}>
+      <Dialog open={!!productToArchive} onOpenChange={(o) => { if(!o) { setProductToArchive(null); setDeleteInput(''); } }}>
         <DialogContent className="sm:max-w-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden p-0">
-          <div className="bg-amber-50 p-8 border-b border-amber-100"><DialogHeader><DialogTitle className="text-2xl font-headline flex items-center gap-3 text-amber-700"><Trash2 className="h-8 w-8" /> Move to Bin</DialogTitle></DialogHeader></div>
-          <div className="p-10 flex gap-4">
-             <Button variant="ghost" onClick={() => setProductToArchive(null)} className="flex-1 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest">Abort</Button>
-             <Button className="flex-2 px-10 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest shadow-xl shadow-primary/20" onClick={() => productToArchive && handleMoveToBin(productToArchive.id)}>Confirm Move</Button>
+          <div className="bg-amber-50 p-8 border-b border-amber-100">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-headline flex items-center gap-3 text-amber-700">
+                <ShieldAlert className="h-8 w-8" />
+                Confirm Move to Bin
+              </DialogTitle>
+              <DialogDescription className="text-stone-600">
+                Are you sure you want to move <strong className="text-stone-900">{productToArchive?.name}</strong> to the Product Bin?
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+          <div className="p-10 space-y-6">
+            <div className="space-y-4">
+              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Security Verification</Label>
+              <p className="text-xs text-stone-500 italic">Type the word <span className="font-bold text-destructive underline">delete</span> manually to authorize removal.</p>
+              <Input 
+                placeholder="Type here..." 
+                value={deleteInput}
+                onChange={(e) => setDeleteInput(e.target.value)}
+                className="h-14 rounded-2xl border-2 border-stone-200 focus:border-destructive/40 focus:ring-destructive/10 text-center text-lg font-bold tracking-widest"
+              />
+            </div>
+            <div className="flex gap-4">
+               <Button variant="ghost" onClick={() => setProductToArchive(null)} className="flex-1 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest" disabled={isArchiving}>Abort</Button>
+               <Button 
+                className="flex-2 px-10 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest shadow-xl shadow-primary/20" 
+                disabled={deleteInput.toLowerCase() !== 'delete' || isArchiving}
+                onClick={confirmArchive}
+               >
+                 {isArchiving ? <Loader2 className="animate-spin h-4 w-4" /> : 'Confirm Move'}
+               </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -6,15 +5,18 @@ import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { MoreHorizontal, PlusCircle, Loader2, Printer, FileText, Trash2, Send, CheckCircle2 } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Loader2, Printer, FileText, Trash2, Send, CheckCircle2, ShieldAlert, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import type { Quotation } from '@/lib/types';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 const statusColorMap: Record<string, string> = {
   'Draft': 'bg-slate-500/10 text-slate-500 border-slate-500/20',
@@ -30,6 +32,10 @@ export default function QuotationsListPage() {
   const { data: quotations, loading } = useCollection<Quotation>(quotationsQuery);
   const { toast } = useToast();
 
+  const [itemToDelete, setItemToDelete] = useState<Quotation | null>(null);
+  const [deleteInput, setDeleteInput] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const handleUpdateStatus = (id: string, status: Quotation['status']) => {
     if (!firestore) return;
     const qRef = doc(firestore, 'quotations', id);
@@ -38,11 +44,17 @@ export default function QuotationsListPage() {
       .catch(() => toast({ variant: 'destructive', title: 'Update Failed' }));
   };
 
-  const handleDelete = (id: string) => {
-    if (!firestore) return;
-    deleteDoc(doc(firestore, 'quotations', id))
-      .then(() => toast({ title: 'Quotation Deleted' }))
-      .catch(() => toast({ variant: 'destructive', title: 'Delete Failed' }));
+  const confirmDelete = async () => {
+    if (!firestore || !itemToDelete) return;
+    setIsDeleting(true);
+    deleteDoc(doc(firestore, 'quotations', itemToDelete.id))
+      .then(() => {
+        toast({ title: 'Quotation Deleted' });
+        setItemToDelete(null);
+        setDeleteInput('');
+      })
+      .catch(() => toast({ variant: 'destructive', title: 'Delete Failed' }))
+      .finally(() => setIsDeleting(false));
   };
 
   if (loading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>;
@@ -112,7 +124,7 @@ export default function QuotationsListPage() {
                             <Clock className="mr-2 h-4 w-4" /> Mark Expired
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(q.id)}>
+                          <DropdownMenuItem className="text-destructive" onClick={() => setItemToDelete(q)}>
                             <Trash2 className="mr-2 h-4 w-4" /> Delete Permanently
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -136,8 +148,45 @@ export default function QuotationsListPage() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={!!itemToDelete} onOpenChange={(o) => { if(!o) { setItemToDelete(null); setDeleteInput(''); } }}>
+        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden p-0">
+          <div className="bg-destructive/10 p-8 border-b border-destructive/20">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-headline flex items-center gap-3 text-destructive">
+                <ShieldAlert className="h-8 w-8" />
+                Confirm Removal
+              </DialogTitle>
+              <DialogDescription className="text-stone-600 font-medium">
+                Are you sure you want to permanently remove quotation <strong className="text-stone-900">{itemToDelete?.id}</strong>?
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+          <div className="p-10 space-y-6">
+            <div className="space-y-4">
+              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Security Verification</Label>
+              <p className="text-xs text-stone-500 italic">Type the word <span className="font-bold text-destructive underline">delete</span> manually to authorize removal.</p>
+              <Input 
+                placeholder="Type here..." 
+                value={deleteInput}
+                onChange={(e) => setDeleteInput(e.target.value)}
+                className="h-14 rounded-2xl border-2 border-stone-200 focus:border-destructive/40 focus:ring-destructive/10 text-center text-lg font-bold tracking-widest"
+              />
+            </div>
+            <div className="flex gap-4">
+               <Button variant="ghost" onClick={() => setItemToDelete(null)} className="flex-1 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest" disabled={isDeleting}>Abort</Button>
+               <Button 
+                variant="destructive" 
+                className="flex-2 px-10 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest shadow-xl shadow-destructive/20" 
+                disabled={deleteInput.toLowerCase() !== 'delete' || isDeleting}
+                onClick={confirmDelete}
+               >
+                 {isDeleting ? <Loader2 className="animate-spin h-4 w-4" /> : 'Final Destroy'}
+               </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
-
-import { Clock, DropdownMenuSeparator } from 'lucide-react';

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -12,9 +11,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { Vendor } from '@/lib/types';
-import { MoreHorizontal, PlusCircle, Loader2, Search, Edit, Trash2, Store, Phone, Mail, MapPin } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Loader2, Search, Edit, Trash2, Store, Phone, Mail, MapPin, ShieldAlert } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
@@ -24,6 +23,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { Label } from '@/components/ui/label';
 
 const vendorFormSchema = z.object({
   name: z.string().min(1, 'Vendor Name is required'),
@@ -46,6 +46,10 @@ export default function VendorsPage() {
   const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   
+  const [itemToDelete, setItemToDelete] = useState<Vendor | null>(null);
+  const [deleteInput, setDeleteInput] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const { toast } = useToast();
 
   const form = useForm<VendorFormValues>({
@@ -111,10 +115,16 @@ export default function VendorsPage() {
       .finally(() => setIsSaving(false));
   };
 
-  const handleDelete = (vendor: Vendor) => {
-    if (!firestore || !confirm('Permanently delete this vendor?')) return;
-    deleteDoc(doc(firestore, 'vendors', vendor.id))
-      .then(() => toast({ title: 'Vendor Removed' }));
+  const confirmDelete = async () => {
+    if (!firestore || !itemToDelete) return;
+    setIsDeleting(true);
+    deleteDoc(doc(firestore, 'vendors', itemToDelete.id))
+      .then(() => {
+        toast({ title: 'Vendor Removed' });
+        setItemToDelete(null);
+        setDeleteInput('');
+      })
+      .finally(() => setIsDeleting(false));
   };
 
   const filteredVendors = useMemo(() => {
@@ -192,7 +202,7 @@ export default function VendorsPage() {
                           <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="rounded-xl"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-48 rounded-xl">
                             <DropdownMenuItem onClick={() => { setEditingVendor(vendor); setIsAddOrEditDialogOpen(true); }}><Edit className="h-4 w-4 mr-2" /> Edit Profile</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDelete(vendor)} className="text-destructive"><Trash2 className="h-4 w-4 mr-2" /> De-Register</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setItemToDelete(vendor)} className="text-destructive"><Trash2 className="h-4 w-4 mr-2" /> De-Register</DropdownMenuItem>
                           </DropdownMenuContent>
                        </DropdownMenu>
                     </TableCell>
@@ -286,6 +296,45 @@ export default function VendorsPage() {
                </div>
             </form>
           </Form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!itemToDelete} onOpenChange={(o) => { if(!o) { setItemToDelete(null); setDeleteInput(''); } }}>
+        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden p-0">
+          <div className="bg-destructive/10 p-8 border-b border-destructive/20">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-headline flex items-center gap-3 text-destructive">
+                <ShieldAlert className="h-8 w-8" />
+                Confirm De-Registration
+              </DialogTitle>
+              <DialogDescription className="text-stone-600 font-medium">
+                Are you sure you want to permanently remove vendor <strong className="text-stone-900">{itemToDelete?.name}</strong> from the artisan network?
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+          <div className="p-10 space-y-6">
+            <div className="space-y-4">
+              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Security Verification</Label>
+              <p className="text-xs text-stone-500 italic">Type the word <span className="font-bold text-destructive underline">delete</span> manually to authorize removal.</p>
+              <Input 
+                placeholder="Type here..." 
+                value={deleteInput}
+                onChange={(e) => setDeleteInput(e.target.value)}
+                className="h-14 rounded-2xl border-2 border-stone-200 focus:border-destructive/40 focus:ring-destructive/10 text-center text-lg font-bold tracking-widest"
+              />
+            </div>
+            <div className="flex gap-4">
+               <Button variant="ghost" onClick={() => setItemToDelete(null)} className="flex-1 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest" disabled={isDeleting}>Abort</Button>
+               <Button 
+                variant="destructive" 
+                className="flex-2 px-10 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest shadow-xl shadow-destructive/20" 
+                disabled={deleteInput.toLowerCase() !== 'delete' || isDeleting}
+                onClick={confirmDelete}
+               >
+                 {isDeleting ? <Loader2 className="animate-spin h-4 w-4" /> : 'Final De-Register'}
+               </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </>

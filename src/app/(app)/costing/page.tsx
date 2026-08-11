@@ -18,7 +18,8 @@ import {
   History,
   CheckCircle2,
   Clock,
-  ArrowRight
+  ArrowRight,
+  ShieldAlert
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -29,6 +30,8 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { deleteCostingAction } from './actions';
 import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 
 const statusColors: Record<string, string> = {
   'Draft': 'bg-slate-500/10 text-slate-500 border-slate-500/20',
@@ -44,6 +47,9 @@ export default function CostingManagementPage() {
   const { data: costings, loading } = useCollection<Costing>(costingQuery);
   
   const [searchTerm, setSearchTerm] = useState('');
+  const [itemToDelete, setItemToDelete] = useState<Costing | null>(null);
+  const [deleteInput, setDeleteInput] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
 
   const filteredCostings = useMemo(() => {
@@ -54,13 +60,18 @@ export default function CostingManagementPage() {
     );
   }, [costings, searchTerm]);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Permanently delete this costing record?')) return;
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+    setIsDeleting(true);
     try {
-      await deleteCostingAction(id);
+      await deleteCostingAction(itemToDelete.id);
       toast({ title: 'Record Deleted' });
+      setItemToDelete(null);
+      setDeleteInput('');
     } catch (e) {
       toast({ variant: 'destructive', title: 'Action Failed' });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -143,7 +154,7 @@ export default function CostingManagementPage() {
                               <DropdownMenuContent align="end" className="w-56 rounded-xl border-2">
                                 <DropdownMenuItem asChild><Link href={`/costing/new?duplicate=${costing.id}`}><History className="h-4 w-4 mr-2" /> Duplicate & Refine</Link></DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => handleDelete(costing.id)} className="text-destructive"><Trash2 className="h-4 w-4 mr-2" /> Final Delete</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setItemToDelete(costing)} className="text-destructive"><Trash2 className="h-4 w-4 mr-2" /> Final Delete</DropdownMenuItem>
                               </DropdownMenuContent>
                            </DropdownMenu>
                         </div>
@@ -167,6 +178,45 @@ export default function CostingManagementPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={!!itemToDelete} onOpenChange={(o) => { if(!o) { setItemToDelete(null); setDeleteInput(''); } }}>
+        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden p-0">
+          <div className="bg-destructive/10 p-8 border-b border-destructive/20">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-headline flex items-center gap-3 text-destructive">
+                <ShieldAlert className="h-8 w-8" />
+                Confirm Deletion
+              </DialogTitle>
+              <DialogDescription className="text-stone-600 font-medium">
+                Are you sure you want to permanently destroy costing record <strong className="text-stone-900">{itemToDelete?.id}</strong>?
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+          <div className="p-10 space-y-6">
+            <div className="space-y-4">
+              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Security Verification</Label>
+              <p className="text-xs text-stone-500 italic">Type the word <span className="font-bold text-destructive underline">delete</span> manually to authorize removal.</p>
+              <Input 
+                placeholder="Type here..." 
+                value={deleteInput}
+                onChange={(e) => setDeleteInput(e.target.value)}
+                className="h-14 rounded-2xl border-2 border-stone-200 focus:border-destructive/40 focus:ring-destructive/10 text-center text-lg font-bold tracking-widest"
+              />
+            </div>
+            <div className="flex gap-4">
+               <Button variant="ghost" onClick={() => setItemToDelete(null)} className="flex-1 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest" disabled={isDeleting}>Abort</Button>
+               <Button 
+                variant="destructive" 
+                className="flex-2 px-10 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest shadow-xl shadow-destructive/20" 
+                disabled={deleteInput.toLowerCase() !== 'delete' || isDeleting}
+                onClick={confirmDelete}
+               >
+                 {isDeleting ? <Loader2 className="animate-spin h-4 w-4" /> : 'Final Destroy'}
+               </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
