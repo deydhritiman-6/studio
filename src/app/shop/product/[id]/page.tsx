@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -87,14 +86,14 @@ export default function ProductDetailPage() {
         <div className="lg:col-span-7 space-y-8">
           <div className="aspect-square relative rounded-[2.5rem] overflow-hidden shadow-2xl bg-white border border-stone-100 p-8">
             <div className="relative w-full h-full rounded-[1.5rem] overflow-hidden group">
-              <Image src={mainPreviewImage} alt={product.name} fill className="object-cover transition-all duration-[1s] group-hover:scale-110" priority data-ai-hint={product.imageHint} />
+              <Image src={mainPreviewImage} alt={product.name} fill className="object-cover transition-all duration-[1s] group-hover:scale-110" priority data-ai-hint={product.imageHint} sizes="(max-width: 1024px) 100vw, 800px" />
             </div>
           </div>
           {thumbnails.length > 0 && (
             <div className="grid grid-cols-3 gap-6 px-4 md:px-12">
                {thumbnails.map((url, i) => (
                   <button key={i} onClick={() => setSelectedImage(url)} className={`aspect-square relative rounded-xl overflow-hidden border-2 transition-all ${selectedImage === url ? 'border-primary shadow-lg scale-105' : 'border-transparent opacity-60 hover:opacity-100 hover:scale-105'}`}>
-                     <Image src={url} alt={`${product.name} perspective ${i + 1}`} fill className="object-cover" data-ai-hint={product.imageHint} />
+                     <Image src={url} alt={`${product.name} perspective ${i + 1}`} fill className="object-cover" data-ai-hint={product.imageHint} sizes="(max-width: 768px) 33vw, 200px" />
                   </button>
                ))}
             </div>

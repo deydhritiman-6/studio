@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -128,6 +127,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
                       fill 
                       className="object-contain transition-transform duration-300 group-hover:scale-110" 
                       priority
+                      sizes="(max-width: 768px) 64px, 100px"
                     />
                   </div>
                 </div>
@@ -156,6 +156,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
                       fill 
                       className="object-contain transition-transform duration-300 group-hover:scale-110" 
                       priority
+                      sizes="(max-width: 768px) 64px, 100px"
                     />
                   </div>
                 </div>

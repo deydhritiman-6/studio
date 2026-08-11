@@ -49,6 +49,7 @@ export default function LandingPage() {
           fill 
           className="object-cover" 
           priority 
+          sizes="100vw"
         />
         {/* Premium Readability Overlay */}
         <div className="absolute inset-0 bg-stone-50/90 backdrop-blur-[2px] opacity-95"></div>
@@ -207,6 +208,7 @@ export default function LandingPage() {
                         fill 
                         className="object-cover transition-transform duration-1000 group-hover:scale-110" 
                         data-ai-hint={product.imageHint || "luxury chocolate"}
+                        sizes="(max-width: 768px) 100vw, 33vw"
                       />
                       <div className="absolute inset-0 bg-stone-900/10 group-hover:bg-stone-900/30 transition-colors duration-500"></div>
                       <div className="absolute bottom-10 left-10 right-10 text-white space-y-2">
@@ -243,6 +245,7 @@ export default function LandingPage() {
                   fill 
                   className="object-cover" 
                   data-ai-hint="woman smiling"
+                  sizes="(max-width: 768px) 100vw, 500px"
                 />
               </div>
               <div className="absolute -bottom-8 -right-8 bg-amber-600 p-10 rounded-[2.5rem] shadow-2xl hidden md:block">
@@ -300,6 +303,7 @@ export default function LandingPage() {
                         fill 
                         className="object-contain p-4 group-hover:scale-110 transition-transform duration-500 opacity-80 group-hover:opacity-100"
                         data-ai-hint={item.imageHint}
+                        sizes="(max-width: 768px) 150px, 200px"
                       />
                    </div>
                    <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500 leading-tight px-2">{item.description.replace('Artisan ', '').replace('Luxury ', '').replace('Single-origin ', '').replace('Hand-crafted ', '')}</p>

@@ -137,7 +137,7 @@ const SHAPE_CONFIG: Record<string, { fields: { name: string; label: string; plac
   Conical: {
     fields: [
       { name: 'diameter', label: 'Base Diameter (MM)', type: 'number' },
-      { name: 'height', label: 'Height (MM)', type: 'number' },
+      { name: 'height', label: 'Dome Height (MM)', type: 'number' },
     ]
   },
   Irregular: {
@@ -517,6 +517,9 @@ export default function ProductsPage() {
     <TooltipProvider>
       <Dialog open={!!viewingProduct} onOpenChange={(open) => !open && setViewingProduct(null)}>
         <DialogContent className="sm:max-w-4xl p-0 border-0 bg-transparent shadow-none">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Product Image Gallery</DialogTitle>
+          </DialogHeader>
           {viewingProduct && (
             <Carousel opts={{ startIndex: viewingProduct.startIndex, loop: true }} className="w-full">
               <CarouselContent>
@@ -909,7 +912,7 @@ export default function ProductsPage() {
       ) : (
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {products.map((product) => (
-            <Card key={product.id} className="flex flex-col group overflow-hidden border-none shadow-sm hover:shadow-2xl transition-all duration-500 rounded-[2rem] bg-card relative">
+            <Card key={product.id} className="flex flex-col group overflow-hidden border-stone-100 shadow-sm hover:shadow-2xl transition-all duration-500 rounded-[2rem] bg-card relative">
               <CardHeader className="p-0 relative">
                  <button type="button" className="block w-full aspect-[4/3] relative overflow-hidden" onClick={() => setViewingProduct({ images: product.imageUrls, startIndex: 0, productName: product.name, hint: product.imageHint })}>
                     <Image 

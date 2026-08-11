@@ -256,7 +256,7 @@ export default function PhotoGalleryManagementPage() {
         >
           {value ? (
             <>
-              <Image src={value} alt={label} fill className="object-cover" />
+              <Image src={value} alt={label} fill className="object-cover" sizes="(max-width: 768px) 33vw, 200px" />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                  <RefreshCw className="text-white h-6 w-6" />
               </div>
@@ -313,7 +313,7 @@ export default function PhotoGalleryManagementPage() {
             {filteredGalleries.map((gallery) => (
               <Card key={gallery.id} className="rounded-[2.5rem] border-none shadow-sm hover:shadow-2xl transition-all duration-500 bg-card overflow-hidden group">
                 <div className="aspect-video relative overflow-hidden bg-stone-900">
-                    <Image src={gallery.mainImage} alt={gallery.productName} fill className="object-cover transition-transform duration-[2s] group-hover:scale-110 opacity-90 group-hover:opacity-100" />
+                    <Image src={gallery.mainImage} alt={gallery.productName} fill className="object-cover transition-transform duration-[2s] group-hover:scale-110 opacity-90 group-hover:opacity-100" sizes="(max-width: 768px) 100vw, 33vw" />
                     <div className="absolute inset-0 bg-gradient-to-t from-stone-900 via-transparent to-transparent opacity-60"></div>
                     <div className="absolute bottom-4 left-6">
                         {gallery.id.startsWith('VIRTUAL-') && <Badge className="bg-amber-500 text-stone-950 border-none font-black uppercase text-[7px] tracking-[0.2em] mb-1">Portfolio Sync</Badge>}
@@ -332,7 +332,7 @@ export default function PhotoGalleryManagementPage() {
                         <div key={i} className="aspect-square relative rounded-2xl overflow-hidden bg-muted border border-border/50 group/sub shadow-inner">
                            {gallery.subImages[i] ? (
                              <>
-                                <Image src={gallery.subImages[i]} alt="" fill className="object-cover" />
+                                <Image src={gallery.subImages[i]} alt="" fill className="object-cover" sizes="(max-width: 768px) 33vw, 150px" />
                                 <button 
                                   onClick={() => setViewingImage(gallery.subImages[i])}
                                   className="absolute inset-0 bg-black/40 opacity-0 group-hover/sub:opacity-100 transition-opacity flex items-center justify-center text-white"
@@ -477,7 +477,7 @@ export default function PhotoGalleryManagementPage() {
            <DialogHeader className="sr-only"><DialogTitle>Image Preview</DialogTitle></DialogHeader>
            {viewingImage && (
              <div className="relative aspect-video w-full">
-                <Image src={viewingImage} alt="High resolution preview" fill className="object-contain" />
+                <Image src={viewingImage} alt="High resolution preview" fill className="object-contain" sizes="100vw" />
                 <button 
                   onClick={() => setViewingImage(null)}
                   className="absolute top-6 right-6 h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center text-white"

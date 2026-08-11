@@ -105,6 +105,7 @@ export default function ShopPage() {
                   fill 
                   className={`object-cover transition-transform duration-[2s] ease-in-out ${product.availabilityStatus === 'Out of Stock' ? 'grayscale opacity-60' : 'group-hover:scale-110'}`}
                   data-ai-hint={product.imageHint}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                 />
                 
                 {product.availabilityStatus === 'Out of Stock' && (
