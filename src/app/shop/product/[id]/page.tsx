@@ -11,6 +11,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useDoc, useFirestore, useCollection } from '@/firebase';
 import { doc, collection, query, where } from 'firebase/firestore';
 import { ChocolateMeshViewer } from '@/components/chocolate-mesh-viewer';
+import { formatINR } from '@/lib/currency';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -230,7 +231,7 @@ export default function ProductDetailPage() {
           </div>
 
           <div className="flex items-center gap-6">
-             <span className="text-5xl font-bold text-primary">₹{product.price}</span>
+             <span className="text-5xl font-bold text-primary">{formatINR(product.price)}</span>
              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 uppercase tracking-widest text-[10px] px-3 py-1 font-bold">{product.availabilityStatus}</Badge>
           </div>
 

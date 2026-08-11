@@ -23,6 +23,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { formatINR } from '@/lib/currency';
 
 export default function OrdersPage() {
   const firestore = useFirestore();
@@ -151,7 +152,7 @@ export default function OrdersPage() {
                     </ul>
                 </div>
                 <Separator />
-                <div className="flex justify-between items-center"><h4 className="font-semibold">Total Amount</h4><p className="font-semibold">₹{viewingOrder.totalAmount.toLocaleString('en-IN')}</p></div>
+                <div className="flex justify-between items-center"><h4 className="font-semibold">Total Amount</h4><p className="font-semibold">{formatINR(viewingOrder.totalAmount)}</p></div>
                 <div className="flex justify-between items-center"><h4 className="font-semibold">Current Workflow Status</h4><Badge variant={getStatusBadgeVariant(viewingOrder.deliveryStatus)}>{viewingOrder.deliveryStatus}</Badge></div>
                 
                 {viewingOrder.statusReason && (
@@ -180,7 +181,7 @@ export default function OrdersPage() {
                   <TableCell className="font-medium">{order.id}</TableCell>
                   <TableCell>{order.customerName}</TableCell>
                   <TableCell>{order.orderDate}</TableCell>
-                  <TableCell>₹{order.totalAmount.toLocaleString('en-IN')}</TableCell>
+                  <TableCell>{formatINR(order.totalAmount)}</TableCell>
                   <TableCell><Badge variant={getStatusBadgeVariant(order.deliveryStatus)}>{order.deliveryStatus}</Badge></TableCell>
                   <TableCell>
                     <DropdownMenu>

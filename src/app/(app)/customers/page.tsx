@@ -23,6 +23,7 @@ import { collection, doc, setDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatINR } from '@/lib/currency';
 
 const customerFormSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -82,7 +83,7 @@ export default function CustomersPage() {
       .then(() => {
         setIsAddOrEditDialogOpen(false);
         setEditingCustomer(null);
-        toast({ title: editingCustomer ? 'Customer Updated' : 'Customer Added', description: `${values.name}'s details have been saved.` });
+        toast({ title: customerType ? 'Customer Updated' : 'Customer Added', description: `${values.name}'s details have been saved.` });
       })
       .catch(async (error) => {
         const permissionError = new FirestorePermissionError({
@@ -152,7 +153,7 @@ export default function CustomersPage() {
               <div className="flex justify-between items-center"><h4 className="text-sm font-medium text-muted-foreground">Phone</h4><p className="text-sm font-semibold">{viewingCustomer.phone}</p></div>
               <div className="flex justify-between items-center"><h4 className="text-sm font-medium text-muted-foreground">Email</h4><p className="text-sm font-semibold">{viewingCustomer.email}</p></div>
               <Separator /><div className="flex justify-between items-center"><h4 className="text-sm font-medium text-muted-foreground">Status</h4><Badge>{viewingCustomer.customerType}</Badge></div>
-              <Separator /><div className="flex justify-between items-center"><h4 className="text-sm font-medium text-muted-foreground">Total Spend</h4><p className="text-sm font-semibold">₹{viewingCustomer.totalPurchaseValue.toLocaleString('en-IN')}</p></div>
+              <Separator /><div className="flex justify-between items-center"><h4 className="text-sm font-medium text-muted-foreground">Total Spend</h4><p className="text-sm font-semibold">{formatINR(viewingCustomer.totalPurchaseValue)}</p></div>
             </div>
             <DialogFooter><DialogClose asChild><Button type="button" variant="secondary">Close</Button></DialogClose></DialogFooter>
           </DialogContent>
@@ -194,7 +195,7 @@ export default function CustomersPage() {
                   <TableCell className="font-medium">{customer.name}</TableCell>
                   <TableCell>{customer.email}</TableCell>
                   <TableCell><Badge>{customer.customerType}</Badge></TableCell>
-                  <TableCell>₹{customer.totalPurchaseValue.toLocaleString('en-IN')}</TableCell>
+                  <TableCell>{formatINR(customer.totalPurchaseValue)}</TableCell>
                   <TableCell>{customer.joinedDate}</TableCell>
                   <TableCell>
                     <DropdownMenu>

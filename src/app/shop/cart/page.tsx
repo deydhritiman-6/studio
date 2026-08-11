@@ -23,6 +23,7 @@ import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { formatINR } from '@/lib/currency';
 
 export default function CartPage() {
   const [cart, setCart] = useState<any[]>([]);
@@ -146,7 +147,7 @@ export default function CartPage() {
                        <span className="text-green-600">In Stock</span>
                     </div>
                   </div>
-                  <p className="font-bold text-2xl md:text-3xl text-stone-900 tabular-nums">₹{item.price}</p>
+                  <p className="font-bold text-2xl md:text-3xl text-stone-900 tabular-nums">{formatINR(item.price)}</p>
                 </div>
                 
                 <div className="flex flex-wrap justify-between items-center mt-8 gap-4">
@@ -186,7 +187,7 @@ export default function CartPage() {
               <div className="space-y-6">
                   <div className="flex justify-between items-center text-stone-500 font-medium">
                     <span className="text-lg">Subtotal</span>
-                    <span className="text-stone-900 font-bold tabular-nums">₹{subtotal.toFixed(2)}</span>
+                    <span className="text-stone-900 font-bold tabular-nums">{formatINR(subtotal)}</span>
                   </div>
                   <div className="flex justify-between items-center text-stone-500 font-medium">
                     <span className="text-lg">Shipping</span>
@@ -195,14 +196,14 @@ export default function CartPage() {
                   {discount > 0 && (
                     <div className="flex justify-between items-center text-stone-500 font-medium">
                       <span className="text-lg">Discount</span>
-                      <span className="text-rose-500 font-bold tabular-nums">-₹{discount.toFixed(2)}</span>
+                      <span className="text-rose-500 font-bold tabular-nums">-{formatINR(discount)}</span>
                     </div>
                   )}
               </div>
               <Separator className="bg-stone-100" />
               <div className="flex justify-between items-baseline">
                 <span className="text-stone-900 font-headline text-3xl font-bold">Total</span>
-                <span className="text-5xl font-bold text-primary tabular-nums tracking-tighter">₹{total.toFixed(2)}</span>
+                <span className="text-5xl font-bold text-primary tabular-nums tracking-tighter">{formatINR(total)}</span>
               </div>
               
               <div className="space-y-4">

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -12,6 +11,7 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { Order, Customer } from '@/lib/types';
 import { startOfMonth, endOfMonth } from 'date-fns';
+import { formatINR } from '@/lib/currency';
 
 export default function PerformancePage() {
   const [metric, setMetric] = useState<'Revenue' | 'Sales' | 'Orders' | 'Customers'>('Revenue');
@@ -68,7 +68,7 @@ export default function PerformancePage() {
     Revenue: {
       keys: { previous: 'previousRevenue', current: 'currentRevenue' },
       formatter: (value: number) => `₹${(value / 1000).toFixed(0)}k`,
-      tooltipFormatter: (value: number) => `₹${value.toLocaleString()}`,
+      tooltipFormatter: (value: number) => formatINR(value),
     },
     Sales: {
       keys: { previous: 'previousSales', current: 'currentSales' },

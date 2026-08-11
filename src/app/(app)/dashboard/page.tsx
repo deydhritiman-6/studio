@@ -13,6 +13,7 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { Order, InventoryItem, Customer, Product } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatINR } from '@/lib/currency';
 
 export default function DashboardPage() {
   const firestore = useFirestore();
@@ -63,7 +64,7 @@ export default function DashboardPage() {
   }, [topProductsData]);
 
   const kpiData = [
-    { title: 'Total Revenue', value: `₹${totalRevenue.toLocaleString('en-IN')}`, icon: IndianRupee, change: '+12.5% vs last month', loading: ordersLoading },
+    { title: 'Total Revenue', value: formatINR(totalRevenue), icon: IndianRupee, change: '+12.5% vs last month', loading: ordersLoading },
     { title: 'Total Orders', value: (orders?.length || 0).toString(), icon: ShoppingBag, change: '+15.2% vs last month', loading: ordersLoading },
     { title: 'Active Customers', value: (customers?.length || 0).toString(), icon: Users, change: '+80 this month', loading: customersLoading },
     { title: 'VIP Members', value: vipCount.toString(), icon: Crown, change: '+3 this month', loading: customersLoading },
@@ -172,7 +173,7 @@ export default function DashboardPage() {
                             </div>
                           </TableCell>
                            <TableCell>{order.deliveryStatus}</TableCell>
-                          <TableCell className="text-right">₹{order.totalAmount.toLocaleString('en-IN')}</TableCell>
+                          <TableCell className="text-right">{formatINR(order.totalAmount)}</TableCell>
                         </TableRow>
                       ))
                     ) : (

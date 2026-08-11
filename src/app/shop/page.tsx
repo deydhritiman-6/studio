@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { Badge } from '@/components/ui/badge';
+import { formatINR } from '@/lib/currency';
 
 export default function ShopPage() {
   const firestore = useFirestore();
@@ -197,7 +198,7 @@ export default function ShopPage() {
                     </p>
                  )}
                  <div className="flex items-baseline gap-3 pt-2">
-                   <span className={`text-3xl font-bold tracking-tighter ${product.availabilityStatus === 'Out of Stock' ? 'text-stone-300 line-through' : 'text-primary'}`}>₹{product.price}</span>
+                   <span className={`text-3xl font-bold tracking-tighter ${product.availabilityStatus === 'Out of Stock' ? 'text-stone-300 line-through' : 'text-primary'}`}>{formatINR(product.price)}</span>
                    <span className="text-[10px] text-stone-400 font-bold uppercase tracking-widest opacity-60">Tax Inc.</span>
                  </div>
               </CardContent>

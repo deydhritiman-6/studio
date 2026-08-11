@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -22,6 +21,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
+import { formatINR } from '@/lib/currency';
 
 const itemSchema = z.object({
   productId: z.string().min(1, "Product is required."),
@@ -191,14 +191,14 @@ export default function GstBillingPage() {
 
     message += `*Items:*\n`;
     generatedInvoice.items.forEach(item => {
-      message += `- ${item.productName} (Qty: ${item.quantity}) @ ₹${item.pricePerUnit.toFixed(2)}: ₹${item.total.toFixed(2)}\n`;
+      message += `- ${item.productName} (Qty: ${item.quantity}) @ ${formatINR(item.pricePerUnit)}: ${formatINR(item.total)}\n`;
     });
     
-    message += `\n*Subtotal:* ₹${generatedInvoice.subtotal.toFixed(2)}\n`;
-    message += `*CGST @${(gstForm.getValues('gstRate') / 2)}%:* ₹${generatedInvoice.cgst.toFixed(2)}\n`;
-    message += `*SGST @${(gstForm.getValues('gstRate') / 2)}%:* ₹${generatedInvoice.sgst.toFixed(2)}\n`;
-    message += `*Total GST:* ₹${generatedInvoice.totalGst.toFixed(2)}\n`;
-    message += `*GRAND TOTAL:* *₹${generatedInvoice.grandTotal.toFixed(2)}*\n\n`;
+    message += `\n*Subtotal:* ${formatINR(generatedInvoice.subtotal)}\n`;
+    message += `*CGST @${(gstForm.getValues('gstRate') / 2)}%:* ${formatINR(generatedInvoice.cgst)}\n`;
+    message += `*SGST @${(gstForm.getValues('gstRate') / 2)}%:* ${formatINR(generatedInvoice.sgst)}\n`;
+    message += `*Total GST:* ${formatINR(generatedInvoice.totalGst)}\n`;
+    message += `*GRAND TOTAL:* *${formatINR(generatedInvoice.grandTotal)}*\n\n`;
     message += `Thank you for your business!`;
 
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
@@ -315,25 +315,25 @@ export default function GstBillingPage() {
                     <td>${item.productName}</td>
                     <td>${item.hsnCode || ''}</td>
                     <td>${item.quantity}</td>
-                    <td>${item.pricePerUnit.toFixed(2)}</td>
-                    <td>${item.total.toFixed(2)}</td>
+                    <td>${formatINR(item.pricePerUnit)}</td>
+                    <td>${formatINR(item.total)}</td>
                   </tr>
                 `).join('')}
                  <tr>
                     <td colspan="5" style="text-align:right; font-weight:700;">Subtotal</td>
-                    <td style="font-weight:700;">${generatedInvoice.subtotal.toFixed(2)}</td>
+                    <td style="font-weight:700;">${formatINR(generatedInvoice.subtotal)}</td>
                 </tr>
                  <tr>
                     <td colspan="5" style="text-align:right;">Add: CGST @ ${(gstForm.getValues('gstRate') / 2).toFixed(1)}%</td>
-                    <td>${generatedInvoice.cgst.toFixed(2)}</td>
+                    <td>${formatINR(generatedInvoice.cgst)}</td>
                 </tr>
                  <tr>
                     <td colspan="5" style="text-align:right;">Add: SGST @ ${(gstForm.getValues('gstRate') / 2).toFixed(1)}%</td>
-                    <td>${generatedInvoice.sgst.toFixed(2)}</td>
+                    <td>${formatINR(generatedInvoice.sgst)}</td>
                 </tr>
                 <tr class="total-row">
                     <td colspan="5" style="text-align:right;">Total</td>
-                    <td>${generatedInvoice.grandTotal.toFixed(2)}</td>
+                    <td>${formatINR(generatedInvoice.grandTotal)}</td>
                 </tr>
               </tbody>
             </table>
@@ -398,8 +398,8 @@ export default function GstBillingPage() {
             ${generatedCashBill.customerName ? `<p>Customer: ${generatedCashBill.customerName}</p>` : ''}
             <table>
               <tr class="heading"><td>Item</td><td class="text-right">Qty</td><td class="text-right">Total</td></tr>
-              ${generatedCashBill.items.map(item => `<tr class="item"><td>${item.productName}</td><td class="text-right">${item.quantity}</td><td class="text-right">₹${item.total.toFixed(2)}</td></tr>`).join('')}
-              <tr class="total"><td colspan="2" class="text-right">Grand Total</td><td class="text-right">₹${generatedCashBill.total.toFixed(2)}</td></tr>
+              ${generatedCashBill.items.map(item => `<tr class="item"><td>${item.productName}</td><td class="text-right">${item.quantity}</td><td class="text-right">${formatINR(item.total)}</td></tr>`).join('')}
+              <tr class="total"><td colspan="2" class="text-right">Grand Total</td><td class="text-right">${formatINR(generatedCashBill.total)}</td></tr>
             </table>
             <p class="center" style="margin-top: 20px;">Thank you!</p>
           </div>
@@ -609,27 +609,27 @@ export default function GstBillingPage() {
                           {generatedInvoice.items.map((item, index) => (
                             <li key={index} className="flex justify-between">
                               <span>{item.productName} x {item.quantity}</span>
-                              <span>₹{item.total.toFixed(2)}</span>
+                              <span>{formatINR(item.total)}</span>
                             </li>
                           ))}
                         </ul>
                         <Separator className="my-2" />
                         <div className="flex justify-between">
                           <span>Subtotal</span>
-                          <span>₹{generatedInvoice.subtotal.toFixed(2)}</span>
+                          <span>{formatINR(generatedInvoice.subtotal)}</span>
                         </div>
                         <div className="flex justify-between text-sm text-muted-foreground">
                           <span>CGST ({(gstForm.getValues('gstRate') / 2)}%)</span>
-                          <span>₹{generatedInvoice.cgst.toFixed(2)}</span>
+                          <span>{formatINR(generatedInvoice.cgst)}</span>
                         </div>
                         <div className="flex justify-between text-sm text-muted-foreground">
                           <span>SGST ({(gstForm.getValues('gstRate') / 2)}%)</span>
-                          <span>₹{generatedInvoice.sgst.toFixed(2)}</span>
+                          <span>{formatINR(generatedInvoice.sgst)}</span>
                         </div>
                         <Separator className="my-2" />
                         <div className="flex justify-between font-bold text-lg">
                           <span>Grand Total</span>
-                          <span>₹{generatedInvoice.grandTotal.toFixed(2)}</span>
+                          <span>{formatINR(generatedInvoice.grandTotal)}</span>
                         </div>
                       </div>
                       <div className="flex gap-2">
@@ -761,14 +761,14 @@ export default function GstBillingPage() {
                                     {generatedCashBill.items.map((item, index) => (
                                         <li key={index} className="flex justify-between">
                                         <span>{item.productName} x {item.quantity}</span>
-                                        <span>₹{item.total.toFixed(2)}</span>
+                                        <span>{formatINR(item.total)}</span>
                                         </li>
                                     ))}
                                     </ul>
                                     <Separator className="my-2" />
                                     <div className="flex justify-between font-bold text-lg">
                                     <span>Grand Total</span>
-                                    <span>₹{generatedCashBill.total.toFixed(2)}</span>
+                                    <span>{formatINR(generatedCashBill.total)}</span>
                                     </div>
                                 </div>
                                 <Button onClick={handlePrintCashBill} className="w-full">

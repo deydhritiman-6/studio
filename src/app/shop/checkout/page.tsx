@@ -18,6 +18,7 @@ import { useFirestore } from '@/firebase';
 import { collection, doc, setDoc, query, where, getDocs, updateDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { formatINR } from '@/lib/currency';
 
 const checkoutSchema = z.object({
   name: z.string().min(2, 'Full name is required'),
@@ -283,7 +284,7 @@ export default function CheckoutPage() {
                                 <p className="text-[9px] text-stone-500 font-bold uppercase tracking-tighter">Qty: {item.quantity}</p>
                             </div>
                          </div>
-                         <span className="font-bold text-stone-100 tabular-nums">₹{item.price * item.quantity}</span>
+                         <span className="font-bold text-stone-100 tabular-nums">{formatINR(item.price * item.quantity)}</span>
                       </div>
                     ))}
                   </div>
@@ -291,7 +292,7 @@ export default function CheckoutPage() {
                   <div className="space-y-3">
                     <div className="flex justify-between text-stone-500 text-[10px] font-black uppercase tracking-[0.2em]">
                         <span>Items Subtotal</span>
-                        <span className="text-stone-300 tabular-nums">₹{total}</span>
+                        <span className="text-stone-300 tabular-nums">{formatINR(total)}</span>
                     </div>
                     <div className="flex justify-between text-stone-500 text-[10px] font-black uppercase tracking-[0.2em]">
                         <span>Luxury Packaging</span>
@@ -305,7 +306,7 @@ export default function CheckoutPage() {
                   <Separator className="bg-white/5" />
                   <div className="flex justify-between items-baseline pt-2">
                     <span className="text-stone-400 font-headline text-xl italic">Total Payable</span>
-                    <span className="text-5xl font-bold text-primary tracking-tighter tabular-nums">₹{total}</span>
+                    <span className="text-5xl font-bold text-primary tracking-tighter tabular-nums">{formatINR(total)}</span>
                   </div>
                   <Button type="submit" disabled={isLoading || cart.length === 0} className="w-full h-24 text-2xl font-bold shadow-2xl shadow-primary/40 rounded-2xl mt-10 bg-primary hover:bg-primary/90 text-stone-950 transition-all hover:scale-[1.02] active:scale-[0.98]">
                     {isLoading ? (

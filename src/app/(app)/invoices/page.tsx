@@ -24,6 +24,7 @@ import { collection, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { cn } from '@/lib/utils';
+import { formatINR } from '@/lib/currency';
 
 const getStatusBadgeVariant = (status: Order['paymentStatus']) => {
   switch (status) {
@@ -279,7 +280,7 @@ export default function InvoicesPage() {
                )}
               <div className="flex justify-between items-center font-bold text-lg">
                 <h4 className="font-medium">Total</h4>
-                <p>₹{viewingInvoice.totalAmount.toLocaleString('en-IN')}</p>
+                <p>{formatINR(viewingInvoice.totalAmount)}</p>
               </div>
               <Separator />
               <div className="flex justify-between items-center">
@@ -329,7 +330,7 @@ export default function InvoicesPage() {
                   <TableCell>{invoice.customerName}</TableCell>
                   <TableCell>{invoice.orderDate}</TableCell>
                   <TableCell>
-                    ₹{invoice.totalAmount.toLocaleString('en-IN')}
+                    {formatINR(invoice.totalAmount)}
                   </TableCell>
                   <TableCell>
                     <Badge variant={getStatusBadgeVariant(invoice.paymentStatus)} className={getStatusBadgeClassName(invoice.paymentStatus)}>
