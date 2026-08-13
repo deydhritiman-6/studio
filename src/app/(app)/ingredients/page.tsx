@@ -1,7 +1,6 @@
-
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -40,6 +39,7 @@ import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
+import { Input as BaseInput } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
@@ -284,6 +284,112 @@ const ingredientSchema = z.object({
 
 type IngredientFormValues = z.infer<typeof ingredientSchema>;
 
+/**
+ * Shared Searchable Selector component
+ */
+function SearchableSelector({ 
+  items, 
+  value, 
+  onChange, 
+  onCustom, 
+  placeholder, 
+  customLabel = "Add Custom Input...",
+  label,
+  isCustom,
+  customValue,
+  onCustomChange
+}: { 
+  items: string[], 
+  value: string, 
+  onChange: (v: string) => void, 
+  onCustom: () => void, 
+  placeholder: string,
+  customLabel?: string,
+  label: string,
+  isCustom: boolean,
+  customValue: string,
+  onCustomChange: (v: string) => void
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+          <Label className="uppercase text-[9px] font-black tracking-widest text-stone-400">{label}</Label>
+          {isCustom && (
+            <Button type="button" variant="ghost" className="h-4 p-0 text-[8px] font-black uppercase text-primary" onClick={() => {
+              onCustomChange('');
+              onChange('');
+              onCustom();
+            }}>
+              <X className="h-2 w-2 mr-1" /> Use List
+            </Button>
+          )}
+      </div>
+      
+      {isCustom ? (
+        <Input 
+          className="h-12 rounded-xl border-primary/40 focus:ring-primary/20" 
+          placeholder={`Enter Custom ${label}...`}
+          value={customValue}
+          onChange={(e) => onCustomChange(e.target.value)}
+        />
+      ) : (
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              className="w-full justify-between h-12 rounded-xl text-left font-normal"
+            >
+              {value ? value : placeholder}
+              <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[400px] p-0 rounded-xl overflow-hidden" align="start">
+            <Command>
+              <CommandInput placeholder={`Search ${label.toLowerCase()}...`} />
+              <CommandList>
+                <CommandEmpty className="py-2 px-4 text-xs italic text-muted-foreground">No existing entry found.</CommandEmpty>
+                <CommandGroup heading="Registered Options">
+                  {items.map((item) => (
+                    <CommandItem
+                      key={item}
+                      value={item}
+                      onSelect={() => {
+                        onChange(item);
+                        setOpen(false);
+                      }}
+                      className="flex items-center justify-between"
+                    >
+                      {item}
+                      <Check className={cn("h-4 w-4 text-primary", value === item ? "opacity-100" : "opacity-0")} />
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+                <CommandSeparator />
+                <CommandGroup heading="Extensions">
+                  <CommandItem 
+                    onSelect={() => {
+                      onCustom();
+                      setOpen(false);
+                    }}
+                    className="text-primary font-bold"
+                  >
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    {customLabel}
+                  </CommandItem>
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+      )}
+    </div>
+  );
+}
+
 export default function IngredientLibraryPage() {
   const firestore = useFirestore();
   const ingredientsQuery = useMemo(() => (firestore ? collection(firestore, 'ingredients') : null), [firestore]);
@@ -454,111 +560,6 @@ export default function IngredientLibraryPage() {
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [ingredients, searchTerm, filterCategory]);
 
-  const SearchableSelector = ({ 
-    items, 
-    value, 
-    onChange, 
-    onCustom, 
-    placeholder, 
-    customLabel = "Add Custom Input...",
-    label,
-    isCustom,
-    customValue,
-    onCustomChange
-  }: { 
-    items: string[], 
-    value: string, 
-    onChange: (v: string) => void, 
-    onCustom: () => void, 
-    placeholder: string,
-    customLabel?: string,
-    label: string,
-    isCustom: boolean,
-    customValue: string,
-    onCustomChange: (v: string) => void
-  }) => {
-    const [open, setOpen] = useState(false);
-
-    return (
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-            <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">{label}</FormLabel>
-            {isCustom && (
-              <Button type="button" variant="ghost" className="h-4 p-0 text-[8px] font-black uppercase text-primary" onClick={() => {
-                onCustomChange('');
-                onChange('');
-                onCustom();
-              }}>
-                <X className="h-2 w-2 mr-1" /> Use List
-              </Button>
-            )}
-        </div>
-        
-        {isCustom ? (
-          <Input 
-            className="h-12 rounded-xl border-primary/40 focus:ring-primary/20" 
-            placeholder={`Enter Custom ${label}...`}
-            value={customValue}
-            onChange={(e) => onCustomChange(e.target.value)}
-          />
-        ) : (
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={open}
-                className="w-full justify-between h-12 rounded-xl text-left font-normal"
-              >
-                {value ? value : placeholder}
-                <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[400px] p-0 rounded-xl overflow-hidden" align="start">
-              <Command>
-                <CommandInput placeholder={`Search ${label.toLowerCase()}...`} />
-                <CommandList>
-                  <CommandEmpty className="py-2 px-4 text-xs italic text-muted-foreground">No existing entry found.</CommandEmpty>
-                  <CommandGroup heading="Registered Options">
-                    {items.map((item) => (
-                      <CommandItem
-                        key={item}
-                        value={item}
-                        onSelect={() => {
-                          onChange(item);
-                          setOpen(false);
-                        }}
-                        className="flex items-center justify-between"
-                      >
-                        {item}
-                        <Check className={cn("h-4 w-4 text-primary", value === item ? "opacity-100" : "opacity-0")} />
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                  <CommandSeparator />
-                  <CommandGroup heading="Extensions">
-                    <CommandItem 
-                      onSelect={() => {
-                        onCustom();
-                        setOpen(false);
-                      }}
-                      className="text-primary font-bold"
-                    >
-                      <PlusCircle className="h-4 w-4 mr-2" />
-                      {customLabel}
-                    </CommandItem>
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-        )}
-      </div>
-    );
-  };
-
-  if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>;
-
   return (
     <>
       <PageHeader 
@@ -717,18 +718,21 @@ export default function IngredientLibraryPage() {
                             onCustomChange={(val) => {
                                 field.onChange(val);
                                 form.setValue('masterCategorySource', 'Custom');
+                                // Trigger cascading reset
+                                form.setValue('subCategory', '');
+                                form.setValue('ingredientForm', '');
+                                form.setValue('primaryRole', '');
+                                form.setValue('secondaryRoles', []);
                             }}
                             onCustom={() => {
-                                setMasterCategoryMode(masterCategoryMode === 'select' ? 'custom' : 'select');
-                                if (masterCategoryMode === 'select') {
-                                    form.setValue('masterCategorySource', 'Custom');
-                                } else {
-                                    form.setValue('masterCategorySource', 'System');
-                                }
+                                const newMode = masterCategoryMode === 'select' ? 'custom' : 'select';
+                                setMasterCategoryMode(newMode);
+                                form.setValue('masterCategorySource', newMode === 'custom' ? 'Custom' : 'System');
                             }}
                             onChange={(val) => {
                                 field.onChange(val);
                                 form.setValue('masterCategorySource', 'System');
+                                // Trigger cascading reset
                                 form.setValue('subCategory', '');
                                 form.setValue('ingredientForm', '');
                                 form.setValue('primaryRole', '');
@@ -753,12 +757,9 @@ export default function IngredientLibraryPage() {
                                 form.setValue('subCategorySource', 'Custom');
                             }}
                             onCustom={() => {
-                                setSubCategoryMode(subCategoryMode === 'select' ? 'custom' : 'select');
-                                if (subCategoryMode === 'select') {
-                                    form.setValue('subCategorySource', 'Custom');
-                                } else {
-                                    form.setValue('subCategorySource', 'System');
-                                }
+                                const newMode = subCategoryMode === 'select' ? 'custom' : 'select';
+                                setSubCategoryMode(newMode);
+                                form.setValue('subCategorySource', newMode === 'custom' ? 'Custom' : 'System');
                             }}
                             onChange={(val) => {
                                 field.onChange(val);
@@ -793,13 +794,13 @@ export default function IngredientLibraryPage() {
                        )} />
                        <FormField control={form.control} name="brand" render={({ field }) => (
                          <FormItem>
-                            <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">Brand / Manufacturer</FormLabel>
+                            <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground">Brand / Manufacturer</FormLabel>
                             <FormControl><Input className="h-10 rounded-xl" {...field} /></FormControl>
                          </FormItem>
                        )} />
                         <FormField control={form.control} name="origin" render={({ field }) => (
                          <FormItem>
-                            <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">Country of Origin</FormLabel>
+                            <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground">Country of Origin</FormLabel>
                             <FormControl><Input className="h-10 rounded-xl" {...field} /></FormControl>
                          </FormItem>
                        )} />
@@ -910,7 +911,7 @@ export default function IngredientLibraryPage() {
                                )} />
                                <FormField control={form.control} name="ph" render={({ field }) => (
                                  <FormItem><FormLabel className="uppercase text-[8px] font-black text-stone-400">Acidity (pH)</FormLabel><FormControl><Input type="number" step="0.1" className="h-10 rounded-lg" {...field} /></FormControl></FormItem>
-                               )} />
+                             )} />
                              </>
                            )}
                            <FormField control={form.control} name="moisturePercent" render={({ field }) => (
