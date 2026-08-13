@@ -21,22 +21,78 @@ export type UserAccount = {
   permissions: string[];
 };
 
+export type AllergenStatus = 'Contains' | 'Does Not Contain' | 'May Contain' | 'Cross-Contact Risk' | 'Unknown';
+
+export type AllergenMatrix = {
+  milk: AllergenStatus;
+  egg: AllergenStatus;
+  fish: AllergenStatus;
+  crustacean: AllergenStatus;
+  treeNuts: AllergenStatus;
+  peanuts: AllergenStatus;
+  wheat: AllergenStatus;
+  soy: AllergenStatus;
+  sesame: AllergenStatus;
+  glutenFree: boolean;
+  vegan: boolean;
+  vegetarian: boolean;
+  verificationDate?: string;
+  verifiedBy?: string;
+};
+
+export type IngredientFunctionalRole = 
+  | 'Cocoa Base' | 'Fat' | 'Sweetener' | 'Milk Solid' | 'Flavour' 
+  | 'Colour' | 'Emulsifier' | 'Stabilizer' | 'Texture' | 'Crunch' 
+  | 'Filling' | 'Fruit' | 'Nut' | 'Spice' | 'Acidifier' | 'Preservative' 
+  | 'Decorative' | 'Moisture Controller' | 'Shelf-Life Support';
+
 export type Ingredient = {
   id: string;
   name: string;
+  sku?: string;
   category: string;
   subCategory?: string;
+  type?: string;
+  brand?: string;
+  supplierId?: string;
+  supplierName?: string;
+  supplierSku?: string;
+  origin?: string;
   description?: string;
   defaultUnit: 'mg' | 'g' | 'kg' | 'ml' | 'L' | 'pcs' | 'tbsp' | 'tsp' | 'pinch';
-  density?: number;
-  allergens?: string[];
+  
+  // Quality Parameters (Category Dependent)
+  cocoaPercent?: number;
+  fatPercent?: number;
+  sugarPercent?: number;
+  milkSolidsPercent?: number;
+  moisturePercent?: number;
+  brix?: number;
+  ph?: number;
+  waterActivity?: number;
+  meltingPoint?: number;
+  
+  // Functional & Safety
+  functionalRoles?: IngredientFunctionalRole[];
+  allergens: AllergenMatrix;
+  
+  // Storage & Logistics
+  storageCondition?: 'Ambient' | 'Cool & Dry' | 'Refrigerated' | 'Frozen' | 'Temp Controlled';
+  minTemp?: number;
+  maxTemp?: number;
+  shelfLifeDays?: number;
+  
+  // Costing
   purchasePrice?: number;
   purchaseQuantity?: number;
   purchaseUnit?: string;
+  wastagePercent?: number;
+  
   isActive: boolean;
   isFavourite?: boolean;
   createdAt: string;
   updatedAt: string;
+  updatedBy?: string;
 };
 
 export type RecipeIngredient = {

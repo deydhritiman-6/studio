@@ -3,20 +3,41 @@
   "entities": {
     "Ingredient": {
       "title": "Ingredient",
-      "description": "A master ingredient in the library.",
+      "description": "A professional-grade artisan chocolate ingredient specification.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
+        "sku": { "type": "string" },
         "category": { "type": "string" },
         "subCategory": { "type": "string" },
-        "description": { "type": "string" },
+        "brand": { "type": "string" },
+        "supplierId": { "type": "string" },
+        "supplierName": { "type": "string" },
+        "origin": { "type": "string" },
         "defaultUnit": { "type": "string", "enum": ["mg", "g", "kg", "ml", "L", "pcs", "tbsp", "tsp", "pinch"] },
-        "density": { "type": "number", "description": "g/ml for volume-to-weight conversions" },
-        "allergens": { "type": "array", "items": { "type": "string" } },
+        "cocoaPercent": { "type": "number" },
+        "fatPercent": { "type": "number" },
+        "moisturePercent": { "type": "number" },
+        "brix": { "type": "number" },
+        "ph": { "type": "number" },
+        "functionalRoles": { "type": "array", "items": { "type": "string" } },
+        "allergens": {
+          "type": "object",
+          "properties": {
+            "milk": { "type": "string" },
+            "egg": { "type": "string" },
+            "treeNuts": { "type": "string" },
+            "peanuts": { "type": "string" },
+            "soy": { "type": "string" },
+            "wheat": { "type": "string" },
+            "vegan": { "type": "boolean" },
+            "glutenFree": { "type": "boolean" }
+          }
+        },
+        "storageCondition": { "type": "string" },
+        "shelfLifeDays": { "type": "number" },
         "purchasePrice": { "type": "number" },
-        "purchaseQuantity": { "type": "number" },
-        "purchaseUnit": { "type": "string" },
         "isActive": { "type": "boolean" },
         "isFavourite": { "type": "boolean" },
         "createdAt": { "type": "string" },
@@ -34,19 +55,10 @@
         "code": { "type": "string" },
         "associatedProductId": { "type": "string" },
         "productName": { "type": "string" },
-        "chocolateType": { "type": "string" },
         "currentVersion": { "type": "string" },
         "status": { "type": "string", "enum": ["Draft", "Testing", "Approved", "Published", "Archived"] },
-        "difficulty": { "type": "string", "enum": ["Easy", "Intermediate", "Professional", "Master"] },
-        "prepTime": { "type": "number" },
-        "processTime": { "type": "number" },
         "batchSize": { "type": "number" },
         "batchUnit": { "type": "string" },
-        "yield": { "type": "number" },
-        "yieldUnit": { "type": "string" },
-        "shortDescription": { "type": "string" },
-        "detailedDescription": { "type": "string" },
-        "internalNotes": { "type": "string" },
         "ingredients": {
           "type": "array",
           "items": {
@@ -57,9 +69,6 @@
               "quantity": { "type": "number" },
               "unit": { "type": "string" },
               "percentage": { "type": "number" },
-              "preparation": { "type": "string" },
-              "stage": { "type": "string" },
-              "notes": { "type": "string" },
               "order": { "type": "number" }
             }
           }
@@ -73,68 +82,14 @@
               "title": { "type": "string" },
               "instructions": { "type": "string" },
               "temperature": { "type": "number" },
-              "tempUnit": { "type": "string", "enum": ["C", "F"] },
-              "time": { "type": "number" },
-              "equipment": { "type": "string" },
               "order": { "type": "number" }
             }
           }
         },
         "allergens": { "type": "array", "items": { "type": "string" } },
-        "totalCost": { "type": "number" },
-        "costPer100g": { "type": "number" },
-        "updatedBy": { "type": "string" },
         "updatedAt": { "type": "string" }
       },
       "required": ["name", "status", "batchSize"]
-    },
-    "Vendor": {
-      "title": "Vendor",
-      "description": "A supplier for ingredients and materials.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "contactPerson": { "type": "string" },
-        "email": { "type": "string" },
-        "phone": { "type": "string" },
-        "address": { "type": "string" },
-        "categories": { "type": "array", "items": { "type": "string" } },
-        "status": { "type": "string", "enum": ["Active", "Inactive"] },
-        "createdAt": { "type": "string" },
-        "updatedAt": { "type": "string" }
-      },
-      "required": ["name", "status"]
-    },
-    "MaterialPurchase": {
-      "title": "Material Purchase",
-      "description": "A record of purchasing raw materials or ingredients.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "purchaseDate": { "type": "string" },
-        "vendorId": { "type": "string" },
-        "vendorName": { "type": "string" },
-        "invoiceNumber": { "type": "string" },
-        "totalAmount": { "type": "number" },
-        "status": { "type": "string", "enum": ["Ordered", "Received", "Cancelled"] },
-        "items": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "ingredientId": { "type": "string" },
-              "name": { "type": "string" },
-              "quantity": { "type": "number" },
-              "unit": { "type": "string" },
-              "price": { "type": "number" }
-            }
-          }
-        },
-        "createdAt": { "type": "string" },
-        "updatedAt": { "type": "string" }
-      },
-      "required": ["purchaseDate", "vendorId", "totalAmount"]
     }
   },
   "auth": {
@@ -143,47 +98,11 @@
   "firestore": {
     "/ingredients/{ingredientId}": {
       "schema": "#/backend/entities/Ingredient",
-      "description": "Master library of artisan ingredients."
+      "description": "Master intelligence library of artisan components."
     },
     "/recipes/{recipeId}": {
       "schema": "#/backend/entities/Recipe",
-      "description": "Collection of professional chocolate recipes."
-    },
-    "/customers/{customerId}": {
-      "schema": "#/backend/entities/Customer",
-      "description": "Collection of customer profiles."
-    },
-    "/users/{userId}": {
-      "schema": "#/backend/entities/UserAccount",
-      "description": "Collection of staff user accounts."
-    },
-    "/orders/{orderId}": {
-      "schema": "#/backend/entities/Order",
-      "description": "Collection of customer orders."
-    },
-    "/products/{productId}": {
-      "schema": "#/backend/entities/Product",
-      "description": "Collection of chocolate products."
-    },
-    "/inventory/{itemId}": {
-      "schema": "#/backend/entities/InventoryItem",
-      "description": "Collection of inventory items."
-    },
-    "/distributors/{distributorId}": {
-      "schema": "#/backend/entities/Distributor",
-      "description": "Collection of distributors."
-    },
-    "/quotations/{quotationId}": {
-      "schema": "#/backend/entities/Quotation",
-      "description": "Collection of customer quotations."
-    },
-    "/vendors/{vendorId}": {
-      "schema": "#/backend/entities/Vendor",
-      "description": "Collection of material suppliers."
-    },
-    "/material-purchases/{purchaseId}": {
-      "schema": "#/backend/entities/MaterialPurchase",
-      "description": "Collection of raw material purchase records."
+      "description": "Collection of professional chocolate formulations."
     }
   }
 }
