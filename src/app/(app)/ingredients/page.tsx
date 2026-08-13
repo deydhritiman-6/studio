@@ -32,7 +32,9 @@ import {
   Layers,
   FlaskConical,
   CircleCheck,
-  Keyboard
+  Keyboard,
+  History,
+  FileText
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -124,7 +126,7 @@ export const ARTISAN_TAXONOMY = {
       return ['Fruit Component'];
     }
   },
-  'Spices & Botanicals': {
+  'Indian Spices & Botanical Ingredients': {
     subcategories: ['Whole / Ground Spices', 'Extracts', 'Floral Ingredients', 'Indian Specialty Ingredients'],
     forms: ['Whole', 'Ground', 'Liquid Extract', 'Paste', 'Petals'],
     roleMapping: (sub: string) => {
@@ -265,6 +267,9 @@ const ingredientSchema = z.object({
   
   storageCondition: z.enum(['Ambient', 'Cool & Dry', 'Refrigerated', 'Frozen', 'Temp Controlled', 'Humidity Controlled']).default('Ambient'),
   shelfLifeDays: z.coerce.number().optional(),
+  batchNumber: z.string().optional(),
+  lotNumber: z.string().optional(),
+  expiryDate: z.string().optional(),
   
   purchasePrice: z.coerce.number().min(0).optional(),
   purchaseQuantity: z.coerce.number().min(0).optional(),
@@ -286,7 +291,6 @@ export default function IngredientLibraryPage() {
   const [activeTab, setActiveTab] = useState('basic');
   const [isSaving, setIsSaving] = useState(false);
 
-  // Mode states for dropdown vs custom input
   const [categoryMode, setCategoryMode] = useState<'select' | 'custom'>('select');
   const [subCategoryMode, setSubCategoryMode] = useState<'select' | 'custom'>('select');
   
@@ -320,25 +324,6 @@ export default function IngredientLibraryPage() {
   const watchForm = useWatch({ control: form.control, name: 'ingredientForm' });
   const watchSecondaryRoles = useWatch({ control: form.control, name: 'secondaryRoles' }) || [];
 
-  // Cascading update logic
-  useEffect(() => {
-    // Only reset if we are in select mode and the new category is standard
-    if (categoryMode === 'select' && MASTER_CATEGORIES.includes(watchCategory)) {
-        form.setValue('subCategory', '');
-        form.setValue('ingredientForm', '');
-        form.setValue('primaryRole', '');
-        form.setValue('secondaryRoles', []);
-    }
-  }, [watchCategory, form, categoryMode]);
-
-  useEffect(() => {
-    if (subCategoryMode === 'select') {
-        form.setValue('ingredientForm', '');
-        form.setValue('primaryRole', '');
-        form.setValue('secondaryRoles', []);
-    }
-  }, [watchSubCategory, form, subCategoryMode]);
-
   const taxonomyConfig = useMemo(() => {
     return (ARTISAN_TAXONOMY as any)[watchCategory] || { subcategories: [], forms: [], roleMapping: () => [] };
   }, [watchCategory]);
@@ -358,12 +343,11 @@ export default function IngredientLibraryPage() {
         }
       } as any);
 
-      // Detect if category/subcategory should be in custom mode
       const isCustomCat = !MASTER_CATEGORIES.includes(editingIngredient.category);
       setCategoryMode(isCustomCat ? 'custom' : 'select');
       
       const standardSubs = (ARTISAN_TAXONOMY as any)[editingIngredient.category]?.subcategories || [];
-      const isCustomSub = !standardSubs.includes(editingIngredient.subCategory);
+      const isCustomSub = !standardSubs.includes(editingIngredient.subCategory || '');
       setSubCategoryMode(isCustomSub ? 'custom' : 'select');
 
     } else {
@@ -590,14 +574,23 @@ export default function IngredientLibraryPage() {
                                     type="button" 
                                     variant="ghost" 
                                     size="sm" 
-                                    className="h-6 text-[8px] font-black uppercase tracking-widest text-primary"
-                                    onClick={() => setCategoryMode(categoryMode === 'select' ? 'custom' : 'select')}
+                                    className="h-6 text-[8px] font-black uppercase tracking-widest text-primary hover:bg-primary/10"
+                                    onClick={() => {
+                                      setCategoryMode(categoryMode === 'select' ? 'custom' : 'select');
+                                    }}
                                 >
-                                    {categoryMode === 'select' ? <><Keyboard className="h-3 w-3 mr-1" /> Custom Mode</> : <><Layers className="h-3 w-3 mr-1" /> Selection Mode</>}
+                                    {categoryMode === 'select' ? <><Keyboard className="h-3 w-3 mr-1" /> Use Custom Input</> : <><Layers className="h-3 w-3 mr-1" /> Use Standard Menu</>}
                                 </Button>
                             </div>
                             {categoryMode === 'select' ? (
-                                <Select onValueChange={field.onChange} value={field.value}>
+                                <Select onValueChange={(val) => {
+                                  field.onChange(val);
+                                  // Reset child fields when selecting standard category via dropdown
+                                  form.setValue('subCategory', '');
+                                  form.setValue('ingredientForm', '');
+                                  form.setValue('primaryRole', '');
+                                  form.setValue('secondaryRoles', []);
+                                }} value={field.value}>
                                     <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
                                     <SelectContent>{MASTER_CATEGORIES.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent>
                                 </Select>
@@ -618,15 +611,20 @@ export default function IngredientLibraryPage() {
                                     type="button" 
                                     variant="ghost" 
                                     size="sm" 
-                                    className="h-6 text-[8px] font-black uppercase tracking-widest text-primary"
+                                    className="h-6 text-[8px] font-black uppercase tracking-widest text-primary hover:bg-primary/10"
                                     onClick={() => setSubCategoryMode(subCategoryMode === 'select' ? 'custom' : 'select')}
                                 >
-                                    {subCategoryMode === 'select' ? <><Keyboard className="h-3 w-3 mr-1" /> Custom Mode</> : <><Layers className="h-3 w-3 mr-1" /> Selection Mode</>}
+                                    {subCategoryMode === 'select' ? <><Keyboard className="h-3 w-3 mr-1" /> Use Custom Input</> : <><Layers className="h-3 w-3 mr-1" /> Use Standard Menu</>}
                                 </Button>
                             </div>
                             {subCategoryMode === 'select' ? (
-                                <Select onValueChange={field.onChange} value={field.value} disabled={!watchCategory || categoryMode === 'custom'}>
-                                    <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Select type..." /></SelectTrigger></FormControl>
+                                <Select onValueChange={(val) => {
+                                  field.onChange(val);
+                                  form.setValue('ingredientForm', '');
+                                  form.setValue('primaryRole', '');
+                                  form.setValue('secondaryRoles', []);
+                                }} value={field.value} disabled={!watchCategory || categoryMode === 'custom'}>
+                                    <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder={!watchCategory ? "Select Category First" : "Select type..."} /></SelectTrigger></FormControl>
                                     <SelectContent>{taxonomyConfig.subcategories.map((sub: string) => <SelectItem key={sub} value={sub}>{sub}</SelectItem>)}</SelectContent>
                                 </Select>
                             ) : (
@@ -638,7 +636,11 @@ export default function IngredientLibraryPage() {
                        <FormField control={form.control} name="ingredientForm" render={({ field }) => (
                          <FormItem>
                             <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">Ingredient Form (Physical State)</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value} disabled={!watchSubCategory}>
+                            <Select onValueChange={(val) => {
+                                field.onChange(val);
+                                form.setValue('primaryRole', '');
+                                form.setValue('secondaryRoles', []);
+                            }} value={field.value} disabled={!watchSubCategory}>
                                <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Select form..." /></SelectTrigger></FormControl>
                                <SelectContent>{taxonomyConfig.forms.map((f: string) => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
                             </Select>
@@ -852,6 +854,26 @@ export default function IngredientLibraryPage() {
                                 </FormItem>
                               )} />
                            </div>
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <FormField control={form.control} name="batchNumber" render={({ field }) => (
+                                <FormItem>
+                                   <FormLabel className="uppercase text-[9px] font-black text-stone-400">Current Batch #</FormLabel>
+                                   <FormControl><Input className="h-10 rounded-xl" {...field} /></FormControl>
+                                </FormItem>
+                              )} />
+                              <FormField control={form.control} name="lotNumber" render={({ field }) => (
+                                <FormItem>
+                                   <FormLabel className="uppercase text-[9px] font-black text-stone-400">Lot Identifier</FormLabel>
+                                   <FormControl><Input className="h-10 rounded-xl" {...field} /></FormControl>
+                                </FormItem>
+                              )} />
+                           </div>
+                           <FormField control={form.control} name="expiryDate" render={({ field }) => (
+                              <FormItem>
+                                 <FormLabel className="uppercase text-[9px] font-black text-stone-400">Expiry Date</FormLabel>
+                                 <FormControl><Input type="date" className="h-10 rounded-xl" {...field} /></FormControl>
+                              </FormItem>
+                           )} />
                         </div>
 
                         <div className="space-y-8">
