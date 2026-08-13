@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -11,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import type { Ingredient, AllergenStatus, IngredientFunctionalRole } from '@/lib/types';
+import type { Ingredient, AllergenStatus } from '@/lib/types';
 import { 
   MoreHorizontal, 
   PlusCircle, 
@@ -29,7 +30,9 @@ import {
   Thermometer,
   Zap,
   Save,
-  Layers
+  Layers,
+  FlaskConical,
+  CircleCheck
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -47,43 +50,172 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // --- Artisan Taxonomy Configuration ---
 
-export const ARTISAN_CATEGORIES = [
-  'Cocoa & Chocolate',
-  'Dairy & Milk',
-  'Sweeteners',
-  'Nuts & Tree Nuts',
-  'Peanuts',
-  'Seeds',
-  'Fruits & Fruit Preparations',
-  'Indian Spices & Botanicals',
-  'Coffee & Tea',
-  'Flavourings',
-  'Emulsifiers & Functional Ingredients',
-  'Ganache & Fillings',
-  'Inclusions & Texture',
-  'Colours & Decoration',
-  'Salt & Balancers',
-  'Specialty Flavour Components'
-] as const;
-
-export const CATEGORY_ROLE_MAPPING: Record<string, string[]> = {
-  'Cocoa & Chocolate': ['Chocolate Base', 'Cocoa Component', 'Cocoa Fat', 'Chocolate Inclusion'],
-  'Dairy & Milk': ['Milk Solid', 'Dairy Fat', 'Cream Component'],
-  'Sweeteners': ['Sweetener', 'Humectant', 'Texture Modifier'],
-  'Nuts & Tree Nuts': ['Nut Inclusion', 'Nut Paste', 'Nut Praline', 'Nut Butter'],
-  'Peanuts': ['Peanut Inclusion', 'Peanut Paste', 'Peanut Praline', 'Peanut Butter'],
-  'Seeds': ['Seed Inclusion', 'Seed Paste', 'Texture'],
-  'Fruits & Fruit Preparations': ['Fruit Inclusion', 'Fruit Puree', 'Fruit Concentrate', 'Fruit Gel', 'Fruit Powder'],
-  'Indian Spices & Botanicals': ['Flavour', 'Aroma', 'Botanical Inclusion'],
-  'Coffee & Tea': ['Flavour', 'Extract', 'Inclusion'],
-  'Flavourings': ['Flavour', 'Aroma'],
-  'Emulsifiers & Functional Ingredients': ['Emulsifier', 'Stabilizer', 'Thickener', 'Gelling Agent'],
-  'Ganache & Fillings': ['Filling Base', 'Ganache Stabilizer', 'Inclusion'],
-  'Inclusions & Texture': ['Crunch', 'Texture', 'Inclusion', 'Decoration'],
-  'Colours & Decoration': ['Colour', 'Decoration', 'Surface Finish'],
-  'Salt & Balancers': ['Salt Component', 'Flavour Enhancer', 'Acidity Regulator'],
-  'Specialty Flavour Components': ['Alcohol Component', 'Specialty Extract', 'Restricted Flavour']
+export const ARTISAN_TAXONOMY = {
+  'Cocoa & Chocolate': {
+    subcategories: ['Cocoa Beans / Cacao Nibs', 'Cocoa Mass / Cocoa Liquor', 'Cocoa Powder', 'Cocoa Butter', 'Couverture Chocolate'],
+    forms: ['Raw', 'Roasted', 'Milled', 'Deodorized', 'Dark', 'Milk', 'White', 'Ruby', 'Blond'],
+    roleMapping: (sub: string, form: string) => {
+      if (sub === 'Cocoa Beans / Cacao Nibs') return ['Cocoa Flavour Component', 'Cocoa Texture Inclusion', 'Roasted Cocoa Inclusion', 'Crunch Component'];
+      if (sub === 'Cocoa Mass / Cocoa Liquor') return ['Cocoa Base', 'Cocoa Solids Component', 'Cocoa Flavour Component'];
+      if (sub === 'Cocoa Powder') return ['Cocoa Solids', 'Cocoa Flavour', 'Colour Component'];
+      if (sub === 'Cocoa Butter') return ['Chocolate Fat Phase', 'Fluidity Adjustment', 'Texture Modifier', 'Crystal Structure Component'];
+      if (sub === 'Couverture Chocolate') return ['Dark Chocolate Base', 'Milk Chocolate Base', 'White Chocolate Base', 'Ruby Chocolate Base', 'Blond Chocolate Base'];
+      return ['Chocolate Component'];
+    }
+  },
+  'Dairy & Milk': {
+    subcategories: ['Milk Powder', 'Whey Powder', 'Butter', 'Cream', 'Milk Crumb'],
+    forms: ['Powdered', 'Liquid', 'Solid', 'Concentrated', 'Caramelized'],
+    roleMapping: (sub: string) => {
+      if (sub === 'Milk Powder') return ['Milk Solids', 'Dairy Flavour Component', 'Creaminess Component'];
+      if (sub === 'Whey Powder') return ['Whey Solids', 'Dairy Flavour Component'];
+      if (sub === 'Butter') return ['Dairy Fat', 'Creaminess Component', 'Flavour Component'];
+      if (sub === 'Cream') return ['Dairy Liquid Phase', 'Ganache Base', 'Creaminess Component'];
+      if (sub === 'Milk Crumb') return ['Milk Chocolate Component', 'Caramelized Dairy Component', 'Flavour Component'];
+      return ['Dairy Component'];
+    }
+  },
+  'Sweeteners': {
+    subcategories: ['Granulated / Caster / Icing Sugar', 'Jaggery / Palm Sugar / Coconut Sugar', 'Glucose / Glucose Syrup', 'Invert Sugar', 'Honey'],
+    forms: ['Crystalline', 'Syrup', 'Liquid', 'Blocks'],
+    roleMapping: (sub: string) => {
+      if (sub === 'Granulated / Caster / Icing Sugar') return ['Primary Sweetener', 'Bulk Sweetener', 'Texture Modifier'];
+      if (sub === 'Jaggery / Palm Sugar / Coconut Sugar') return ['Primary Sweetener', 'Caramel / Molasses Flavour', 'Natural Sweetening Component'];
+      if (sub === 'Glucose / Glucose Syrup') return ['Sweetener', 'Humectant', 'Texture Modifier', 'Crystallization Control'];
+      if (sub === 'Invert Sugar') return ['Sweetener', 'Humectant', 'Crystallization Control', 'Texture Modifier'];
+      if (sub === 'Honey') return ['Sweetener', 'Humectant', 'Flavour Component'];
+      return ['Sweetener'];
+    }
+  },
+  'Nuts & Tree Nuts': {
+    subcategories: ['Almond', 'Hazelnut', 'Pistachio', 'Cashew', 'Walnut', 'Pecan', 'Macadamia', 'Brazil Nut', 'Pine Nut', 'Coconut'],
+    forms: ['Raw', 'Roasted', 'Caramelized', 'Powdered', 'Paste', 'Butter', 'Praline', 'Whole', 'Chopped', 'Sliced'],
+    roleMapping: (sub: string, form: string) => {
+      if (form === 'Paste') return ['Nut Paste', 'Fat Phase', 'Flavour Component', 'Filling Component'];
+      if (form === 'Butter') return ['Nut Fat Component', 'Filling Component', 'Flavour Component'];
+      if (form === 'Praline') return ['Praline Component', 'Filling Component', 'Flavour Component', 'Crunch Component'];
+      if (form === 'Powdered') return ['Nut Solids', 'Flavour Component', 'Texture Component'];
+      return ['Inclusion', 'Crunch Component', 'Decoration'];
+    }
+  },
+  'Peanut': {
+    subcategories: ['Peanut'],
+    forms: ['Whole', 'Roasted', 'Powdered', 'Butter', 'Praline', 'Paste'],
+    roleMapping: (sub: string, form: string) => {
+      if (form === 'Powdered') return ['Peanut Solids', 'Flavour Component', 'Texture Component'];
+      if (form === 'Butter') return ['Peanut Fat Component', 'Filling Component', 'Flavour Component'];
+      if (form === 'Praline') return ['Praline Component', 'Filling Component', 'Crunch Component'];
+      return ['Inclusion', 'Crunch', 'Decoration'];
+    }
+  },
+  'Fruits & Fruit Preparations': {
+    subcategories: ['Fresh / Frozen Fruit', 'Dried Fruit', 'Freeze-Dried Fruit', 'Fruit Powder', 'Fruit Puree', 'Fruit Concentrate', 'Fruit Gel', 'Candied Fruit'],
+    forms: ['Whole', 'Pieces', 'Powder', 'Puree', 'Liquid', 'Gel'],
+    roleMapping: (sub: string) => {
+      if (sub === 'Fresh / Frozen Fruit') return ['Fruit Inclusion', 'Flavour Component'];
+      if (sub === 'Dried Fruit') return ['Fruit Inclusion', 'Texture Component', 'Decoration'];
+      if (sub === 'Freeze-Dried Fruit') return ['Fruit Inclusion', 'Flavour Component', 'Decoration', 'Texture Component'];
+      if (sub === 'Fruit Powder') return ['Fruit Solids', 'Flavour Component', 'Colour Component'];
+      if (sub === 'Fruit Puree') return ['Fruit Phase', 'Filling Component', 'Flavour Component'];
+      if (sub === 'Fruit Concentrate') return ['Flavour Component', 'Fruit Solids Component', 'Sweetness / Acidity Component'];
+      if (sub === 'Fruit Gel') return ['Gel Filling', 'Fruit Flavour Component', 'Centre Component'];
+      if (sub === 'Candied Fruit') return ['Fruit Inclusion', 'Decoration', 'Flavour Component'];
+      return ['Fruit Component'];
+    }
+  },
+  'Spices & Botanicals': {
+    subcategories: ['Whole / Ground Spices', 'Extracts', 'Floral Ingredients', 'Indian Specialty Ingredients'],
+    forms: ['Whole', 'Ground', 'Liquid Extract', 'Paste', 'Petals'],
+    roleMapping: (sub: string) => {
+      if (sub === 'Whole / Ground Spices') return ['Flavour', 'Aroma', 'Inclusion'];
+      if (sub === 'Extracts') return ['Flavour Extract', 'Aroma Extract'];
+      if (sub === 'Floral Ingredients') return ['Floral Flavour', 'Aroma', 'Decorative Inclusion'];
+      if (sub === 'Indian Specialty Ingredients') return ['Floral Filling', 'Flavour Component', 'Filling Inclusion'];
+      return ['Spice / Botanical Component'];
+    }
+  },
+  'Coffee & Tea': {
+    subcategories: ['Coffee Beans / Ground Coffee', 'Instant Coffee', 'Coffee Extract', 'Tea / Tea Powder', 'Matcha'],
+    forms: ['Whole Beans', 'Ground', 'Powder', 'Extract', 'Matcha Powder'],
+    roleMapping: (sub: string) => {
+      if (sub === 'Coffee Beans / Ground Coffee') return ['Coffee Inclusion', 'Flavour Component', 'Aroma Component'];
+      if (sub === 'Instant Coffee') return ['Coffee Flavour', 'Coffee Solids'];
+      if (sub === 'Coffee Extract') return ['Coffee Flavour', 'Aroma'];
+      if (sub === 'Tea / Tea Powder') return ['Tea Flavour', 'Botanical Inclusion'];
+      if (sub === 'Matcha') return ['Tea Flavour', 'Colour Component', 'Botanical Solids'];
+      return ['Beverage Flavour Component'];
+    }
+  },
+  'Flavourings': {
+    subcategories: ['Oil-Soluble Flavour', 'Water-Soluble Flavour', 'Natural Extract', 'Artificial / Nature-Identical Flavour'],
+    forms: ['Liquid', 'Powder', 'Paste'],
+    roleMapping: (sub: string) => {
+      if (sub === 'Oil-Soluble Flavour') return ['Fat-Phase Flavour'];
+      if (sub === 'Water-Soluble Flavour') return ['Water-Phase Flavour'];
+      if (sub === 'Natural Extract') return ['Natural Flavour', 'Aroma'];
+      if (sub === 'Artificial / Nature-Identical Flavour') return ['Flavour', 'Aroma'];
+      return ['Flavour Component'];
+    }
+  },
+  'Emulsifiers & Functional Ingredients': {
+    subcategories: ['Lecithin', 'PGPR', 'Pectin', 'Gelatin', 'Xanthan / Guar Gum'],
+    forms: ['Liquid', 'Granular', 'Powder', 'Sheets'],
+    roleMapping: (sub: string) => {
+      if (sub === 'Lecithin') return ['Emulsifier', 'Viscosity Management'];
+      if (sub === 'PGPR') return ['Viscosity Management', 'Flowability Adjustment'];
+      if (sub === 'Pectin' || sub === 'Gelatin') return ['Gel Formation', 'Structure'];
+      if (sub.includes('Gum')) return ['Thickening', 'Stabilization'];
+      return ['Functional Component'];
+    }
+  },
+  'Filling Components': {
+    subcategories: ['Ganache Components', 'Caramel', 'Dulce de Leche', 'Gianduja', 'Praline'],
+    forms: ['Paste', 'Liquid', 'Fat Phase', 'Finished Filling'],
+    roleMapping: (sub: string) => {
+      if (sub === 'Ganache Components') return ['Ganache Fat Phase', 'Ganache Liquid Phase', 'Ganache Sweetener', 'Ganache Flavour'];
+      if (sub === 'Caramel') return ['Caramel Filling', 'Flavour Component', 'Texture Component'];
+      if (sub === 'Dulce de Leche') return ['Dairy Filling', 'Caramel Flavour'];
+      if (sub === 'Gianduja') return ['Nut-Chocolate Filling', 'Fat Phase', 'Flavour Component'];
+      if (sub === 'Praline') return ['Nut Praline Filling', 'Crunch Component', 'Flavour Component'];
+      return ['Filling Base'];
+    }
+  },
+  'Inclusions & Texture': {
+    subcategories: ['Crisps / Puffed Ingredients', 'Biscuit / Wafer', 'Feuilletine', 'Honeycomb / Toffee', 'Chocolate Pieces'],
+    forms: ['Pieces', 'Puffed', 'Flakes', 'Shards'],
+    roleMapping: (sub: string) => {
+      if (sub === 'Crisps / Puffed Ingredients') return ['Crunch', 'Texture Inclusion'];
+      if (sub === 'Biscuit / Wafer') return ['Crunch', 'Layered Inclusion', 'Texture Component'];
+      if (sub === 'Feuilletine') return ['Crunch', 'Layered Texture'];
+      if (sub === 'Honeycomb / Toffee') return ['Crunch', 'Caramel Texture'];
+      if (sub === 'Chocolate Pieces') return ['Chocolate Inclusion', 'Texture Component'];
+      return ['Texture Component'];
+    }
+  },
+  'Colours & Decoration': {
+    subcategories: ['Cocoa Butter Colour', 'Powder Colour', 'Edible Metallic', 'Sprinkles / Sugar Decorations'],
+    forms: ['Liquid', 'Powder', 'Dust', 'Solids'],
+    roleMapping: (sub: string) => {
+      if (sub === 'Cocoa Butter Colour') return ['Chocolate Surface Colour', 'Decoration'];
+      if (sub === 'Powder Colour') return ['Surface Decoration', 'Dry Colour Component'];
+      if (sub === 'Edible Metallic') return ['Surface Decoration', 'Luxury Finish'];
+      if (sub === 'Sprinkles / Sugar Decorations') return ['Decoration', 'Texture Inclusion'];
+      return ['Decorative Component'];
+    }
+  },
+  'Salt': {
+    subcategories: ['Fine Salt', 'Fleur de Sel / Flake Salt', 'Smoked Salt'],
+    forms: ['Fine Powder', 'Flakes', 'Crystals'],
+    roleMapping: (sub: string) => {
+      if (sub === 'Fine Salt') return ['Flavour Balancing', 'Sweetness Enhancement'];
+      if (sub === 'Fleur de Sel / Flake Salt') return ['Flavour Balancing', 'Surface Decoration', 'Texture Contrast'];
+      if (sub === 'Smoked Salt') return ['Flavour Component', 'Aroma Component'];
+      return ['Flavour Balancer'];
+    }
+  }
 };
+
+const MASTER_CATEGORIES = Object.keys(ARTISAN_TAXONOMY);
 
 const ALLERGENS: (keyof Ingredient['allergens'])[] = [
   'milk', 'egg', 'fish', 'crustacean', 'treeNuts', 'peanuts', 'wheat', 'soy', 'sesame'
@@ -111,14 +243,16 @@ const ingredientSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   sku: z.string().optional(),
   category: z.string().min(1, 'Category is required'),
-  subCategory: z.string().optional(),
+  subCategory: z.string().min(1, 'Subcategory is required'),
+  ingredientForm: z.string().min(1, 'Form is required'),
+  primaryRole: z.string().min(1, 'Primary formulation role is required'),
+  secondaryRoles: z.array(z.string()).default([]),
   brand: z.string().optional(),
   supplierName: z.string().optional(),
   origin: z.string().optional(),
   defaultUnit: z.enum(['mg', 'g', 'kg', 'ml', 'L', 'pcs', 'tbsp', 'tsp', 'pinch']),
   description: z.string().optional(),
   
-  // Technical Params
   cocoaPercent: z.coerce.number().optional(),
   fatPercent: z.coerce.number().optional(),
   sugarPercent: z.coerce.number().optional(),
@@ -126,10 +260,9 @@ const ingredientSchema = z.object({
   brix: z.coerce.number().optional(),
   ph: z.coerce.number().optional(),
   
-  functionalRoles: z.array(z.string()).default([]),
   allergens: allergenMatrixSchema,
   
-  storageCondition: z.enum(['Ambient', 'Cool & Dry', 'Refrigerated', 'Frozen', 'Temp Controlled']).default('Ambient'),
+  storageCondition: z.enum(['Ambient', 'Cool & Dry', 'Refrigerated', 'Frozen', 'Temp Controlled', 'Humidity Controlled']).default('Ambient'),
   shelfLifeDays: z.coerce.number().optional(),
   
   purchasePrice: z.coerce.number().min(0).optional(),
@@ -164,9 +297,11 @@ export default function IngredientLibraryPage() {
       name: '',
       category: 'Cocoa & Chocolate',
       subCategory: '',
+      ingredientForm: '',
+      primaryRole: '',
+      secondaryRoles: [],
       defaultUnit: 'g',
       isActive: true,
-      functionalRoles: [],
       allergens: {
         milk: 'Unknown', egg: 'Unknown', fish: 'Unknown', crustacean: 'Unknown',
         treeNuts: 'Unknown', peanuts: 'Unknown', wheat: 'Unknown', soy: 'Unknown', sesame: 'Unknown',
@@ -176,29 +311,37 @@ export default function IngredientLibraryPage() {
   });
 
   const watchCategory = useWatch({ control: form.control, name: 'category' });
-  const watchFunctionalRoles = useWatch({ control: form.control, name: 'functionalRoles' }) || [];
+  const watchSubCategory = useWatch({ control: form.control, name: 'subCategory' });
+  const watchForm = useWatch({ control: form.control, name: 'ingredientForm' });
+  const watchSecondaryRoles = useWatch({ control: form.control, name: 'secondaryRoles' }) || [];
 
-  // Dynamic Role Validation Effect
+  // Cascading update logic
   useEffect(() => {
-    const validRoles = CATEGORY_ROLE_MAPPING[watchCategory] || [];
-    const currentRoles = form.getValues('functionalRoles') || [];
-    const filteredRoles = currentRoles.filter(role => validRoles.includes(role));
-    
-    if (filteredRoles.length !== currentRoles.length) {
-      form.setValue('functionalRoles', filteredRoles);
-      toast({
-        title: "Roles Re-validated",
-        description: `Some functional roles were removed as they are not applicable to the ${watchCategory} category.`,
-        variant: "default"
-      });
-    }
-  }, [watchCategory, form, toast]);
+    form.setValue('subCategory', '');
+    form.setValue('ingredientForm', '');
+    form.setValue('primaryRole', '');
+    form.setValue('secondaryRoles', []);
+  }, [watchCategory, form]);
+
+  useEffect(() => {
+    form.setValue('ingredientForm', '');
+    form.setValue('primaryRole', '');
+    form.setValue('secondaryRoles', []);
+  }, [watchSubCategory, form]);
+
+  const taxonomyConfig = useMemo(() => {
+    return (ARTISAN_TAXONOMY as any)[watchCategory] || { subcategories: [], forms: [], roleMapping: () => [] };
+  }, [watchCategory]);
+
+  const availableRoles = useMemo(() => {
+    return taxonomyConfig.roleMapping(watchSubCategory, watchForm);
+  }, [taxonomyConfig, watchSubCategory, watchForm]);
 
   useEffect(() => {
     if (editingIngredient) {
       form.reset({
         ...editingIngredient,
-        functionalRoles: editingIngredient.functionalRoles || [],
+        secondaryRoles: editingIngredient.secondaryRoles || [],
         allergens: {
           ...editingIngredient.allergens,
           verificationDate: editingIngredient.allergens.verificationDate || '',
@@ -209,9 +352,11 @@ export default function IngredientLibraryPage() {
         name: '', 
         category: 'Cocoa & Chocolate', 
         subCategory: '',
+        ingredientForm: '',
+        primaryRole: '',
+        secondaryRoles: [],
         defaultUnit: 'g', 
         isActive: true, 
-        functionalRoles: [],
         allergens: {
           milk: 'Unknown', egg: 'Unknown', fish: 'Unknown', crustacean: 'Unknown',
           treeNuts: 'Unknown', peanuts: 'Unknown', wheat: 'Unknown', soy: 'Unknown', sesame: 'Unknown',
@@ -275,10 +420,6 @@ export default function IngredientLibraryPage() {
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [ingredients, searchTerm, filterCategory]);
 
-  const availableRoles = useMemo(() => {
-    return CATEGORY_ROLE_MAPPING[watchCategory] || [];
-  }, [watchCategory]);
-
   if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>;
 
   return (
@@ -312,7 +453,7 @@ export default function IngredientLibraryPage() {
              </SelectTrigger>
              <SelectContent>
                <SelectItem value="all">All Artisan Categories</SelectItem>
-               {ARTISAN_CATEGORIES.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+               {MASTER_CATEGORIES.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
              </SelectContent>
            </Select>
         </div>
@@ -325,14 +466,14 @@ export default function IngredientLibraryPage() {
                   <TableHead className="p-6 w-12"></TableHead>
                   <TableHead className="p-6 uppercase text-[10px] font-black tracking-widest">Component Identity</TableHead>
                   <TableHead className="p-6 uppercase text-[10px] font-black tracking-widest">Classification</TableHead>
-                  <TableHead className="p-6 uppercase text-[10px] font-black tracking-widest">Supplier / Brand</TableHead>
+                  <TableHead className="p-6 uppercase text-[10px] font-black tracking-widest">Role (Primary)</TableHead>
                   <TableHead className="p-6 uppercase text-[10px] font-black tracking-widest text-center">Safety Icons</TableHead>
                   <TableHead className="p-6 uppercase text-[10px] font-black tracking-widest text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredIngredients.map((ing) => (
-                  <TableRow key={ing.id} className="group hover:bg-muted/5">
+                  <TableRow key={ing.id} className="group hover:bg-muted/5 transition-colors">
                     <TableCell className="p-6">
                       <button onClick={() => handleToggleFavourite(ing)} className={cn("transition-colors", ing.isFavourite ? "text-amber-500" : "text-stone-200 hover:text-amber-200")}>
                         <Star className={cn("h-5 w-5", ing.isFavourite && "fill-current")} />
@@ -349,13 +490,13 @@ export default function IngredientLibraryPage() {
                           <Badge variant="secondary" className="rounded-lg text-[9px] font-black uppercase tracking-tight bg-stone-100 text-stone-500 border-none w-fit">
                               {ing.category}
                           </Badge>
-                          {ing.subCategory && <p className="text-[8px] font-bold text-stone-400 uppercase tracking-widest ml-1">{ing.subCategory}</p>}
+                          <p className="text-[8px] font-bold text-stone-400 uppercase tracking-widest ml-1">{ing.subCategory} • {ing.ingredientForm}</p>
                        </div>
                     </TableCell>
                     <TableCell className="p-6">
-                       <div className="space-y-1">
-                          <p className="text-xs font-medium">{ing.supplierName || '---'}</p>
-                          <p className="text-[9px] text-stone-400 font-bold uppercase">{ing.brand || 'No Brand'}</p>
+                       <div className="flex items-center gap-2">
+                          <FlaskConical className="h-3 w-3 text-primary opacity-40" />
+                          <span className="text-[10px] font-bold text-stone-600">{ing.primaryRole || 'Not Specified'}</span>
                        </div>
                     </TableCell>
                     <TableCell className="p-6 text-center">
@@ -401,9 +542,10 @@ export default function IngredientLibraryPage() {
             <div className="px-8 pt-4 border-b bg-muted/30">
                <TabsList className="bg-transparent h-12 w-full justify-start gap-8">
                   <TabsTrigger value="basic" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none font-bold uppercase text-[10px] tracking-widest h-full">Basic Identity</TabsTrigger>
-                  <TabsTrigger value="technical" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none font-bold uppercase text-[10px] tracking-widest h-full">Technical Specs</TabsTrigger>
+                  <TabsTrigger value="formulation" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none font-bold uppercase text-[10px] tracking-widest h-full">Formulation Roles</TabsTrigger>
+                  <TabsTrigger value="technical" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none font-bold uppercase text-[10px] tracking-widest h-full">Quality Specs</TabsTrigger>
                   <TabsTrigger value="allergens" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none font-bold uppercase text-[10px] tracking-widest h-full text-rose-500">Safety & Allergens</TabsTrigger>
-                  <TabsTrigger value="commercial" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none font-bold uppercase text-[10px] tracking-widest h-full">Procurement & Storage</TabsTrigger>
+                  <TabsTrigger value="commercial" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none font-bold uppercase text-[10px] tracking-widest h-full">Logistics</TabsTrigger>
                </TabsList>
             </div>
 
@@ -424,19 +566,34 @@ export default function IngredientLibraryPage() {
                             <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">Master Category</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                                <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
-                               <SelectContent>{ARTISAN_CATEGORIES.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent>
+                               <SelectContent>{MASTER_CATEGORIES.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent>
+                            </Select>
+                         </FormItem>
+                       )} />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                       <FormField control={form.control} name="subCategory" render={({ field }) => (
+                         <FormItem>
+                            <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">Sub-Category (Type)</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value} disabled={!watchCategory}>
+                               <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Select type..." /></SelectTrigger></FormControl>
+                               <SelectContent>{taxonomyConfig.subcategories.map((sub: string) => <SelectItem key={sub} value={sub}>{sub}</SelectItem>)}</SelectContent>
+                            </Select>
+                         </FormItem>
+                       )} />
+                       <FormField control={form.control} name="ingredientForm" render={({ field }) => (
+                         <FormItem>
+                            <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">Ingredient Form (Physical State)</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value} disabled={!watchSubCategory}>
+                               <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Select form..." /></SelectTrigger></FormControl>
+                               <SelectContent>{taxonomyConfig.forms.map((f: string) => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
                             </Select>
                          </FormItem>
                        )} />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                       <FormField control={form.control} name="subCategory" render={({ field }) => (
-                         <FormItem>
-                            <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">Sub-Category</FormLabel>
-                            <FormControl><Input className="h-10 rounded-xl" placeholder="e.g. Single Origin" {...field} /></FormControl>
-                         </FormItem>
-                       )} />
                        <FormField control={form.control} name="sku" render={({ field }) => (
                          <FormItem>
                             <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">SKU / Code</FormLabel>
@@ -449,37 +606,86 @@ export default function IngredientLibraryPage() {
                             <FormControl><Input className="h-10 rounded-xl" {...field} /></FormControl>
                          </FormItem>
                        )} />
+                        <FormField control={form.control} name="origin" render={({ field }) => (
+                         <FormItem>
+                            <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">Country of Origin</FormLabel>
+                            <FormControl><Input className="h-10 rounded-xl" {...field} /></FormControl>
+                         </FormItem>
+                       )} />
                     </div>
+                  </TabsContent>
 
-                    <div className="space-y-6">
-                       <Label className="uppercase text-[9px] font-black tracking-widest text-primary flex items-center gap-2">
-                         <Layers className="h-4 w-4" /> Category-Specific Formulation Roles
-                       </Label>
-                       <p className="text-[10px] text-stone-500 italic mt-1">Available roles are determined by the selected Master Category.</p>
-                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                          {availableRoles.length > 0 ? (
-                            availableRoles.map(role => (
-                              <div 
-                                key={role} 
-                                className={cn(
-                                  "flex items-center gap-2 p-3 bg-muted/20 rounded-xl border border-transparent hover:border-primary/20 transition-all cursor-pointer",
-                                  watchFunctionalRoles.includes(role) && "bg-primary/5 border-primary/20"
-                                )} 
-                                onClick={() => {
-                                  const current = form.getValues('functionalRoles') || [];
-                                  form.setValue('functionalRoles', current.includes(role) ? current.filter(r => r !== role) : [...current, role]);
-                                }}
-                              >
-                                 <Checkbox checked={watchFunctionalRoles.includes(role)} />
-                                 <span className="text-[10px] font-bold uppercase">{role}</span>
-                              </div>
-                            ))
-                          ) : (
-                            <div className="col-span-full py-6 text-center border-2 border-dashed rounded-2xl bg-muted/5">
-                               <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest italic">No specific roles defined for this category.</p>
-                            </div>
-                          )}
-                       </div>
+                  <TabsContent value="formulation" className="space-y-12 mt-0">
+                    <div className="bg-stone-50 p-10 rounded-[2.5rem] border-2 border-dashed space-y-10">
+                        <div className="flex items-center gap-3 text-primary">
+                           <FlaskConical className="h-6 w-6" />
+                           <span className="text-[10px] font-black uppercase tracking-[0.4em]">Formulation Matrix</span>
+                        </div>
+
+                        <div className="space-y-8">
+                           <FormField control={form.control} name="primaryRole" render={({ field }) => (
+                             <FormItem>
+                                <FormLabel className="uppercase text-[10px] font-black tracking-widest text-primary flex items-center gap-2">
+                                  <CircleCheck className="h-3 w-3" /> Primary Formulation Role
+                                </FormLabel>
+                                <p className="text-[9px] text-stone-500 italic mt-1">The main function this ingredient serves in your artisanal chocolate.</p>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
+                                   {availableRoles.length > 0 ? (
+                                      availableRoles.map((role: string) => (
+                                        <div 
+                                          key={role} 
+                                          className={cn(
+                                            "flex items-center gap-2 p-4 bg-background rounded-2xl border-2 transition-all cursor-pointer",
+                                            field.value === role ? "border-primary bg-primary/5 shadow-md" : "border-stone-100 hover:border-primary/20"
+                                          )} 
+                                          onClick={() => field.onChange(role)}
+                                        >
+                                           <div className={cn("h-4 w-4 rounded-full border-2 flex items-center justify-center", field.value === role ? "border-primary bg-primary" : "border-stone-200")}>
+                                              {field.value === role && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
+                                           </div>
+                                           <span className="text-[10px] font-bold uppercase tracking-tight">{role}</span>
+                                        </div>
+                                      ))
+                                   ) : (
+                                     <div className="col-span-full py-10 text-center bg-stone-100/50 rounded-[2rem] italic text-stone-400 text-xs">
+                                        Select Category, Type, and Form to unlock roles.
+                                     </div>
+                                   )}
+                                </div>
+                                <FormMessage />
+                             </FormItem>
+                           )} />
+
+                           <Separator className="bg-stone-200/50" />
+
+                           <FormField control={form.control} name="secondaryRoles" render={({ field }) => (
+                             <FormItem>
+                                <FormLabel className="uppercase text-[10px] font-black tracking-widest text-stone-400">Secondary Roles (Optional)</FormLabel>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
+                                   {availableRoles.map((role: string) => (
+                                      <div 
+                                        key={role} 
+                                        className={cn(
+                                          "flex items-center gap-2 p-4 bg-background rounded-2xl border-2 transition-all cursor-pointer",
+                                          watchSecondaryRoles.includes(role) ? "border-primary/40 bg-primary/5" : "border-stone-100 hover:border-primary/10"
+                                        )} 
+                                        onClick={() => {
+                                          const current = form.getValues('secondaryRoles') || [];
+                                          if (current.includes(role)) {
+                                            form.setValue('secondaryRoles', current.filter(r => r !== role));
+                                          } else {
+                                            form.setValue('secondaryRoles', [...current, role]);
+                                          }
+                                        }}
+                                      >
+                                         <Checkbox checked={watchSecondaryRoles.includes(role)} />
+                                         <span className="text-[10px] font-bold uppercase tracking-tight text-stone-500">{role}</span>
+                                      </div>
+                                   ))}
+                                </div>
+                             </FormItem>
+                           )} />
+                        </div>
                     </div>
                   </TabsContent>
 
@@ -582,7 +788,7 @@ export default function IngredientLibraryPage() {
                                    <FormLabel className="uppercase text-[9px] font-black text-stone-400">Storage Environment</FormLabel>
                                    <Select onValueChange={field.onChange} value={field.value}>
                                       <FormControl><SelectTrigger className="h-10 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
-                                      <SelectContent>{['Ambient', 'Cool & Dry', 'Refrigerated', 'Frozen', 'Temp Controlled'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                                      <SelectContent>{['Ambient', 'Cool & Dry', 'Refrigerated', 'Frozen', 'Temp Controlled', 'Humidity Controlled'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                                    </Select>
                                 </FormItem>
                               )} />

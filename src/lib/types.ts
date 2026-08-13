@@ -52,7 +52,9 @@ export type Ingredient = {
   sku?: string;
   category: string;
   subCategory?: string;
-  type?: string;
+  ingredientForm?: string;
+  primaryRole?: string;
+  secondaryRoles?: string[];
   brand?: string;
   supplierId?: string;
   supplierName?: string;
