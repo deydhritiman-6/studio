@@ -50,7 +50,7 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@/components/ui/command';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 // --- Artisan Taxonomy Configuration ---
@@ -284,7 +284,7 @@ const ingredientSchema = z.object({
 type IngredientFormValues = z.infer<typeof ingredientSchema>;
 
 /**
- * Shared Searchable Selector component
+ * Shared Searchable Selector component with toggleable Manual Entry
  */
 function SearchableSelector({ 
   items, 
@@ -292,7 +292,6 @@ function SearchableSelector({
   onChange, 
   onCustom, 
   placeholder, 
-  customLabel = "Add Custom Input...",
   label,
   isCustom,
   customValue,
@@ -303,7 +302,6 @@ function SearchableSelector({
   onChange: (v: string) => void, 
   onCustom: () => void, 
   placeholder: string,
-  customLabel?: string,
   label: string,
   isCustom: boolean,
   customValue: string,
@@ -315,15 +313,18 @@ function SearchableSelector({
     <div className="space-y-2">
       <div className="flex items-center justify-between">
           <Label className="uppercase text-[9px] font-black tracking-widest text-stone-400">{label}</Label>
-          {isCustom && (
-            <Button type="button" variant="ghost" className="h-4 p-0 text-[8px] font-black uppercase text-primary" onClick={() => {
-              onCustomChange('');
-              onChange('');
-              onCustom();
-            }}>
-              <X className="h-2 w-2 mr-1" /> Use List
-            </Button>
-          )}
+          <Button 
+            type="button" 
+            variant="ghost" 
+            className="h-4 p-0 text-[8px] font-black uppercase text-primary hover:bg-transparent" 
+            onClick={onCustom}
+          >
+            {isCustom ? (
+              <div className="flex items-center gap-1"><History className="h-2 w-2" /> Use Registered List</div>
+            ) : (
+              <div className="flex items-center gap-1"><PlusCircle className="h-2 w-2" /> Enter Manually</div>
+            )}
+          </Button>
       </div>
       
       {isCustom ? (
@@ -340,18 +341,18 @@ function SearchableSelector({
               variant="outline"
               role="combobox"
               aria-expanded={open}
-              className="w-full justify-between h-12 rounded-xl text-left font-normal"
+              className="w-full justify-between h-12 rounded-xl text-left font-normal border-stone-200"
             >
               {value ? value : placeholder}
               <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[400px] p-0 rounded-xl overflow-hidden" align="start">
-            <Command>
-              <CommandInput placeholder={`Search ${label.toLowerCase()}...`} />
-              <CommandList>
-                <CommandEmpty className="py-2 px-4 text-xs italic text-muted-foreground">No existing entry found.</CommandEmpty>
-                <CommandGroup heading="Registered Options">
+          <PopoverContent className="w-[400px] p-0 rounded-xl overflow-hidden shadow-2xl border-none" align="start">
+            <Command className="border-none">
+              <CommandInput placeholder={`Search ${label.toLowerCase()}...`} className="h-12" />
+              <CommandList className="max-h-[300px]">
+                <CommandEmpty className="py-6 px-4 text-xs italic text-muted-foreground text-center">No existing entry found.</CommandEmpty>
+                <CommandGroup heading="Artisan Registry">
                   {items.map((item) => (
                     <CommandItem
                       key={item}
@@ -360,25 +361,12 @@ function SearchableSelector({
                         onChange(item);
                         setOpen(false);
                       }}
-                      className="flex items-center justify-between"
+                      className="flex items-center justify-between py-3 cursor-pointer"
                     >
-                      {item}
+                      <span className="text-sm font-medium">{item}</span>
                       <Check className={cn("h-4 w-4 text-primary", value === item ? "opacity-100" : "opacity-0")} />
                     </CommandItem>
                   ))}
-                </CommandGroup>
-                <CommandSeparator />
-                <CommandGroup heading="Extensions">
-                  <CommandItem 
-                    onSelect={() => {
-                      onCustom();
-                      setOpen(false);
-                    }}
-                    className="text-primary font-bold"
-                  >
-                    <PlusCircle className="h-4 w-4 mr-2" />
-                    {customLabel}
-                  </CommandItem>
                 </CommandGroup>
               </CommandList>
             </Command>
@@ -456,7 +444,7 @@ export default function IngredientLibraryPage() {
   const registeredMasterCategories = useMemo(() => {
     if (!ingredients) return MASTER_CATEGORIES;
     const fromDB = ingredients.map(i => i.category);
-    return Array.from(new Set([...MASTER_CATEGORIES, ...fromDB])).sort();
+    return Array.from(new Set([...MASTER_CATEGORIES, ...fromDB])).filter(Boolean).sort();
   }, [ingredients]);
 
   const registeredSubCategories = useMemo(() => {
@@ -736,15 +724,14 @@ export default function IngredientLibraryPage() {
                          <SearchableSelector 
                             label="Master Category"
                             items={registeredMasterCategories}
-                            value={field.value}
+                            value={field.value ?? ''}
                             placeholder="Select Master Category..."
-                            customLabel="Add Custom Master Category..."
                             isCustom={masterCategoryMode === 'custom'}
-                            customValue={field.value}
+                            customValue={field.value ?? ''}
                             onCustomChange={(val) => {
                                 field.onChange(val);
                                 form.setValue('masterCategorySource', 'Custom');
-                                // Trigger cascading reset
+                                // Cascading Sanitization Pulse
                                 form.setValue('subCategory', '');
                                 form.setValue('ingredientForm', '');
                                 form.setValue('primaryRole', '');
@@ -758,7 +745,7 @@ export default function IngredientLibraryPage() {
                             onChange={(val) => {
                                 field.onChange(val);
                                 form.setValue('masterCategorySource', 'System');
-                                // Trigger cascading reset
+                                // Cascading Sanitization Pulse
                                 form.setValue('subCategory', '');
                                 form.setValue('ingredientForm', '');
                                 form.setValue('primaryRole', '');
@@ -773,11 +760,10 @@ export default function IngredientLibraryPage() {
                          <SearchableSelector 
                             label="Sub Category"
                             items={registeredSubCategories}
-                            value={field.value}
+                            value={field.value ?? ''}
                             placeholder={!watchCategory ? "Select Master Category First" : "Select Sub Category..."}
-                            customLabel="Add Custom Sub Category..."
                             isCustom={subCategoryMode === 'custom'}
-                            customValue={field.value}
+                            customValue={field.value ?? ''}
                             onCustomChange={(val) => {
                                 field.onChange(val);
                                 form.setValue('subCategorySource', 'Custom');
@@ -790,6 +776,7 @@ export default function IngredientLibraryPage() {
                             onChange={(val) => {
                                 field.onChange(val);
                                 form.setValue('subCategorySource', 'System');
+                                // Reset roles if form changes
                                 form.setValue('ingredientForm', '');
                                 form.setValue('primaryRole', '');
                                 form.setValue('secondaryRoles', []);
@@ -803,8 +790,8 @@ export default function IngredientLibraryPage() {
                                 field.onChange(val);
                                 form.setValue('primaryRole', '');
                                 form.setValue('secondaryRoles', []);
-                            }} value={field.value} disabled={!watchSubCategory}>
-                               <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Select form..." /></SelectTrigger></FormControl>
+                            }} value={field.value ?? ''} disabled={!watchSubCategory}>
+                               <FormControl><SelectTrigger className="h-12 rounded-xl border-stone-200"><SelectValue placeholder="Select form..." /></SelectTrigger></FormControl>
                                <SelectContent>{taxonomyConfig.forms.map((f: string) => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
                             </Select>
                          </FormItem>
@@ -918,30 +905,30 @@ export default function IngredientLibraryPage() {
                            {(watchCategory?.includes('Chocolate') || watchCategory?.includes('Cocoa')) && (
                              <>
                                <FormField control={form.control} name="cocoaPercent" render={({ field }) => (
-                                 <FormItem><FormLabel className="uppercase text-[8px] font-black text-stone-400">Cocoa Total %</FormLabel><FormControl><Input type="number" step="0.1" className="h-10 rounded-lg" {...field} /></FormControl></FormItem>
+                                 <FormItem><FormLabel className="uppercase text-[8px] font-black text-stone-400">Cocoa Total %</FormLabel><FormControl><Input type="number" step="0.1" className="h-10 rounded-lg" {...field} value={field.value ?? ''} /></FormControl></FormItem>
                                )} />
                                <FormField control={form.control} name="fatPercent" render={({ field }) => (
-                                 <FormItem><FormLabel className="uppercase text-[8px] font-black text-stone-400">Total Fat %</FormLabel><FormControl><Input type="number" step="0.1" className="h-10 rounded-lg" {...field} /></FormControl></FormItem>
+                                 <FormItem><FormLabel className="uppercase text-[8px] font-black text-stone-400">Total Fat %</FormLabel><FormControl><Input type="number" step="0.1" className="h-10 rounded-lg" {...field} value={field.value ?? ''} /></FormControl></FormItem>
                                )} />
                              </>
                            )}
                            {watchCategory === 'Sweeteners' && (
                              <FormField control={form.control} name="sugarPercent" render={({ field }) => (
-                               <FormItem><FormLabel className="uppercase text-[8px] font-black text-stone-400">Sugar Content %</FormLabel><FormControl><Input type="number" step="0.1" className="h-10 rounded-lg" {...field} /></FormControl></FormItem>
+                               <FormItem><FormLabel className="uppercase text-[8px] font-black text-stone-400">Sugar Content %</FormLabel><FormControl><Input type="number" step="0.1" className="h-10 rounded-lg" {...field} value={field.value ?? ''} /></FormControl></FormItem>
                              )} />
                            )}
                            {(watchCategory?.includes('Fruits') || watchCategory?.includes('Botanicals')) && (
                              <>
                                <FormField control={form.control} name="brix" render={({ field }) => (
-                                 <FormItem><FormLabel className="uppercase text-[8px] font-black text-stone-400">Brix Scale</FormLabel><FormControl><Input type="number" step="0.1" className="h-10 rounded-lg" {...field} /></FormControl></FormItem>
+                                 <FormItem><FormLabel className="uppercase text-[8px] font-black text-stone-400">Brix Scale</FormLabel><FormControl><Input type="number" step="0.1" className="h-10 rounded-lg" {...field} value={field.value ?? ''} /></FormControl></FormItem>
                                )} />
                                <FormField control={form.control} name="ph" render={({ field }) => (
-                                 <FormItem><FormLabel className="uppercase text-[8px] font-black text-stone-400">Acidity (pH)</FormLabel><FormControl><Input type="number" step="0.1" className="h-10 rounded-lg" {...field} /></FormControl></FormItem>
+                                 <FormItem><FormLabel className="uppercase text-[8px] font-black text-stone-400">Acidity (pH)</FormLabel><FormControl><Input type="number" step="0.1" className="h-10 rounded-lg" {...field} value={field.value ?? ''} /></FormControl></FormItem>
                              )} />
                              </>
                            )}
                            <FormField control={form.control} name="moisturePercent" render={({ field }) => (
-                             <FormItem><FormLabel className="uppercase text-[8px] font-black text-stone-400">Moisture Load %</FormLabel><FormControl><Input type="number" step="0.1" className="h-10 rounded-lg" {...field} /></FormControl></FormItem>
+                             <FormItem><FormLabel className="uppercase text-[8px] font-black text-stone-400">Moisture Load %</FormLabel><FormControl><Input type="number" step="0.1" className="h-10 rounded-lg" {...field} value={field.value ?? ''} /></FormControl></FormItem>
                            )} />
                         </div>
                      </div>
@@ -958,8 +945,8 @@ export default function IngredientLibraryPage() {
                                 <div key={a} className="grid grid-cols-2 items-center border-b pb-3 border-stone-100">
                                    <span className="text-[10px] font-black uppercase tracking-widest text-stone-500">{a}</span>
                                    <FormField control={form.control} name={`allergens.${a}` as any} render={({ field }) => (
-                                      <Select onValueChange={field.onChange} value={field.value}>
-                                         <FormControl><SelectTrigger className="h-8 rounded-lg text-[9px] font-bold uppercase"><SelectValue /></SelectTrigger></FormControl>
+                                      <Select onValueChange={field.onChange} value={field.value ?? 'Unknown'}>
+                                         <FormControl><SelectTrigger className="h-8 rounded-lg text-[9px] font-bold uppercase border-stone-200"><SelectValue /></SelectTrigger></FormControl>
                                          <SelectContent>{allergenStatusOptions.map(opt => <SelectItem key={opt} value={opt} className="text-[9px]">{opt}</SelectItem>)}</SelectContent>
                                       </Select>
                                    )} />
@@ -976,7 +963,7 @@ export default function IngredientLibraryPage() {
                                    <div key={c} className="flex items-center justify-between">
                                       <span className="text-[10px] font-bold uppercase">{c.replace(/([A-Z])/g, ' $1').trim()}</span>
                                       <FormField control={form.control} name={`allergens.${c}` as any} render={({ field }) => (
-                                         <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                                         <Checkbox checked={!!field.value} onCheckedChange={field.onChange} />
                                       )} />
                                    </div>
                                  ))}
@@ -986,7 +973,7 @@ export default function IngredientLibraryPage() {
                            <FormField control={form.control} name="allergens.verificationDate" render={({ field }) => (
                              <FormItem>
                                 <FormLabel className="uppercase text-[8px] font-black tracking-widest text-stone-400">Supplier Specification Verification Date</FormLabel>
-                                <FormControl><Input type="date" className="h-10 rounded-xl" {...field} value={field.value ?? ''} /></FormControl>
+                                <FormControl><Input type="date" className="h-10 rounded-xl border-stone-200" {...field} value={field.value ?? ''} /></FormControl>
                                 <FormDescription className="text-[8px]">Allergen status should be verified against actual manufacturer documents.</FormDescription>
                              </FormItem>
                            )} />
@@ -1004,8 +991,8 @@ export default function IngredientLibraryPage() {
                               <FormField control={form.control} name="storageCondition" render={({ field }) => (
                                 <FormItem>
                                    <FormLabel className="uppercase text-[9px] font-black text-stone-400">Storage Environment</FormLabel>
-                                   <Select onValueChange={field.onChange} value={field.value}>
-                                      <FormControl><SelectTrigger className="h-10 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
+                                   <Select onValueChange={field.onChange} value={field.value ?? 'Ambient'}>
+                                      <FormControl><SelectTrigger className="h-10 rounded-xl border-stone-200"><SelectValue /></SelectTrigger></FormControl>
                                       <SelectContent>{['Ambient', 'Cool & Dry', 'Refrigerated', 'Frozen', 'Temp Controlled', 'Humidity Controlled'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                                    </Select>
                                 </FormItem>
@@ -1013,7 +1000,7 @@ export default function IngredientLibraryPage() {
                               <FormField control={form.control} name="shelfLifeDays" render={({ field }) => (
                                 <FormItem>
                                    <FormLabel className="uppercase text-[9px] font-black text-stone-400">Shelf Life (Days)</FormLabel>
-                                   <FormControl><Input type="number" className="h-10 rounded-xl" {...field} /></FormControl>
+                                   <FormControl><Input type="number" className="h-10 rounded-xl border-stone-200" {...field} value={field.value ?? ''} /></FormControl>
                                 </FormItem>
                               )} />
                            </div>
@@ -1021,20 +1008,20 @@ export default function IngredientLibraryPage() {
                               <FormField control={form.control} name="batchNumber" render={({ field }) => (
                                 <FormItem>
                                    <FormLabel className="uppercase text-[9px] font-black text-stone-400">Current Batch #</FormLabel>
-                                   <FormControl><Input className="h-10 rounded-xl" {...field} value={field.value ?? ''} /></FormControl>
+                                   <FormControl><Input className="h-10 rounded-xl border-stone-200" {...field} value={field.value ?? ''} /></FormControl>
                                 </FormItem>
                               )} />
                               <FormField control={form.control} name="lotNumber" render={({ field }) => (
                                 <FormItem>
                                    <FormLabel className="uppercase text-[9px] font-black text-stone-400">Lot Identifier</FormLabel>
-                                   <FormControl><Input className="h-10 rounded-xl" {...field} value={field.value ?? ''} /></FormControl>
+                                   <FormControl><Input className="h-10 rounded-xl border-stone-200" {...field} value={field.value ?? ''} /></FormControl>
                                 </FormItem>
                               )} />
                            </div>
                            <FormField control={form.control} name="expiryDate" render={({ field }) => (
                               <FormItem>
                                  <FormLabel className="uppercase text-[9px] font-black text-stone-400">Expiry Date</FormLabel>
-                                 <FormControl><Input type="date" className="h-10 rounded-xl" {...field} value={field.value ?? ''} /></FormControl>
+                                 <FormControl><Input type="date" className="h-10 rounded-xl border-stone-200" {...field} value={field.value ?? ''} /></FormControl>
                               </FormItem>
                            )} />
                         </div>
@@ -1045,17 +1032,17 @@ export default function IngredientLibraryPage() {
                            </div>
                            <div className="grid grid-cols-2 gap-4">
                               <FormField control={form.control} name="purchasePrice" render={({ field }) => (
-                                <FormItem><FormLabel className="uppercase text-[8px] font-bold text-stone-400">Purchase Rate (₹)</FormLabel><FormControl><Input type="number" className="h-10 rounded-xl" {...field} /></FormControl></FormItem>
+                                <FormItem><FormLabel className="uppercase text-[8px] font-bold text-stone-400">Purchase Rate (₹)</FormLabel><FormControl><Input type="number" className="h-10 rounded-xl border-stone-200" {...field} value={field.value ?? ''} /></FormControl></FormItem>
                               )} />
                               <FormField control={form.control} name="purchaseUnit" render={({ field }) => (
-                                <FormItem><FormLabel className="uppercase text-[8px] font-bold text-stone-400">Rate Unit (kg/L)</FormLabel><FormControl><Input className="h-10 rounded-xl" {...field} value={field.value ?? ''} /></FormControl></FormItem>
+                                <FormItem><FormLabel className="uppercase text-[8px] font-bold text-stone-400">Rate Unit (kg/L)</FormLabel><FormControl><Input className="h-10 rounded-xl border-stone-200" {...field} value={field.value ?? ''} /></FormControl></FormItem>
                               )} />
                            </div>
                            <FormField control={form.control} name="defaultUnit" render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="uppercase text-[9px] font-black text-stone-400">Artisan Measuring Unit</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                   <FormControl><SelectTrigger className="h-10 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
+                                <Select onValueChange={field.onChange} value={field.value ?? 'g'}>
+                                   <FormControl><SelectTrigger className="h-10 rounded-xl border-stone-200"><SelectValue /></SelectTrigger></FormControl>
                                    <SelectContent>{['mg', 'g', 'kg', 'ml', 'L', 'pcs', 'tbsp', 'tsp', 'pinch'].map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
                                 </Select>
                               </FormItem>
@@ -1066,9 +1053,9 @@ export default function IngredientLibraryPage() {
                 </ScrollArea>
 
                 <div className="p-8 border-t bg-background flex items-center justify-between shrink-0">
-                   <div className="flex items-center gap-4">
+                   <div className="flex items-center gap-4 text-muted-foreground">
                       <ShieldCheck className="h-5 w-5 text-green-600" />
-                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-400">Certified Artisan Specification System</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest">Certified Artisan Specification System</p>
                    </div>
                    <div className="flex gap-4">
                       <DialogClose asChild><Button type="button" variant="ghost" className="h-12 px-8 rounded-xl font-bold uppercase text-[10px] tracking-widest">Abort</Button></DialogClose>
