@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -29,7 +28,8 @@ import {
   Beaker,
   ShieldCheck,
   Thermometer,
-  Zap
+  Zap,
+  Save
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -137,6 +137,7 @@ export default function IngredientLibraryPage() {
       category: 'Chocolate & Cocoa',
       defaultUnit: 'g',
       isActive: true,
+      functionalRoles: [],
       allergens: {
         milk: 'Unknown', egg: 'Unknown', fish: 'Unknown', crustacean: 'Unknown',
         treeNuts: 'Unknown', peanuts: 'Unknown', wheat: 'Unknown', soy: 'Unknown', sesame: 'Unknown',
@@ -151,6 +152,7 @@ export default function IngredientLibraryPage() {
     if (editingIngredient) {
       form.reset({
         ...editingIngredient,
+        functionalRoles: editingIngredient.functionalRoles || [],
         allergens: {
           ...editingIngredient.allergens,
           verificationDate: editingIngredient.allergens.verificationDate || '',
@@ -162,6 +164,7 @@ export default function IngredientLibraryPage() {
         category: 'Chocolate & Cocoa', 
         defaultUnit: 'g', 
         isActive: true, 
+        functionalRoles: [],
         allergens: {
           milk: 'Unknown', egg: 'Unknown', fish: 'Unknown', crustacean: 'Unknown',
           treeNuts: 'Unknown', peanuts: 'Unknown', wheat: 'Unknown', soy: 'Unknown', sesame: 'Unknown',
@@ -397,10 +400,10 @@ export default function IngredientLibraryPage() {
                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                           {FUNCTIONAL_ROLES.map(role => (
                             <div key={role} className="flex items-center gap-2 p-3 bg-muted/20 rounded-xl border border-transparent hover:border-primary/20 transition-all cursor-pointer" onClick={() => {
-                                const current = form.getValues('functionalRoles');
+                                const current = form.getValues('functionalRoles') || [];
                                 form.setValue('functionalRoles', current.includes(role) ? current.filter(r => r !== role) : [...current, role]);
                             }}>
-                               <Checkbox checked={form.watch('functionalRoles').includes(role)} />
+                               <Checkbox checked={(form.watch('functionalRoles') || []).includes(role)} />
                                <span className="text-[10px] font-bold uppercase">{role}</span>
                             </div>
                           ))}
