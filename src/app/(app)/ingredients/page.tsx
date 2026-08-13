@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { PageHeader } from '@/components/page-header';
@@ -28,7 +28,8 @@ import {
   ShieldCheck,
   Thermometer,
   Zap,
-  Save
+  Save,
+  Layers
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -44,22 +45,48 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
+// --- Artisan Taxonomy Configuration ---
+
+export const ARTISAN_CATEGORIES = [
+  'Cocoa & Chocolate',
+  'Dairy & Milk',
+  'Sweeteners',
+  'Nuts & Tree Nuts',
+  'Peanuts',
+  'Seeds',
+  'Fruits & Fruit Preparations',
+  'Indian Spices & Botanicals',
+  'Coffee & Tea',
+  'Flavourings',
+  'Emulsifiers & Functional Ingredients',
+  'Ganache & Fillings',
+  'Inclusions & Texture',
+  'Colours & Decoration',
+  'Salt & Balancers',
+  'Specialty Flavour Components'
+] as const;
+
+export const CATEGORY_ROLE_MAPPING: Record<string, string[]> = {
+  'Cocoa & Chocolate': ['Chocolate Base', 'Cocoa Component', 'Cocoa Fat', 'Chocolate Inclusion'],
+  'Dairy & Milk': ['Milk Solid', 'Dairy Fat', 'Cream Component'],
+  'Sweeteners': ['Sweetener', 'Humectant', 'Texture Modifier'],
+  'Nuts & Tree Nuts': ['Nut Inclusion', 'Nut Paste', 'Nut Praline', 'Nut Butter'],
+  'Peanuts': ['Peanut Inclusion', 'Peanut Paste', 'Peanut Praline', 'Peanut Butter'],
+  'Seeds': ['Seed Inclusion', 'Seed Paste', 'Texture'],
+  'Fruits & Fruit Preparations': ['Fruit Inclusion', 'Fruit Puree', 'Fruit Concentrate', 'Fruit Gel', 'Fruit Powder'],
+  'Indian Spices & Botanicals': ['Flavour', 'Aroma', 'Botanical Inclusion'],
+  'Coffee & Tea': ['Flavour', 'Extract', 'Inclusion'],
+  'Flavourings': ['Flavour', 'Aroma'],
+  'Emulsifiers & Functional Ingredients': ['Emulsifier', 'Stabilizer', 'Thickener', 'Gelling Agent'],
+  'Ganache & Fillings': ['Filling Base', 'Ganache Stabilizer', 'Inclusion'],
+  'Inclusions & Texture': ['Crunch', 'Texture', 'Inclusion', 'Decoration'],
+  'Colours & Decoration': ['Colour', 'Decoration', 'Surface Finish'],
+  'Salt & Balancers': ['Salt Component', 'Flavour Enhancer', 'Acidity Regulator'],
+  'Specialty Flavour Components': ['Alcohol Component', 'Specialty Extract', 'Restricted Flavour']
+};
+
 const ALLERGENS: (keyof Ingredient['allergens'])[] = [
   'milk', 'egg', 'fish', 'crustacean', 'treeNuts', 'peanuts', 'wheat', 'soy', 'sesame'
-];
-
-const FUNCTIONAL_ROLES: IngredientFunctionalRole[] = [
-  'Cocoa Base', 'Fat', 'Sweetener', 'Milk Solid', 'Flavour', 
-  'Colour', 'Emulsifier', 'Stabilizer', 'Texture', 'Crunch', 
-  'Filling', 'Fruit', 'Nut', 'Spice', 'Acidifier', 'Preservative', 
-  'Decorative', 'Moisture Controller', 'Shelf-Life Support'
-];
-
-const ingredientCategories = [
-  'Chocolate & Cocoa', 'Dairy & Milk', 'Sweeteners', 'Nuts & Tree Nuts', 'Peanuts', 
-  'Seeds', 'Fruits & Fruit Preparations', 'Indian Spices & Botanicals', 'Coffee & Tea', 
-  'Flavourings', 'Emulsifiers & Functional', 'Ganache & Fillings', 'Inclusions & Texture', 
-  'Colours & Decoration', 'Salt & Balancers', 'Specialty Flavour Components'
 ];
 
 const allergenStatusOptions: AllergenStatus[] = ['Contains', 'Does Not Contain', 'May Contain', 'Cross-Contact Risk', 'Unknown'];
@@ -84,6 +111,7 @@ const ingredientSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   sku: z.string().optional(),
   category: z.string().min(1, 'Category is required'),
+  subCategory: z.string().optional(),
   brand: z.string().optional(),
   supplierName: z.string().optional(),
   origin: z.string().optional(),
@@ -134,7 +162,8 @@ export default function IngredientLibraryPage() {
     resolver: zodResolver(ingredientSchema),
     defaultValues: {
       name: '',
-      category: 'Chocolate & Cocoa',
+      category: 'Cocoa & Chocolate',
+      subCategory: '',
       defaultUnit: 'g',
       isActive: true,
       functionalRoles: [],
@@ -146,7 +175,24 @@ export default function IngredientLibraryPage() {
     }
   });
 
-  const watchCategory = form.watch('category');
+  const watchCategory = useWatch({ control: form.control, name: 'category' });
+  const watchFunctionalRoles = useWatch({ control: form.control, name: 'functionalRoles' }) || [];
+
+  // Dynamic Role Validation Effect
+  useEffect(() => {
+    const validRoles = CATEGORY_ROLE_MAPPING[watchCategory] || [];
+    const currentRoles = form.getValues('functionalRoles') || [];
+    const filteredRoles = currentRoles.filter(role => validRoles.includes(role));
+    
+    if (filteredRoles.length !== currentRoles.length) {
+      form.setValue('functionalRoles', filteredRoles);
+      toast({
+        title: "Roles Re-validated",
+        description: `Some functional roles were removed as they are not applicable to the ${watchCategory} category.`,
+        variant: "default"
+      });
+    }
+  }, [watchCategory, form, toast]);
 
   useEffect(() => {
     if (editingIngredient) {
@@ -161,7 +207,8 @@ export default function IngredientLibraryPage() {
     } else {
       form.reset({ 
         name: '', 
-        category: 'Chocolate & Cocoa', 
+        category: 'Cocoa & Chocolate', 
+        subCategory: '',
         defaultUnit: 'g', 
         isActive: true, 
         functionalRoles: [],
@@ -228,6 +275,10 @@ export default function IngredientLibraryPage() {
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [ingredients, searchTerm, filterCategory]);
 
+  const availableRoles = useMemo(() => {
+    return CATEGORY_ROLE_MAPPING[watchCategory] || [];
+  }, [watchCategory]);
+
   if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>;
 
   return (
@@ -261,7 +312,7 @@ export default function IngredientLibraryPage() {
              </SelectTrigger>
              <SelectContent>
                <SelectItem value="all">All Artisan Categories</SelectItem>
-               {ingredientCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+               {ARTISAN_CATEGORIES.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
              </SelectContent>
            </Select>
         </div>
@@ -294,9 +345,12 @@ export default function IngredientLibraryPage() {
                        </div>
                     </TableCell>
                     <TableCell className="p-6">
-                       <Badge variant="secondary" className="rounded-lg text-[9px] font-black uppercase tracking-tight bg-stone-100 text-stone-500 border-none">
-                          {ing.category}
-                       </Badge>
+                       <div className="flex flex-col gap-1">
+                          <Badge variant="secondary" className="rounded-lg text-[9px] font-black uppercase tracking-tight bg-stone-100 text-stone-500 border-none w-fit">
+                              {ing.category}
+                          </Badge>
+                          {ing.subCategory && <p className="text-[8px] font-bold text-stone-400 uppercase tracking-widest ml-1">{ing.subCategory}</p>}
+                       </div>
                     </TableCell>
                     <TableCell className="p-6">
                        <div className="space-y-1">
@@ -370,13 +424,19 @@ export default function IngredientLibraryPage() {
                             <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">Master Category</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                                <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
-                               <SelectContent>{ingredientCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent>
+                               <SelectContent>{ARTISAN_CATEGORIES.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent>
                             </Select>
                          </FormItem>
                        )} />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                       <FormField control={form.control} name="subCategory" render={({ field }) => (
+                         <FormItem>
+                            <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">Sub-Category</FormLabel>
+                            <FormControl><Input className="h-10 rounded-xl" placeholder="e.g. Single Origin" {...field} /></FormControl>
+                         </FormItem>
+                       )} />
                        <FormField control={form.control} name="sku" render={({ field }) => (
                          <FormItem>
                             <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">SKU / Code</FormLabel>
@@ -389,26 +449,36 @@ export default function IngredientLibraryPage() {
                             <FormControl><Input className="h-10 rounded-xl" {...field} /></FormControl>
                          </FormItem>
                        )} />
-                       <FormField control={form.control} name="origin" render={({ field }) => (
-                         <FormItem>
-                            <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">Country of Origin</FormLabel>
-                            <FormControl><Input className="h-10 rounded-xl" placeholder="e.g. Ecuador" {...field} /></FormControl>
-                         </FormItem>
-                       )} />
                     </div>
 
-                    <div className="space-y-4">
-                       <Label className="uppercase text-[9px] font-black tracking-widest text-stone-400">Functional Formulation Roles</Label>
+                    <div className="space-y-6">
+                       <Label className="uppercase text-[9px] font-black tracking-widest text-primary flex items-center gap-2">
+                         <Layers className="h-4 w-4" /> Category-Specific Formulation Roles
+                       </Label>
+                       <p className="text-[10px] text-stone-500 italic mt-1">Available roles are determined by the selected Master Category.</p>
                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                          {FUNCTIONAL_ROLES.map(role => (
-                            <div key={role} className="flex items-center gap-2 p-3 bg-muted/20 rounded-xl border border-transparent hover:border-primary/20 transition-all cursor-pointer" onClick={() => {
-                                const current = form.getValues('functionalRoles') || [];
-                                form.setValue('functionalRoles', current.includes(role) ? current.filter(r => r !== role) : [...current, role]);
-                            }}>
-                               <Checkbox checked={(form.watch('functionalRoles') || []).includes(role)} />
-                               <span className="text-[10px] font-bold uppercase">{role}</span>
+                          {availableRoles.length > 0 ? (
+                            availableRoles.map(role => (
+                              <div 
+                                key={role} 
+                                className={cn(
+                                  "flex items-center gap-2 p-3 bg-muted/20 rounded-xl border border-transparent hover:border-primary/20 transition-all cursor-pointer",
+                                  watchFunctionalRoles.includes(role) && "bg-primary/5 border-primary/20"
+                                )} 
+                                onClick={() => {
+                                  const current = form.getValues('functionalRoles') || [];
+                                  form.setValue('functionalRoles', current.includes(role) ? current.filter(r => r !== role) : [...current, role]);
+                                }}
+                              >
+                                 <Checkbox checked={watchFunctionalRoles.includes(role)} />
+                                 <span className="text-[10px] font-bold uppercase">{role}</span>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="col-span-full py-6 text-center border-2 border-dashed rounded-2xl bg-muted/5">
+                               <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest italic">No specific roles defined for this category.</p>
                             </div>
-                          ))}
+                          )}
                        </div>
                     </div>
                   </TabsContent>
@@ -421,7 +491,7 @@ export default function IngredientLibraryPage() {
                         </div>
                         
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                           {watchCategory.includes('Chocolate') && (
+                           {(watchCategory?.includes('Chocolate') || watchCategory?.includes('Cocoa')) && (
                              <>
                                <FormField control={form.control} name="cocoaPercent" render={({ field }) => (
                                  <FormItem><FormLabel className="uppercase text-[8px] font-black text-stone-400">Cocoa Total %</FormLabel><FormControl><Input type="number" step="0.1" className="h-10 rounded-lg" {...field} /></FormControl></FormItem>
@@ -431,12 +501,12 @@ export default function IngredientLibraryPage() {
                                )} />
                              </>
                            )}
-                           {watchCategory.includes('Sweetener') && (
+                           {watchCategory === 'Sweeteners' && (
                              <FormField control={form.control} name="sugarPercent" render={({ field }) => (
                                <FormItem><FormLabel className="uppercase text-[8px] font-black text-stone-400">Sugar Content %</FormLabel><FormControl><Input type="number" step="0.1" className="h-10 rounded-lg" {...field} /></FormControl></FormItem>
                              )} />
                            )}
-                           {watchCategory.includes('Fruit') && (
+                           {(watchCategory?.includes('Fruits') || watchCategory?.includes('Botanicals')) && (
                              <>
                                <FormField control={form.control} name="brix" render={({ field }) => (
                                  <FormItem><FormLabel className="uppercase text-[8px] font-black text-stone-400">Brix Scale</FormLabel><FormControl><Input type="number" step="0.1" className="h-10 rounded-lg" {...field} /></FormControl></FormItem>
