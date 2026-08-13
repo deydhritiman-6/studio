@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -34,7 +35,8 @@ import {
   CircleCheck,
   Keyboard,
   History,
-  FileText
+  FileText,
+  Check
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -50,6 +52,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 // --- Artisan Taxonomy Configuration ---
 
@@ -246,7 +250,9 @@ const ingredientSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   sku: z.string().optional(),
   category: z.string().min(1, 'Category is required'),
+  masterCategorySource: z.enum(['System', 'Custom']).default('System'),
   subCategory: z.string().min(1, 'Subcategory is required'),
+  subCategorySource: z.enum(['System', 'Custom']).default('System'),
   ingredientForm: z.string().min(1, 'Form is required'),
   primaryRole: z.string().min(1, 'Primary formulation role is required'),
   secondaryRoles: z.array(z.string()).default([]),
@@ -291,7 +297,7 @@ export default function IngredientLibraryPage() {
   const [activeTab, setActiveTab] = useState('basic');
   const [isSaving, setIsSaving] = useState(false);
 
-  const [categoryMode, setCategoryMode] = useState<'select' | 'custom'>('select');
+  const [masterCategoryMode, setMasterCategoryMode] = useState<'select' | 'custom'>('select');
   const [subCategoryMode, setSubCategoryMode] = useState<'select' | 'custom'>('select');
   
   const [itemToDelete, setItemToDelete] = useState<Ingredient | null>(null);
@@ -304,8 +310,10 @@ export default function IngredientLibraryPage() {
     resolver: zodResolver(ingredientSchema),
     defaultValues: {
       name: '',
-      category: 'Cocoa & Chocolate',
+      category: '',
+      masterCategorySource: 'System',
       subCategory: '',
+      subCategorySource: 'System',
       ingredientForm: '',
       primaryRole: '',
       secondaryRoles: [],
@@ -332,10 +340,27 @@ export default function IngredientLibraryPage() {
     return taxonomyConfig.roleMapping(watchSubCategory, watchForm);
   }, [taxonomyConfig, watchSubCategory, watchForm]);
 
+  // Extract all unique registered categories for searching
+  const registeredMasterCategories = useMemo(() => {
+    if (!ingredients) return MASTER_CATEGORIES;
+    const fromDB = ingredients.map(i => i.category);
+    return Array.from(new Set([...MASTER_CATEGORIES, ...fromDB])).sort();
+  }, [ingredients]);
+
+  // Extract unique subcategories for the selected category
+  const registeredSubCategories = useMemo(() => {
+    const systemOnes = taxonomyConfig.subcategories;
+    if (!ingredients || !watchCategory) return systemOnes;
+    const fromDB = ingredients.filter(i => i.category === watchCategory).map(i => i.subCategory).filter(Boolean) as string[];
+    return Array.from(new Set([...systemOnes, ...fromDB])).sort();
+  }, [ingredients, watchCategory, taxonomyConfig.subcategories]);
+
   useEffect(() => {
     if (editingIngredient) {
       form.reset({
         ...editingIngredient,
+        masterCategorySource: editingIngredient.masterCategorySource || 'System',
+        subCategorySource: editingIngredient.subCategorySource || 'System',
         secondaryRoles: editingIngredient.secondaryRoles || [],
         allergens: {
           ...editingIngredient.allergens,
@@ -343,18 +368,15 @@ export default function IngredientLibraryPage() {
         }
       } as any);
 
-      const isCustomCat = !MASTER_CATEGORIES.includes(editingIngredient.category);
-      setCategoryMode(isCustomCat ? 'custom' : 'select');
-      
-      const standardSubs = (ARTISAN_TAXONOMY as any)[editingIngredient.category]?.subcategories || [];
-      const isCustomSub = !standardSubs.includes(editingIngredient.subCategory || '');
-      setSubCategoryMode(isCustomSub ? 'custom' : 'select');
-
+      setMasterCategoryMode(editingIngredient.masterCategorySource === 'Custom' ? 'custom' : 'select');
+      setSubCategoryMode(editingIngredient.subCategorySource === 'Custom' ? 'custom' : 'select');
     } else {
       form.reset({ 
         name: '', 
-        category: 'Cocoa & Chocolate', 
+        category: '', 
+        masterCategorySource: 'System',
         subCategory: '',
+        subCategorySource: 'System',
         ingredientForm: '',
         primaryRole: '',
         secondaryRoles: [],
@@ -366,10 +388,10 @@ export default function IngredientLibraryPage() {
           glutenFree: false, vegan: false, vegetarian: false
         }
       });
-      setCategoryMode('select');
+      setMasterCategoryMode('select');
       setSubCategoryMode('select');
     }
-  }, [editingIngredient, form]);
+  }, [editingIngredient, form, isAddDialogOpen]);
 
   const onSave = (values: IngredientFormValues) => {
     if (!firestore) return;
@@ -377,9 +399,20 @@ export default function IngredientLibraryPage() {
 
     const id = editingIngredient?.id || `ING-${Date.now()}`;
     const ingRef = doc(firestore, 'ingredients', id);
+    
+    // Normalize source flags if manual input matches system entry
+    const isSystemCategory = MASTER_CATEGORIES.includes(values.category);
+    const finalMasterSource = isSystemCategory ? 'System' : values.masterCategorySource;
+    
+    const standardSubCategories = (ARTISAN_TAXONOMY as any)[values.category]?.subcategories || [];
+    const isSystemSub = standardSubCategories.includes(values.subCategory);
+    const finalSubSource = isSystemSub ? 'System' : values.subCategorySource;
+
     const ingData = {
       ...values,
       id,
+      masterCategorySource: finalMasterSource,
+      subCategorySource: finalSubSource,
       updatedAt: new Date().toISOString(),
       createdAt: editingIngredient?.createdAt || new Date().toISOString(),
     };
@@ -424,6 +457,109 @@ export default function IngredientLibraryPage() {
       .filter(i => i.name.toLowerCase().includes(searchTerm.toLowerCase()))
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [ingredients, searchTerm, filterCategory]);
+
+  const SearchableSelector = ({ 
+    items, 
+    value, 
+    onChange, 
+    onCustom, 
+    placeholder, 
+    customLabel = "Add Custom Input...",
+    label,
+    isCustom,
+    customValue,
+    onCustomChange
+  }: { 
+    items: string[], 
+    value: string, 
+    onChange: (v: string) => void, 
+    onCustom: () => void, 
+    placeholder: string,
+    customLabel?: string,
+    label: string,
+    isCustom: boolean,
+    customValue: string,
+    onCustomChange: (v: string) => void
+  }) => {
+    const [open, setOpen] = useState(false);
+
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+            <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">{label}</FormLabel>
+            {isCustom && (
+              <Button type="button" variant="ghost" className="h-4 p-0 text-[8px] font-black uppercase text-primary" onClick={() => {
+                onCustomChange('');
+                onChange('');
+                onCustom(); // toggle back
+              }}>
+                <X className="h-2 w-2 mr-1" /> Use List
+              </Button>
+            )}
+        </div>
+        
+        {isCustom ? (
+          <Input 
+            className="h-12 rounded-xl border-primary/40 focus:ring-primary/20" 
+            placeholder={`Enter Custom ${label}...`}
+            value={customValue}
+            onChange={(e) => onCustomChange(e.target.value)}
+          />
+        ) : (
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={open}
+                className="w-full justify-between h-12 rounded-xl text-left font-normal"
+              >
+                {value ? value : placeholder}
+                <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[400px] p-0 rounded-xl overflow-hidden" align="start">
+              <Command>
+                <CommandInput placeholder={`Search ${label.toLowerCase()}...`} />
+                <CommandList>
+                  <CommandEmpty className="py-2 px-4 text-xs italic text-muted-foreground">No existing entry found.</CommandEmpty>
+                  <CommandGroup heading="Registered Options">
+                    {items.map((item) => (
+                      <CommandItem
+                        key={item}
+                        value={item}
+                        onSelect={(currentValue) => {
+                          onChange(currentValue === value ? "" : currentValue);
+                          setOpen(false);
+                        }}
+                        className="flex items-center justify-between"
+                      >
+                        {item}
+                        <Check className={cn("h-4 w-4 text-primary", value === item ? "opacity-100" : "opacity-0")} />
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                  <CommandSeparator />
+                  <CommandGroup heading="Extensions">
+                    <CommandItem 
+                      onSelect={() => {
+                        onCustom();
+                        setOpen(false);
+                      }}
+                      className="text-primary font-bold"
+                    >
+                      <PlusCircle className="h-4 w-4 mr-2" />
+                      {customLabel}
+                    </CommandItem>
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        )}
+      </div>
+    );
+  };
 
   if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>;
 
@@ -492,10 +628,16 @@ export default function IngredientLibraryPage() {
                     </TableCell>
                     <TableCell className="p-6">
                        <div className="flex flex-col gap-1">
-                          <Badge variant="secondary" className="rounded-lg text-[9px] font-black uppercase tracking-tight bg-stone-100 text-stone-500 border-none w-fit">
-                              {ing.category}
-                          </Badge>
-                          <p className="text-[8px] font-bold text-stone-400 uppercase tracking-widest ml-1">{ing.subCategory} • {ing.ingredientForm}</p>
+                          <div className="flex items-center gap-1.5">
+                            <Badge variant="secondary" className="rounded-lg text-[9px] font-black uppercase tracking-tight bg-stone-100 text-stone-500 border-none w-fit">
+                                {ing.category}
+                            </Badge>
+                            {ing.masterCategorySource === 'Custom' && <Badge variant="outline" className="text-[7px] border-primary/20 text-primary h-3 px-1 font-bold">Custom</Badge>}
+                          </div>
+                          <div className="flex items-center gap-1.5 ml-1">
+                            <p className="text-[8px] font-bold text-stone-400 uppercase tracking-widest">{ing.subCategory} • {ing.ingredientForm}</p>
+                            {ing.subCategorySource === 'Custom' && <Badge variant="outline" className="text-[6px] border-primary/20 text-primary h-2.5 px-1">Custom</Badge>}
+                          </div>
                        </div>
                     </TableCell>
                     <TableCell className="p-6">
@@ -566,72 +708,71 @@ export default function IngredientLibraryPage() {
                             <FormMessage />
                          </FormItem>
                        )} />
+                       
                        <FormField control={form.control} name="category" render={({ field }) => (
-                         <FormItem>
-                            <div className="flex items-center justify-between">
-                                <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">Master Category</FormLabel>
-                                <Button 
-                                    type="button" 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    className="h-6 text-[8px] font-black uppercase tracking-widest text-primary hover:bg-primary/10"
-                                    onClick={() => {
-                                      setCategoryMode(categoryMode === 'select' ? 'custom' : 'select');
-                                    }}
-                                >
-                                    {categoryMode === 'select' ? <><Keyboard className="h-3 w-3 mr-1" /> Use Custom Input</> : <><Layers className="h-3 w-3 mr-1" /> Use Standard Menu</>}
-                                </Button>
-                            </div>
-                            {categoryMode === 'select' ? (
-                                <Select onValueChange={(val) => {
-                                  field.onChange(val);
-                                  // Reset child fields when selecting standard category via dropdown
-                                  form.setValue('subCategory', '');
-                                  form.setValue('ingredientForm', '');
-                                  form.setValue('primaryRole', '');
-                                  form.setValue('secondaryRoles', []);
-                                }} value={field.value}>
-                                    <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
-                                    <SelectContent>{MASTER_CATEGORIES.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent>
-                                </Select>
-                            ) : (
-                                <FormControl><Input className="h-12 rounded-xl" placeholder="Enter custom category..." {...field} /></FormControl>
-                            )}
-                            <FormMessage />
-                         </FormItem>
+                         <SearchableSelector 
+                            label="Master Category"
+                            items={registeredMasterCategories}
+                            value={field.value}
+                            placeholder="Select Master Category..."
+                            customLabel="Add Custom Master Category..."
+                            isCustom={masterCategoryMode === 'custom'}
+                            customValue={field.value}
+                            onCustomChange={(val) => {
+                                field.onChange(val);
+                                form.setValue('masterCategorySource', 'Custom');
+                            }}
+                            onCustom={() => {
+                                setMasterCategoryMode(masterCategoryMode === 'select' ? 'custom' : 'select');
+                                if (masterCategoryMode === 'select') {
+                                    form.setValue('masterCategorySource', 'Custom');
+                                } else {
+                                    form.setValue('masterCategorySource', 'System');
+                                }
+                            }}
+                            onChange={(val) => {
+                                field.onChange(val);
+                                form.setValue('masterCategorySource', 'System');
+                                // Reset subfields when selection changes
+                                form.setValue('subCategory', '');
+                                form.setValue('ingredientForm', '');
+                                form.setValue('primaryRole', '');
+                                form.setValue('secondaryRoles', []);
+                            }}
+                         />
                        )} />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                        <FormField control={form.control} name="subCategory" render={({ field }) => (
-                         <FormItem>
-                            <div className="flex items-center justify-between">
-                                <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">Sub-Category (Type)</FormLabel>
-                                <Button 
-                                    type="button" 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    className="h-6 text-[8px] font-black uppercase tracking-widest text-primary hover:bg-primary/10"
-                                    onClick={() => setSubCategoryMode(subCategoryMode === 'select' ? 'custom' : 'select')}
-                                >
-                                    {subCategoryMode === 'select' ? <><Keyboard className="h-3 w-3 mr-1" /> Use Custom Input</> : <><Layers className="h-3 w-3 mr-1" /> Use Standard Menu</>}
-                                </Button>
-                            </div>
-                            {subCategoryMode === 'select' ? (
-                                <Select onValueChange={(val) => {
-                                  field.onChange(val);
-                                  form.setValue('ingredientForm', '');
-                                  form.setValue('primaryRole', '');
-                                  form.setValue('secondaryRoles', []);
-                                }} value={field.value} disabled={!watchCategory || categoryMode === 'custom'}>
-                                    <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder={!watchCategory ? "Select Category First" : "Select type..."} /></SelectTrigger></FormControl>
-                                    <SelectContent>{taxonomyConfig.subcategories.map((sub: string) => <SelectItem key={sub} value={sub}>{sub}</SelectItem>)}</SelectContent>
-                                </Select>
-                            ) : (
-                                <FormControl><Input className="h-12 rounded-xl" placeholder="Enter custom subcategory..." {...field} /></FormControl>
-                            )}
-                            <FormMessage />
-                         </FormItem>
+                         <SearchableSelector 
+                            label="Sub Category"
+                            items={registeredSubCategories}
+                            value={field.value}
+                            placeholder={!watchCategory ? "Select Master Category First" : "Select Sub Category..."}
+                            customLabel="Add Custom Sub Category..."
+                            isCustom={subCategoryMode === 'custom'}
+                            customValue={field.value}
+                            onCustomChange={(val) => {
+                                field.onChange(val);
+                                form.setValue('subCategorySource', 'Custom');
+                            }}
+                            onCustom={() => {
+                                setSubCategoryMode(subCategoryMode === 'select' ? 'custom' : 'select');
+                                if (subCategoryMode === 'select') {
+                                    form.setValue('subCategorySource', 'Custom');
+                                } else {
+                                    form.setValue('subCategorySource', 'System');
+                                }
+                            }}
+                            onChange={(val) => {
+                                field.onChange(val);
+                                form.setValue('subCategorySource', 'System');
+                                form.setValue('ingredientForm', '');
+                                form.setValue('primaryRole', '');
+                                form.setValue('secondaryRoles', []);
+                            }}
+                         />
                        )} />
                        <FormField control={form.control} name="ingredientForm" render={({ field }) => (
                          <FormItem>
@@ -962,3 +1103,16 @@ export default function IngredientLibraryPage() {
     </>
   );
 }
+
+// Add these at the end of the file or ensure they are imported correctly if coming from components/ui
+const CommandSeparator = React.forwardRef<
+  React.ElementRef<typeof Separator>,
+  React.ComponentPropsWithoutRef<typeof Separator>
+>(({ className, ...props }, ref) => (
+  <Separator
+    ref={ref}
+    className={cn("-mx-1 my-1 h-px bg-muted", className)}
+    {...props}
+  />
+))
+CommandSeparator.displayName = "CommandSeparator"

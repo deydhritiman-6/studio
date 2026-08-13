@@ -51,7 +51,9 @@ export type Ingredient = {
   name: string;
   sku?: string;
   category: string;
+  masterCategorySource?: 'System' | 'Custom';
   subCategory?: string;
+  subCategorySource?: 'System' | 'Custom';
   ingredientForm?: string;
   primaryRole?: string;
   secondaryRoles?: string[];
@@ -83,6 +85,9 @@ export type Ingredient = {
   minTemp?: number;
   maxTemp?: number;
   shelfLifeDays?: number;
+  batchNumber?: string;
+  lotNumber?: string;
+  expiryDate?: string;
   
   // Costing
   purchasePrice?: number;
