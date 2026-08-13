@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -8,7 +9,6 @@ import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { Ingredient, AllergenStatus } from '@/lib/types';
@@ -32,7 +32,6 @@ import {
   Layers,
   FlaskConical,
   CircleCheck,
-  Keyboard,
   History,
   FileText,
   Check
@@ -51,7 +50,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 // --- Artisan Taxonomy Configuration ---
@@ -339,14 +338,12 @@ export default function IngredientLibraryPage() {
     return taxonomyConfig.roleMapping(watchSubCategory, watchForm);
   }, [taxonomyConfig, watchSubCategory, watchForm]);
 
-  // Extract all unique registered categories for searching
   const registeredMasterCategories = useMemo(() => {
     if (!ingredients) return MASTER_CATEGORIES;
     const fromDB = ingredients.map(i => i.category);
     return Array.from(new Set([...MASTER_CATEGORIES, ...fromDB])).sort();
   }, [ingredients]);
 
-  // Extract unique subcategories for the selected category
   const registeredSubCategories = useMemo(() => {
     const systemOnes = taxonomyConfig.subcategories;
     if (!ingredients || !watchCategory) return systemOnes;
@@ -399,7 +396,6 @@ export default function IngredientLibraryPage() {
     const id = editingIngredient?.id || `ING-${Date.now()}`;
     const ingRef = doc(firestore, 'ingredients', id);
     
-    // Normalize source flags if manual input matches system entry
     const isSystemCategory = MASTER_CATEGORIES.includes(values.category);
     const finalMasterSource = isSystemCategory ? 'System' : values.masterCategorySource;
     
@@ -490,7 +486,7 @@ export default function IngredientLibraryPage() {
               <Button type="button" variant="ghost" className="h-4 p-0 text-[8px] font-black uppercase text-primary" onClick={() => {
                 onCustomChange('');
                 onChange('');
-                onCustom(); // toggle back
+                onCustom();
               }}>
                 <X className="h-2 w-2 mr-1" /> Use List
               </Button>
@@ -527,8 +523,8 @@ export default function IngredientLibraryPage() {
                       <CommandItem
                         key={item}
                         value={item}
-                        onSelect={(currentValue) => {
-                          onChange(currentValue === value ? "" : currentValue);
+                        onSelect={() => {
+                          onChange(item);
                           setOpen(false);
                         }}
                         className="flex items-center justify-between"
@@ -732,7 +728,6 @@ export default function IngredientLibraryPage() {
                             onChange={(val) => {
                                 field.onChange(val);
                                 form.setValue('masterCategorySource', 'System');
-                                // Reset subfields when selection changes
                                 form.setValue('subCategory', '');
                                 form.setValue('ingredientForm', '');
                                 form.setValue('primaryRole', '');
@@ -1103,15 +1098,3 @@ export default function IngredientLibraryPage() {
   );
 }
 
-// Add these at the end of the file or ensure they are imported correctly if coming from components/ui
-const CommandSeparator = React.forwardRef<
-  React.ElementRef<typeof Separator>,
-  React.ComponentPropsWithoutRef<typeof Separator>
->(({ className, ...props }, ref) => (
-  <Separator
-    ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-muted", className)}
-    {...props}
-  />
-))
-CommandSeparator.displayName = "CommandSeparator"
