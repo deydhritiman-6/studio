@@ -31,7 +31,8 @@ import {
   Save,
   Layers,
   FlaskConical,
-  CircleCheck
+  CircleCheck,
+  Keyboard
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -284,6 +285,10 @@ export default function IngredientLibraryPage() {
   const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(null);
   const [activeTab, setActiveTab] = useState('basic');
   const [isSaving, setIsSaving] = useState(false);
+
+  // Mode states for dropdown vs custom input
+  const [categoryMode, setCategoryMode] = useState<'select' | 'custom'>('select');
+  const [subCategoryMode, setSubCategoryMode] = useState<'select' | 'custom'>('select');
   
   const [itemToDelete, setItemToDelete] = useState<Ingredient | null>(null);
   const [deleteInput, setDeleteInput] = useState('');
@@ -317,17 +322,22 @@ export default function IngredientLibraryPage() {
 
   // Cascading update logic
   useEffect(() => {
-    form.setValue('subCategory', '');
-    form.setValue('ingredientForm', '');
-    form.setValue('primaryRole', '');
-    form.setValue('secondaryRoles', []);
-  }, [watchCategory, form]);
+    // Only reset if we are in select mode and the new category is standard
+    if (categoryMode === 'select' && MASTER_CATEGORIES.includes(watchCategory)) {
+        form.setValue('subCategory', '');
+        form.setValue('ingredientForm', '');
+        form.setValue('primaryRole', '');
+        form.setValue('secondaryRoles', []);
+    }
+  }, [watchCategory, form, categoryMode]);
 
   useEffect(() => {
-    form.setValue('ingredientForm', '');
-    form.setValue('primaryRole', '');
-    form.setValue('secondaryRoles', []);
-  }, [watchSubCategory, form]);
+    if (subCategoryMode === 'select') {
+        form.setValue('ingredientForm', '');
+        form.setValue('primaryRole', '');
+        form.setValue('secondaryRoles', []);
+    }
+  }, [watchSubCategory, form, subCategoryMode]);
 
   const taxonomyConfig = useMemo(() => {
     return (ARTISAN_TAXONOMY as any)[watchCategory] || { subcategories: [], forms: [], roleMapping: () => [] };
@@ -347,6 +357,15 @@ export default function IngredientLibraryPage() {
           verificationDate: editingIngredient.allergens.verificationDate || '',
         }
       } as any);
+
+      // Detect if category/subcategory should be in custom mode
+      const isCustomCat = !MASTER_CATEGORIES.includes(editingIngredient.category);
+      setCategoryMode(isCustomCat ? 'custom' : 'select');
+      
+      const standardSubs = (ARTISAN_TAXONOMY as any)[editingIngredient.category]?.subcategories || [];
+      const isCustomSub = !standardSubs.includes(editingIngredient.subCategory);
+      setSubCategoryMode(isCustomSub ? 'custom' : 'select');
+
     } else {
       form.reset({ 
         name: '', 
@@ -363,6 +382,8 @@ export default function IngredientLibraryPage() {
           glutenFree: false, vegan: false, vegetarian: false
         }
       });
+      setCategoryMode('select');
+      setSubCategoryMode('select');
     }
   }, [editingIngredient, form]);
 
@@ -563,11 +584,27 @@ export default function IngredientLibraryPage() {
                        )} />
                        <FormField control={form.control} name="category" render={({ field }) => (
                          <FormItem>
-                            <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">Master Category</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                               <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
-                               <SelectContent>{MASTER_CATEGORIES.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent>
-                            </Select>
+                            <div className="flex items-center justify-between">
+                                <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">Master Category</FormLabel>
+                                <Button 
+                                    type="button" 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="h-6 text-[8px] font-black uppercase tracking-widest text-primary"
+                                    onClick={() => setCategoryMode(categoryMode === 'select' ? 'custom' : 'select')}
+                                >
+                                    {categoryMode === 'select' ? <><Keyboard className="h-3 w-3 mr-1" /> Custom Mode</> : <><Layers className="h-3 w-3 mr-1" /> Selection Mode</>}
+                                </Button>
+                            </div>
+                            {categoryMode === 'select' ? (
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                    <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
+                                    <SelectContent>{MASTER_CATEGORIES.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent>
+                                </Select>
+                            ) : (
+                                <FormControl><Input className="h-12 rounded-xl" placeholder="Enter custom category..." {...field} /></FormControl>
+                            )}
+                            <FormMessage />
                          </FormItem>
                        )} />
                     </div>
@@ -575,11 +612,27 @@ export default function IngredientLibraryPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                        <FormField control={form.control} name="subCategory" render={({ field }) => (
                          <FormItem>
-                            <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">Sub-Category (Type)</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value} disabled={!watchCategory}>
-                               <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Select type..." /></SelectTrigger></FormControl>
-                               <SelectContent>{taxonomyConfig.subcategories.map((sub: string) => <SelectItem key={sub} value={sub}>{sub}</SelectItem>)}</SelectContent>
-                            </Select>
+                            <div className="flex items-center justify-between">
+                                <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">Sub-Category (Type)</FormLabel>
+                                <Button 
+                                    type="button" 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="h-6 text-[8px] font-black uppercase tracking-widest text-primary"
+                                    onClick={() => setSubCategoryMode(subCategoryMode === 'select' ? 'custom' : 'select')}
+                                >
+                                    {subCategoryMode === 'select' ? <><Keyboard className="h-3 w-3 mr-1" /> Custom Mode</> : <><Layers className="h-3 w-3 mr-1" /> Selection Mode</>}
+                                </Button>
+                            </div>
+                            {subCategoryMode === 'select' ? (
+                                <Select onValueChange={field.onChange} value={field.value} disabled={!watchCategory || categoryMode === 'custom'}>
+                                    <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Select type..." /></SelectTrigger></FormControl>
+                                    <SelectContent>{taxonomyConfig.subcategories.map((sub: string) => <SelectItem key={sub} value={sub}>{sub}</SelectItem>)}</SelectContent>
+                                </Select>
+                            ) : (
+                                <FormControl><Input className="h-12 rounded-xl" placeholder="Enter custom subcategory..." {...field} /></FormControl>
+                            )}
+                            <FormMessage />
                          </FormItem>
                        )} />
                        <FormField control={form.control} name="ingredientForm" render={({ field }) => (
