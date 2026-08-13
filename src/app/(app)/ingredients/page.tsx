@@ -39,7 +39,6 @@ import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
-import { Input as BaseInput } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
@@ -331,7 +330,7 @@ function SearchableSelector({
         <Input 
           className="h-12 rounded-xl border-primary/40 focus:ring-primary/20" 
           placeholder={`Enter Custom ${label}...`}
-          value={customValue}
+          value={customValue ?? ''}
           onChange={(e) => onCustomChange(e.target.value)}
         />
       ) : (
@@ -415,6 +414,7 @@ export default function IngredientLibraryPage() {
     resolver: zodResolver(ingredientSchema),
     defaultValues: {
       name: '',
+      sku: '',
       category: '',
       masterCategorySource: 'System',
       subCategory: '',
@@ -422,8 +422,16 @@ export default function IngredientLibraryPage() {
       ingredientForm: '',
       primaryRole: '',
       secondaryRoles: [],
+      brand: '',
+      supplierName: '',
+      origin: '',
+      description: '',
       defaultUnit: 'g',
       isActive: true,
+      batchNumber: '',
+      lotNumber: '',
+      expiryDate: '',
+      purchaseUnit: '',
       allergens: {
         milk: 'Unknown', egg: 'Unknown', fish: 'Unknown', crustacean: 'Unknown',
         treeNuts: 'Unknown', peanuts: 'Unknown', wheat: 'Unknown', soy: 'Unknown', sesame: 'Unknown',
@@ -462,6 +470,15 @@ export default function IngredientLibraryPage() {
     if (editingIngredient) {
       form.reset({
         ...editingIngredient,
+        sku: editingIngredient.sku || '',
+        brand: editingIngredient.brand || '',
+        supplierName: editingIngredient.supplierName || '',
+        origin: editingIngredient.origin || '',
+        description: editingIngredient.description || '',
+        batchNumber: editingIngredient.batchNumber || '',
+        lotNumber: editingIngredient.lotNumber || '',
+        expiryDate: editingIngredient.expiryDate || '',
+        purchaseUnit: editingIngredient.purchaseUnit || '',
         masterCategorySource: editingIngredient.masterCategorySource || 'System',
         subCategorySource: editingIngredient.subCategorySource || 'System',
         secondaryRoles: editingIngredient.secondaryRoles || [],
@@ -476,6 +493,7 @@ export default function IngredientLibraryPage() {
     } else {
       form.reset({ 
         name: '', 
+        sku: '',
         category: '', 
         masterCategorySource: 'System',
         subCategory: '',
@@ -483,6 +501,14 @@ export default function IngredientLibraryPage() {
         ingredientForm: '',
         primaryRole: '',
         secondaryRoles: [],
+        brand: '',
+        supplierName: '',
+        origin: '',
+        description: '',
+        batchNumber: '',
+        lotNumber: '',
+        expiryDate: '',
+        purchaseUnit: '',
         defaultUnit: 'g', 
         isActive: true, 
         allergens: {
@@ -701,7 +727,7 @@ export default function IngredientLibraryPage() {
                        <FormField control={form.control} name="name" render={({ field }) => (
                          <FormItem>
                             <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">Ingredient Identity</FormLabel>
-                            <FormControl><Input className="h-12 rounded-xl" placeholder="e.g. Criollo Cocoa Mass" {...field} /></FormControl>
+                            <FormControl><Input className="h-12 rounded-xl" placeholder="e.g. Criollo Cocoa Mass" {...field} value={field.value ?? ''} /></FormControl>
                             <FormMessage />
                          </FormItem>
                        )} />
@@ -789,19 +815,19 @@ export default function IngredientLibraryPage() {
                        <FormField control={form.control} name="sku" render={({ field }) => (
                          <FormItem>
                             <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">SKU / Code</FormLabel>
-                            <FormControl><Input className="h-10 rounded-xl" placeholder="RB-CHO-001" {...field} /></FormControl>
+                            <FormControl><Input className="h-10 rounded-xl" placeholder="RB-CHO-001" {...field} value={field.value ?? ''} /></FormControl>
                          </FormItem>
                        )} />
                        <FormField control={form.control} name="brand" render={({ field }) => (
                          <FormItem>
                             <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground">Brand / Manufacturer</FormLabel>
-                            <FormControl><Input className="h-10 rounded-xl" {...field} /></FormControl>
+                            <FormControl><Input className="h-10 rounded-xl" {...field} value={field.value ?? ''} /></FormControl>
                          </FormItem>
                        )} />
                         <FormField control={form.control} name="origin" render={({ field }) => (
                          <FormItem>
                             <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground">Country of Origin</FormLabel>
-                            <FormControl><Input className="h-10 rounded-xl" {...field} /></FormControl>
+                            <FormControl><Input className="h-10 rounded-xl" {...field} value={field.value ?? ''} /></FormControl>
                          </FormItem>
                        )} />
                     </div>
@@ -960,7 +986,7 @@ export default function IngredientLibraryPage() {
                            <FormField control={form.control} name="allergens.verificationDate" render={({ field }) => (
                              <FormItem>
                                 <FormLabel className="uppercase text-[8px] font-black tracking-widest text-stone-400">Supplier Specification Verification Date</FormLabel>
-                                <FormControl><Input type="date" className="h-10 rounded-xl" {...field} /></FormControl>
+                                <FormControl><Input type="date" className="h-10 rounded-xl" {...field} value={field.value ?? ''} /></FormControl>
                                 <FormDescription className="text-[8px]">Allergen status should be verified against actual manufacturer documents.</FormDescription>
                              </FormItem>
                            )} />
@@ -995,20 +1021,20 @@ export default function IngredientLibraryPage() {
                               <FormField control={form.control} name="batchNumber" render={({ field }) => (
                                 <FormItem>
                                    <FormLabel className="uppercase text-[9px] font-black text-stone-400">Current Batch #</FormLabel>
-                                   <FormControl><Input className="h-10 rounded-xl" {...field} /></FormControl>
+                                   <FormControl><Input className="h-10 rounded-xl" {...field} value={field.value ?? ''} /></FormControl>
                                 </FormItem>
                               )} />
                               <FormField control={form.control} name="lotNumber" render={({ field }) => (
                                 <FormItem>
                                    <FormLabel className="uppercase text-[9px] font-black text-stone-400">Lot Identifier</FormLabel>
-                                   <FormControl><Input className="h-10 rounded-xl" {...field} /></FormControl>
+                                   <FormControl><Input className="h-10 rounded-xl" {...field} value={field.value ?? ''} /></FormControl>
                                 </FormItem>
                               )} />
                            </div>
                            <FormField control={form.control} name="expiryDate" render={({ field }) => (
                               <FormItem>
                                  <FormLabel className="uppercase text-[9px] font-black text-stone-400">Expiry Date</FormLabel>
-                                 <FormControl><Input type="date" className="h-10 rounded-xl" {...field} /></FormControl>
+                                 <FormControl><Input type="date" className="h-10 rounded-xl" {...field} value={field.value ?? ''} /></FormControl>
                               </FormItem>
                            )} />
                         </div>
@@ -1022,7 +1048,7 @@ export default function IngredientLibraryPage() {
                                 <FormItem><FormLabel className="uppercase text-[8px] font-bold text-stone-400">Purchase Rate (₹)</FormLabel><FormControl><Input type="number" className="h-10 rounded-xl" {...field} /></FormControl></FormItem>
                               )} />
                               <FormField control={form.control} name="purchaseUnit" render={({ field }) => (
-                                <FormItem><FormLabel className="uppercase text-[8px] font-bold text-stone-400">Rate Unit (kg/L)</FormLabel><FormControl><Input className="h-10 rounded-xl" {...field} /></FormControl></FormItem>
+                                <FormItem><FormLabel className="uppercase text-[8px] font-bold text-stone-400">Rate Unit (kg/L)</FormLabel><FormControl><Input className="h-10 rounded-xl" {...field} value={field.value ?? ''} /></FormControl></FormItem>
                               )} />
                            </div>
                            <FormField control={form.control} name="defaultUnit" render={({ field }) => (
