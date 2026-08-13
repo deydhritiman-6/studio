@@ -47,6 +47,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
@@ -345,11 +346,11 @@ export default function IngredientLibraryPage() {
   }, [ingredients]);
 
   const registeredSubCategories = useMemo(() => {
-    const systemOnes = taxonomyConfig.subcategories;
+    const systemOnes = (ARTISAN_TAXONOMY as any)[watchCategory]?.subcategories || [];
     if (!ingredients || !watchCategory) return systemOnes;
     const fromDB = ingredients.filter(i => i.category === watchCategory).map(i => i.subCategory).filter(Boolean) as string[];
     return Array.from(new Set([...systemOnes, ...fromDB])).sort();
-  }, [ingredients, watchCategory, taxonomyConfig.subcategories]);
+  }, [ingredients, watchCategory]);
 
   useEffect(() => {
     if (editingIngredient) {
@@ -1097,4 +1098,3 @@ export default function IngredientLibraryPage() {
     </>
   );
 }
-
