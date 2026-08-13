@@ -32,7 +32,6 @@ import {
   FlaskConical,
   CircleCheck,
   History,
-  FileText,
   Check
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -284,7 +283,7 @@ const ingredientSchema = z.object({
 type IngredientFormValues = z.infer<typeof ingredientSchema>;
 
 /**
- * Shared Searchable Selector component with toggleable Manual Entry
+ * Robust Searchable Selector with Hybrid Manual Toggle
  */
 function SearchableSelector({ 
   items, 
@@ -348,7 +347,7 @@ function SearchableSelector({
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-[400px] p-0 rounded-xl overflow-hidden shadow-2xl border-none" align="start">
-            <Command className="border-none">
+            <Command className="border-none" filter={(value, search) => value.includes(search.toLowerCase()) ? 1 : 0}>
               <CommandInput placeholder={`Search ${label.toLowerCase()}...`} className="h-12" />
               <CommandList className="max-h-[300px]">
                 <CommandEmpty className="py-6 px-4 text-xs italic text-muted-foreground text-center">No existing entry found.</CommandEmpty>
@@ -356,7 +355,7 @@ function SearchableSelector({
                   {items.map((item) => (
                     <CommandItem
                       key={item}
-                      value={item}
+                      value={item.toLowerCase()}
                       onSelect={() => {
                         onChange(item);
                         setOpen(false);
@@ -419,6 +418,8 @@ export default function IngredientLibraryPage() {
       batchNumber: '',
       lotNumber: '',
       expiryDate: '',
+      purchasePrice: 0,
+      purchaseQuantity: 0,
       purchaseUnit: '',
       allergens: {
         milk: 'Unknown', egg: 'Unknown', fish: 'Unknown', crustacean: 'Unknown',
@@ -467,6 +468,8 @@ export default function IngredientLibraryPage() {
         lotNumber: editingIngredient.lotNumber || '',
         expiryDate: editingIngredient.expiryDate || '',
         purchaseUnit: editingIngredient.purchaseUnit || '',
+        purchasePrice: editingIngredient.purchasePrice || 0,
+        purchaseQuantity: editingIngredient.purchaseQuantity || 0,
         masterCategorySource: editingIngredient.masterCategorySource || 'System',
         subCategorySource: editingIngredient.subCategorySource || 'System',
         secondaryRoles: editingIngredient.secondaryRoles || [],
@@ -496,6 +499,8 @@ export default function IngredientLibraryPage() {
         batchNumber: '',
         lotNumber: '',
         expiryDate: '',
+        purchasePrice: 0,
+        purchaseQuantity: 0,
         purchaseUnit: '',
         defaultUnit: 'g', 
         isActive: true, 
@@ -653,7 +658,7 @@ export default function IngredientLibraryPage() {
                     </TableCell>
                     <TableCell className="p-6">
                        <div className="flex items-center gap-2">
-                          <FlaskConical className="h-3 w-3 text-primary opacity-40" />
+                          <Layers className="h-3 w-3 text-primary opacity-40" />
                           <span className="text-[10px] font-bold text-stone-600">{ing.primaryRole || 'Not Specified'}</span>
                        </div>
                     </TableCell>
@@ -1032,21 +1037,26 @@ export default function IngredientLibraryPage() {
                            </div>
                            <div className="grid grid-cols-2 gap-4">
                               <FormField control={form.control} name="purchasePrice" render={({ field }) => (
-                                <FormItem><FormLabel className="uppercase text-[8px] font-bold text-stone-400">Purchase Rate (₹)</FormLabel><FormControl><Input type="number" className="h-10 rounded-xl border-stone-200" {...field} value={field.value ?? ''} /></FormControl></FormItem>
+                                <FormItem><FormLabel className="uppercase text-[8px] font-bold text-stone-400">Purchase Rate (₹)</FormLabel><FormControl><Input type="number" className="h-10 rounded-xl border-stone-200" {...field} value={field.value ?? 0} /></FormControl></FormItem>
                               )} />
                               <FormField control={form.control} name="purchaseUnit" render={({ field }) => (
                                 <FormItem><FormLabel className="uppercase text-[8px] font-bold text-stone-400">Rate Unit (kg/L)</FormLabel><FormControl><Input className="h-10 rounded-xl border-stone-200" {...field} value={field.value ?? ''} /></FormControl></FormItem>
                               )} />
                            </div>
-                           <FormField control={form.control} name="defaultUnit" render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="uppercase text-[9px] font-black text-stone-400">Artisan Measuring Unit</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value ?? 'g'}>
-                                   <FormControl><SelectTrigger className="h-10 rounded-xl border-stone-200"><SelectValue /></SelectTrigger></FormControl>
-                                   <SelectContent>{['mg', 'g', 'kg', 'ml', 'L', 'pcs', 'tbsp', 'tsp', 'pinch'].map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
-                                </Select>
-                              </FormItem>
-                           )} />
+                           <div className="grid grid-cols-2 gap-4">
+                              <FormField control={form.control} name="purchaseQuantity" render={({ field }) => (
+                                <FormItem><FormLabel className="uppercase text-[8px] font-bold text-stone-400">Purchase Qty</FormLabel><FormControl><Input type="number" className="h-10 rounded-xl border-stone-200" {...field} value={field.value ?? 0} /></FormControl></FormItem>
+                              )} />
+                              <FormField control={form.control} name="defaultUnit" render={({ field }) => (
+                                 <FormItem>
+                                   <FormLabel className="uppercase text-[9px] font-black text-stone-400">Recipe Unit</FormLabel>
+                                   <Select onValueChange={field.onChange} value={field.value ?? 'g'}>
+                                      <FormControl><SelectTrigger className="h-10 rounded-xl border-stone-200"><SelectValue /></SelectTrigger></FormControl>
+                                      <SelectContent>{['mg', 'g', 'kg', 'ml', 'L', 'pcs', 'tbsp', 'tsp', 'pinch'].map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
+                                   </Select>
+                                 </FormItem>
+                              )} />
+                           </div>
                         </div>
                      </div>
                   </TabsContent>
