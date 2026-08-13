@@ -24,7 +24,6 @@ import {
   Download, 
   X, 
   ShieldAlert,
-  Info,
   Beaker,
   ShieldCheck,
   Thermometer,
@@ -123,6 +122,7 @@ export default function IngredientLibraryPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(null);
   const [activeTab, setActiveTab] = useState('basic');
+  const [isSaving, setIsSaving] = useState(false);
   
   const [itemToDelete, setItemToDelete] = useState<Ingredient | null>(null);
   const [deleteInput, setDeleteInput] = useState('');
@@ -176,6 +176,7 @@ export default function IngredientLibraryPage() {
 
   const onSave = (values: IngredientFormValues) => {
     if (!firestore) return;
+    setIsSaving(true);
 
     const id = editingIngredient?.id || `ING-${Date.now()}`;
     const ingRef = doc(firestore, 'ingredients', id);
@@ -198,7 +199,8 @@ export default function IngredientLibraryPage() {
           operation: editingIngredient ? 'update' : 'create',
           requestResourceData: ingData
         }));
-      });
+      })
+      .finally(() => setIsSaving(false));
   };
 
   const handleToggleFavourite = (ing: Ingredient) => {
