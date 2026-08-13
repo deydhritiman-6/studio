@@ -32,7 +32,8 @@ import {
   FlaskConical,
   CircleCheck,
   History,
-  Check
+  Check,
+  RotateCcw
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -283,7 +284,7 @@ const ingredientSchema = z.object({
 type IngredientFormValues = z.infer<typeof ingredientSchema>;
 
 /**
- * Robust Searchable Selector with Hybrid Manual Toggle
+ * Robust Searchable Selector with Hybrid Manual Toggle matching requested UI
  */
 function SearchableSelector({ 
   items, 
@@ -311,24 +312,21 @@ function SearchableSelector({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-          <Label className="uppercase text-[9px] font-black tracking-widest text-stone-400">{label}</Label>
+          <Label className="uppercase text-[10px] font-black tracking-widest text-stone-400">{label}</Label>
           <Button 
             type="button" 
             variant="ghost" 
-            className="h-4 p-0 text-[8px] font-black uppercase text-primary hover:bg-transparent" 
+            className="h-6 w-6 p-0 rounded-full bg-orange-100 hover:bg-orange-200 text-orange-600 border border-orange-200 shadow-sm transition-all" 
             onClick={onCustom}
+            title={isCustom ? "Use Registered List" : "Enter Manually"}
           >
-            {isCustom ? (
-              <div className="flex items-center gap-1"><History className="h-2 w-2" /> Use Registered List</div>
-            ) : (
-              <div className="flex items-center gap-1"><PlusCircle className="h-2 w-2" /> Enter Manually</div>
-            )}
+            {isCustom ? <RotateCcw className="h-3 w-3" /> : <PlusCircle className="h-3 w-3" />}
           </Button>
       </div>
       
       {isCustom ? (
         <Input 
-          className="h-12 rounded-xl border-primary/40 focus:ring-primary/20" 
+          className="h-12 rounded-xl border-orange-300 focus:ring-orange-100 bg-orange-50/10" 
           placeholder={`Enter Custom ${label}...`}
           value={customValue ?? ''}
           onChange={(e) => onCustomChange(e.target.value)}
@@ -340,13 +338,15 @@ function SearchableSelector({
               variant="outline"
               role="combobox"
               aria-expanded={open}
-              className="w-full justify-between h-12 rounded-xl text-left font-normal border-stone-200"
+              className="w-full justify-between h-12 rounded-xl text-left font-normal border-stone-200 bg-background hover:bg-muted/5 transition-all"
             >
-              {value ? value : placeholder}
+              <span className={cn("truncate", !value && "text-stone-400")}>
+                {value ? value : placeholder}
+              </span>
               <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[400px] p-0 rounded-xl overflow-hidden shadow-2xl border-none" align="start">
+          <PopoverContent className="w-[400px] p-0 rounded-2xl overflow-hidden shadow-2xl border-none bg-background z-50" align="start">
             <Command className="border-none" filter={(value, search) => value.includes(search.toLowerCase()) ? 1 : 0}>
               <CommandInput placeholder={`Search ${label.toLowerCase()}...`} className="h-12" />
               <CommandList className="max-h-[300px]">
@@ -360,7 +360,7 @@ function SearchableSelector({
                         onChange(item);
                         setOpen(false);
                       }}
-                      className="flex items-center justify-between py-3 cursor-pointer"
+                      className="flex items-center justify-between py-3 px-4 cursor-pointer data-[selected=true]:bg-amber-100/50"
                     >
                       <span className="text-sm font-medium">{item}</span>
                       <Check className={cn("h-4 w-4 text-primary", value === item ? "opacity-100" : "opacity-0")} />
@@ -719,7 +719,7 @@ export default function IngredientLibraryPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                        <FormField control={form.control} name="name" render={({ field }) => (
                          <FormItem>
-                            <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">Ingredient Identity</FormLabel>
+                            <FormLabel className="uppercase text-[10px] font-black tracking-widest text-stone-400">Ingredient Identity</FormLabel>
                             <FormControl><Input className="h-12 rounded-xl" placeholder="e.g. Criollo Cocoa Mass" {...field} value={field.value ?? ''} /></FormControl>
                             <FormMessage />
                          </FormItem>
@@ -790,13 +790,13 @@ export default function IngredientLibraryPage() {
                        )} />
                        <FormField control={form.control} name="ingredientForm" render={({ field }) => (
                          <FormItem>
-                            <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">Ingredient Form (Physical State)</FormLabel>
+                            <FormLabel className="uppercase text-[10px] font-black tracking-widest text-stone-400">Ingredient Form (Physical State)</FormLabel>
                             <Select onValueChange={(val) => {
                                 field.onChange(val);
                                 form.setValue('primaryRole', '');
                                 form.setValue('secondaryRoles', []);
                             }} value={field.value ?? ''} disabled={!watchSubCategory}>
-                               <FormControl><SelectTrigger className="h-12 rounded-xl border-stone-200"><SelectValue placeholder="Select form..." /></SelectTrigger></FormControl>
+                               <FormControl><SelectTrigger className="h-12 rounded-xl border-stone-200 bg-background"><SelectValue placeholder="Select form..." /></SelectTrigger></FormControl>
                                <SelectContent>{taxonomyConfig.forms.map((f: string) => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
                             </Select>
                          </FormItem>
@@ -806,20 +806,20 @@ export default function IngredientLibraryPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                        <FormField control={form.control} name="sku" render={({ field }) => (
                          <FormItem>
-                            <FormLabel className="uppercase text-[9px] font-black tracking-widest text-stone-400">SKU / Code</FormLabel>
-                            <FormControl><Input className="h-10 rounded-xl" placeholder="RB-CHO-001" {...field} value={field.value ?? ''} /></FormControl>
+                            <FormLabel className="uppercase text-[10px] font-black tracking-widest text-stone-400">SKU / Code</FormLabel>
+                            <FormControl><Input className="h-12 rounded-xl" placeholder="RB-CHO-001" {...field} value={field.value ?? ''} /></FormControl>
                          </FormItem>
                        )} />
                        <FormField control={form.control} name="brand" render={({ field }) => (
                          <FormItem>
-                            <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground">Brand / Manufacturer</FormLabel>
-                            <FormControl><Input className="h-10 rounded-xl" {...field} value={field.value ?? ''} /></FormControl>
+                            <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Brand / Manufacturer</FormLabel>
+                            <FormControl><Input className="h-12 rounded-xl" {...field} value={field.value ?? ''} /></FormControl>
                          </FormItem>
                        )} />
                         <FormField control={form.control} name="origin" render={({ field }) => (
                          <FormItem>
-                            <FormLabel className="uppercase text-[9px] font-black tracking-widest text-muted-foreground">Country of Origin</FormLabel>
-                            <FormControl><Input className="h-10 rounded-xl" {...field} value={field.value ?? ''} /></FormControl>
+                            <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Country of Origin</FormLabel>
+                            <FormControl><Input className="h-12 rounded-xl" {...field} value={field.value ?? ''} /></FormControl>
                          </FormItem>
                        )} />
                     </div>
@@ -951,7 +951,7 @@ export default function IngredientLibraryPage() {
                                    <span className="text-[10px] font-black uppercase tracking-widest text-stone-500">{a}</span>
                                    <FormField control={form.control} name={`allergens.${a}` as any} render={({ field }) => (
                                       <Select onValueChange={field.onChange} value={field.value ?? 'Unknown'}>
-                                         <FormControl><SelectTrigger className="h-8 rounded-lg text-[9px] font-bold uppercase border-stone-200"><SelectValue /></SelectTrigger></FormControl>
+                                         <FormControl><SelectTrigger className="h-8 rounded-lg text-[9px] font-bold uppercase border-stone-200 bg-background"><SelectValue /></SelectTrigger></FormControl>
                                          <SelectContent>{allergenStatusOptions.map(opt => <SelectItem key={opt} value={opt} className="text-[9px]">{opt}</SelectItem>)}</SelectContent>
                                       </Select>
                                    )} />
@@ -961,7 +961,7 @@ export default function IngredientLibraryPage() {
                         </div>
 
                         <div className="space-y-8">
-                           <div className="p-8 bg-stone-50 rounded-[2rem] border space-y-6">
+                           <div className="p-8 bg-stone-50 rounded-[2.5rem] border space-y-6">
                               <h5 className="text-xs font-black uppercase tracking-[0.2em] text-stone-400">Certifications</h5>
                               <div className="space-y-4">
                                  {['glutenFree', 'vegan', 'vegetarian'].map(c => (
@@ -995,38 +995,38 @@ export default function IngredientLibraryPage() {
                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                               <FormField control={form.control} name="storageCondition" render={({ field }) => (
                                 <FormItem>
-                                   <FormLabel className="uppercase text-[9px] font-black text-stone-400">Storage Environment</FormLabel>
+                                   <FormLabel className="uppercase text-[10px] font-black text-stone-400">Storage Environment</FormLabel>
                                    <Select onValueChange={field.onChange} value={field.value ?? 'Ambient'}>
-                                      <FormControl><SelectTrigger className="h-10 rounded-xl border-stone-200"><SelectValue /></SelectTrigger></FormControl>
+                                      <FormControl><SelectTrigger className="h-12 rounded-xl border-stone-200 bg-background"><SelectValue /></SelectTrigger></FormControl>
                                       <SelectContent>{['Ambient', 'Cool & Dry', 'Refrigerated', 'Frozen', 'Temp Controlled', 'Humidity Controlled'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                                    </Select>
                                 </FormItem>
                               )} />
                               <FormField control={form.control} name="shelfLifeDays" render={({ field }) => (
                                 <FormItem>
-                                   <FormLabel className="uppercase text-[9px] font-black text-stone-400">Shelf Life (Days)</FormLabel>
-                                   <FormControl><Input type="number" className="h-10 rounded-xl border-stone-200" {...field} value={field.value ?? ''} /></FormControl>
+                                   <FormLabel className="uppercase text-[10px] font-black text-stone-400">Shelf Life (Days)</FormLabel>
+                                   <FormControl><Input type="number" className="h-12 rounded-xl border-stone-200" {...field} value={field.value ?? ''} /></FormControl>
                                 </FormItem>
                               )} />
                            </div>
                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                               <FormField control={form.control} name="batchNumber" render={({ field }) => (
                                 <FormItem>
-                                   <FormLabel className="uppercase text-[9px] font-black text-stone-400">Current Batch #</FormLabel>
-                                   <FormControl><Input className="h-10 rounded-xl border-stone-200" {...field} value={field.value ?? ''} /></FormControl>
+                                   <FormLabel className="uppercase text-[10px] font-black text-stone-400">Current Batch #</FormLabel>
+                                   <FormControl><Input className="h-12 rounded-xl border-stone-200" {...field} value={field.value ?? ''} /></FormControl>
                                 </FormItem>
                               )} />
                               <FormField control={form.control} name="lotNumber" render={({ field }) => (
                                 <FormItem>
-                                   <FormLabel className="uppercase text-[9px] font-black text-stone-400">Lot Identifier</FormLabel>
-                                   <FormControl><Input className="h-10 rounded-xl border-stone-200" {...field} value={field.value ?? ''} /></FormControl>
+                                   <FormLabel className="uppercase text-[10px] font-black text-stone-400">Lot Identifier</FormLabel>
+                                   <FormControl><Input className="h-12 rounded-xl border-stone-200" {...field} value={field.value ?? ''} /></FormControl>
                                 </FormItem>
                               )} />
                            </div>
                            <FormField control={form.control} name="expiryDate" render={({ field }) => (
                               <FormItem>
-                                 <FormLabel className="uppercase text-[9px] font-black text-stone-400">Expiry Date</FormLabel>
-                                 <FormControl><Input type="date" className="h-10 rounded-xl border-stone-200" {...field} value={field.value ?? ''} /></FormControl>
+                                 <FormLabel className="uppercase text-[10px] font-black text-stone-400">Expiry Date</FormLabel>
+                                 <FormControl><Input type="date" className="h-12 rounded-xl border-stone-200" {...field} value={field.value ?? ''} /></FormControl>
                               </FormItem>
                            )} />
                         </div>
@@ -1037,21 +1037,21 @@ export default function IngredientLibraryPage() {
                            </div>
                            <div className="grid grid-cols-2 gap-4">
                               <FormField control={form.control} name="purchasePrice" render={({ field }) => (
-                                <FormItem><FormLabel className="uppercase text-[8px] font-bold text-stone-400">Purchase Rate (₹)</FormLabel><FormControl><Input type="number" className="h-10 rounded-xl border-stone-200" {...field} value={field.value ?? 0} /></FormControl></FormItem>
+                                <FormItem><FormLabel className="uppercase text-[8px] font-bold text-stone-400">Purchase Rate (₹)</FormLabel><FormControl><Input type="number" className="h-12 rounded-xl border-stone-200" {...field} value={field.value ?? 0} /></FormControl></FormItem>
                               )} />
                               <FormField control={form.control} name="purchaseUnit" render={({ field }) => (
-                                <FormItem><FormLabel className="uppercase text-[8px] font-bold text-stone-400">Rate Unit (kg/L)</FormLabel><FormControl><Input className="h-10 rounded-xl border-stone-200" {...field} value={field.value ?? ''} /></FormControl></FormItem>
+                                <FormItem><FormLabel className="uppercase text-[8px] font-bold text-stone-400">Rate Unit (kg/L)</FormLabel><FormControl><Input className="h-12 rounded-xl border-stone-200" {...field} value={field.value ?? ''} /></FormControl></FormItem>
                               )} />
                            </div>
                            <div className="grid grid-cols-2 gap-4">
                               <FormField control={form.control} name="purchaseQuantity" render={({ field }) => (
-                                <FormItem><FormLabel className="uppercase text-[8px] font-bold text-stone-400">Purchase Qty</FormLabel><FormControl><Input type="number" className="h-10 rounded-xl border-stone-200" {...field} value={field.value ?? 0} /></FormControl></FormItem>
+                                <FormItem><FormLabel className="uppercase text-[8px] font-bold text-stone-400">Purchase Qty</FormLabel><FormControl><Input type="number" className="h-12 rounded-xl border-stone-200" {...field} value={field.value ?? 0} /></FormControl></FormItem>
                               )} />
                               <FormField control={form.control} name="defaultUnit" render={({ field }) => (
                                  <FormItem>
-                                   <FormLabel className="uppercase text-[9px] font-black text-stone-400">Recipe Unit</FormLabel>
+                                   <FormLabel className="uppercase text-[10px] font-black text-stone-400">Recipe Unit</FormLabel>
                                    <Select onValueChange={field.onChange} value={field.value ?? 'g'}>
-                                      <FormControl><SelectTrigger className="h-10 rounded-xl border-stone-200"><SelectValue /></SelectTrigger></FormControl>
+                                      <FormControl><SelectTrigger className="h-12 rounded-xl border-stone-200 bg-background"><SelectValue /></SelectTrigger></FormControl>
                                       <SelectContent>{['mg', 'g', 'kg', 'ml', 'L', 'pcs', 'tbsp', 'tsp', 'pinch'].map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
                                    </Select>
                                  </FormItem>
@@ -1122,3 +1122,4 @@ export default function IngredientLibraryPage() {
     </>
   );
 }
+
