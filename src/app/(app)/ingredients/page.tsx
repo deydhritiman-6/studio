@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -47,6 +46,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
 
 // --- Artisan Taxonomy Configuration ---
 
@@ -862,7 +862,7 @@ export default function IngredientLibraryPage() {
           <div className="p-10 space-y-6">
             <div className="space-y-4">
               <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Security Verification</Label>
-              <p className="text-xs text-stone-500 italic">Type <span className="font-bold text-destructive underline">delete</span> to authorize destruction.</p>
+              <p className="text-xs text-stone-500 italic">Type the word <span className="font-bold text-destructive underline">delete</span> manually to authorize destruction.</p>
               <Input 
                 placeholder="Type here..." 
                 value={deleteInput}
