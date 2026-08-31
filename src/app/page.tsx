@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -264,7 +265,7 @@ export default function LandingPage() {
                 
                 <div className="space-y-6 text-stone-400 text-lg md:text-xl font-light leading-relaxed">
                   <p>
-                    Raisa founded Roseberry Chocolate at the age of 65, transforming a lifelong passion into Kolkata's most beloved artisan studio. Her journey began not with a business plan, but with a simple bowl and a heart full of dreams.
+                    Raisa founded Roseberry Chocolate at the age of 10, transforming a lifelong passion into Kolkata's most beloved artisan studio. Her journey began not with a business plan, but with a simple bowl and a heart full of dreams.
                   </p>
                   <p className="border-l-4 border-amber-600/30 pl-8 italic">
                     "I believe that dreams have no age limit. Our chocolates are born from a desire to bring pure, handmade joy to every celebration, using only the finest ethical ingredients."
