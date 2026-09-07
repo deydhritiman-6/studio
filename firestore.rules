@@ -9,9 +9,21 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Security Rules for Roseberry Ops
-    
-    // Products: Catalog visible to everyone (including anonymous guests)
+    // --- INSIDE ROSEBERRY / FACILITIES SHOWCASE ---
+    // Public read access for the showcase content
+    match /facilities/{facilityId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Public read access for specific facilities settings
+    match /settings/{settingId} {
+      allow read: if settingId == 'facilities' || isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    // --- PRODUCTS & CATALOG ---
+    // Catalog visible to everyone (including anonymous guests)
     match /products/{productId} {
       allow read: if true;
       allow write: if isAuthenticated();
@@ -23,6 +35,7 @@ service cloud.firestore {
       allow write: if isAuthenticated();
     }
     
+    // --- ORDERS & TRANSACTIONS ---
     // Orders: Creation enabled for guests, management for authenticated staff
     match /orders/{orderId} {
       allow create: if true;
@@ -30,30 +43,24 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Facilities: Public read, authenticated write
-    match /facilities/{facilityId} {
-      allow read: if true;
-      allow write: if isAuthenticated();
-    }
-
-    // Settings: Public read for facilities, authenticated write for everything
-    match /settings/{settingId} {
-      allow read: if settingId == 'facilities' || isAuthenticated();
-      allow write: if isAuthenticated();
-    }
-
-    // Quotations: Management for authenticated staff
+    // --- QUOTATIONS ---
+    // Management for authenticated staff
     match /quotations/{quotationId} {
       allow read, write: if isAuthenticated();
     }
 
+    // --- ADMINISTRATIVE DATA ---
     // Operations: Protected administrative data
     match /customers/{customerId} { allow read, write: if isAuthenticated(); }
     match /inventory/{itemId} { allow read, write: if isAuthenticated(); }
     match /distributors/{distributorId} { allow read, write: if isAuthenticated(); }
     match /recipes/{recipeId} { allow read, write: if isAuthenticated(); }
+    match /vendors/{vendorId} { allow read, write: if isAuthenticated(); }
+    match /material-purchases/{purchaseId} { allow read, write: if isAuthenticated(); }
+    match /costings/{costingId} { allow read, write: if isAuthenticated(); }
 
-    // Fallback: Require authentication for everything else
+    // --- SYSTEM FALLBACK ---
+    // Require authentication for everything else
     match /{document=**} {
       allow read, write: if isAuthenticated();
     }
