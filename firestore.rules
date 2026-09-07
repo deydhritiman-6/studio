@@ -10,16 +10,18 @@ service cloud.firestore {
     }
 
     // --- INSIDE ROSEBERRY / FACILITIES SHOWCASE ---
-    // Public read access for the showcase content
+    // Narrowly scoped rules for the new facilities feature
+    // Allows public read (get/list) and admin write
     match /facilities/{facilityId} {
-      allow read: if true;
-      allow write: if isAuthenticated();
+      allow get, list: if true;
+      allow create, update, delete: if isAuthenticated();
     }
 
-    // Public read access for specific facilities settings
+    // Narrowly scoped rules for facilities settings
+    // Allows public read for 'facilities' document specifically
     match /settings/{settingId} {
-      allow read: if settingId == 'facilities' || isAuthenticated();
-      allow write: if isAuthenticated();
+      allow get: if settingId == 'facilities' || isAuthenticated();
+      allow list, write: if isAuthenticated();
     }
 
     // --- PRODUCTS & CATALOG ---
