@@ -90,6 +90,43 @@
         "updatedAt": { "type": "string" }
       },
       "required": ["name", "status", "batchSize"]
+    },
+    "Facility": {
+      "title": "Facility",
+      "description": "An internal Roseberry facility showcase item.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "caption": { "type": "string" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "order": { "type": "number" },
+        "isActive": { "type": "boolean" },
+        "showOnHomepage": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      }
+    },
+    "FacilitiesPageSettings": {
+      "title": "Facilities Page Settings",
+      "description": "Configuration for the Inside Roseberry showcase.",
+      "type": "object",
+      "properties": {
+        "eyebrowText": { "type": "string" },
+        "title": { "type": "string" },
+        "subtitle": { "type": "string" },
+        "description": { "type": "string" },
+        "heroImageUrl": { "type": "string" },
+        "homepageTitle": { "type": "string" },
+        "homepageSubtitle": { "type": "string" },
+        "homepageDescription": { "type": "string" },
+        "homepageButtonText": { "type": "string" },
+        "homepageButtonEnabled": { "type": "boolean" },
+        "bottomStatement": { "type": "string" },
+        "bottomDescription": { "type": "string" },
+        "logoUrl": { "type": "string" }
+      }
     }
   },
   "auth": {
@@ -103,6 +140,14 @@
     "/recipes/{recipeId}": {
       "schema": "#/backend/entities/Recipe",
       "description": "Collection of professional chocolate formulations."
+    },
+    "/facilities/{facilityId}": {
+      "schema": "#/backend/entities/Facility",
+      "description": "Artisan facility profiles."
+    },
+    "/settings/facilities": {
+      "schema": "#/backend/entities/FacilitiesPageSettings",
+      "description": "Global settings for the facilities showcase."
     }
   }
 }

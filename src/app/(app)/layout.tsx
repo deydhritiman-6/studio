@@ -1,3 +1,4 @@
+
 'use client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -49,7 +50,8 @@ import {
   Droplets,
   Calculator,
   Store,
-  Wallet
+  Wallet,
+  Building
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -122,6 +124,7 @@ const navItems = [
   },
   { href: '/billing/shipping-status', icon: Truck, label: 'Dispatch Control' },
   { href: '/billing/tracking-visibility', icon: Eye, label: 'Visibility Control' },
+  { href: '/facilities', icon: Building, label: 'Our Facilities' },
   { href: '/distributors', icon: Truck, label: 'Distributors' },
   { href: '/broadcast', icon: Radio, label: 'Broadcasts' },
   { href: '/costing', icon: Calculator, label: 'Costing' },

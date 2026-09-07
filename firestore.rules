@@ -30,6 +30,18 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Facilities: Public read, authenticated write
+    match /facilities/{facilityId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Settings: Public read for facilities, authenticated write for everything
+    match /settings/{settingId} {
+      allow read: if settingId == 'facilities' || isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
     // Quotations: Management for authenticated staff
     match /quotations/{quotationId} {
       allow read, write: if isAuthenticated();

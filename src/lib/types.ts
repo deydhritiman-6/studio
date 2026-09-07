@@ -438,3 +438,32 @@ export type Costing = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type Facility = {
+  id: string;
+  title: string;
+  caption: string;
+  description: string;
+  imageUrl: string;
+  order: number;
+  isActive: boolean;
+  showOnHomepage: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type FacilitiesPageSettings = {
+  eyebrowText: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  heroImageUrl: string;
+  homepageTitle: string;
+  homepageSubtitle: string;
+  homepageDescription: string;
+  homepageButtonText: string;
+  homepageButtonEnabled: boolean;
+  bottomStatement: string;
+  bottomDescription: string;
+  logoUrl?: string;
+};

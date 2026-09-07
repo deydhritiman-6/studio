@@ -23,6 +23,7 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
+import { InsideRoseberryPreview } from '@/components/inside-roseberry-preview';
 
 export default function LandingPage() {
   const firestore = useFirestore();
@@ -81,21 +82,25 @@ export default function LandingPage() {
                   Our Story
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-rose-700 transition-all duration-300 group-hover:w-full"></span>
                 </Link>
-                <Link href="/shop" className="relative group hover:text-amber-600 transition-colors duration-300">
-                  Collections
+                <Link href="/inside-roseberry" className="relative group hover:text-amber-600 transition-colors duration-300">
+                  Inside Roseberry
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all duration-300 group-hover:w-full"></span>
                 </Link>
                 <Link href="/shop" className="relative group hover:text-rose-700 transition-colors duration-300">
-                  Gift Boxes
+                  Collections
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-rose-700 transition-all duration-300 group-hover:w-full"></span>
                 </Link>
-                <Link href="#reviews" className="relative group hover:text-amber-600 transition-colors duration-300">
-                  Reviews
+                <Link href="/shop" className="relative group hover:text-amber-600 transition-colors duration-300">
+                  Gift Boxes
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all duration-300 group-hover:w-full"></span>
                 </Link>
-                <Link href="#footer" className="relative group hover:text-rose-700 transition-colors duration-300">
-                  Contact
+                <Link href="#reviews" className="relative group hover:text-rose-700 transition-colors duration-300">
+                  Reviews
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-rose-700 transition-all duration-300 group-hover:w-full"></span>
+                </Link>
+                <Link href="#footer" className="relative group hover:text-amber-600 transition-colors duration-300">
+                  Contact
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all duration-300 group-hover:w-full"></span>
                 </Link>
                 <button className="hover:text-primary hover:scale-125 transition-all duration-300 p-1 flex items-center" aria-label="Search">
                   <Search className="h-4 w-4" />
@@ -235,7 +240,7 @@ export default function LandingPage() {
         </section>
 
         {/* Founder Story Section - Explicitly Titled "Our Story" */}
-        <section id="story" className="py-32 px-6 bg-stone-900 text-white overflow-hidden relative rounded-[3rem] mx-4 md:mx-8 mb-32 shadow-2xl">
+        <section id="story" className="py-32 px-6 bg-stone-900 text-white overflow-hidden relative rounded-[3rem] mx-4 md:mx-8 shadow-2xl">
           <div className="absolute top-0 right-0 w-96 h-96 bg-amber-600/10 blur-[120px] rounded-full -mr-48 -mt-48"></div>
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-20 items-center relative z-10">
             <div className="lg:col-span-5 relative">
@@ -284,6 +289,9 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        {/* NEW Inside Roseberry Section */}
+        <InsideRoseberryPreview />
 
         {/* Demi Chocolate Gallery Showcase */}
         <section className="py-24 px-6 relative overflow-hidden">
