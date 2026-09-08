@@ -9,20 +9,19 @@ import { ArrowRight, Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCollection, useDoc, useFirestore } from '@/firebase';
-import { collection, query, where, orderBy, doc } from 'firebase/firestore';
+import { collection, query, where, doc } from 'firebase/firestore';
 import type { Facility, FacilitiesPageSettings } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 export function InsideRoseberryPreview() {
   const firestore = useFirestore();
 
+  // Simplified query to avoid composite index requirement (where + where + orderBy)
   const facilitiesQuery = React.useMemo(() => {
     if (!firestore) return null;
     return query(
       collection(firestore, 'facilities'),
-      where('isActive', '==', true),
-      where('showOnHomepage', '==', true),
-      orderBy('order', 'asc')
+      where('isActive', '==', true)
     );
   }, [firestore]);
 
@@ -31,8 +30,16 @@ export function InsideRoseberryPreview() {
     return doc(firestore, 'settings', 'facilities');
   }, [firestore]);
 
-  const { data: facilities, loading: facilitiesLoading } = useCollection<Facility>(facilitiesQuery);
+  const { data: allActiveFacilities, loading: facilitiesLoading } = useCollection<Facility>(facilitiesQuery);
   const { data: settings, loading: settingsLoading } = useDoc<FacilitiesPageSettings>(settingsRef as any);
+
+  // Perform filtering and sorting client-side to satisfy business logic without DB indexes
+  const facilities = React.useMemo(() => {
+    if (!allActiveFacilities) return [];
+    return allActiveFacilities
+      .filter(f => f.showOnHomepage)
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
+  }, [allActiveFacilities]);
 
   if (facilitiesLoading || settingsLoading) {
     return (
@@ -97,7 +104,7 @@ export function InsideRoseberryPreview() {
                   />
                   <div className="absolute top-4 left-6">
                     <span className="text-6xl font-black text-white/20 font-sans tracking-tighter drop-shadow-sm select-none">
-                      {(facility.order).toString().padStart(2, '0')}
+                      {(facility.order || index + 1).toString().padStart(2, '0')}
                     </span>
                   </div>
                 </div>

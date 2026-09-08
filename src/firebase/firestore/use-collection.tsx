@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -35,8 +36,7 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
         setLoading(false);
       },
       async (serverError: FirestoreError) => {
-        // Only report as a permission error if that is the actual cause.
-        // Other errors (like missing indexes) should be logged for diagnosis.
+        // Handle permission denied specifically
         if (serverError.code === 'permission-denied') {
           const permissionError = new FirestorePermissionError({
             path: (query as any)._query?.path?.toString() || 'unknown',
@@ -45,7 +45,10 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
           errorEmitter.emit('permission-error', permissionError);
           setError(permissionError);
         } else {
-          console.error('Firestore Collection Error:', serverError.code, serverError.message);
+          // Log other errors (like failed-precondition) but avoid triggering Next.js error overlay spam
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('Firestore Collection Query Issue:', serverError.code, serverError.message);
+          }
           setError(serverError);
         }
         setLoading(false);

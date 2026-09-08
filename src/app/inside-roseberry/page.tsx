@@ -22,19 +22,19 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Logo } from '@/components/logo';
 import { useCollection, useDoc, useFirestore } from '@/firebase';
-import { collection, query, where, orderBy, doc } from 'firebase/firestore';
+import { collection, query, where, doc } from 'firebase/firestore';
 import type { Facility, FacilitiesPageSettings } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 export default function InsideRoseberryPage() {
   const firestore = useFirestore();
 
+  // Simplified query to avoid composite index requirement (where + orderBy)
   const facilitiesQuery = React.useMemo(() => {
     if (!firestore) return null;
     return query(
       collection(firestore, 'facilities'),
-      where('isActive', '==', true),
-      orderBy('order', 'asc')
+      where('isActive', '==', true)
     );
   }, [firestore]);
 
@@ -43,8 +43,14 @@ export default function InsideRoseberryPage() {
     return doc(firestore, 'settings', 'facilities');
   }, [firestore]);
 
-  const { data: facilities, loading: facilitiesLoading } = useCollection<Facility>(facilitiesQuery);
+  const { data: allActiveFacilities, loading: facilitiesLoading } = useCollection<Facility>(facilitiesQuery);
   const { data: settings, loading: settingsLoading } = useDoc<FacilitiesPageSettings>(settingsRef as any);
+
+  // Perform sorting client-side
+  const facilities = React.useMemo(() => {
+    if (!allActiveFacilities) return [];
+    return [...allActiveFacilities].sort((a, b) => (a.order || 0) - (b.order || 0));
+  }, [allActiveFacilities]);
 
   if (facilitiesLoading || settingsLoading) {
     return (
@@ -151,7 +157,7 @@ export default function InsideRoseberryPage() {
                         />
                         <div className="absolute top-6 left-8">
                           <span className="text-7xl font-black text-white/30 font-sans tracking-tighter drop-shadow-sm select-none">
-                            {(facility.order).toString().padStart(2, '0')}
+                            {(facility.order || index + 1).toString().padStart(2, '0')}
                           </span>
                         </div>
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
