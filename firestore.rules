@@ -1,3 +1,4 @@
+
 rules_version = '2';
 
 service cloud.firestore {
@@ -8,36 +9,39 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // --- TESTIMONIALS ---
+    match /testimonials/{testimonialId} {
+      // Public can submit new testimonials but they must be 'pending'
+      allow create: if request.resource.data.status == 'pending';
+      // Public can only read approved testimonials
+      allow get, list: if resource.data.status == 'approved' || isAuthenticated();
+      // Admins can do everything
+      allow update, delete: if isAuthenticated();
+    }
+
     // --- INSIDE ROSEBERRY / FACILITIES SHOWCASE ---
-    // Rules for the facilities feature
-    // Allows public read (get/list) and admin write
     match /facilities/{facilityId} {
       allow read: if true;
       allow create, update, delete: if isAuthenticated();
     }
 
-    // Narrowly scoped rules for facilities settings
-    // Allows public read for 'facilities' document specifically
     match /settings/{settingId} {
       allow get: if settingId == 'facilities' || isAuthenticated();
       allow list, write: if isAuthenticated();
     }
 
     // --- PRODUCTS & CATALOG ---
-    // Catalog visible to everyone (including anonymous guests)
     match /products/{productId} {
       allow read: if true;
       allow write: if isAuthenticated();
     }
 
-    // Galleries: Visible to everyone, management for staff
     match /product-galleries/{galleryId} {
       allow read: if true;
       allow write: if isAuthenticated();
     }
     
     // --- ORDERS & TRANSACTIONS ---
-    // Orders: Creation enabled for guests, management for authenticated staff
     match /orders/{orderId} {
       allow create: if true;
       allow read, update: if isAuthenticated();
@@ -45,13 +49,11 @@ service cloud.firestore {
     }
 
     // --- QUOTATIONS ---
-    // Management for authenticated staff
     match /quotations/{quotationId} {
       allow read, write: if isAuthenticated();
     }
 
     // --- ADMINISTRATIVE DATA ---
-    // Operations: Protected administrative data
     match /customers/{customerId} { allow read, write: if isAuthenticated(); }
     match /inventory/{itemId} { allow read, write: if isAuthenticated(); }
     match /distributors/{distributorId} { allow read, write: if isAuthenticated(); }
@@ -61,10 +63,8 @@ service cloud.firestore {
     match /costings/{costingId} { allow read, write: if isAuthenticated(); }
 
     // --- SYSTEM FALLBACK ---
-    // Require authentication for everything else
     match /{document=**} {
       allow read, write: if isAuthenticated();
     }
   }
 }
-// Inert comment to trigger security rules re-deployment for project studio-3540801076-42aa4

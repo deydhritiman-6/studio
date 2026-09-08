@@ -1,8 +1,9 @@
+
 'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -16,13 +17,14 @@ import {
   Truck,
   Search,
   Loader2,
-  Quote
+  Quote,
+  MessageSquareQuote
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection } from 'firebase/firestore';
-import type { Product } from '@/lib/types';
+import { collection, query, where } from 'firebase/firestore';
+import type { Product, Testimonial } from '@/lib/types';
 import { InsideRoseberryPreview } from '@/components/inside-roseberry-preview';
 import { TestimonialMarquee } from '@/components/testimonial-marquee';
 import { motion } from 'framer-motion';
@@ -31,6 +33,9 @@ export default function LandingPage() {
   const firestore = useFirestore();
   const productsQuery = useMemo(() => (firestore ? collection(firestore, 'products') : null), [firestore]);
   const { data: products, loading: productsLoading } = useCollection<Product>(productsQuery);
+
+  const testimonialsQuery = useMemo(() => (firestore ? query(collection(firestore, 'testimonials'), where('status', '==', 'approved')) : null), [firestore]);
+  const { data: liveTestimonials } = useCollection<Testimonial>(testimonialsQuery);
 
   const curatedIndulgences = useMemo(() => {
     if (!products) return [];
@@ -285,9 +290,15 @@ export default function LandingPage() {
               </Badge>
               <h2 className="text-4xl md:text-6xl font-bold font-headline text-stone-900 tracking-tight">Sweet Words from Our Customers</h2>
               <p className="text-stone-400 text-lg font-light italic">Moments of Happiness, Shared by You</p>
+              
+              <div className="pt-8">
+                <Button asChild variant="outline" className="rounded-full h-12 px-8 border-primary/20 text-primary hover:bg-primary/5">
+                    <Link href="/share-experience"><MessageSquareQuote className="mr-2 h-4 w-4" /> Share Your Sweet Experience</Link>
+                </Button>
+              </div>
            </div>
            
-           <TestimonialMarquee />
+           <TestimonialMarquee liveTestimonials={liveTestimonials || []} />
         </section>
 
         <section className="py-32 px-6">

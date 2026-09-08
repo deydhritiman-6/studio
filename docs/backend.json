@@ -108,25 +108,29 @@
         "updatedAt": { "type": "string" }
       }
     },
-    "FacilitiesPageSettings": {
-      "title": "Facilities Page Settings",
-      "description": "Configuration for the Inside Roseberry showcase.",
+    "Testimonial": {
+      "title": "Testimonial",
+      "description": "Customer feedback and artisan experiences.",
       "type": "object",
       "properties": {
-        "eyebrowText": { "type": "string" },
-        "title": { "type": "string" },
-        "subtitle": { "type": "string" },
-        "description": { "type": "string" },
-        "heroImageUrl": { "type": "string" },
-        "homepageTitle": { "type": "string" },
-        "homepageSubtitle": { "type": "string" },
-        "homepageDescription": { "type": "string" },
-        "homepageButtonText": { "type": "string" },
-        "homepageButtonEnabled": { "type": "boolean" },
-        "bottomStatement": { "type": "string" },
-        "bottomDescription": { "type": "string" },
-        "logoUrl": { "type": "string" }
-      }
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "city": { "type": "string" },
+        "country": { "type": "string" },
+        "language": { "type": "string" },
+        "testimonial": { "type": "string" },
+        "rating": { "type": "number" },
+        "photoUrl": { "type": "string" },
+        "occasion": { "type": "string" },
+        "product": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "approvedAt": { "type": "string" }
+      },
+      "required": ["name", "city", "country", "testimonial", "rating", "status"]
     }
   },
   "auth": {
@@ -145,9 +149,9 @@
       "schema": "#/backend/entities/Facility",
       "description": "Artisan facility profiles."
     },
-    "/settings/facilities": {
-      "schema": "#/backend/entities/FacilitiesPageSettings",
-      "description": "Global settings for the facilities showcase."
+    "/testimonials/{testimonialId}": {
+      "schema": "#/backend/entities/Testimonial",
+      "description": "Customer reviews and patron stories."
     }
   }
 }

@@ -21,6 +21,25 @@ export type UserAccount = {
   permissions: string[];
 };
 
+export type Testimonial = {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  city: string;
+  country: string;
+  language: 'bn' | 'hi' | 'en';
+  testimonial: string;
+  rating: number;
+  photoUrl?: string;
+  occasion?: string;
+  product?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
+  updatedAt: string;
+  approvedAt?: string;
+};
+
 export type AllergenStatus = 'Contains' | 'Does Not Contain' | 'May Contain' | 'Cross-Contact Risk' | 'Unknown';
 
 export type AllergenMatrix = {

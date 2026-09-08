@@ -51,7 +51,8 @@ import {
   Calculator,
   Store,
   Wallet,
-  Building
+  Building,
+  MessageSquareQuote
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -125,6 +126,7 @@ const navItems = [
   { href: '/billing/shipping-status', icon: Truck, label: 'Dispatch Control' },
   { href: '/billing/tracking-visibility', icon: Eye, label: 'Visibility Control' },
   { href: '/facilities', icon: Building, label: 'Our Facilities' },
+  { href: '/testimonials', icon: MessageSquareQuote, label: 'Patron Stories' },
   { href: '/distributors', icon: Truck, label: 'Distributors' },
   { href: '/broadcast', icon: Radio, label: 'Broadcasts' },
   { href: '/costing', icon: Calculator, label: 'Costing' },
