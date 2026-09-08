@@ -227,11 +227,11 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="story" className="py-32 px-6 bg-stone-800 text-white overflow-hidden relative rounded-[3rem] mx-4 md:mx-8 shadow-2xl">
+        <section id="story" className="py-32 px-6 bg-stone-700 text-white overflow-hidden relative rounded-[3rem] mx-4 md:mx-8 shadow-2xl">
           <div className="absolute top-0 right-0 w-96 h-96 bg-amber-600/10 blur-[120px] rounded-full -mr-48 -mt-48"></div>
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-20 items-center relative z-10">
             <div className="lg:col-span-5 relative">
-              <div className="aspect-[3/4] relative rounded-[3rem] overflow-hidden border-8 border-stone-700 shadow-2xl">
+              <div className="aspect-[3/4] relative rounded-[3rem] overflow-hidden border-8 border-stone-600 shadow-2xl">
                 <Image 
                   src={mainStoryImage?.imageUrl || 'https://picsum.photos/seed/raisa/600/800'} 
                   alt="Founder Raisa" 

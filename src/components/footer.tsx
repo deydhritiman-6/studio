@@ -199,7 +199,7 @@ export function Footer() {
                   <li key={link.text}>
                     <Link 
                       href={link.url} 
-                      className="text-stone-800 text-[14px] hover:text-cyan-600 transition-all duration-300 flex items-center group/link font-bold"
+                      className="text-stone-800 text-[15px] hover:text-cyan-700 transition-all duration-300 flex items-center group/link font-bold"
                     >
                       <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 mr-3 opacity-0 -translate-x-4 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all" />
                       <span className="group-hover/link:translate-x-1 transition-transform tracking-wide">{link.text}</span>
@@ -221,7 +221,7 @@ export function Footer() {
                   <li key={policy.text}>
                     <Link 
                       href={policy.url} 
-                      className="text-stone-800 text-[14px] hover:text-fuchsia-600 transition-all duration-300 tracking-wide font-bold"
+                      className="text-stone-800 text-[15px] hover:text-fuchsia-700 transition-all duration-300 tracking-wide font-bold"
                     >
                       {policy.text}
                     </Link>
@@ -241,7 +241,7 @@ export function Footer() {
                   <p className="text-[16px] text-stone-900 font-bold leading-tight">
                     {address.businessName || "Roseberry Chocolate Studio"}
                   </p>
-                  <p className="text-[14px] text-stone-800 font-bold leading-relaxed tracking-wide">
+                  <p className="text-[15px] text-stone-800 font-bold leading-relaxed tracking-wide">
                     {address.line1 || "123 Chocolate Lane"}<br />
                     {address.line2 && <>{address.line2}<br /></>}
                     {address.area && <>{address.area}, </>}{address.city || "Kolkata"}<br />
@@ -260,7 +260,7 @@ export function Footer() {
                     <div className="h-10 w-10 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 group-hover/contact:text-emerald-600 group-hover/contact:border-emerald-200 group-hover/contact:bg-emerald-50/50 transition-all shadow-sm">
                       <Phone className="h-4 w-4" />
                     </div>
-                    <span className="text-[14px] text-stone-900 group-hover/contact:text-stone-950 transition-colors font-bold tracking-wide">{contact.phone}</span>
+                    <span className="text-[15px] text-stone-900 group-hover/contact:text-stone-950 transition-colors font-bold tracking-wide">{contact.phone}</span>
                   </a>
                 )}
                 {contact.email && (
@@ -268,7 +268,7 @@ export function Footer() {
                     <div className="h-10 w-10 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 group-hover/contact:text-emerald-600 group-hover/contact:border-emerald-200 group-hover/contact:bg-emerald-50/50 transition-all shadow-sm">
                       <Mail className="h-4 w-4" />
                     </div>
-                    <span className="text-[14px] text-stone-900 group-hover/contact:text-stone-950 transition-colors break-all font-bold tracking-wide leading-none">{contact.email}</span>
+                    <span className="text-[15px] text-stone-900 group-hover/contact:text-stone-950 transition-colors break-all font-bold tracking-wide leading-none">{contact.email}</span>
                   </a>
                 )}
               </div>
@@ -325,7 +325,7 @@ export function Footer() {
             <div className="space-y-6">
               <h4 className="text-[15px] font-black uppercase tracking-[0.4em] text-fuchsia-600">Artisan Bulletin</h4>
               <div className="space-y-4">
-                <p className="text-[14px] text-stone-800 italic font-bold">Be first to discover seasonal limited editions.</p>
+                <p className="text-[15px] text-stone-800 italic font-bold">Be first to discover seasonal limited editions.</p>
                 <div className="flex gap-2 bg-white/60 backdrop-blur-md p-2 rounded-2xl border border-white/80 group focus-within:border-cyan-200 transition-all shadow-sm">
                   <input 
                     type="email" 
@@ -376,22 +376,22 @@ export function Footer() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
                   <div className="space-y-1.5">
                     <span className="text-[10px] font-black text-stone-500 uppercase tracking-tighter">Beneficiary</span>
-                    <p className="text-[14px] font-black text-stone-900 truncate">{bank.accountName}</p>
+                    <p className="text-[15px] font-black text-stone-900 truncate">{bank.accountName}</p>
                   </div>
                   <div className="space-y-1.5">
                     <span className="text-[10px] font-black text-stone-500 uppercase tracking-tighter">Bank / IFSC</span>
-                    <p className="text-[13px] font-bold text-stone-800 truncate">{bank.bankName} • {bank.ifsc}</p>
+                    <p className="text-[14px] font-bold text-stone-800 truncate">{bank.bankName} • {bank.ifsc}</p>
                   </div>
                   <div className="space-y-1.5">
                     <span className="text-[10px] font-black text-stone-500 uppercase tracking-tighter">Acct Num</span>
-                    <p className="text-[14px] font-mono font-black text-stone-950">
+                    <p className="text-[15px] font-mono font-black text-stone-950">
                       {bank.masked !== false ? `•••• •••• ${bank.accountNumber?.slice(-4)}` : bank.accountNumber}
                     </p>
                   </div>
                   {bank.upiId && (
                     <div className="space-y-1.5">
                       <span className="text-[10px] font-black text-cyan-800 uppercase tracking-tighter">VPA / UPI ID</span>
-                      <p className="text-[14px] font-mono font-black text-cyan-900">{bank.upiId}</p>
+                      <p className="text-[15px] font-mono font-black text-cyan-900">{bank.upiId}</p>
                     </div>
                   )}
                 </div>
