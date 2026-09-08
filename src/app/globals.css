@@ -134,33 +134,63 @@
   animation: shimmer-brand 8s linear infinite;
 }
 
-/* --- Testimonial Marquee CSS --- */
-@keyframes testimonial-marquee {
+/* --- Premium Testimonial Marquee CSS --- */
+@keyframes testimonialScroll {
   0% {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
   100% {
-    transform: translateX(-50%);
+    transform: translate3d(-50%, 0, 0);
   }
+}
+
+.testimonial-marquee-container {
+  overflow-x: hidden;
+  overflow-y: visible;
+  width: 100%;
+  user-select: none;
+  padding: 3rem 0;
+  position: relative;
 }
 
 .testimonial-marquee-track {
   display: flex;
   width: max-content;
   flex-wrap: nowrap;
-  animation: testimonial-marquee 60s linear infinite;
+  animation: testimonialScroll 70s linear infinite;
+  will-change: transform;
 }
 
-.testimonial-marquee-track:hover {
-  animation-play-state: paused;
+/* Pause on hover for desktop users */
+@media (hover: hover) {
+  .testimonial-marquee-container:hover .testimonial-marquee-track {
+    animation-play-state: paused;
+  }
 }
 
+.testimonial-card-wrapper {
+  flex: 0 0 auto;
+  transition: transform 0.5s cubic-bezier(0.2, 1, 0.3, 1), box-shadow 0.5s ease;
+  padding: 0 1.5rem; /* Gap between cards */
+}
+
+@media (hover: hover) {
+  .testimonial-card-wrapper:hover {
+    transform: translateY(-12px) scale(1.03);
+    z-index: 50;
+  }
+}
+
+/* Accessibility: Stop animation for users who prefer reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .testimonial-marquee-track {
     animation: none;
-    width: 100%;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 1.5rem;
+    width: 100%;
+    gap: 2rem;
+  }
+  .testimonial-marquee-container {
+    overflow-x: visible;
   }
 }
