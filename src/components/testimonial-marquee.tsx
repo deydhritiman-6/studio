@@ -16,7 +16,7 @@ type Testimonial = {
 };
 
 const TESTIMONIAL_DATA: Omit<Testimonial, 'id'>[] = [
-  // --- Group 1: Kolkata (12 items) - 50% ---
+  // --- Group 1: Kolkata (12 items) ---
   { name: 'Ananya Chatterjee', location: 'Salt Lake, Kolkata', text: 'অপূর্ব স্বাদ! কলকাতার সেরা হ্যান্ডমেড চকলেট। ডার্ক চকোলেট ট্রাফলটা আমার ফেভারিট।', lang: 'bn', rating: 5, group: 'kolkata', gender: 'f' },
   { name: 'Sayan Banerjee', location: 'Ballygunge, Kolkata', text: 'The sea salt caramel is pure bliss. Packaging is incredibly premium and artisanal.', lang: 'en', rating: 4, group: 'kolkata', gender: 'm' },
   { name: 'Riya Mukherjee', location: 'New Town, Kolkata', text: 'আমি আমার মা-কে উপহার দিয়েছিলাম, উনি খুব খুশি হয়েছেন। গুণগত মান অনবদ্য।', lang: 'bn', rating: 5, group: 'kolkata', gender: 'f' },
@@ -24,27 +24,27 @@ const TESTIMONIAL_DATA: Omit<Testimonial, 'id'>[] = [
   { name: 'Soham Dutta', location: 'Jadavpur, Kolkata', text: 'এদের চকোলেটের টেক্সচার খুব স্মুথ। একদম আন্তর্জাতিক মানের স্বাদ আর প্রেজেন্টেশন।', lang: 'bn', rating: 4, group: 'kolkata', gender: 'm' },
   { name: 'Moumita Roy', location: 'Tollygunge, Kolkata', text: 'Beautiful presentation. Loved the customized box for my anniversary. Very elegant.', lang: 'en', rating: 4, group: 'kolkata', gender: 'f' },
   { name: 'Debanjan Sen', location: 'Behala, Kolkata', text: 'খুব সুন্দর প্রেজেন্টেশন। কলকাতার বুকে এরকম রুচিশীল উদ্যোগ সত্যিই বিরল।', lang: 'bn', rating: 5, group: 'kolkata', gender: 'm' },
-  { name: 'Tiyasha Das', location: 'Dum Dum, Kolkata', text: 'The hazelnut praline is so addictive. High-quality ingredients and great snap.', lang: 'en', rating: 4, group: 'kolkata', gender: 'f' },
-  { name: 'Subhojit Das', location: 'Esplanade, Kolkata', text: 'স্বাদ আর গন্ধে আভিজাত্যের ছোঁয়া। উৎসবের মরশুমে সেরা উপহার আমাদের জন্য।', lang: 'bn', rating: 5, group: 'kolkata', gender: 'm' },
+  { name: 'Tiyasha Das', location: 'Dum Dum, Kolkata', text: 'The hazelnut praline is so addictive. High-quality ingredients and great snap.', lang: 'en', rating: 3, group: 'kolkata', gender: 'f' },
+  { name: 'Subhojit Das', location: 'Esplanade, Kolkata', text: 'স্বাদ আর গন্ধে আভিজাত্যের ছোঁয়া। উৎসবের মরশুমে সেরা উপহার আমাদের জন্য।', lang: 'bn', rating: 4, group: 'kolkata', gender: 'm' },
   { name: 'Sreya Saha', location: 'Lake Town, Kolkata', text: 'প্যাকেজিং টা জাস্ট অসাধারণ! চকোলেটের স্বাদ অনেকক্ষণ মুখে লেগে থাকার মতো।', lang: 'bn', rating: 4, group: 'kolkata', gender: 'f' },
   { name: 'Ritwick Bose', location: 'Park Street, Kolkata', text: 'Premium cocoa notes. Reminds me of boutique shops in Europe. Simply exquisite.', lang: 'en', rating: 5, group: 'kolkata', gender: 'm' },
   { name: 'Ishita Paul', location: 'Shyambazar, Kolkata', text: 'Excellent customer service and the delivery was prompt. The truffles are works of art.', lang: 'en', rating: 4, group: 'kolkata', gender: 'f' },
 
-  // --- Group 2: Other Indian Cities (7 items) - ~30% ---
+  // --- Group 2: Other Indian Cities (7 items) ---
   { name: 'Rohan Mehta', location: 'Delhi, NCR', text: 'इनके चॉकलेट्स का स्वाद वाकई लाजवाब है। दिल्ली में ऐसी क्वालिटी मिलना मुश्किल है।', lang: 'hi', rating: 5, group: 'india', gender: 'm' },
   { name: 'Priya Nair', location: 'Bengaluru, KA', text: 'Fresh, rich, and truly artisanal. Love the commitment to zero preservatives.', lang: 'en', rating: 4, group: 'india', gender: 'f' },
   { name: 'Aarav Sharma', location: 'Mumbai, MH', text: 'पैकेजिंग और प्रेजेंटेशन बहुत ही प्रीमियम है। गिफ्ट देने के लिए इससे बेहतर कुछ नहीं।', lang: 'hi', rating: 4, group: 'india', gender: 'm' },
   { name: 'Kavya Iyer', location: 'Chennai, TN', text: 'The raspberry ganache is a masterpiece. Balanced sweetness and perfect texture.', lang: 'en', rating: 5, group: 'india', gender: 'f' },
-  { name: 'Aditya Verma', location: 'Hyderabad, TS', text: 'शुद्ध और हाथ से बने चॉकलेट्स की बात ही अलग है। बहुत ही शानदार अनुभव।', lang: 'hi', rating: 4, group: 'india', gender: 'm' },
+  { name: 'Aditya Verma', location: 'Hyderabad, TS', text: 'शुद्ध और हाथ से बने चॉकलेट्स की बात ही अलग है। बहुत ही शानदार अनुभव।', lang: 'hi', rating: 3, group: 'india', gender: 'm' },
   { name: 'Sneha Kapoor', location: 'Pune, MH', text: 'Great for high-end gifting. The dark chocolate range is especially impressive.', lang: 'en', rating: 4, group: 'india', gender: 'f' },
-  { name: 'Rahul Singh', location: 'Lucknow, UP', text: 'स्वाद और क्वालिटी में नंबर वन। कोलकाता की यह मिठास अब हमारे घर तक।', lang: 'hi', rating: 5, group: 'india', gender: 'm' },
+  { name: 'Rahul Singh', location: 'Lucknow, UP', text: 'स्वाद और क्वालिटी में नंबर वन। कोलकाता की यह मिठास अब हमारे घर तक।', lang: 'hi', rating: 4, group: 'india', gender: 'm' },
 
-  // --- Group 3: International (5 items) - ~20% ---
+  // --- Group 3: International (5 items) ---
   { name: 'Olivia Smith', location: 'London, UK', text: 'Truly artisanal craftsmanship. A sophisticated treat that rivals top Belgian brands.', lang: 'en', rating: 5, group: 'international', gender: 'f' },
   { name: 'Daniel Wilson', location: 'New York, USA', text: 'Exceptional quality. You can taste the passion in every bite. World-class chocolate.', lang: 'en', rating: 4, group: 'international', gender: 'm' },
-  { name: 'Emma Brown', location: 'Toronto, CA', text: 'My go-to choice for premium gifting. The texture and tempering are absolutely perfect.', lang: 'en', rating: 4, group: 'international', gender: 'f' },
-  { name: 'Lucas Martin', location: 'Paris, FR', text: 'Beautifully presented and even better to eat. A delight for any chocolate lover.', lang: 'en', rating: 5, group: 'international', gender: 'm' },
-  { name: 'Sophia Lee', location: 'Singapore', text: 'The delivery was efficient and the chocolates arrived in pristine condition. Impressive!', lang: 'en', rating: 4, group: 'international', gender: 'f' },
+  { name: 'Emma Brown', location: 'Toronto, CA', text: 'My go-to choice for premium gifting. The texture and tempering are absolutely perfect.', lang: 'en', rating: 3, group: 'international', gender: 'f' },
+  { name: 'Lucas Martin', location: 'Paris, FR', text: 'Beautifully presented and even better to eat. A delight for any chocolate lover.', lang: 'en', rating: 4, group: 'international', gender: 'm' },
+  { name: 'Sophia Lee', location: 'Singapore', text: 'The delivery was efficient and the chocolates arrived in pristine condition. Impressive!', lang: 'en', rating: 3, group: 'international', gender: 'f' },
 ];
 
 const CocoaBeanIcon = ({ className }: { className?: string }) => (
@@ -74,9 +74,8 @@ export function TestimonialMarquee() {
 
   const shuffledTestimonials = useMemo(() => {
     const base = [...TESTIMONIAL_DATA].map((t, i) => ({ ...t, id: i }));
-    // Simple deterministic-ish shuffle for stability between copy 1 and 2
+    // Deterministic interleaving for a balanced visual stream
     return base.sort((a, b) => {
-        // Balanced interweaving of groups
         const groupOrder = { kolkata: 0, india: 1, international: 2 };
         if (a.group !== b.group) return groupOrder[a.group] - groupOrder[b.group];
         return a.id - b.id;
@@ -86,16 +85,16 @@ export function TestimonialMarquee() {
   if (!mounted) return null;
 
   return (
-    <div className="testimonial-marquee-viewport">
-      <div className="testimonial-marquee-track">
+    <div className="testimonial-viewport">
+      <div className="testimonial-track">
         {/* Group 1 */}
-        <div className="testimonial-marquee-group">
+        <div className="testimonial-group">
           {shuffledTestimonials.map((t) => (
             <TestimonialCard key={t.id} testimonial={t} />
           ))}
         </div>
-        {/* Group 2 (Exact Duplicate) */}
-        <div className="testimonial-marquee-group" aria-hidden="true">
+        {/* Group 2 (Identical Duplicate for Seamless Loop) */}
+        <div className="testimonial-group" aria-hidden="true">
           {shuffledTestimonials.map((t) => (
             <TestimonialCard key={`dup-${t.id}`} testimonial={t} />
           ))}
@@ -116,14 +115,14 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
 
   return (
     <article className={cn(
-      "testimonial-marquee-card",
+      "testimonial-card",
       "p-8 rounded-[2rem] border bg-gradient-to-br backdrop-blur-md",
       "shadow-[0_15px_40px_-20px_rgba(0,0,0,0.1)] transition-all duration-400 ease-out",
-      "hover:-translate-y-2 hover:shadow-[0_25px_60px_-20px_rgba(0,0,0,0.2)] group/card",
+      "hover:-translate-y-1.5 hover:shadow-[0_25px_60px_-20px_rgba(0,0,0,0.2)] group/card",
       variant.bg,
       variant.border
     )}>
-      {/* Background Quotation Decoration */}
+      {/* Decorative background mark */}
       <Quote className="absolute -top-4 -left-2 h-24 w-28 text-stone-900/[0.03] -z-10 transition-transform group-hover/card:scale-110" />
       
       <div className="flex flex-col h-full justify-between gap-6 relative z-10">
@@ -136,12 +135,12 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
               {initials}
             </div>
             <div className="space-y-0.5">
-              <h4 className="font-bold text-stone-900 text-base md:text-lg leading-tight tracking-tight">
+              <h4 className="font-bold text-stone-900 text-base leading-tight tracking-tight">
                 {testimonial.name}
               </h4>
               <div className="flex items-center gap-1.5 text-stone-400">
-                <MapPin className={cn("h-3.5 w-3.5", variant.accent)} />
-                <span className="text-[10px] md:text-xs font-bold tracking-widest uppercase">
+                <MapPin className={cn("h-3 w-3", variant.accent)} />
+                <span className="text-[10px] font-bold tracking-widest uppercase">
                   {testimonial.location}
                 </span>
               </div>
@@ -149,7 +148,7 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
           </div>
 
           <p className={cn(
-            "text-stone-600 leading-relaxed italic text-sm md:text-base font-light",
+            "text-stone-600 leading-relaxed italic text-sm font-light line-clamp-4",
             testimonial.lang === 'bn' ? "font-medium" : ""
           )}>
             "{testimonial.text}"
@@ -162,7 +161,7 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
               <Star 
                 key={i} 
                 className={cn(
-                  "h-3.5 w-3.5 transition-colors", 
+                  "h-3 w-3 transition-colors", 
                   i < testimonial.rating 
                     ? "fill-amber-500 text-amber-500" 
                     : "text-stone-200 fill-none"
@@ -172,7 +171,7 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
           </div>
           <div className="flex items-center gap-2">
              <CocoaBeanIcon className={cn("h-4 w-4 opacity-20 group-hover/card:opacity-40 transition-opacity", variant.accent)} />
-             <span className="text-[9px] font-black uppercase tracking-[0.2em] text-stone-300">Artisan Selection</span>
+             <span className="text-[8px] font-black uppercase tracking-[0.2em] text-stone-300">Artisan Selection</span>
           </div>
         </div>
       </div>

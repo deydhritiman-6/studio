@@ -102,73 +102,62 @@
 
 /* --- Premium Testimonial Marquee Logic --- */
 @keyframes testimonialMarquee {
-  0% { transform: translate3d(0, 0, 0); }
-  100% { transform: translate3d(-50%, 0, 0); }
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
 }
 
-.testimonial-marquee-viewport {
-  width: 100%;
-  max-width: 100%;
-  overflow: hidden;
-  position: relative;
-  padding: 4rem 0;
+.testimonial-viewport {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  position: relative !important;
+  padding: 4rem 0 !important;
   user-select: none;
 }
 
-.testimonial-marquee-track {
+.testimonial-track {
   display: flex !important;
   flex-direction: row !important;
   flex-wrap: nowrap !important;
   width: max-content !important;
   max-width: none !important;
-  align-items: stretch;
-  animation: testimonialMarquee 55s linear infinite;
-  will-change: transform;
+  align-items: stretch !important;
+  animation: testimonialMarquee 50s linear infinite !important;
+  animation-play-state: running !important;
+  will-change: transform !important;
 }
 
-.testimonial-marquee-viewport:hover .testimonial-marquee-track {
-  animation-play-state: paused;
+.testimonial-viewport:hover .testimonial-track {
+  animation-play-state: paused !important;
 }
 
-.testimonial-marquee-group {
+.testimonial-group {
   display: flex !important;
   flex-direction: row !important;
   flex-wrap: nowrap !important;
-  width: max-content !important;
-  max-width: none !important;
   flex-shrink: 0 !important;
-  gap: 24px;
-  padding-right: 24px; /* Maintain gap between loops */
+  width: max-content !important;
+  gap: 24px !important;
+  padding-right: 24px !important;
 }
 
-.testimonial-marquee-card {
+.testimonial-card {
   flex: 0 0 330px !important;
-  width: 330px;
-  min-width: 330px;
-  max-width: 330px;
-  height: 250px;
-  position: relative;
-}
-
-@media (max-width: 640px) {
-  .testimonial-marquee-card {
-    flex: 0 0 290px !important;
-    width: 290px;
-    min-width: 290px;
-    max-width: 290px;
-  }
+  width: 330px !important;
+  min-width: 330px !important;
+  max-width: 330px !important;
+  height: 250px !important;
+  position: relative !important;
 }
 
 /* Accessibility: Respect motion preferences */
 @media (prefers-reduced-motion: reduce) {
-  .testimonial-marquee-track {
-    animation: none;
-    flex-wrap: wrap;
-    justify-content: center;
-    width: 100%;
-  }
-  .testimonial-marquee-viewport {
-    overflow: visible;
+  .testimonial-track {
+    animation-duration: 180s !important; /* Very slow instead of stopping */
   }
 }
 
