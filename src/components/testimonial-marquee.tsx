@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useEffect, useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { MapPin, Star, Quote } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -22,13 +22,13 @@ const TESTIMONIAL_DATA: Omit<Testimonial, 'id'>[] = [
   { name: 'Sayan Banerjee', location: 'Ballygunge, Kolkata', text: 'Best artisan chocolate in town. The packaging is as premium as the taste. Highly recommended!', lang: 'en', rating: 5, group: 'kolkata', gender: 'male' },
   { name: 'Riya Mukherjee', location: 'New Town, Kolkata', text: 'আমি জন্মদিন উপলক্ষে অর্ডার করেছিলাম, সবাই খুব প্রশংসা করেছে। প্রেজেন্টেশন একদম টপ-নচ।', lang: 'bn', rating: 4, group: 'kolkata', gender: 'female' },
   { name: 'Arindam Ghosh', location: 'Alipore, Kolkata', text: 'The texture is incredibly smooth. You can tell it is made with pure cocoa butter. Excellent craftsmanship.', lang: 'en', rating: 4, group: 'kolkata', gender: 'male' },
-  { name: 'Soham Dutta', location: 'Jadavpur, Kolkata', text: 'রোজবেরি চকোলেট ভালো, কিন্তু ডেলিভারি একটু দেরি হয়েছিল। তবে স্বাদ খুব সুন্দর।', lang: 'bn', rating: 3, group: 'kolkata', gender: 'male' },
+  { name: 'Soham Dutta', location: 'Jadavpur, Kolkata', text: 'স্বাদ খুব সুন্দর। তবে ডেলিভারি একটু দেরি হয়েছিল বলে ৪ তারা দিলাম না। চকলেটগুলো জাস্ট অসাধারণ!', lang: 'bn', rating: 3, group: 'kolkata', gender: 'male' },
   { name: 'Moumita Roy', location: 'Tollygunge, Kolkata', text: 'Authentic flavors and beautiful designs. Best gift for anniversaries!', lang: 'en', rating: 5, group: 'kolkata', gender: 'female' },
   { name: 'Debanjan Sen', location: 'Behala, Kolkata', text: 'কলকাতার বুকে এরকম ইন্টারন্যাশনাল মানের চকোলেট সত্যিই বিরল। দারুণ অভিজ্ঞতা!', lang: 'bn', rating: 4, group: 'kolkata', gender: 'male' },
   { name: 'Tiyasha Das', location: 'Dum Dum, Kolkata', text: 'The sea salt caramel is a revelation. Balanced, rich, and addictive!', lang: 'en', rating: 4, group: 'kolkata', gender: 'female' },
   { name: 'Nilanjan Mitra', location: 'Park Street, Kolkata', text: 'Professional service and world-class chocolates. A must-try for everyone.', lang: 'en', rating: 4, group: 'kolkata', gender: 'male' },
   { name: 'Priyanka Bose', location: 'Shyambazar, Kolkata', text: 'এদের চকোলেটের প্রত্যেকটি বাইট যেন একটা আলাদা অনুভূতি। খুব ভালো প্যাকেজিং।', lang: 'bn', rating: 5, group: 'kolkata', gender: 'female' },
-  { name: 'Abhishek Rakshit', location: 'Lake Town, Kolkata', text: 'बिल्कुल তাज़ा और लाजवाब! स्वाद बहुत अच्छा है, लेकिन स्टॉक अक्सर खत्म हो जाता है।', lang: 'hi', rating: 3, group: 'kolkata', gender: 'male' },
+  { name: 'Abhishek Rakshit', location: 'Lake Town, Kolkata', text: 'स्वाद तो लाजवाब है, पर स्टॉक अक्सर खत्म हो जाता है। उम्मीद है अगली बार सब मिलेगा।', lang: 'hi', rating: 3, group: 'kolkata', gender: 'male' },
   { name: 'Subhojit Das', location: 'Esplanade, Kolkata', text: 'Really loved the dark chocolate collection. Perfect balance of bitterness and sweetness.', lang: 'en', rating: 4, group: 'kolkata', gender: 'male' },
   { name: 'Ishani Gupta', location: 'Rajarhat, Kolkata', text: 'Best gifting option for Diwali. Everyone loved the assorted box.', lang: 'en', rating: 4, group: 'kolkata', gender: 'female' },
 
@@ -59,13 +59,12 @@ const getAvatarColors = (name: string) => {
 };
 
 export function TestimonialMarquee() {
-  const shouldReduceMotion = useReducedMotion();
   const [shuffledTestimonials, setShuffledTestimonials] = useState<Testimonial[]>([]);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    // Fisher-Yates shuffle
+    // Fisher-Yates shuffle for a fresh sequence on each load
     const shuffle = () => {
       const all = [...TESTIMONIAL_DATA].map((t, i) => ({ ...t, id: i }));
       for (let i = all.length - 1; i > 0; i--) {
@@ -77,7 +76,7 @@ export function TestimonialMarquee() {
     setShuffledTestimonials(shuffle());
   }, []);
 
-  // Duplicate for seamless looping
+  // We duplicate the set to create a seamless infinite scroll loop via CSS
   const marqueeItems = useMemo(() => {
     if (shuffledTestimonials.length === 0) return [];
     return [...shuffledTestimonials, ...shuffledTestimonials];
@@ -86,31 +85,22 @@ export function TestimonialMarquee() {
   if (!mounted || shuffledTestimonials.length === 0) return null;
 
   return (
-    <div className="w-full relative group">
-      {/* Decorative Gradient Overlays for Fade Effect */}
-      <div className="absolute top-0 left-0 bottom-0 w-24 md:w-48 bg-gradient-to-r from-stone-50 to-transparent z-10 pointer-events-none" />
-      <div className="absolute top-0 right-0 bottom-0 w-24 md:w-48 bg-gradient-to-l from-stone-50 to-transparent z-10 pointer-events-none" />
+    <div className="w-full relative overflow-hidden group">
+      {/* Premium Gradient Fades for edges */}
+      <div className="absolute top-0 left-0 bottom-0 w-24 md:w-64 bg-gradient-to-r from-stone-50 to-transparent z-20 pointer-events-none" />
+      <div className="absolute top-0 right-0 bottom-0 w-24 md:w-64 bg-gradient-to-l from-stone-50 to-transparent z-20 pointer-events-none" />
 
-      <div className="flex overflow-hidden py-10">
-        <motion.div
-          className="flex gap-6 md:gap-8 whitespace-nowrap"
-          animate={shouldReduceMotion ? {} : { x: ["0%", "-50%"] }} 
-          transition={{
-            x: {
-              repeat: Infinity,
-              repeatType: "loop",
-              duration: 120, // Slow, premium speed
-              ease: "linear",
-            },
-          }}
-          // Pause on hover
-          whileHover={shouldReduceMotion ? {} : { transition: { duration: 0 } }}
-          style={{ width: 'fit-content' }}
-        >
+      {/* Marquee Viewport */}
+      <div className="py-12 overflow-hidden">
+        {/* Continuous Floating Track - Controlled by CSS in globals.css */}
+        <div className="testimonial-marquee-track gap-8 md:gap-12">
           {marqueeItems.map((testimonial, idx) => (
-            <TestimonialCard key={`${testimonial.id}-${idx}`} testimonial={testimonial} />
+            <TestimonialCard 
+              key={`${testimonial.id}-${idx}`} 
+              testimonial={testimonial} 
+            />
           ))}
-        </motion.div>
+        </div>
       </div>
     </div>
   );
@@ -125,55 +115,56 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
 
   return (
     <motion.div
-      whileHover={{ y: -8, scale: 1.02 }}
-      className="inline-block w-[300px] md:w-[400px] h-full"
+      whileHover={{ y: -12, scale: 1.03 }}
+      transition={{ type: "spring", stiffness: 300, damping: 15 }}
+      className="flex-shrink-0 w-[320px] md:w-[420px]"
     >
-      <div className="h-full bg-white/40 backdrop-blur-xl border border-white/60 p-6 md:p-8 rounded-[2.5rem] shadow-[0_10px_30px_-15px_rgba(0,0,0,0.1)] flex flex-col justify-between group transition-all duration-500 hover:shadow-[0_20px_50px_-20px_rgba(var(--primary),0.2)] hover:bg-white/60">
-        <div className="space-y-6">
+      <div className="h-full bg-white/40 backdrop-blur-xl border border-white/70 p-8 md:p-10 rounded-[3rem] shadow-[0_15px_40px_-20px_rgba(0,0,0,0.08)] flex flex-col justify-between group transition-all duration-500 hover:shadow-[0_25px_60px_-25px_rgba(var(--primary),0.25)] hover:bg-white/60">
+        <div className="space-y-8">
           <div className="flex justify-between items-start">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-5">
               <div className={cn(
-                "h-12 w-12 rounded-2xl flex items-center justify-center text-white font-bold text-sm shadow-lg transform transition-transform group-hover:rotate-12",
+                "h-14 w-14 rounded-2xl flex items-center justify-center text-white font-bold text-base shadow-xl transform transition-transform duration-500 group-hover:rotate-12",
                 getAvatarColors(testimonial.name)
               )}>
                 {initials}
               </div>
-              <div className="space-y-0.5">
-                <h4 className="font-bold text-stone-900 text-lg leading-none truncate max-w-[150px] md:max-w-[200px]">{testimonial.name}</h4>
-                <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-stone-400">
-                  <MapPin className="h-2.5 w-2.5 text-primary" />
-                  <span className="truncate max-w-[120px] md:max-w-[180px]">{testimonial.location}</span>
+              <div className="space-y-1">
+                <h4 className="font-bold text-stone-900 text-xl leading-none truncate max-w-[160px] md:max-w-[220px]">{testimonial.name}</h4>
+                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.1em] text-stone-400">
+                  <MapPin className="h-3 w-3 text-primary" />
+                  <span className="truncate max-w-[130px] md:max-w-[190px]">{testimonial.location}</span>
                 </div>
               </div>
             </div>
-            <Quote className="h-8 w-8 text-stone-100 group-hover:text-primary/10 transition-colors duration-500" />
+            <Quote className="h-10 w-10 text-stone-100 group-hover:text-primary/10 transition-colors duration-700" />
           </div>
 
           <div className="relative">
             <p className={cn(
-              "text-stone-600 leading-relaxed italic whitespace-normal line-clamp-4",
-              testimonial.lang === 'bn' ? "text-lg font-medium" : "text-base font-light"
+              "text-stone-600 leading-relaxed italic whitespace-normal line-clamp-5 min-h-[120px]",
+              testimonial.lang === 'bn' ? "text-xl font-medium" : "text-lg font-light"
             )}>
               "{testimonial.text}"
             </p>
           </div>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-stone-100/50 flex justify-between items-center">
-          <div className="flex gap-0.5 text-amber-500">
+        <div className="mt-10 pt-8 border-t border-stone-100/60 flex justify-between items-center">
+          <div className="flex gap-1">
             {[...Array(5)].map((_, i) => (
               <Star 
                 key={i} 
                 className={cn(
-                  "h-3.5 w-3.5 transition-all duration-300", 
-                  i < testimonial.rating ? "fill-current scale-110" : "text-stone-200 fill-none opacity-50"
+                  "h-4 w-4 transition-all duration-500", 
+                  i < testimonial.rating ? "fill-amber-500 text-amber-500 scale-110" : "text-stone-200 fill-none"
                 )} 
               />
             ))}
           </div>
-          <div className="flex items-center gap-2">
-             <div className="h-1.5 w-1.5 rounded-full bg-primary/30 animate-pulse" />
-             <span className="text-[8px] font-bold uppercase tracking-widest text-stone-300">Handmade with Love</span>
+          <div className="flex items-center gap-3">
+             <div className="h-2 w-2 rounded-full bg-primary/40 animate-pulse" />
+             <span className="text-[9px] font-black uppercase tracking-[0.2em] text-stone-300">Artisan Patron</span>
           </div>
         </div>
       </div>
