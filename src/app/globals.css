@@ -131,10 +131,6 @@
   will-change: transform !important;
 }
 
-.testimonial-viewport:hover .testimonial-track {
-  animation-play-state: paused !important;
-}
-
 .testimonial-group {
   display: flex !important;
   flex-direction: row !important;
@@ -150,7 +146,7 @@
   width: 330px !important;
   min-width: 330px !important;
   max-width: 330px !important;
-  height: 250px !important;
+  height: 280px !important;
   position: relative !important;
 }
 
