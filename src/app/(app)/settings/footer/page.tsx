@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -352,7 +351,7 @@ export default function FooterManagementPage() {
                       <FormItem>
                         <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Google Maps Embed URL (Iframe src)</FormLabel>
                         <FormControl><Input className="h-12 rounded-xl" placeholder="https://www.google.com/maps/embed?..." {...field} /></FormControl>
-                        <FormDescription className="text-[9px]">Get this from Share > Embed a map on Google Maps.</FormDescription>
+                        <FormDescription className="text-[9px]">Get this from Share &gt; Embed a map on Google Maps.</FormDescription>
                       </FormItem>
                     )} />
                     <FormField control={form.control} name="maps.mapUrl" render={({ field }) => (
