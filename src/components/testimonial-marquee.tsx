@@ -21,7 +21,7 @@ const TESTIMONIAL_DATA: Omit<Testimonial, 'id'>[] = [
   { name: 'Sayan Banerjee', location: 'Ballygunge, Kolkata', text: 'Best artisan chocolate in town. The packaging is as premium as the taste. Highly recommended!', lang: 'en', rating: 4, group: 'kolkata', gender: 'male' },
   { name: 'Riya Mukherjee', location: 'New Town, Kolkata', text: 'আমি জন্মদিন উপলক্ষে অর্ডার করেছিলাম, সবাই খুব প্রশংসা করেছে। প্রেজেন্টেশন একদম টপ-নচ।', lang: 'bn', rating: 4, group: 'kolkata', gender: 'female' },
   { name: 'Arindam Ghosh', location: 'Alipore, Kolkata', text: 'The texture is incredibly smooth. You can tell it is made with pure cocoa butter. Excellent craftsmanship.', lang: 'en', rating: 4, group: 'kolkata', gender: 'male' },
-  { name: 'Soham Dutta', location: 'Jadavpur, Kolkata', text: 'স্বাদ খুব সুন্দর। তবে ডেলিভারি একটু দেরি হয়েছিল বলে ৪ তারা দিলাম না। চকলেটগুলো জাস্ট অসাধারণ!', lang: 'bn', rating: 4, group: 'kolkata', gender: 'male' },
+  { name: 'Soham Dutta', location: 'Jadavpur, Kolkata', text: 'স্বাদ খুব সুন্দর। তবে ডেলিভারি একটু দেরি হয়েছিল বলে ৪ তারা দিলাম না। চকলেটগুলো জাস্ট অসাধারণ!', lang: 'bn', rating: 3, group: 'kolkata', gender: 'male' },
   { name: 'Moumita Roy', location: 'Tollygunge, Kolkata', text: 'Authentic flavors and beautiful designs. Best gift for anniversaries!', lang: 'en', rating: 5, group: 'kolkata', gender: 'female' },
   { name: 'Debanjan Sen', location: 'Behala, Kolkata', text: 'কলকাতার বুকে এরকম ইন্টারন্যাশনাল মানের চকোলেট সত্যিই বিরল। দারুণ অভিজ্ঞতা!', lang: 'bn', rating: 4, group: 'kolkata', gender: 'male' },
   { name: 'Tiyasha Das', location: 'Dum Dum, Kolkata', text: 'The sea salt caramel is a revelation. Balanced, rich, and addictive!', lang: 'en', rating: 4, group: 'kolkata', gender: 'female' },
@@ -48,13 +48,22 @@ const TESTIMONIAL_DATA: Omit<Testimonial, 'id'>[] = [
   { name: 'Sophia Lee', location: 'Singapore', text: 'Exquisite truffles that melt in your mouth. The packaging makes it the perfect gift for luxury seekers.', lang: 'en', rating: 5, group: 'international', gender: 'female' },
 ];
 
-const getAvatarColors = (name: string) => {
-  const colors = [
-    'bg-rose-500', 'bg-amber-500', 'bg-primary', 'bg-stone-800', 
-    'bg-emerald-600', 'bg-cyan-600', 'bg-purple-600', 'bg-orange-500'
+const CocoaBeanIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path d="M12 2C12 2 7 7 7 12C7 17 12 22 12 22C12 22 17 17 17 12C17 7 12 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M9 10C10 10.5 11 11 12 11C13 11 14 10.5 15 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
+    <path d="M9 14C10 13.5 11 13 12 13C13 13 14 13.5 15 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
+  </svg>
+);
+
+const getCardStyle = (id: number) => {
+  const styles = [
+    { accent: 'text-[#3D1E16]', bg: 'from-white/95 to-[#fff8f2]/90', initials: 'bg-[#3D1E16]', border: 'border-[#3D1E16]/10', hoverBorder: 'group-hover:border-[#3D1E16]/20' },
+    { accent: 'text-[#800020]', bg: 'from-white/95 to-[#fdf2f2]/90', initials: 'bg-[#800020]', border: 'border-[#800020]/10', hoverBorder: 'group-hover:border-[#800020]/20' },
+    { accent: 'text-[#D4AF37]', bg: 'from-white/95 to-[#fffcf0]/90', initials: 'bg-[#D4AF37]', border: 'border-[#D4AF37]/10', hoverBorder: 'group-hover:border-[#D4AF37]/20' },
+    { accent: 'text-[#7b3f00]', bg: 'from-white/95 to-[#f8f4f0]/90', initials: 'bg-[#7b3f00]', border: 'border-[#7b3f00]/10', hoverBorder: 'group-hover:border-[#7b3f00]/20' },
   ];
-  const index = name.length % colors.length;
-  return colors[index];
+  return styles[id % styles.length];
 };
 
 export function TestimonialMarquee() {
@@ -63,7 +72,6 @@ export function TestimonialMarquee() {
 
   useEffect(() => {
     setMounted(true);
-    // Standard shuffle for fresh sequence
     const shuffle = () => {
       const all = [...TESTIMONIAL_DATA].map((t, i) => ({ ...t, id: i }));
       for (let i = all.length - 1; i > 0; i--) {
@@ -75,7 +83,6 @@ export function TestimonialMarquee() {
     setShuffledTestimonials(shuffle());
   }, []);
 
-  // Use two identical copies for a seamless loop
   const marqueeItems = useMemo(() => {
     if (shuffledTestimonials.length === 0) return [];
     return [...shuffledTestimonials, ...shuffledTestimonials];
@@ -85,11 +92,9 @@ export function TestimonialMarquee() {
 
   return (
     <div className="testimonial-marquee-container group">
-      {/* Visual Edge Fades */}
       <div className="absolute top-0 left-0 bottom-0 w-24 md:w-64 bg-gradient-to-r from-stone-50 to-transparent z-10 pointer-events-none" />
       <div className="absolute top-0 right-0 bottom-0 w-24 md:w-64 bg-gradient-to-l from-stone-50 to-transparent z-10 pointer-events-none" />
 
-      {/* Moving Track */}
       <div className="testimonial-marquee-track">
         {marqueeItems.map((testimonial, idx) => (
           <div key={`${testimonial.id}-${idx}`} className="testimonial-card-wrapper">
@@ -108,53 +113,73 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
     .join('')
     .toUpperCase();
 
+  const style = getCardStyle(testimonial.id);
+
   return (
-    <div className="h-full w-[320px] md:w-[420px] bg-white/40 backdrop-blur-xl border border-white/70 p-8 md:p-10 rounded-[3rem] shadow-[0_15px_40px_-20px_rgba(0,0,0,0.08)] flex flex-col justify-between group/card transition-all duration-500 hover:shadow-[0_25px_60px_-25px_rgba(var(--primary),0.25)] hover:bg-white/60">
-      <div className="space-y-8">
-        <div className="flex justify-between items-start">
-          <div className="flex items-center gap-5">
+    <div className={cn(
+      "h-full w-[340px] md:w-[420px] flex-shrink-0 relative overflow-hidden",
+      "p-8 md:p-10 rounded-[28px] border bg-gradient-to-br backdrop-blur-md",
+      "shadow-[0_10px_30px_-10px_rgba(61,30,22,0.08)] transition-all duration-500 ease-out",
+      "group/card",
+      style.bg,
+      style.border,
+      style.hoverBorder
+    )}>
+      {/* Decorative Quote Mark */}
+      <Quote className="absolute -top-4 -left-2 h-24 w-24 text-stone-900/[0.03] -z-10 transition-transform duration-700 group-hover/card:scale-110 group-hover/card:rotate-6" />
+      
+      <div className="flex flex-col h-full justify-between gap-8 relative z-10">
+        <div className="space-y-6">
+          <div className="flex items-center gap-4">
             <div className={cn(
-              "h-14 w-14 rounded-2xl flex items-center justify-center text-white font-bold text-base shadow-xl transform transition-transform duration-500 group-hover/card:rotate-12",
-              getAvatarColors(testimonial.name)
+              "h-12 w-12 md:h-14 md:w-14 rounded-full flex items-center justify-center text-white font-bold text-base shadow-lg transform transition-all duration-500 group-hover/card:scale-105 group-hover/card:rotate-3",
+              style.initials
             )}>
               {initials}
             </div>
-            <div className="space-y-1">
-              <h4 className="font-bold text-stone-900 text-xl leading-none truncate max-w-[160px] md:max-w-[220px]">{testimonial.name}</h4>
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.1em] text-stone-400">
-                <MapPin className="h-3 w-3 text-primary" />
-                <span className="truncate max-w-[130px] md:max-w-[190px]">{testimonial.location}</span>
+            <div className="space-y-0.5">
+              <h4 className="font-semibold text-stone-900 text-base md:text-lg leading-tight transition-colors group-hover/card:text-primary">
+                {testimonial.name}
+              </h4>
+              <div className="flex items-center gap-1.5 text-stone-400">
+                <MapPin className={cn("h-3 w-3", style.accent)} />
+                <span className="text-xs md:text-sm font-medium tracking-tight truncate max-w-[140px] md:max-w-[200px]">
+                  {testimonial.location}
+                </span>
               </div>
             </div>
           </div>
-          <Quote className="h-10 w-10 text-stone-100 group-hover/card:text-primary/10 transition-colors duration-700" />
+
+          <div className="relative">
+            <p className={cn(
+              "text-stone-600 leading-relaxed italic whitespace-normal line-clamp-6 min-h-[120px] text-sm md:text-base font-light",
+              testimonial.lang === 'bn' ? "font-medium" : ""
+            )}>
+              "{testimonial.text}"
+            </p>
+          </div>
         </div>
 
-        <div className="relative">
-          <p className={cn(
-            "text-stone-600 leading-relaxed italic whitespace-normal line-clamp-5 min-h-[120px]",
-            testimonial.lang === 'bn' ? "text-xl font-medium" : "text-lg font-light"
-          )}>
-            "{testimonial.text}"
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-10 pt-8 border-t border-stone-100/60 flex justify-between items-center">
-        <div className="flex gap-1">
-          {[...Array(5)].map((_, i) => (
-            <Star 
-              key={i} 
-              className={cn(
-                "h-4 w-4 transition-all duration-500", 
-                i < testimonial.rating ? "fill-amber-500 text-amber-500 scale-110" : "text-stone-200 fill-none"
-              )} 
-            />
-          ))}
-        </div>
-        <div className="flex items-center gap-3">
-           <div className="h-2 w-2 rounded-full bg-primary/40 animate-pulse" />
-           <span className="text-[9px] font-black uppercase tracking-[0.2em] text-stone-300">Artisan Patron</span>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between border-t border-stone-200/50 pt-6">
+            <div className="flex gap-0.5">
+              {[...Array(5)].map((_, i) => (
+                <Star 
+                  key={i} 
+                  className={cn(
+                    "h-3.5 w-3.5 transition-all duration-500", 
+                    i < testimonial.rating 
+                      ? "fill-amber-500 text-amber-500 group-hover/card:scale-110" 
+                      : "text-stone-200 fill-none"
+                  )} 
+                />
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+               <CocoaBeanIcon className={cn("h-4 w-4 opacity-20 transition-all duration-500 group-hover/card:opacity-40 group-hover/card:rotate-12", style.accent)} />
+               <span className="text-[10px] font-black uppercase tracking-widest text-stone-300">Artisan Selection</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
