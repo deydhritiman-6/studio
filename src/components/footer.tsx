@@ -90,23 +90,6 @@ export function Footer() {
   const settingsRef = useMemo(() => (firestore ? doc(firestore, 'settings', 'footer') : null), [firestore]);
   const { data: footerData, loading } = useDoc<any>(settingsRef as any);
 
-  if (loading) return null;
-
-  const {
-    brand = {},
-    address = {},
-    contact = {},
-    legal = {},
-    bank = {},
-    maps = {},
-    social = {},
-    links = [],
-    policies = [],
-    visibility = {}
-  } = footerData || {};
-
-  const currentYear = new Date().getFullYear();
-
   const socialIcons: Record<string, any> = {
     instagram: Instagram,
     facebook: Facebook,
@@ -116,13 +99,46 @@ export function Footer() {
     whatsapp: MessageCircle,
   };
 
-  const activeSocials = Object.entries(social)
-    .filter(([_, url]) => url)
-    .map(([platform, url]) => ({
-      platform,
-      url: url as string,
-      Icon: socialIcons[platform.toLowerCase()] || ExternalLink
-    }));
+  const activeSocials = useMemo(() => {
+    // 1. Get raw social data from Firebase
+    const social = footerData?.social || {};
+    
+    // 2. Map entries that have valid URLs
+    const entries = Object.entries(social)
+      .filter(([_, url]) => url && typeof url === 'string' && url.trim().length > 0)
+      .map(([platform, url]) => ({
+        platform,
+        url: url as string,
+        Icon: socialIcons[platform.toLowerCase()] || ExternalLink
+      }));
+
+    // 3. Fallback: Provide some default social icons if none are configured in database
+    if (entries.length === 0) {
+      return [
+        { platform: 'instagram', url: 'https://instagram.com', Icon: Instagram },
+        { platform: 'facebook', url: 'https://facebook.com', Icon: Facebook },
+        { platform: 'whatsapp', url: 'https://wa.me', Icon: MessageCircle },
+      ];
+    }
+
+    return entries;
+  }, [footerData]);
+
+  if (loading) return null;
+
+  const {
+    brand = {},
+    address = {},
+    contact = {},
+    legal = {},
+    bank = {},
+    maps = {},
+    links = [],
+    policies = [],
+    visibility = {}
+  } = footerData || {};
+
+  const currentYear = new Date().getFullYear();
 
   return (
     <footer className="relative text-stone-900 pt-32 overflow-hidden selection:bg-primary/20 border-t border-stone-200 shadow-[0_-10px_50px_rgba(0,0,0,0.02)]">
@@ -139,7 +155,7 @@ export function Footer() {
               <Link href="/" className="inline-block transition-transform duration-500 hover:scale-105">
                 <Logo className="h-12 w-auto" />
               </Link>
-              <p className="text-stone-800 text-[14px] leading-relaxed font-bold tracking-wide italic">
+              <p className="text-stone-800 text-[15px] leading-relaxed font-bold tracking-wide italic">
                 {brand.description || "Every piece is a story of artisanal excellence, meticulously hand-tempered in our Kolkata studio using ethical, single-origin cacao."}
               </p>
               <div className="pt-2 flex items-center gap-3">
@@ -151,7 +167,7 @@ export function Footer() {
             </div>
             
             <div className="space-y-5 pt-4">
-              <h4 className="text-[13px] font-black uppercase tracking-[0.4em] text-stone-500">Patron Communities</h4>
+              <h4 className="text-[15px] font-black uppercase tracking-[0.4em] text-stone-500">Patron Communities</h4>
               <div className="flex flex-wrap gap-4">
                 {activeSocials.map(({ platform, url, Icon }) => (
                   <a 
@@ -159,10 +175,10 @@ export function Footer() {
                     href={url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="h-10 w-10 rounded-xl bg-white border border-stone-100 flex items-center justify-center text-stone-600 hover:text-cyan-600 hover:border-cyan-200 hover:bg-cyan-50/50 transition-all duration-500 hover:-translate-y-1 group/soc shadow-sm"
+                    className="h-11 w-11 rounded-xl bg-white border border-stone-100 flex items-center justify-center text-stone-600 hover:text-cyan-600 hover:border-cyan-200 hover:bg-cyan-50/50 transition-all duration-500 hover:-translate-y-1 group/soc shadow-sm"
                     aria-label={`Follow us on ${platform}`}
                   >
-                    <Icon className="h-4 w-4 transition-transform group-hover/soc:scale-110" />
+                    <Icon className="h-5 w-5 transition-transform group-hover/soc:scale-110" />
                   </a>
                 ))}
               </div>
@@ -172,7 +188,7 @@ export function Footer() {
           {/* Navigation Intelligence */}
           <div className="grid grid-cols-2 gap-8 py-6">
             <div className="space-y-10">
-              <h4 className="text-[13px] font-black uppercase tracking-[0.4em] text-cyan-600">Discovery</h4>
+              <h4 className="text-[15px] font-black uppercase tracking-[0.4em] text-cyan-600">Discovery</h4>
               <ul className="space-y-5">
                 {(links.length > 0 ? links : [
                   { text: 'Our Story', url: '/#story' },
@@ -194,7 +210,7 @@ export function Footer() {
             </div>
             
             <div className="space-y-10">
-              <h4 className="text-[13px] font-black uppercase tracking-[0.4em] text-fuchsia-600">Assistance</h4>
+              <h4 className="text-[15px] font-black uppercase tracking-[0.4em] text-fuchsia-600">Assistance</h4>
               <ul className="space-y-5">
                 {(policies.length > 0 ? policies : [
                   { text: 'Privacy Policy', url: '#' },
@@ -218,14 +234,14 @@ export function Footer() {
           {/* Contact Details - Polished Panel */}
           <div className="space-y-12 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm">
             <div className="space-y-6">
-              <h4 className="text-[13px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3">
+              <h4 className="text-[15px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3">
                  <MapPin className="h-3.5 w-3.5" /> Headquarters
               </h4>
               <div className="space-y-3">
-                  <p className="text-[15px] text-stone-900 font-bold leading-tight">
+                  <p className="text-[16px] text-stone-900 font-bold leading-tight">
                     {address.businessName || "Roseberry Chocolate Studio"}
                   </p>
-                  <p className="text-[14px] text-stone-800 font-semibold leading-relaxed tracking-wide">
+                  <p className="text-[14px] text-stone-800 font-bold leading-relaxed tracking-wide">
                     {address.line1 || "123 Chocolate Lane"}<br />
                     {address.line2 && <>{address.line2}<br /></>}
                     {address.area && <>{address.area}, </>}{address.city || "Kolkata"}<br />
@@ -235,13 +251,13 @@ export function Footer() {
             </div>
 
             <div className="space-y-6">
-              <h4 className="text-[13px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3">
+              <h4 className="text-[15px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3">
                 <Phone className="h-3.5 w-3.5" /> Communication
               </h4>
               <div className="space-y-5">
                 {contact.phone && (
                   <a href={`tel:${contact.phone}`} className="flex items-center gap-4 group/contact">
-                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 group-hover/contact:text-emerald-600 group-hover/contact:border-emerald-200 group-hover/contact:bg-emerald-50/50 transition-all shadow-sm">
+                    <div className="h-10 w-10 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 group-hover/contact:text-emerald-600 group-hover/contact:border-emerald-200 group-hover/contact:bg-emerald-50/50 transition-all shadow-sm">
                       <Phone className="h-4 w-4" />
                     </div>
                     <span className="text-[14px] text-stone-900 group-hover/contact:text-stone-950 transition-colors font-bold tracking-wide">{contact.phone}</span>
@@ -249,7 +265,7 @@ export function Footer() {
                 )}
                 {contact.email && (
                   <a href={`mailto:${contact.email}`} className="flex items-center gap-4 group/contact">
-                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 group-hover/contact:text-emerald-600 group-hover/contact:border-emerald-200 group-hover/contact:bg-emerald-50/50 transition-all shadow-sm">
+                    <div className="h-10 w-10 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 group-hover/contact:text-emerald-600 group-hover/contact:border-emerald-200 group-hover/contact:bg-emerald-50/50 transition-all shadow-sm">
                       <Mail className="h-4 w-4" />
                     </div>
                     <span className="text-[14px] text-stone-900 group-hover/contact:text-stone-950 transition-colors break-all font-bold tracking-wide leading-none">{contact.email}</span>
@@ -262,7 +278,7 @@ export function Footer() {
           {/* Location & Bulletin */}
           <div className="space-y-12">
             <div className="space-y-6">
-              <h4 className="text-[13px] font-black uppercase tracking-[0.4em] text-cyan-600">Location Matrix</h4>
+              <h4 className="text-[15px] font-black uppercase tracking-[0.4em] text-cyan-600">Location Matrix</h4>
               {visibility.showMap !== false && (maps.embedUrl || maps.mapUrl) ? (
                 <div className="relative group overflow-hidden rounded-[2.5rem] border-2 border-white/60 shadow-xl bg-white/40 backdrop-blur-md">
                   <div className="aspect-[16/10] w-full opacity-90 group-hover:opacity-100 transition-all duration-700">
@@ -307,9 +323,9 @@ export function Footer() {
             </div>
 
             <div className="space-y-6">
-              <h4 className="text-[13px] font-black uppercase tracking-[0.4em] text-fuchsia-600">Artisan Bulletin</h4>
+              <h4 className="text-[15px] font-black uppercase tracking-[0.4em] text-fuchsia-600">Artisan Bulletin</h4>
               <div className="space-y-4">
-                <p className="text-[13px] text-stone-800 italic font-bold">Be first to discover seasonal limited editions.</p>
+                <p className="text-[14px] text-stone-800 italic font-bold">Be first to discover seasonal limited editions.</p>
                 <div className="flex gap-2 bg-white/60 backdrop-blur-md p-2 rounded-2xl border border-white/80 group focus-within:border-cyan-200 transition-all shadow-sm">
                   <input 
                     type="email" 
@@ -331,7 +347,7 @@ export function Footer() {
             {/* Regulatory Identity */}
             {(visibility.showGST || visibility.showFSSAI) && (
               <div className="lg:col-span-5 p-10 rounded-[2.5rem] bg-white/60 border border-white/70 shadow-sm space-y-8 backdrop-blur-3xl">
-                <h4 className="text-[13px] font-black uppercase tracking-[0.4em] text-stone-500 flex items-center gap-3">
+                <h4 className="text-[15px] font-black uppercase tracking-[0.4em] text-stone-500 flex items-center gap-3">
                   <ShieldCheck className="h-4 w-4" /> Registry Identity
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
@@ -354,7 +370,7 @@ export function Footer() {
             {/* Private/Masked Banking */}
             {visibility.showBankDetails && bank.enabled && (
               <div className="lg:col-span-7 p-10 rounded-[2.5rem] bg-white/60 border border-white/70 shadow-sm space-y-8 backdrop-blur-3xl group transition-colors hover:border-cyan-200">
-                <h4 className="text-[13px] font-black uppercase tracking-[0.4em] text-stone-500 flex items-center gap-3">
+                <h4 className="text-[15px] font-black uppercase tracking-[0.4em] text-stone-500 flex items-center gap-3">
                   <CreditCard className="h-4 w-4" /> Transfer Facilitation
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
@@ -399,7 +415,7 @@ export function Footer() {
               </span>
               <Separator orientation="vertical" className="h-4 bg-stone-300 hidden sm:block" />
               <span className="flex items-center gap-2 cursor-default font-bold">
-                <ShieldCheck className="h-3.5 w-3.5 text-cyan-500" /> 
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" /> 
                 Certified Excellence
               </span>
             </div>
