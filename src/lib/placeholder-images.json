@@ -43,6 +43,12 @@
       "imageHint": "artisan story"
     },
     {
+      "id": "our-story-founder",
+      "description": "Roseberry Chocolate founder story image.",
+      "imageUrl": "/Roseberry Chocolate Our Story.jpeg",
+      "imageHint": "artisan chocolate"
+    },
+    {
       "id": "chocolate-piece-1",
       "description": "Artisan truffle piece 1.",
       "imageUrl": "/truffle.jpeg",

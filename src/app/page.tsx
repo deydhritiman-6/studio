@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -39,6 +38,7 @@ export default function LandingPage() {
   }, [products]);
 
   const storyImage = PlaceHolderImages.find(img => img.id === 'raisa-story-book');
+  const mainStoryImage = PlaceHolderImages.find(img => img.id === 'our-story-founder');
   const demiPieces = PlaceHolderImages.filter(img => img.id.startsWith('chocolate-piece'));
 
   return (
@@ -246,7 +246,7 @@ export default function LandingPage() {
             <div className="lg:col-span-5 relative">
               <div className="aspect-[3/4] relative rounded-[3rem] overflow-hidden border-8 border-stone-800 shadow-2xl">
                 <Image 
-                  src="https://picsum.photos/seed/raisa/600/800" 
+                  src={mainStoryImage?.imageUrl || 'https://picsum.photos/seed/raisa/600/800'} 
                   alt="Founder Raisa" 
                   fill 
                   className="object-cover" 
