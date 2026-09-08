@@ -28,11 +28,13 @@ const TESTIMONIAL_DATA: Omit<Testimonial, 'id'>[] = [
   { name: 'Tiyasha Das', location: 'Dum Dum, Kolkata', text: 'The sea salt caramel is a revelation. Balanced, rich, and addictive!', lang: 'en', rating: 4, group: 'kolkata', gender: 'female' },
   { name: 'Nilanjan Mitra', location: 'Park Street, Kolkata', text: 'Professional service and world-class chocolates. A must-try for everyone.', lang: 'en', rating: 4, group: 'kolkata', gender: 'male' },
   { name: 'Priyanka Bose', location: 'Shyambazar, Kolkata', text: 'এদের চকোলেটের প্রত্যেকটি বাইট যেন একটা আলাদা অনুভূতি। খুব ভালো প্যাকেজিং।', lang: 'bn', rating: 5, group: 'kolkata', gender: 'female' },
-  { name: 'Abhishek Rakshit', location: 'Lake Town, Kolkata', text: 'बिल्कुल ताज़ा और लाजवाब! स्वाद बहुत अच्छा है, लेकिन स्टॉक अक्सर खत्म हो जाता है।', lang: 'hi', rating: 3, group: 'kolkata', gender: 'male' },
+  { name: 'Abhishek Rakshit', location: 'Lake Town, Kolkata', text: 'बिल्कुल তাज़ा और लाजवाब! स्वाद बहुत अच्छा है, लेकिन स्टॉक अक्सर खत्म हो जाता है।', lang: 'hi', rating: 3, group: 'kolkata', gender: 'male' },
+  { name: 'Subhojit Das', location: 'Esplanade, Kolkata', text: 'Really loved the dark chocolate collection. Perfect balance of bitterness and sweetness.', lang: 'en', rating: 4, group: 'kolkata', gender: 'male' },
+  { name: 'Ishani Gupta', location: 'Rajarhat, Kolkata', text: 'Best gifting option for Diwali. Everyone loved the assorted box.', lang: 'en', rating: 4, group: 'kolkata', gender: 'female' },
 
   // --- Group 2: Other Indian Cities ---
   { name: 'Aarav Sharma', location: 'Mumbai, Maharashtra', text: 'इनके चॉकलेट्स का स्वाद वाकई लाजवाब है। मुंबई में भी ऐसी क्वालिटी मिलना मुश्किल है।', lang: 'hi', rating: 4, group: 'india', gender: 'male' },
-  { name: 'Priya Nair', location: 'Bengaluru, Karnataka', text: 'Ordered a custom box for my corporate team. The branding and quality were exceptional. Thank you, Roseberry!', lang: 'en', rating: 5, group: 'india', gender: 'female' },
+  { name: 'Priya Nair', location: 'Bengaluru, Karnataka', text: 'Ordered a custom box for my corporate team. The branding and quality were exceptional.', lang: 'en', rating: 5, group: 'india', gender: 'female' },
   { name: 'Rohan Mehta', location: 'Delhi, NCR', text: 'गिफ्टिंग के लिए इससे बेहतर कुछ नहीं हो सकता। बहुत ही शानदार और प्रीमियम फील।', lang: 'hi', rating: 4, group: 'india', gender: 'male' },
   { name: 'Kavya Iyer', location: 'Chennai, Tamil Nadu', text: 'Taste is great, but transit during summer is tricky. Arrived a bit soft, though customer care was helpful.', lang: 'en', rating: 3, group: 'india', gender: 'female' },
   { name: 'Aditya Verma', location: 'Hyderabad, Telangana', text: 'बेहतरीन स्वाद और शुद्धता। डार्क चॉकलेट के शौकीनों के लिए जन्नत है।', lang: 'hi', rating: 4, group: 'india', gender: 'male' },
@@ -44,9 +46,7 @@ const TESTIMONIAL_DATA: Omit<Testimonial, 'id'>[] = [
   { name: 'Olivia Smith', location: 'London, UK', text: 'Roseberry chocolates have a sophisticated profile that rivals the best European brands. Truly world-class.', lang: 'en', rating: 5, group: 'international', gender: 'female' },
   { name: 'Daniel Wilson', location: 'New York, USA', text: 'Authentic single-origin beans. You can taste the terroir in every bite. Exceptional quality!', lang: 'en', rating: 4, group: 'international', gender: 'male' },
   { name: 'Emma Brown', location: 'Toronto, Canada', text: 'Beautifully crafted, though international shipping took longer than expected. Worth the wait!', lang: 'en', rating: 3, group: 'international', gender: 'female' },
-  { name: 'Lucas Martin', location: 'Paris, France', text: 'Un délice artisanal! Very impressed with the balance of flavors and the high-quality cocoa used.', lang: 'en', rating: 4, group: 'international', gender: 'male' },
-  { name: 'Sophia Lee', location: 'Singapore', text: 'Exquisite truffles that melt in your mouth. The packaging makes it the perfect gift for luxury seekers.', lang: 'en', rating: 4, group: 'international', gender: 'female' },
-  { name: 'Noah Williams', location: 'Sydney, Australia', text: 'Top-tier quality from India, though the premium pricing makes it more of a special occasion treat.', lang: 'en', rating: 4, group: 'international', gender: 'male' },
+  { name: 'Sophia Lee', location: 'Singapore', text: 'Exquisite truffles that melt in your mouth. The packaging makes it the perfect gift for luxury seekers.', lang: 'en', rating: 5, group: 'international', gender: 'female' },
 ];
 
 const getAvatarColors = (name: string) => {
@@ -65,7 +65,7 @@ export function TestimonialMarquee() {
 
   useEffect(() => {
     setMounted(true);
-    // Fisher-Yates shuffle with distribution weighting
+    // Fisher-Yates shuffle
     const shuffle = () => {
       const all = [...TESTIMONIAL_DATA].map((t, i) => ({ ...t, id: i }));
       for (let i = all.length - 1; i > 0; i--) {
@@ -79,6 +79,7 @@ export function TestimonialMarquee() {
 
   // Duplicate for seamless looping
   const marqueeItems = useMemo(() => {
+    if (shuffledTestimonials.length === 0) return [];
     return [...shuffledTestimonials, ...shuffledTestimonials];
   }, [shuffledTestimonials]);
 
@@ -93,16 +94,17 @@ export function TestimonialMarquee() {
       <div className="flex overflow-hidden py-10">
         <motion.div
           className="flex gap-6 md:gap-8 whitespace-nowrap"
-          animate={shouldReduceMotion ? {} : { x: [0, -9000] }} 
+          animate={shouldReduceMotion ? {} : { x: ["0%", "-50%"] }} 
           transition={{
             x: {
               repeat: Infinity,
               repeatType: "loop",
-              duration: 180, // Slow, premium speed
+              duration: 120, // Slow, premium speed
               ease: "linear",
             },
           }}
-          whileHover={shouldReduceMotion ? {} : { pause: true }}
+          // Pause on hover
+          whileHover={shouldReduceMotion ? {} : { transition: { duration: 0 } }}
           style={{ width: 'fit-content' }}
         >
           {marqueeItems.map((testimonial, idx) => (
@@ -110,16 +112,6 @@ export function TestimonialMarquee() {
           ))}
         </motion.div>
       </div>
-
-      <style jsx global>{`
-        @keyframes float-left {
-          from { transform: translateX(0); }
-          to { transform: translateX(-50%); }
-        }
-        .marquee-container:hover .marquee-content {
-          animation-play-state: paused;
-        }
-      `}</style>
     </div>
   );
 }
@@ -134,7 +126,7 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
   return (
     <motion.div
       whileHover={{ y: -8, scale: 1.02 }}
-      className="inline-block w-[280px] md:w-[380px] h-full"
+      className="inline-block w-[300px] md:w-[400px] h-full"
     >
       <div className="h-full bg-white/40 backdrop-blur-xl border border-white/60 p-6 md:p-8 rounded-[2.5rem] shadow-[0_10px_30px_-15px_rgba(0,0,0,0.1)] flex flex-col justify-between group transition-all duration-500 hover:shadow-[0_20px_50px_-20px_rgba(var(--primary),0.2)] hover:bg-white/60">
         <div className="space-y-6">
@@ -147,10 +139,10 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
                 {initials}
               </div>
               <div className="space-y-0.5">
-                <h4 className="font-bold text-stone-900 text-lg leading-none">{testimonial.name}</h4>
+                <h4 className="font-bold text-stone-900 text-lg leading-none truncate max-w-[150px] md:max-w-[200px]">{testimonial.name}</h4>
                 <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-stone-400">
                   <MapPin className="h-2.5 w-2.5 text-primary" />
-                  {testimonial.location}
+                  <span className="truncate max-w-[120px] md:max-w-[180px]">{testimonial.location}</span>
                 </div>
               </div>
             </div>
@@ -173,14 +165,14 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
               <Star 
                 key={i} 
                 className={cn(
-                  "h-3 w-3", 
-                  i < testimonial.rating ? "fill-current" : "text-stone-200 fill-none"
+                  "h-3.5 w-3.5 transition-all duration-300", 
+                  i < testimonial.rating ? "fill-current scale-110" : "text-stone-200 fill-none opacity-50"
                 )} 
               />
             ))}
           </div>
           <div className="flex items-center gap-2">
-             <div className="h-1.5 w-1.5 rounded-full bg-primary/30" />
+             <div className="h-1.5 w-1.5 rounded-full bg-primary/30 animate-pulse" />
              <span className="text-[8px] font-bold uppercase tracking-widest text-stone-300">Handmade with Love</span>
           </div>
         </div>
