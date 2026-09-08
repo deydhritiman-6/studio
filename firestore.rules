@@ -9,7 +9,7 @@ service cloud.firestore {
     }
 
     // --- INSIDE ROSEBERRY / FACILITIES SHOWCASE ---
-    // Narrowly scoped rules for the new facilities feature
+    // Rules for the facilities feature
     // Allows public read (get/list) and admin write
     match /facilities/{facilityId} {
       allow read: if true;
@@ -67,3 +67,4 @@ service cloud.firestore {
     }
   }
 }
+// Inert comment to trigger security rules re-deployment for project studio-3540801076-42aa4
