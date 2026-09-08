@@ -126,7 +126,7 @@
   width: max-content !important;
   max-width: none !important;
   align-items: stretch !important;
-  animation: testimonialMarquee 50s linear infinite !important;
+  animation: testimonialMarquee 55s linear infinite !important;
   animation-play-state: running !important;
   will-change: transform !important;
 }
@@ -150,10 +150,24 @@
   position: relative !important;
 }
 
+/* --- Star Shimmer/Sparkle Animation --- */
+@keyframes starShimmer {
+  0% { opacity: 0.3; transform: scale(0.9); filter: brightness(1); }
+  50% { opacity: 1; transform: scale(1.1); filter: brightness(1.4) drop-shadow(0 0 4px rgba(212, 175, 55, 0.4)); }
+  100% { opacity: 0.3; transform: scale(0.9); filter: brightness(1); }
+}
+
+.animate-star-shimmer {
+  animation: starShimmer 3s ease-in-out infinite;
+}
+
 /* Accessibility: Respect motion preferences */
 @media (prefers-reduced-motion: reduce) {
   .testimonial-track {
-    animation-duration: 180s !important; /* Very slow instead of stopping */
+    animation-duration: 180s !important;
+  }
+  .animate-star-shimmer {
+    animation: none !important;
   }
 }
 

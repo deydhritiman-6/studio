@@ -1,11 +1,11 @@
-
 'use client';
 
 import React, { useMemo, useEffect, useState } from 'react';
-import { MapPin, Star, Quote, Globe, Search } from 'lucide-react';
+import { MapPin, Quote, Globe, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import type { Testimonial } from '@/lib/types';
+import Image from 'next/image';
 
 type TestimonialDisplay = {
   id: string;
@@ -26,6 +26,23 @@ const SEED_TESTIMONIALS: TestimonialDisplay[] = [
   { id: 's5', name: 'Olivia Smith', location: 'London, UK', text: 'Truly artisanal craftsmanship. A sophisticated treat that rivals top Belgian brands.', lang: 'en', rating: 5, source: 'Google' },
   { id: 's6', name: 'Riya Mukherjee', location: 'New Town, Kolkata', text: 'আমি আমার মা-কে উপহার দিয়েছিলাম, উনি খুব খুশি হয়েছেন। গুণগত মান অনবদ্য।', lang: 'bn', rating: 4, source: 'Google' },
   { id: 's7', name: 'Soham Dutta', location: 'Jadavpur, Kolkata', text: 'এদের চকোলেটের টেক্সচার খুব স্মুথ। একদম আন্তর্জাতিক মানের স্বাদ আর প্রেজেন্টেশন।', lang: 'bn', rating: 5, source: 'Google' },
+  { id: 's8', name: 'Kavya Iyer', location: 'Chennai, TN', text: 'Highly recommend for gifting! The attention to detail in every bite is evident.', lang: 'en', rating: 4, source: 'Website' },
+  { id: 's9', name: 'Arindam Ghosh', location: 'Behala, Kolkata', text: 'কলকাতার বুকে এমন সত্যিকারের আর্টজান চকোলেট স্টুডিও আর একটাও নেই। জাস্ট অসাধারণ।', lang: 'bn', rating: 5, source: 'Google' },
+  { id: 's10', name: 'Sneha Kapoor', location: 'Delhi, NCR', text: 'Loved the Indian flavours infusion. The cardamom dark chocolate was a revelation.', lang: 'en', rating: 4, source: 'Google' },
+  { id: 's11', name: 'Lucas Martin', location: 'Paris, France', text: 'Exquisite balance of bitterness and sweetness. Very impressive work.', lang: 'en', rating: 5, source: 'Website' },
+  { id: 's12', name: 'Ishita Paul', location: 'Garia, Kolkata', text: 'জন্মদিনের উপহার হিসেবে দারুণ। প্যাকেজিং একদম রাজকীয়।', lang: 'bn', rating: 4, source: 'Website' },
+  { id: 's13', name: 'Rahul Singh', location: 'Lucknow, UP', text: 'स्वाद और शुद्धता का बेजोड़ संगम। रोज़बेरी के चॉकलेटे वाकई लाजवाब हैं।', lang: 'hi', rating: 5, source: 'Google' },
+  { id: 's14', name: 'Emma Brown', location: 'New York, USA', text: 'The raspberry ganache is world-class. Can wait to try the other collections.', lang: 'en', rating: 5, source: 'Google' },
+  { id: 's15', name: 'Ritwick Bose', location: 'Shyambazar, Kolkata', text: 'প্রথাগত চকোলেটের বাইরে একদম নতুন স্বাদ। প্রেজেন্টেশন অনবদ্য।', lang: 'bn', rating: 4, source: 'Google' },
+  { id: 's16', name: 'Neha Patel', location: 'Ahmedabad, GJ', text: 'Superb quality. The chocolates melt in your mouth leaving a rich aftertaste.', lang: 'en', rating: 4, source: 'Website' },
+  { id: 's17', name: 'Daniel Wilson', location: 'Toronto, Canada', text: 'A taste of home! Beautifully crafted and ethically sourced.', lang: 'en', rating: 5, source: 'Website' },
+  { id: 's18', name: 'Tiyasha Das', location: 'Lake Town, Kolkata', text: 'চকলেটের প্রতিটি পিস যেন একটা শিল্প। গুণগত মান নিয়ে কোনো কথা হবে না।', lang: 'bn', rating: 5, source: 'Google' },
+  { id: 's19', name: 'Aditya Verma', location: 'Pune, MH', text: 'Perfect for corporate gifting. Elegant, premium, and delicious.', lang: 'en', rating: 4, source: 'Google' },
+  { id: 's20', name: 'Sophia Lee', location: 'Singapore', text: 'Exceptional texture. The crunch and the smooth centers are perfectly handled.', lang: 'en', rating: 5, source: 'Google' },
+  { id: 's21', name: 'Subhojit Das', location: 'Howrah, WB', text: 'বাড়ির লোকজনের খুব পছন্দ হয়েছে। দারুণ উপহার আইটেম।', lang: 'bn', rating: 4, source: 'Website' },
+  { id: 's22', name: 'Kavita Reddy', location: 'Hyderabad, TS', text: 'The dark chocolate range is amazing. Truly authentic and artisanal.', lang: 'en', rating: 4, source: 'Google' },
+  { id: 's23', name: 'Noah Williams', location: 'Melbourne, Australia', text: 'Impressive delivery speed to international locations. Pristine condition.', lang: 'en', rating: 5, source: 'Website' },
+  { id: 's24', name: 'Moumita Roy', location: 'Baguiati, Kolkata', text: 'ভীষণ সুন্দর ব্যবহার এবং চকোলেটের মানও অসাধারণ। আমাদের প্রিয় স্টোর এখন।', lang: 'bn', rating: 5, source: 'Google' },
 ];
 
 const CocoaBeanIcon = ({ className }: { className?: string }) => (
@@ -35,6 +52,52 @@ const CocoaBeanIcon = ({ className }: { className?: string }) => (
     <path d="M9 14C10 13.5 11 13 12 13C13 13 14 13.5 15 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
   </svg>
 );
+
+const ArtisanStar = ({ active, index }: { active: boolean; index: number }) => {
+  const delays = [0.2, 1.7, 3.1, 0.8, 2.4];
+  return (
+    <div className="relative">
+      <svg
+        viewBox="0 0 24 24"
+        className={cn(
+          "h-4 w-4 transition-all duration-300",
+          active ? "drop-shadow-[0_0_2px_rgba(212,175,55,0.4)] scale-110" : "opacity-20 grayscale"
+        )}
+      >
+        <defs>
+          <linearGradient id={`gold-grad-${index}`} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FDE68A" />
+            <stop offset="50%" stopColor="#D4AF37" />
+            <stop offset="100%" stopColor="#B45309" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+          fill={active ? `url(#gold-grad-${index})` : "currentColor"}
+          stroke={active ? "#92400E" : "currentColor"}
+          strokeWidth="0.5"
+        />
+        {/* Specular Highlight */}
+        {active && (
+          <path
+            d="M12 4l1.5 3.5 3.5 0.5-2.5 2.5 0.5 3.5L12 12.5"
+            fill="white"
+            fillOpacity="0.3"
+          />
+        )}
+      </svg>
+      {/* Sparkle Element */}
+      {active && (
+        <div 
+          className="absolute inset-0 flex items-center justify-center animate-star-shimmer pointer-events-none"
+          style={{ animationDelay: `${delays[index]}s` }}
+        >
+          <div className="h-full w-full bg-white opacity-20 blur-[2px] rounded-full" />
+        </div>
+      )}
+    </div>
+  );
+};
 
 const getCardVariant = (id: string) => {
   const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -115,7 +178,7 @@ function TestimonialCard({ testimonial }: { testimonial: TestimonialDisplay }) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className={cn(
-                "h-14 w-14 rounded-full flex items-center justify-center text-white font-black text-base shadow-xl border-4 border-white overflow-hidden",
+                "h-14 w-14 rounded-full relative flex items-center justify-center text-white font-black text-base shadow-xl border-4 border-white overflow-hidden",
                 variant.initials
               )}>
                 {testimonial.photoUrl ? (
@@ -134,6 +197,7 @@ function TestimonialCard({ testimonial }: { testimonial: TestimonialDisplay }) {
                 </div>
               </div>
             </div>
+            {/* Source Badge */}
             <Badge variant="outline" className={cn(
                 "h-6 px-3 rounded-full text-[8px] font-black uppercase tracking-widest border-none transition-colors",
                 testimonial.source === 'Google' 
@@ -156,17 +220,9 @@ function TestimonialCard({ testimonial }: { testimonial: TestimonialDisplay }) {
         </div>
 
         <div className="flex items-center justify-between border-t border-stone-100/50 pt-5 mt-auto">
-          <div className="flex gap-0.5">
+          <div className="flex gap-1">
             {[...Array(5)].map((_, i) => (
-              <Star 
-                key={i} 
-                className={cn(
-                  "h-3.5 w-3.5 transition-colors", 
-                  i < testimonial.rating 
-                    ? "fill-[#D4AF37] text-[#D4AF37]" 
-                    : "text-stone-200 fill-none"
-                )} 
-              />
+              <ArtisanStar key={i} active={i < testimonial.rating} index={i} />
             ))}
           </div>
           <div className="flex items-center gap-2">

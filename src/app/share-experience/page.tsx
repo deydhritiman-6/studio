@@ -8,10 +8,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { 
-  Star, 
   ArrowLeft, 
   Camera, 
-  Upload, 
   Loader2, 
   CheckCircle2, 
   Sparkles,
@@ -52,6 +50,58 @@ const testimonialFormSchema = z.object({
 
 type TestimonialFormValues = z.infer<typeof testimonialFormSchema>;
 
+const ArtisanStarSelector = ({ value, onChange }: { value: number; onChange: (v: number) => void }) => {
+  return (
+    <div className="flex gap-4">
+      {[1, 2, 3, 4, 5].map((star, index) => (
+        <button
+          key={star}
+          type="button"
+          onClick={() => onChange(star)}
+          className="group relative transition-transform duration-300 active:scale-95"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            className={cn(
+              "h-12 w-12 transition-all duration-500",
+              value >= star ? "drop-shadow-2xl scale-110" : "opacity-20 grayscale scale-100"
+            )}
+          >
+            <defs>
+              <linearGradient id={`gold-grad-sel-${index}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#FDE68A" />
+                <stop offset="50%" stopColor="#D4AF37" />
+                <stop offset="100%" stopColor="#B45309" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+              fill={value >= star ? `url(#gold-grad-sel-${index})` : "currentColor"}
+              stroke={value >= star ? "#92400E" : "currentColor"}
+              strokeWidth="0.5"
+            />
+            {value >= star && (
+              <path
+                d="M12 4l1.5 3.5 3.5 0.5-2.5 2.5 0.5 3.5L12 12.5"
+                fill="white"
+                fillOpacity="0.4"
+              />
+            )}
+          </svg>
+          {value >= star && (
+            <motion.div
+              layoutId="sparkle-highlight"
+              className="absolute -top-1 -right-1"
+            >
+              <Sparkles className="h-4 w-4 text-amber-500" />
+            </motion.div>
+          )}
+        </button>
+      ))}
+    </div>
+  );
+};
+
 export default function ShareExperiencePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -75,8 +125,6 @@ export default function ShareExperiencePage() {
       photoUrl: '',
     }
   });
-
-  const watchRating = form.watch('rating');
 
   const optimizeImage = (dataUrl: string): Promise<string> => {
     return new Promise((resolve) => {
@@ -176,7 +224,7 @@ export default function ShareExperiencePage() {
         <div className="flex-1 flex justify-center">
           <Logo className="h-10 w-auto" />
         </div>
-        <div className="w-10" /> {/* Spacer */}
+        <div className="w-10" />
       </header>
 
       <main className="max-w-4xl mx-auto py-20 px-6 relative z-10">
@@ -197,7 +245,6 @@ export default function ShareExperiencePage() {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-12">
                 
-                {/* Language Selection */}
                 <div className="flex flex-col md:flex-row gap-8 items-center justify-between border-b pb-12 border-dashed">
                     <div className="space-y-1">
                         <p className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
@@ -255,26 +302,12 @@ export default function ShareExperiencePage() {
                         )} />
                       </div>
 
-                      <div className="space-y-4">
+                      <div className="space-y-6">
                         <FormLabel className="uppercase text-[10px] font-black tracking-widest text-primary flex items-center gap-2">
-                           <Star className="h-3 w-3 fill-current" /> Star Rating
+                           <Sparkles className="h-3 w-3" /> Artisan Appreciation Rating
                         </FormLabel>
                         <FormField control={form.control} name="rating" render={({ field }) => (
-                          <div className="flex gap-4">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <button
-                                key={star}
-                                type="button"
-                                onClick={() => field.onChange(star)}
-                                className="group relative"
-                              >
-                                <Star className={cn(
-                                  "h-10 w-10 transition-all duration-300",
-                                  field.value >= star ? "fill-amber-500 text-amber-500 scale-110 drop-shadow-xl" : "text-stone-200 hover:text-amber-200"
-                                )} />
-                              </button>
-                            ))}
-                          </div>
+                          <ArtisanStarSelector value={field.value} onChange={field.onChange} />
                         )} />
                       </div>
                    </div>
