@@ -1,13 +1,12 @@
-
 'use client';
 
-import { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   Star, 
   ArrowLeft, 
@@ -29,6 +28,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Logo } from '@/components/logo';
 import { useFirestore, useCollection } from '@/firebase';
@@ -60,7 +60,7 @@ export default function ShareExperiencePage() {
   
   const { toast } = useToast();
   const firestore = useFirestore();
-  const productsQuery = React.useMemo(() => (firestore ? collection(firestore, 'products') : null), [firestore]);
+  const productsQuery = useMemo(() => (firestore ? collection(firestore, 'products') : null), [firestore]);
   const { data: products } = useCollection<Product>(productsQuery);
 
   const form = useForm<TestimonialFormValues>({
@@ -170,10 +170,12 @@ export default function ShareExperiencePage() {
       
       <header className="sticky top-0 z-50 w-full border-b bg-white/70 backdrop-blur-xl px-6 h-20 flex items-center justify-between shadow-sm">
         <Link href="/" className="flex items-center gap-3 group">
-          <ArrowLeft className="h-5 w-5 text-stone-400 group-hover:text-primary transition-colors" />
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Back</span>
+          <ArrowLeft className="h-5 w-5 text-stone-400 group-hover:text-primary transition-colors group-hover:-translate-x-1" />
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 group-hover:text-stone-900 transition-colors">Back</span>
         </Link>
-        <Logo className="h-10 w-auto" />
+        <div className="flex-1 flex justify-center">
+          <Logo className="h-10 w-auto" />
+        </div>
         <div className="w-10" /> {/* Spacer */}
       </header>
 
@@ -281,7 +283,7 @@ export default function ShareExperiencePage() {
                       <div className="space-y-4">
                         <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground flex justify-between">
                            Patron Portrait
-                           {photoPreview && <button onClick={() => { setPhotoUrl(null); form.setValue('photoUrl', ''); }} className="text-rose-500 hover:text-rose-700 flex items-center gap-1"><X className="h-3 w-3" /> Remove</button>}
+                           {photoPreview && <button type="button" onClick={() => { setPhotoUrl(null); form.setValue('photoUrl', ''); }} className="text-rose-500 hover:text-rose-700 flex items-center gap-1"><X className="h-3 w-3" /> Remove</button>}
                         </FormLabel>
                         <div 
                            onClick={() => fileInputRef.current?.click()}
