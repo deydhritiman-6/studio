@@ -131,6 +131,11 @@
   will-change: transform !important;
 }
 
+/* Freezes the entire marquee when hovered for easier reading */
+.testimonial-viewport:hover .testimonial-track {
+  animation-play-state: paused !important;
+}
+
 .testimonial-group {
   display: flex !important;
   flex-direction: row !important;
@@ -168,6 +173,9 @@
   }
   .animate-star-shimmer {
     animation: none !important;
+  }
+  .testimonial-viewport:hover .testimonial-track {
+    animation-play-state: paused !important;
   }
 }
 
