@@ -39,70 +39,51 @@ function BackgroundDecorations() {
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      {/* 1. Deep Base Layer */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#1a0f0d] via-[#2d110b] to-[#3D1E16]" />
+      {/* 1. Deep Base Layer - Luxury Chocolate Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0f0807] via-[#1a0f0d] to-[#2d110b]" />
       
       {/* 2. Cocoa/Noise Texture Overlay */}
-      <div className="absolute inset-0 opacity-[0.04] mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
+      <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
 
       {!shouldReduceMotion && (
         <>
-          {/* 3. Luminous Colorful Orbs */}
-          {/* Muted Rose Orb */}
+          {/* 3. Luminous Colorful Orbs - Subdued Luxury Tones */}
+          {/* Muted Rose/Burgundy Glow */}
           <motion.div 
             animate={{ 
-              x: [0, 80, -50, 0], 
-              y: [0, -60, 40, 0],
-              scale: [1, 1.2, 0.9, 1]
-            }}
-            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-            className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-rose-900/30 rounded-full blur-[120px]"
-          />
-          
-          {/* Warm Caramel Orb */}
-          <motion.div 
-            animate={{ 
-              x: [0, -100, 50, 0], 
-              y: [0, 100, -50, 0],
-              scale: [1, 1.1, 1.3, 1]
+              x: [0, 40, -30, 0], 
+              y: [0, -30, 20, 0],
+              opacity: [0.1, 0.15, 0.1]
             }}
             transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-            className="absolute bottom-[-15%] right-[10%] w-[700px] h-[700px] bg-[#bc9142]/20 rounded-full blur-[140px]"
+            className="absolute top-[-5%] left-[-5%] w-[500px] h-[500px] bg-rose-900/40 rounded-full blur-[120px]"
           />
-
-          {/* Champagne Gold Orb */}
+          
+          {/* Deep Caramel Glow */}
           <motion.div 
             animate={{ 
-              opacity: [0.1, 0.3, 0.2, 0.1],
-              scale: [0.8, 1, 0.9, 0.8]
-            }}
-            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-[20%] left-[40%] w-[450px] h-[450px] bg-[#D4AF37]/15 rounded-full blur-[100px]"
-          />
-
-          {/* Wine/Burgundy Glow */}
-          <motion.div 
-            animate={{ 
-              x: [100, 0, 100], 
-              y: [-50, 50, -50]
+              x: [0, -50, 30, 0], 
+              y: [0, 40, -30, 0],
+              opacity: [0.05, 0.1, 0.05]
             }}
             transition={{ duration: 35, repeat: Infinity, ease: "linear" }}
-            className="absolute top-[40%] right-[-5%] w-[500px] h-[500px] bg-[#800020]/20 rounded-full blur-[120px]"
+            className="absolute bottom-[-10%] right-[5%] w-[600px] h-[600px] bg-[#bc9142]/30 rounded-full blur-[140px]"
           />
 
-          {/* Warm Cream Highlight */}
+          {/* Champagne Gold Accents */}
           <motion.div 
             animate={{ 
-              opacity: [0.05, 0.2, 0.05]
+              opacity: [0.03, 0.1, 0.05],
+              scale: [1, 1.1, 1]
             }}
-            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute bottom-[20%] left-[10%] w-[350px] h-[350px] bg-[#fdfbf3]/10 rounded-full blur-[90px]"
+            transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-[30%] left-[35%] w-[400px] h-[400px] bg-[#D4AF37]/20 rounded-full blur-[100px]"
           />
         </>
       )}
       
-      {/* 4. Elegant Flowing Shapes (SVG) */}
-      <svg className="absolute bottom-0 left-0 w-full h-auto text-white/5 opacity-50" viewBox="0 0 1440 320" preserveAspectRatio="none">
+      {/* 4. Elegant Flowing Shapes - "Chocolate Ribbon" */}
+      <svg className="absolute bottom-0 left-0 w-full h-auto text-white/[0.02] opacity-30" viewBox="0 0 1440 320" preserveAspectRatio="none">
         <path fill="currentColor" d="M0,160L48,176C96,192,192,208,288,186.7C384,165,480,107,576,101.3C672,96,768,144,864,165.3C960,187,1056,181,1152,160C1248,139,1344,101,1392,90.7L1440,80L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
       </svg>
     </div>
@@ -120,7 +101,6 @@ export function Footer() {
     brand = {},
     address = {},
     contact = {},
-    hours = {},
     legal = {},
     bank = {},
     maps = {},
@@ -150,7 +130,7 @@ export function Footer() {
     }));
 
   return (
-    <footer className="relative bg-[#1a0f0d] text-stone-200 pt-32 overflow-hidden selection:bg-primary/40 border-t border-[#D4AF37]/20">
+    <footer className="relative bg-[#0f0807] text-stone-200 pt-32 overflow-hidden selection:bg-primary/40 border-t border-[#D4AF37]/30 shadow-[0_-20px_100px_rgba(0,0,0,0.5)]">
       {/* Artistic Layered Background */}
       <BackgroundDecorations />
 
@@ -158,25 +138,25 @@ export function Footer() {
         {/* Main Information Matrix */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-10 mb-24">
           
-          {/* Identity Block - Glassmorphism */}
-          <div className="group space-y-8 bg-white/[0.03] backdrop-blur-2xl p-10 rounded-[3rem] border border-white/10 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] transition-all duration-500 hover:bg-white/[0.06] hover:border-[#D4AF37]/30">
+          {/* Brand/Identity Block - Premium "Foil" Label Styling */}
+          <div className="group space-y-8 bg-black/20 backdrop-blur-3xl p-10 rounded-[2.5rem] border border-white/[0.05] shadow-2xl transition-all duration-700 hover:border-[#D4AF37]/40">
             <div className="space-y-6">
-              <Link href="/" className="inline-block hover:opacity-80 transition-opacity">
-                <Logo className="h-11 w-auto brightness-0 invert" />
+              <Link href="/" className="inline-block transition-transform duration-500 hover:scale-105">
+                <Logo className="h-12 w-auto brightness-0 invert" />
               </Link>
-              <p className="text-stone-300 text-sm leading-relaxed font-light">
-                {brand.description || "Handcrafted single-origin truffles, pralines, and gift boxes made with love and extraordinary patience in the heart of Kolkata."}
+              <p className="text-stone-400 text-[13px] leading-relaxed font-light tracking-wide italic">
+                {brand.description || "Every piece is a story of artisanal excellence, meticulously hand-tempered in our Kolkata studio using ethical, single-origin cacao."}
               </p>
-              <div className="flex items-center gap-3">
-                 <div className="h-px flex-1 bg-gradient-to-r from-[#D4AF37]/40 to-transparent" />
-                 <p className="text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.4em] italic whitespace-nowrap">
+              <div className="pt-2 flex items-center gap-3">
+                 <div className="h-px flex-1 bg-gradient-to-r from-[#D4AF37]/50 to-transparent" />
+                 <p className="text-[#D4AF37] text-[9px] font-black uppercase tracking-[0.4em] whitespace-nowrap">
                    {brand.tagline || "Handmade with Love."}
                  </p>
               </div>
             </div>
             
-            <div className="space-y-5">
-              <h4 className="text-[9px] font-black uppercase tracking-[0.3em] text-stone-500">Connect with Us</h4>
+            <div className="space-y-5 pt-4">
+              <h4 className="text-[8px] font-black uppercase tracking-[0.4em] text-stone-600">Patron Communities</h4>
               <div className="flex flex-wrap gap-4">
                 {activeSocials.map(({ platform, url, Icon }) => (
                   <a 
@@ -184,10 +164,10 @@ export function Footer() {
                     href={url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="h-11 w-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-stone-400 hover:text-[#D4AF37] hover:border-[#D4AF37]/50 hover:bg-[#D4AF37]/10 transition-all duration-500 hover:-translate-y-1"
+                    className="h-10 w-10 rounded-xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-stone-500 hover:text-[#D4AF37] hover:border-[#D4AF37]/50 hover:bg-[#D4AF37]/10 transition-all duration-500 hover:-translate-y-1 group/soc"
                     aria-label={`Follow us on ${platform}`}
                   >
-                    <Icon className="h-4 w-4" />
+                    <Icon className="h-4 w-4 transition-transform group-hover/soc:scale-110" />
                   </a>
                 ))}
               </div>
@@ -197,7 +177,7 @@ export function Footer() {
           {/* Navigation Intelligence */}
           <div className="grid grid-cols-2 gap-8 py-6">
             <div className="space-y-10">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#D4AF37]">The Studio</h4>
+              <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-[#D4AF37]/80">Discovery</h4>
               <ul className="space-y-5">
                 {(links.length > 0 ? links : [
                   { text: 'Our Story', url: '/#story' },
@@ -208,10 +188,10 @@ export function Footer() {
                   <li key={link.text}>
                     <Link 
                       href={link.url} 
-                      className="text-stone-300 text-sm hover:text-white transition-all duration-300 flex items-center group/link"
+                      className="text-stone-400 text-[13px] hover:text-[#D4AF37] transition-all duration-300 flex items-center group/link"
                     >
-                      <ArrowRight className="h-3 w-3 mr-3 text-[#D4AF37] opacity-0 -translate-x-4 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all" />
-                      <span className="group-hover/link:translate-x-1 transition-transform">{link.text}</span>
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] mr-3 opacity-0 -translate-x-4 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all" />
+                      <span className="group-hover/link:translate-x-1 transition-transform tracking-wide">{link.text}</span>
                     </Link>
                   </li>
                 ))}
@@ -219,7 +199,7 @@ export function Footer() {
             </div>
             
             <div className="space-y-10">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#D4AF37]">Patron Care</h4>
+              <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-[#D4AF37]/80">Assistance</h4>
               <ul className="space-y-5">
                 {(policies.length > 0 ? policies : [
                   { text: 'Privacy Policy', url: '#' },
@@ -230,7 +210,7 @@ export function Footer() {
                   <li key={policy.text}>
                     <Link 
                       href={policy.url} 
-                      className="text-stone-300 text-sm hover:text-white transition-all duration-300"
+                      className="text-stone-400 text-[13px] hover:text-[#D4AF37] transition-all duration-300 tracking-wide"
                     >
                       {policy.text}
                     </Link>
@@ -240,45 +220,44 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Contact Logic - Glass Panel */}
-          <div className="space-y-12 bg-white/[0.02] backdrop-blur-xl p-10 rounded-[3rem] border border-white/5 shadow-2xl">
+          {/* Contact Details - "Gilded" Panel */}
+          <div className="space-y-12 bg-white/[0.01] border border-white/[0.03] p-10 rounded-[2.5rem] shadow-xl">
             <div className="space-y-6">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#D4AF37]">Visit the Studio</h4>
-              <div className="flex gap-5">
-                <div className="h-11 w-11 rounded-2xl bg-[#D4AF37]/10 border border-[#D4AF37]/20 flex items-center justify-center shrink-0 shadow-[0_10px_20px_rgba(212,175,55,0.15)]">
-                  <MapPin className="h-4 w-4 text-[#D4AF37]" />
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm text-stone-100 font-bold leading-tight">
+              <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-[#D4AF37]/80 flex items-center gap-3">
+                 <MapPin className="h-3 w-3" /> Headquarters
+              </h4>
+              <div className="space-y-3">
+                  <p className="text-[14px] text-stone-100 font-bold leading-tight">
                     {address.businessName || "Roseberry Chocolate Studio"}
                   </p>
-                  <p className="text-[13px] text-stone-400 font-light leading-relaxed">
+                  <p className="text-[13px] text-stone-500 font-light leading-relaxed tracking-wide">
                     {address.line1 || "123 Chocolate Lane"}<br />
                     {address.line2 && <>{address.line2}<br /></>}
                     {address.area && <>{address.area}, </>}{address.city || "Kolkata"}<br />
                     {address.state || "West Bengal"} {address.zip || "700001"}
                   </p>
-                </div>
               </div>
             </div>
 
             <div className="space-y-6">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#D4AF37]">Direct Inquiry</h4>
+              <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-[#D4AF37]/80 flex items-center gap-3">
+                <Phone className="h-3 w-3" /> Communication
+              </h4>
               <div className="space-y-5">
                 {contact.phone && (
-                  <a href={`tel:${contact.phone}`} className="flex items-center gap-5 group/contact">
-                    <div className="h-9 w-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-stone-500 group-hover/contact:text-[#D4AF37] group-hover/contact:border-[#D4AF37]/30 transition-all">
-                      <Phone className="h-3.5 w-3.5" />
+                  <a href={`tel:${contact.phone}`} className="flex items-center gap-4 group/contact">
+                    <div className="h-8 w-8 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center text-stone-600 group-hover/contact:text-[#D4AF37] group-hover/contact:border-[#D4AF37]/30 transition-all">
+                      <Phone className="h-3 w-3" />
                     </div>
-                    <span className="text-sm text-stone-300 group-hover/contact:text-white transition-colors font-medium">{contact.phone}</span>
+                    <span className="text-[13px] text-stone-400 group-hover/contact:text-stone-200 transition-colors font-medium tracking-wide">{contact.phone}</span>
                   </a>
                 )}
                 {contact.email && (
-                  <a href={`mailto:${contact.email}`} className="flex items-center gap-5 group/contact">
-                    <div className="h-9 w-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-stone-500 group-hover/contact:text-[#D4AF37] group-hover/contact:border-[#D4AF37]/30 transition-all">
-                      <Mail className="h-3.5 w-3.5" />
+                  <a href={`mailto:${contact.email}`} className="flex items-center gap-4 group/contact">
+                    <div className="h-8 w-8 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center text-stone-600 group-hover/contact:text-[#D4AF37] group-hover/contact:border-[#D4AF37]/30 transition-all">
+                      <Mail className="h-3 w-3" />
                     </div>
-                    <span className="text-sm text-stone-300 group-hover/contact:text-white transition-colors break-all font-medium leading-none">{contact.email}</span>
+                    <span className="text-[13px] text-stone-400 group-hover/contact:text-stone-200 transition-colors break-all font-medium tracking-wide leading-none">{contact.email}</span>
                   </a>
                 )}
               </div>
@@ -288,25 +267,24 @@ export function Footer() {
           {/* Location & Bulletin */}
           <div className="space-y-12">
             <div className="space-y-6">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#D4AF37]">Find Us</h4>
+              <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-[#D4AF37]/80">Interactive Maps</h4>
               {visibility.showMap !== false && (maps.embedUrl || maps.mapUrl) ? (
-                <div className="relative group overflow-hidden rounded-[2rem] border-2 border-[#D4AF37]/20 shadow-2xl">
-                  <div className="aspect-[16/10] w-full bg-stone-950">
+                <div className="relative group overflow-hidden rounded-[2rem] border border-white/[0.08] shadow-2xl bg-black">
+                  <div className="aspect-[16/10] w-full grayscale opacity-40 group-hover:opacity-70 group-hover:grayscale-0 transition-all duration-700">
                     {maps.embedUrl ? (
                       <iframe 
                         src={maps.embedUrl} 
                         width="100%" 
                         height="100%" 
-                        style={{ border: 0, filter: 'grayscale(1) invert(0.92) contrast(1.1) brightness(0.9)' }} 
+                        style={{ border: 0 }} 
                         allowFullScreen 
                         loading="lazy" 
                         referrerPolicy="no-referrer-when-downgrade"
-                        title="Google Maps Location"
+                        title="Roseberry Studio Location"
                       />
                     ) : (
-                      <div className="h-full w-full flex flex-col items-center justify-center p-6 text-center space-y-4">
+                      <div className="h-full w-full flex items-center justify-center bg-stone-900">
                         <MapPin className="h-8 w-8 text-stone-800" />
-                        <p className="text-[10px] text-stone-600 uppercase tracking-widest">Map Preview Unavailable</p>
                       </div>
                     )}
                   </div>
@@ -315,35 +293,35 @@ export function Footer() {
                       href={maps.mapUrl} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="absolute inset-0 bg-stone-950/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-500 backdrop-blur-sm"
+                      className="absolute inset-0 bg-stone-950/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-500 backdrop-blur-[2px]"
                     >
-                      <Button variant="outline" className="rounded-full font-bold uppercase text-[9px] tracking-[0.2em] border-primary/50 text-primary bg-stone-900 shadow-2xl hover:bg-primary hover:text-stone-950 transition-all">
-                        Navigate to Studio <ExternalLink className="ml-2 h-3 w-3" />
+                      <Button variant="outline" className="rounded-full font-bold uppercase text-[9px] tracking-[0.2em] border-[#D4AF37]/40 text-[#D4AF37] bg-stone-950 hover:bg-[#D4AF37] hover:text-stone-950 transition-all shadow-2xl">
+                        Open in Google Maps <ExternalLink className="ml-2 h-3 w-3" />
                       </Button>
                     </a>
                   )}
                 </div>
               ) : (
-                <div className="p-10 rounded-[2.5rem] border-2 border-dashed border-[#D4AF37]/20 bg-[#D4AF37]/5 text-center space-y-5">
-                  <ShieldCheck className="h-9 w-9 text-[#D4AF37]/30 mx-auto" />
-                  <p className="text-[10px] font-black text-stone-500 uppercase tracking-[0.3em] leading-relaxed">
-                    Kolkata's Premier Artisan <br /> Chocolate Studio
+                <div className="p-10 rounded-[2.5rem] border-2 border-dashed border-white/[0.06] bg-white/[0.02] text-center space-y-4">
+                  <Sparkles className="h-6 w-6 text-[#D4AF37]/30 mx-auto" />
+                  <p className="text-[9px] font-black text-stone-600 uppercase tracking-[0.3em] leading-relaxed">
+                    Artisanal Studio • Kolkata
                   </p>
                 </div>
               )}
             </div>
 
             <div className="space-y-6">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#D4AF37]">Artisan Bulletin</h4>
+              <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-[#D4AF37]/80">Artisan Bulletin</h4>
               <div className="space-y-4">
-                <p className="text-[13px] text-stone-400 italic">Be first to discover seasonal collections.</p>
-                <div className="flex gap-3 bg-white/5 p-1.5 rounded-2xl border border-white/10 group focus-within:border-[#D4AF37]/40 transition-colors">
+                <p className="text-[12px] text-stone-500 italic font-light">Be first to discover seasonal limited editions.</p>
+                <div className="flex gap-2 bg-white/[0.02] p-1.5 rounded-2xl border border-white/[0.06] group focus-within:border-[#D4AF37]/30 transition-all shadow-inner">
                   <input 
                     type="email" 
                     placeholder="patron@luxury.com" 
-                    className="flex-1 bg-transparent border-none rounded-xl px-4 text-sm text-stone-200 focus:outline-none placeholder:text-stone-700" 
+                    className="flex-1 bg-transparent border-none rounded-xl px-4 text-xs text-stone-300 focus:outline-none placeholder:text-stone-800" 
                   />
-                  <Button size="icon" className="h-11 w-11 rounded-xl shrink-0 bg-[#D4AF37] hover:bg-[#bc9142] text-stone-950 shadow-xl transition-all hover:scale-105 active:scale-95">
+                  <Button size="icon" className="h-10 w-10 rounded-xl shrink-0 bg-[#D4AF37] hover:bg-[#bc9142] text-stone-950 shadow-xl transition-all hover:scale-105 active:scale-95">
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </div>
@@ -352,58 +330,56 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Global Business Registry Panel */}
+        {/* Dynamic Registry Panel - Hidden if empty */}
         {(visibility.showGST || visibility.showFSSAI || visibility.showBankDetails) && (
-          <div className="mb-24 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+          <div className="mb-24 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
             {/* Regulatory Identity */}
             {(visibility.showGST || visibility.showFSSAI) && (
-              <div className="lg:col-span-5 p-10 rounded-[3rem] bg-white/[0.03] backdrop-blur-3xl border border-white/10 shadow-2xl space-y-8 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
-                <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#D4AF37] flex items-center gap-3">
-                  <Info className="h-3.5 w-3.5" /> Business Registry
+              <div className="lg:col-span-5 p-10 rounded-[2.5rem] bg-white/[0.01] border border-white/[0.05] shadow-2xl space-y-8">
+                <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-[#D4AF37]/60 flex items-center gap-3">
+                  <ShieldCheck className="h-3.5 w-3.5" /> Registry Identity
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
                   {visibility.showGST && legal.gstin && (
                     <div className="space-y-1.5">
-                      <span className="text-[9px] font-black text-stone-500 uppercase tracking-tighter">Tax Identity (GSTIN)</span>
-                      <p className="text-sm font-mono font-bold text-stone-100 tracking-wider">{legal.gstin}</p>
+                      <span className="text-[8px] font-black text-stone-600 uppercase tracking-tighter">Tax Identity (GSTIN)</span>
+                      <p className="text-sm font-mono font-bold text-stone-300 tracking-wider uppercase">{legal.gstin}</p>
                     </div>
                   )}
                   {visibility.showFSSAI && legal.fssaiNumber && (
                     <div className="space-y-1.5">
-                      <span className="text-[9px] font-black text-stone-500 uppercase tracking-tighter">Food Safety License</span>
-                      <p className="text-sm font-mono font-bold text-stone-100 tracking-wider">{legal.fssaiNumber}</p>
+                      <span className="text-[8px] font-black text-stone-600 uppercase tracking-tighter">Artisanal Food Safety</span>
+                      <p className="text-sm font-mono font-bold text-stone-300 tracking-wider">{legal.fssaiNumber}</p>
                     </div>
                   )}
                 </div>
               </div>
             )}
 
-            {/* Financial Facilitation */}
+            {/* Private/Masked Banking - Handled securely */}
             {visibility.showBankDetails && bank.enabled && (
-              <div className="lg:col-span-7 p-10 rounded-[3rem] bg-[#D4AF37]/[0.03] backdrop-blur-3xl border border-[#D4AF37]/20 shadow-2xl space-y-8 relative group">
-                <div className="absolute top-[-20%] left-[-10%] w-[200px] h-[200px] bg-[#bc9142]/10 rounded-full blur-[80px]" />
-                <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#D4AF37] flex items-center gap-3">
-                  <CreditCard className="h-3.5 w-3.5" /> Payment Facilitation
+              <div className="lg:col-span-7 p-10 rounded-[2.5rem] bg-[#D4AF37]/[0.01] border border-[#D4AF37]/10 shadow-2xl space-y-8 group transition-colors hover:border-[#D4AF37]/20">
+                <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-[#D4AF37]/60 flex items-center gap-3">
+                  <CreditCard className="h-3.5 w-3.5" /> Transfer Facilitation
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
                   <div className="space-y-1.5">
-                    <span className="text-[9px] font-black text-stone-500 uppercase tracking-tighter">Beneficiary</span>
-                    <p className="text-[13px] font-bold text-stone-100 truncate">{bank.accountName}</p>
+                    <span className="text-[8px] font-black text-stone-600 uppercase tracking-tighter">Beneficiary</span>
+                    <p className="text-[13px] font-bold text-stone-300 truncate">{bank.accountName}</p>
                   </div>
                   <div className="space-y-1.5">
-                    <span className="text-[9px] font-black text-stone-500 uppercase tracking-tighter">Bank / IFSC</span>
-                    <p className="text-[13px] font-bold text-stone-100 truncate">{bank.bankName} • {bank.ifsc}</p>
+                    <span className="text-[8px] font-black text-stone-600 uppercase tracking-tighter">Bank / IFSC</span>
+                    <p className="text-[12px] font-medium text-stone-400 truncate">{bank.bankName} • {bank.ifsc}</p>
                   </div>
                   <div className="space-y-1.5">
-                    <span className="text-[9px] font-black text-stone-500 uppercase tracking-tighter">Acct Number</span>
-                    <p className="text-sm font-mono font-bold text-stone-100">
-                      {bank.masked !== false ? `XXXX XXXX ${bank.accountNumber?.slice(-4)}` : bank.accountNumber}
+                    <span className="text-[8px] font-black text-stone-600 uppercase tracking-tighter">Acct Num</span>
+                    <p className="text-sm font-mono font-bold text-stone-300">
+                      {bank.masked !== false ? `•••• •••• ${bank.accountNumber?.slice(-4)}` : bank.accountNumber}
                     </p>
                   </div>
                   {bank.upiId && (
                     <div className="space-y-1.5">
-                      <span className="text-[9px] font-black text-[#D4AF37] uppercase tracking-tighter">UPI / VPA ID</span>
+                      <span className="text-[8px] font-black text-[#D4AF37]/70 uppercase tracking-tighter">VPA / UPI ID</span>
                       <p className="text-sm font-mono font-bold text-[#D4AF37]">{bank.upiId}</p>
                     </div>
                   )}
@@ -413,38 +389,38 @@ export function Footer() {
           </div>
         )}
 
-        <Separator className="bg-white/10 mb-12" />
+        <Separator className="bg-white/[0.04] mb-12" />
 
-        {/* Global Exit Bar */}
+        {/* Global Exit Bar - Refined Typography */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-10 text-center md:text-left pb-16">
           <div className="space-y-4">
-            <p className="text-stone-500 text-[10px] font-black uppercase tracking-[0.3em]">
-              © {currentYear} {address.businessName || "Roseberry Chocolate"}. All Rights Reserved.
+            <p className="text-stone-600 text-[10px] font-black uppercase tracking-[0.3em]">
+              © {currentYear} {address.businessName || "Roseberry Chocolate"}. Crafted with patience.
             </p>
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-5 text-stone-600 text-[9px] font-black uppercase tracking-widest">
-              <span className="flex items-center gap-2 hover:text-rose-400 transition-all duration-700 cursor-default group/love">
-                <Heart className="h-3 w-3 text-rose-800 group-hover/love:scale-125 transition-transform" /> 
-                Handmade with Love in Kolkata
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-6 text-stone-700 text-[9px] font-black uppercase tracking-widest">
+              <span className="flex items-center gap-2 group/heart cursor-default">
+                <Heart className="h-3 w-3 text-rose-950 group-hover/heart:text-rose-800 transition-colors" /> 
+                Artisan-Led in Kolkata
               </span>
-              <Separator orientation="vertical" className="h-3 bg-white/10 hidden sm:block" />
+              <Separator orientation="vertical" className="h-3 bg-white/5 hidden sm:block" />
               <span className="flex items-center gap-2 cursor-default">
-                <ShieldCheck className="h-3 w-3 text-[#D4AF37]" /> 
-                Certified Artisan Studio
+                <ShieldCheck className="h-3 w-3 text-[#D4AF37]/40" /> 
+                Certified Excellence
               </span>
             </div>
           </div>
           
-          <div className="flex flex-wrap justify-center gap-8 text-[9px] font-black uppercase tracking-[0.4em] text-stone-500">
-            <Link href="#" className="hover:text-[#D4AF37] transition-all hover:scale-105">Privacy</Link>
-            <Link href="#" className="hover:text-[#D4AF37] transition-all hover:scale-105">Terms</Link>
-            <Link href="#" className="hover:text-[#D4AF37] transition-all hover:scale-105">Shipping</Link>
-            <Link href="/login" className="px-5 py-2 rounded-full border border-white/10 hover:border-[#D4AF37]/50 hover:text-[#D4AF37] transition-all">Portal Access</Link>
+          <div className="flex flex-wrap justify-center gap-10 text-[9px] font-black uppercase tracking-[0.4em] text-stone-600">
+            <Link href="#" className="hover:text-[#D4AF37] transition-all duration-300">Privacy</Link>
+            <Link href="#" className="hover:text-[#D4AF37] transition-all duration-300">Terms</Link>
+            <Link href="#" className="hover:text-[#D4AF37] transition-all duration-300">Registry</Link>
+            <Link href="/login" className="px-6 py-2 rounded-full border border-white/[0.04] hover:border-[#D4AF37]/30 hover:text-[#D4AF37] transition-all duration-500">Portal</Link>
           </div>
         </div>
       </div>
       
       {/* Visual Terminal Shimmer */}
-      <div className="h-1.5 w-full bg-gradient-to-r from-transparent via-[#D4AF37]/40 to-transparent opacity-30 blur-sm" />
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-[#D4AF37]/20 to-transparent opacity-20" />
     </footer>
   );
 }
