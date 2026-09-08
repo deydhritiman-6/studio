@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { 
   ArrowRight, 
   Star, 
@@ -15,7 +16,8 @@ import {
   CheckCircle2, 
   Truck,
   Search,
-  Loader2
+  Loader2,
+  Quote
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -23,6 +25,7 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
 import { InsideRoseberryPreview } from '@/components/inside-roseberry-preview';
+import { motion } from 'framer-motion';
 
 export default function LandingPage() {
   const firestore = useFirestore();
@@ -40,6 +43,41 @@ export default function LandingPage() {
   const storyImage = PlaceHolderImages.find(img => img.id === 'raisa-story-book');
   const mainStoryImage = PlaceHolderImages.find(img => img.id === 'our-story-founder');
   const demiPieces = PlaceHolderImages.filter(img => img.id.startsWith('chocolate-piece'));
+
+  const testimonials = [
+    {
+      name: "Ananya Sen",
+      role: "Connoisseur",
+      location: "Kolkata",
+      image: "https://picsum.photos/seed/patron1/200/200",
+      content: "The texture and depth of flavor are unparalleled. You can truly taste the love in every bite. It's not just chocolate; it's an experience that stays with you.",
+      rating: 5
+    },
+    {
+      name: "Rohan Malhotra",
+      role: "Corporate Client",
+      location: "Delhi",
+      image: "https://picsum.photos/seed/patron2/200/200",
+      content: "We chose Roseberry for our annual executive gifting, and the feedback was phenomenal. The artisanal packaging and single-origin quality speak volumes about their dedication.",
+      rating: 5
+    },
+    {
+      name: "Priya Dasgupta",
+      role: "Home Baker",
+      location: "Kolkata",
+      image: "https://picsum.photos/seed/patron3/200/200",
+      content: "As someone who works with ingredients daily, I'm blown away by the purity of their cocoa butter and the consistency of their tempering. Simply the best in the city.",
+      rating: 5
+    },
+    {
+      name: "Vikram Singh",
+      role: "Regular Patron",
+      location: "Mumbai",
+      image: "https://picsum.photos/seed/patron4/200/200",
+      content: "The Himalayan Pink Salt Caramel is a revelation. Every time I order, the quality is exactly the same—exceptional. Their shipping is remarkably fast and safe.",
+      rating: 5
+    }
+  ];
 
   return (
     <div className="min-h-screen font-body selection:bg-primary/20 relative overflow-x-hidden">
@@ -293,6 +331,78 @@ export default function LandingPage() {
         {/* NEW Inside Roseberry Section */}
         <InsideRoseberryPreview />
 
+        {/* Community Testimonials Section */}
+        <section id="reviews" className="py-32 px-6 bg-stone-50 relative overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-[0.03] pointer-events-none z-0">
+             <Quote className="w-full h-full text-primary" />
+          </div>
+          
+          <div className="max-w-7xl mx-auto space-y-20 relative z-10">
+            <div className="text-center space-y-6 max-w-3xl mx-auto">
+              <Badge className="bg-primary/10 text-primary border-none px-6 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.4em] shadow-sm">
+                Community Voices
+              </Badge>
+              <h2 className="text-5xl md:text-6xl font-bold font-headline text-stone-900 tracking-tight leading-tight">
+                Patron Testimonials
+              </h2>
+              <p className="text-stone-500 text-lg md:text-xl font-light leading-relaxed">
+                Join our growing community of connoisseurs who celebrate the art of handmade chocolate.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              {testimonials.map((testimonial, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1, duration: 0.8 }}
+                  viewport={{ once: true }}
+                >
+                  <Card className="rounded-[2.5rem] border-none shadow-sm hover:shadow-xl transition-all duration-500 bg-white overflow-hidden group">
+                    <CardContent className="p-10 space-y-8">
+                       <div className="flex justify-between items-start">
+                          <div className="flex items-center gap-6">
+                            <div className="h-20 w-20 relative rounded-full overflow-hidden border-4 border-stone-50 shadow-md transition-transform duration-500 group-hover:scale-110">
+                               <Image src={testimonial.image} alt={testimonial.name} fill className="object-cover" />
+                            </div>
+                            <div>
+                               <h4 className="text-xl font-bold font-headline text-stone-900">{testimonial.name}</h4>
+                               <p className="text-[10px] font-black uppercase tracking-widest text-primary opacity-60">
+                                  {testimonial.role} • {testimonial.location}
+                               </p>
+                               <div className="flex gap-1 mt-2 text-amber-500">
+                                  {[...Array(testimonial.rating)].map((_, i) => <Star key={i} className="h-3 w-3 fill-current" />)}
+                               </div>
+                            </div>
+                          </div>
+                          <Quote className="h-12 w-12 text-stone-100 group-hover:text-primary/10 transition-colors duration-500" />
+                       </div>
+                       
+                       <div className="relative">
+                          <p className="text-stone-600 text-lg font-light leading-relaxed italic relative z-10">
+                            "{testimonial.content}"
+                          </p>
+                       </div>
+                       
+                       <div className="pt-6 border-t border-stone-50 flex items-center gap-3">
+                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                          <span className="text-[10px] font-bold uppercase tracking-tight text-stone-400">Verified Artisan Experience</span>
+                       </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+            
+            <div className="text-center pt-8">
+               <Button variant="outline" className="rounded-full px-10 h-14 border-stone-200 text-stone-400 font-bold uppercase text-[10px] tracking-[0.2em] hover:text-primary hover:border-primary transition-all">
+                  Join the Community
+               </Button>
+            </div>
+          </div>
+        </section>
+
         {/* Demi Chocolate Gallery Showcase */}
         <section className="py-24 px-6 relative overflow-hidden">
           <div className="max-w-7xl mx-auto space-y-16">
@@ -340,34 +450,6 @@ export default function LandingPage() {
                 </div>
               </div>
             ))}
-          </div>
-        </section>
-
-        {/* Reviews Section */}
-        <section id="reviews" className="py-32 px-6 bg-white/50 backdrop-blur-md">
-          <div className="max-w-4xl mx-auto text-center space-y-16">
-            <Badge className="bg-primary/10 text-primary border-none px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em]">Patron Testimonials</Badge>
-            
-            <div className="relative">
-              <div className="absolute -top-10 -left-10 text-stone-200 opacity-50"><span className="text-9xl font-serif">“</span></div>
-              <p className="text-3xl md:text-5xl font-headline text-stone-800 italic leading-tight relative z-10">
-                "The texture and depth of flavor are unparalleled. You can truly taste the love in every bite. It's not just chocolate; it's an experience."
-              </p>
-            </div>
-
-            <div className="flex items-center justify-center gap-4">
-               <div className="h-12 w-12 rounded-full overflow-hidden bg-stone-200 border-2 border-white shadow-md">
-                  <Image src="https://picsum.photos/seed/patron/100/100" alt="Patron" width={48} height={48} />
-               </div>
-               <div className="text-left">
-                  <p className="font-bold text-stone-900">Ananya Sen</p>
-                  <p className="text-stone-400 text-xs font-bold uppercase tracking-widest">Connoisseur • Kolkata</p>
-               </div>
-            </div>
-            
-            <div className="flex justify-center gap-1 text-amber-400">
-               {[...Array(5)].map((_, i) => <Star key={i} className="h-5 w-5 fill-current" />)}
-            </div>
           </div>
         </section>
       </main>
