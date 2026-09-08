@@ -139,19 +139,19 @@ export function Footer() {
               <Link href="/" className="inline-block transition-transform duration-500 hover:scale-105">
                 <Logo className="h-12 w-auto" />
               </Link>
-              <p className="text-stone-700 text-[14px] leading-relaxed font-semibold tracking-wide italic">
+              <p className="text-stone-700 text-[14px] leading-relaxed font-bold tracking-wide italic">
                 {brand.description || "Every piece is a story of artisanal excellence, meticulously hand-tempered in our Kolkata studio using ethical, single-origin cacao."}
               </p>
               <div className="pt-2 flex items-center gap-3">
                  <div className="h-px flex-1 bg-gradient-to-r from-cyan-400/50 to-transparent" />
-                 <p className="text-stone-500 text-[9px] font-black uppercase tracking-[0.4em] whitespace-nowrap">
+                 <p className="text-stone-500 text-[11px] font-black uppercase tracking-[0.4em] whitespace-nowrap">
                    {brand.tagline || "Handmade with Love."}
                  </p>
               </div>
             </div>
             
             <div className="space-y-5 pt-4">
-              <h4 className="text-[8px] font-black uppercase tracking-[0.4em] text-stone-500">Patron Communities</h4>
+              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Patron Communities</h4>
               <div className="flex flex-wrap gap-4">
                 {activeSocials.map(({ platform, url, Icon }) => (
                   <a 
@@ -172,7 +172,7 @@ export function Footer() {
           {/* Navigation Intelligence */}
           <div className="grid grid-cols-2 gap-8 py-6">
             <div className="space-y-10">
-              <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-cyan-600">Discovery</h4>
+              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-600">Discovery</h4>
               <ul className="space-y-5">
                 {(links.length > 0 ? links : [
                   { text: 'Our Story', url: '/#story' },
@@ -194,7 +194,7 @@ export function Footer() {
             </div>
             
             <div className="space-y-10">
-              <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-fuchsia-600">Assistance</h4>
+              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-fuchsia-600">Assistance</h4>
               <ul className="space-y-5">
                 {(policies.length > 0 ? policies : [
                   { text: 'Privacy Policy', url: '#' },
@@ -218,14 +218,14 @@ export function Footer() {
           {/* Contact Details - Polished Panel */}
           <div className="space-y-12 bg-white/30 border border-white/50 p-10 rounded-[2.5rem] shadow-sm">
             <div className="space-y-6">
-              <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-emerald-600 flex items-center gap-3">
+              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-600 flex items-center gap-3">
                  <MapPin className="h-3 w-3" /> Headquarters
               </h4>
               <div className="space-y-3">
                   <p className="text-[14px] text-stone-900 font-bold leading-tight">
                     {address.businessName || "Roseberry Chocolate Studio"}
                   </p>
-                  <p className="text-[13px] text-stone-700 font-semibold leading-relaxed tracking-wide">
+                  <p className="text-[13px] text-stone-700 font-bold leading-relaxed tracking-wide">
                     {address.line1 || "123 Chocolate Lane"}<br />
                     {address.line2 && <>{address.line2}<br /></>}
                     {address.area && <>{address.area}, </>}{address.city || "Kolkata"}<br />
@@ -235,7 +235,7 @@ export function Footer() {
             </div>
 
             <div className="space-y-6">
-              <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-emerald-600 flex items-center gap-3">
+              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-600 flex items-center gap-3">
                 <Phone className="h-3 w-3" /> Communication
               </h4>
               <div className="space-y-5">
@@ -262,7 +262,7 @@ export function Footer() {
           {/* Location & Bulletin */}
           <div className="space-y-12">
             <div className="space-y-6">
-              <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-cyan-600">Location Matrix</h4>
+              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-600">Location Matrix</h4>
               {visibility.showMap !== false && (maps.embedUrl || maps.mapUrl) ? (
                 <div className="relative group overflow-hidden rounded-[2rem] border border-stone-100 shadow-xl bg-stone-50">
                   <div className="aspect-[16/10] w-full opacity-80 group-hover:opacity-100 transition-all duration-700">
@@ -290,7 +290,7 @@ export function Footer() {
                       rel="noopener noreferrer"
                       className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-500 backdrop-blur-[2px]"
                     >
-                      <Button variant="default" className="rounded-full font-black uppercase text-[9px] tracking-[0.2em] bg-stone-900 hover:bg-cyan-600 text-white transition-all shadow-2xl">
+                      <Button variant="default" className="rounded-full font-black uppercase text-[10px] tracking-[0.2em] bg-stone-900 hover:bg-cyan-600 text-white transition-all shadow-2xl">
                         Open in Google Maps <ExternalLink className="ml-2 h-3 w-3" />
                       </Button>
                     </a>
@@ -299,7 +299,7 @@ export function Footer() {
               ) : (
                 <div className="p-10 rounded-[2.5rem] border-2 border-dashed border-stone-100 bg-white/20 text-center space-y-4">
                   <Sparkles className="h-6 w-6 text-cyan-200 mx-auto" />
-                  <p className="text-[10px] font-black text-stone-500 uppercase tracking-[0.3em] leading-relaxed">
+                  <p className="text-[11px] font-black text-stone-500 uppercase tracking-[0.3em] leading-relaxed">
                     Artisanal Studio • Kolkata
                   </p>
                 </div>
@@ -307,7 +307,7 @@ export function Footer() {
             </div>
 
             <div className="space-y-6">
-              <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-fuchsia-600">Artisan Bulletin</h4>
+              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-fuchsia-600">Artisan Bulletin</h4>
               <div className="space-y-4">
                 <p className="text-[12px] text-stone-600 italic font-bold">Be first to discover seasonal limited editions.</p>
                 <div className="flex gap-2 bg-white p-1.5 rounded-2xl border border-stone-100 group focus-within:border-cyan-200 transition-all shadow-sm">
@@ -331,19 +331,19 @@ export function Footer() {
             {/* Regulatory Identity */}
             {(visibility.showGST || visibility.showFSSAI) && (
               <div className="lg:col-span-5 p-10 rounded-[2.5rem] bg-white/40 border border-white/60 shadow-sm space-y-8 backdrop-blur-3xl">
-                <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-stone-500 flex items-center gap-3">
+                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500 flex items-center gap-3">
                   <ShieldCheck className="h-3.5 w-3.5" /> Registry Identity
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
                   {visibility.showGST && legal.gstin && (
                     <div className="space-y-1.5">
-                      <span className="text-[8px] font-black text-stone-500 uppercase tracking-tighter">Tax Identity (GSTIN)</span>
+                      <span className="text-[10px] font-black text-stone-500 uppercase tracking-tighter">Tax Identity (GSTIN)</span>
                       <p className="text-sm font-mono font-black text-stone-800 tracking-wider uppercase">{legal.gstin}</p>
                     </div>
                   )}
                   {visibility.showFSSAI && legal.fssaiNumber && (
                     <div className="space-y-1.5">
-                      <span className="text-[8px] font-black text-stone-500 uppercase tracking-tighter">Artisanal Food Safety</span>
+                      <span className="text-[10px] font-black text-stone-500 uppercase tracking-tighter">Artisanal Food Safety</span>
                       <p className="text-sm font-mono font-black text-stone-800 tracking-wider">{legal.fssaiNumber}</p>
                     </div>
                   )}
@@ -354,27 +354,27 @@ export function Footer() {
             {/* Private/Masked Banking */}
             {visibility.showBankDetails && bank.enabled && (
               <div className="lg:col-span-7 p-10 rounded-[2.5rem] bg-white/40 border border-white/60 shadow-sm space-y-8 backdrop-blur-3xl group transition-colors hover:border-cyan-100">
-                <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-stone-500 flex items-center gap-3">
+                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500 flex items-center gap-3">
                   <CreditCard className="h-3.5 w-3.5" /> Transfer Facilitation
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
                   <div className="space-y-1.5">
-                    <span className="text-[8px] font-black text-stone-500 uppercase tracking-tighter">Beneficiary</span>
+                    <span className="text-[10px] font-black text-stone-500 uppercase tracking-tighter">Beneficiary</span>
                     <p className="text-[13px] font-black text-stone-900 truncate">{bank.accountName}</p>
                   </div>
                   <div className="space-y-1.5">
-                    <span className="text-[8px] font-black text-stone-500 uppercase tracking-tighter">Bank / IFSC</span>
+                    <span className="text-[10px] font-black text-stone-500 uppercase tracking-tighter">Bank / IFSC</span>
                     <p className="text-[12px] font-bold text-stone-700 truncate">{bank.bankName} • {bank.ifsc}</p>
                   </div>
                   <div className="space-y-1.5">
-                    <span className="text-[8px] font-black text-stone-500 uppercase tracking-tighter">Acct Num</span>
+                    <span className="text-[10px] font-black text-stone-500 uppercase tracking-tighter">Acct Num</span>
                     <p className="text-sm font-mono font-black text-stone-900">
                       {bank.masked !== false ? `•••• •••• ${bank.accountNumber?.slice(-4)}` : bank.accountNumber}
                     </p>
                   </div>
                   {bank.upiId && (
                     <div className="space-y-1.5">
-                      <span className="text-[8px] font-black text-cyan-700 uppercase tracking-tighter">VPA / UPI ID</span>
+                      <span className="text-[10px] font-black text-cyan-700 uppercase tracking-tighter">VPA / UPI ID</span>
                       <p className="text-sm font-mono font-black text-cyan-800">{bank.upiId}</p>
                     </div>
                   )}
@@ -389,10 +389,10 @@ export function Footer() {
         {/* Global Exit Bar */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-10 text-center md:text-left pb-16">
           <div className="space-y-4">
-            <p className="text-stone-500 text-[10px] font-black uppercase tracking-[0.3em]">
+            <p className="text-stone-500 text-[11px] font-black uppercase tracking-[0.3em]">
               © {currentYear} {address.businessName || "Roseberry Chocolate"}. Crafted with patience.
             </p>
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-6 text-stone-600 text-[9px] font-black uppercase tracking-widest">
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-6 text-stone-600 text-[10px] font-black uppercase tracking-widest">
               <span className="flex items-center gap-2 group/heart cursor-default font-bold">
                 <Heart className="h-3 w-3 text-rose-500 group-hover/heart:scale-110 transition-transform" /> 
                 Artisan-Led in Kolkata
@@ -405,7 +405,7 @@ export function Footer() {
             </div>
           </div>
           
-          <div className="flex flex-wrap justify-center gap-10 text-[9px] font-black uppercase tracking-[0.4em] text-stone-500">
+          <div className="flex flex-wrap justify-center gap-10 text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">
             <Link href="#" className="hover:text-cyan-600 transition-all duration-300 font-bold">Privacy</Link>
             <Link href="#" className="hover:text-cyan-600 transition-all duration-300 font-bold">Terms</Link>
             <Link href="#" className="hover:text-cyan-600 transition-all duration-300 font-bold">Registry</Link>
