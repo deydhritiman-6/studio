@@ -2,6 +2,7 @@
 
 import React, { useMemo, useEffect, useState } from 'react';
 import { MapPin, Star, Quote, Globe, Search } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 type Testimonial = {
@@ -26,7 +27,7 @@ const TESTIMONIAL_DATA: Omit<Testimonial, 'id'>[] = [
   { name: 'Moumita Roy', location: 'Tollygunge, Kolkata', text: 'Beautiful presentation. Loved the customized box for my anniversary. Very elegant.', lang: 'en', rating: 4, group: 'kolkata', gender: 'f', source: 'Website' },
   { name: 'Debanjan Sen', location: 'Behala, Kolkata', text: 'খুব সুন্দর প্রেজেন্টেশন। কলকাতার বুকে এরকম রুচিশীল উদ্যোগ সত্যিই বিরল।', lang: 'bn', rating: 4, group: 'kolkata', gender: 'm', source: 'Google' },
   { name: 'Tiyasha Das', location: 'Dum Dum, Kolkata', text: 'The hazelnut praline is so addictive. High-quality ingredients and great snap.', lang: 'en', rating: 4, group: 'kolkata', gender: 'f', source: 'Google' },
-  { name: 'Subhojit Das', location: 'Esplanade, Kolkata', text: 'স্বাদ আর গন্ধে আভিজাত্যের ছোঁয়া। উৎসবের মরশুমে সেরা উপহার আমাদের জন্য।', lang: 'bn', rating: 3, group: 'kolkata', gender: 'm', source: 'Website' },
+  { name: 'Subhojit Das', location: 'Esplanade, Kolkata', text: 'স্বাদ আর গন্ধে আভিজাত্যের ছোঁয়া। উৎসবের মরশুমে সেরা উপহার আমাদের জন্য।', lang: 'bn', rating: 4, group: 'kolkata', gender: 'm', source: 'Website' },
   { name: 'Sreya Saha', location: 'Lake Town, Kolkata', text: 'প্যাকেজিং টা জাস্ট অসাধারণ! চকোলেটের স্বাদ অনেকক্ষণ মুখে লেগে থাকার মতো।', lang: 'bn', rating: 5, group: 'kolkata', gender: 'f', source: 'Google' },
   { name: 'Ritwick Bose', location: 'Park Street, Kolkata', text: 'Premium cocoa notes. Reminds me of boutique shops in Europe. Simply exquisite.', lang: 'en', rating: 4, group: 'kolkata', gender: 'm', source: 'Website' },
   { name: 'Ishita Paul', location: 'Shyambazar, Kolkata', text: 'Excellent customer service and the delivery was prompt. The truffles are works of art.', lang: 'en', rating: 4, group: 'kolkata', gender: 'f', source: 'Google' },
@@ -38,14 +39,14 @@ const TESTIMONIAL_DATA: Omit<Testimonial, 'id'>[] = [
   { name: 'Kavya Iyer', location: 'Chennai, TN', text: 'The raspberry ganache is a masterpiece. Balanced sweetness and perfect texture.', lang: 'en', rating: 4, group: 'india', gender: 'f', source: 'Website' },
   { name: 'Aditya Verma', location: 'Hyderabad, TS', text: 'शुद्ध और हाथ से बने चॉकलेट्स की बात ही अलग है। बहुत ही शानदार अनुभव।', lang: 'hi', rating: 3, group: 'india', gender: 'm', source: 'Google' },
   { name: 'Sneha Kapoor', location: 'Pune, MH', text: 'Great for high-end gifting. The dark chocolate range is especially impressive.', lang: 'en', rating: 4, group: 'india', gender: 'f', source: 'Website' },
-  { name: 'Rahul Singh', location: 'Lucknow, UP', text: 'स्वाद और क्वालिटी में नंबर वन। कोलकाता की यह मिठा এবার আমাদের বাড়িতে।', lang: 'hi', rating: 4, group: 'india', gender: 'm', source: 'Google' },
+  { name: 'Rahul Singh', location: 'Lucknow, UP', text: 'स्वाद और क्वालिटी में नंबर वन। कोलकाता की यह मिठास अब हमारे घर पर।', lang: 'hi', rating: 4, group: 'india', gender: 'm', source: 'Google' },
 
   // --- Group 3: International (5 items) ---
   { name: 'Olivia Smith', location: 'London, UK', text: 'Truly artisanal craftsmanship. A sophisticated treat that rivals top Belgian brands.', lang: 'en', rating: 5, group: 'international', gender: 'f', source: 'Google' },
   { name: 'Daniel Wilson', location: 'New York, USA', text: 'Exceptional quality. You can taste the passion in every bite. World-class chocolate.', lang: 'en', rating: 4, group: 'international', gender: 'm', source: 'Website' },
-  { name: 'Emma Brown', location: 'Toronto, CA', text: 'My go-to choice for premium gifting. The texture and tempering are absolutely perfect.', lang: 'en', rating: 3, group: 'international', gender: 'f', source: 'Google' },
+  { name: 'Emma Brown', location: 'Toronto, CA', text: 'My go-to choice for premium gifting. The texture and tempering are absolutely perfect.', lang: 'en', rating: 4, group: 'international', gender: 'f', source: 'Google' },
   { name: 'Lucas Martin', location: 'Paris, FR', text: 'Beautifully presented and even better to eat. A delight for any chocolate lover.', lang: 'en', rating: 4, group: 'international', gender: 'm', source: 'Website' },
-  { name: 'Sophia Lee', location: 'Singapore', text: 'The delivery was efficient and the chocolates arrived in pristine condition. Impressive!', lang: 'en', rating: 3, group: 'international', gender: 'f', source: 'Google' },
+  { name: 'Sophia Lee', location: 'Singapore', text: 'The delivery was efficient and the chocolates arrived in pristine condition. Impressive!', lang: 'en', rating: 4, group: 'international', gender: 'f', source: 'Google' },
 ];
 
 const CocoaBeanIcon = ({ className }: { className?: string }) => (
@@ -75,7 +76,6 @@ export function TestimonialMarquee() {
 
   const shuffledTestimonials = useMemo(() => {
     const base = [...TESTIMONIAL_DATA].map((t, i) => ({ ...t, id: i }));
-    // Shuffle the mix for a balanced feel while maintaining distribution
     return base.sort(() => Math.random() - 0.5);
   }, []);
 
@@ -90,7 +90,7 @@ export function TestimonialMarquee() {
             <TestimonialCard key={t.id} testimonial={t} />
           ))}
         </div>
-        {/* Group 2 (Duplicate) */}
+        {/* Group 2 (Duplicate for Seamless Loop) */}
         <div className="testimonial-group" aria-hidden="true">
           {shuffledTestimonials.map((t) => (
             <TestimonialCard key={`dup-${t.id}`} testimonial={t} />
