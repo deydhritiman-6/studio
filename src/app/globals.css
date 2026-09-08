@@ -100,61 +100,84 @@
   background: hsl(var(--muted-foreground) / 0.5);
 }
 
-/* --- Artisan Testimonial Marquee Animation --- */
+/* --- Premium Testimonial Marquee Logic --- */
 @keyframes testimonialMarquee {
-  0% {
-    transform: translate3d(0, 0, 0);
-  }
-  100% {
-    transform: translate3d(-50%, 0, 0);
-  }
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
 }
 
-.testimonial-marquee-container {
-  overflow-x: hidden;
-  overflow-y: visible;
+.testimonial-marquee-viewport {
   width: 100%;
-  user-select: none;
-  padding: 4rem 0;
+  max-width: 100%;
+  overflow: hidden;
   position: relative;
+  padding: 4rem 0;
+  user-select: none;
 }
 
 .testimonial-marquee-track {
-  display: flex;
-  width: max-content;
-  flex-wrap: nowrap;
-  animation: testimonialMarquee 60s linear infinite;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  width: max-content !important;
+  max-width: none !important;
+  align-items: stretch;
+  animation: testimonialMarquee 55s linear infinite;
   will-change: transform;
 }
 
-/* Pause on hover for desktop users */
-@media (hover: hover) {
-  .testimonial-marquee-container:hover .testimonial-marquee-track {
-    animation-play-state: paused;
+.testimonial-marquee-viewport:hover .testimonial-marquee-track {
+  animation-play-state: paused;
+}
+
+.testimonial-marquee-group {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  width: max-content !important;
+  max-width: none !important;
+  flex-shrink: 0 !important;
+  gap: 24px;
+  padding-right: 24px; /* Maintain gap between loops */
+}
+
+.testimonial-marquee-card {
+  flex: 0 0 330px !important;
+  width: 330px;
+  min-width: 330px;
+  max-width: 330px;
+  height: 250px;
+  position: relative;
+}
+
+@media (max-width: 640px) {
+  .testimonial-marquee-card {
+    flex: 0 0 290px !important;
+    width: 290px;
+    min-width: 290px;
+    max-width: 290px;
   }
 }
 
-.testimonial-card-wrapper {
-  flex: 0 0 auto;
-  padding: 0 1.25rem; /* Gap between artisan cards */
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-/* Accessibility: Stop animation for users who prefer reduced motion */
+/* Accessibility: Respect motion preferences */
 @media (prefers-reduced-motion: reduce) {
   .testimonial-marquee-track {
     animation: none;
     flex-wrap: wrap;
     justify-content: center;
     width: 100%;
-    gap: 2.5rem;
   }
-  .testimonial-marquee-container {
-    overflow-x: visible;
+  .testimonial-marquee-viewport {
+    overflow: visible;
   }
 }
 
-/* Artisan Costing Navigator Animations */
+@keyframes bell-shake {
+  0%, 100% { transform: rotate(0); }
+  10%, 30%, 50%, 70%, 90% { transform: rotate(10deg); }
+  20%, 40%, 60%, 80% { transform: rotate(-10deg); }
+}
+
 @keyframes pulse-highlight {
   0% { box-shadow: 0 0 0 0 rgba(188, 145, 66, 0.4); background-color: transparent; }
   50% { box-shadow: 0 0 0 15px rgba(188, 145, 66, 0); background-color: rgba(188, 145, 66, 0.05); }
