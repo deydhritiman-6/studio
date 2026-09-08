@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { useCollection, useDoc, useFirestore } from '@/firebase';
 import { collection, query, where, doc } from 'firebase/firestore';
 import type { Facility, FacilitiesPageSettings } from '@/lib/types';
