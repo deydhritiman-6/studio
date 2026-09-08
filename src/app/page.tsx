@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import { 
   ArrowRight, 
   Star, 
@@ -25,6 +24,7 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
 import { InsideRoseberryPreview } from '@/components/inside-roseberry-preview';
+import { TestimonialMarquee } from '@/components/testimonial-marquee';
 import { motion } from 'framer-motion';
 
 export default function LandingPage() {
@@ -34,7 +34,6 @@ export default function LandingPage() {
 
   const curatedIndulgences = useMemo(() => {
     if (!products) return [];
-    // Show products that are ready for display and NOT archived, limited to 3 for the main grid
     return products
       .filter(p => p.productionStatus === 'Product Ready' && !p.isArchived)
       .slice(0, 3);
@@ -42,42 +41,6 @@ export default function LandingPage() {
 
   const storyImage = PlaceHolderImages.find(img => img.id === 'raisa-story-book');
   const mainStoryImage = PlaceHolderImages.find(img => img.id === 'our-story-founder');
-  const demiPieces = PlaceHolderImages.filter(img => img.id.startsWith('chocolate-piece'));
-
-  const testimonials = [
-    {
-      name: "Ananya Sen",
-      role: "Connoisseur",
-      location: "Kolkata",
-      image: "https://picsum.photos/seed/patron1/200/200",
-      content: "The texture and depth of flavor are unparalleled. You can truly taste the love in every bite. It's not just chocolate; it's an experience that stays with you.",
-      rating: 5
-    },
-    {
-      name: "Rohan Malhotra",
-      role: "Corporate Client",
-      location: "Delhi",
-      image: "https://picsum.photos/seed/patron2/200/200",
-      content: "We chose Roseberry for our annual executive gifting, and the feedback was phenomenal. The artisanal packaging and single-origin quality speak volumes about their dedication.",
-      rating: 5
-    },
-    {
-      name: "Priya Dasgupta",
-      role: "Home Baker",
-      location: "Kolkata",
-      image: "https://picsum.photos/seed/patron3/200/200",
-      content: "As someone who works with ingredients daily, I'm blown away by the purity of their cocoa butter and the consistency of their tempering. Simply the best in the city.",
-      rating: 5
-    },
-    {
-      name: "Vikram Singh",
-      role: "Regular Patron",
-      location: "Mumbai",
-      image: "https://picsum.photos/seed/patron4/200/200",
-      content: "The Himalayan Pink Salt Caramel is a revelation. Every time I order, the quality is exactly the same—exceptional. Their shipping is remarkably fast and safe.",
-      rating: 5
-    }
-  ];
 
   return (
     <div className="min-h-screen font-body selection:bg-primary/20 relative overflow-x-hidden">
@@ -91,25 +54,20 @@ export default function LandingPage() {
           priority 
           sizes="100vw"
         />
-        {/* Premium Readability Overlay */}
         <div className="absolute inset-0 bg-stone-50/90 backdrop-blur-[2px] opacity-95"></div>
       </div>
       
-      {/* Fixed Artisan Texture Overlay */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-[100] bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]"></div>
       
-      {/* Modern Fixed Floating Header */}
       <div className="fixed top-0 z-50 w-full pt-4 px-4 md:px-8 pointer-events-none">
         <header className="pointer-events-auto max-w-7xl mx-auto border bg-white/70 backdrop-blur-lg rounded-full px-6 md:px-10 h-16 md:h-20 flex items-center shadow-2xl transition-all duration-500">
           <div className="w-full grid grid-cols-2 lg:grid-cols-12 items-center gap-4 relative z-10">
-            {/* Logo - Left */}
             <div className="lg:col-span-3 flex justify-start">
               <Link href="/" className="hover:scale-105 transition-transform duration-500 block">
                 <Logo className="h-8 md:h-12 w-auto" />
               </Link>
             </div>
 
-            {/* Centered Navigation - Center */}
             <div className="hidden lg:flex lg:col-span-6 justify-center">
               <nav className="flex items-center gap-8 text-[10px] font-black uppercase tracking-[0.2em] text-stone-500">
                 <Link href="/" className="relative group hover:text-amber-600 transition-colors duration-300">
@@ -128,17 +86,13 @@ export default function LandingPage() {
                   Collections
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-rose-700 transition-all duration-300 group-hover:w-full"></span>
                 </Link>
-                <Link href="/shop" className="relative group hover:text-amber-600 transition-colors duration-300">
-                  Gift Boxes
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all duration-300 group-hover:w-full"></span>
-                </Link>
-                <Link href="#reviews" className="relative group hover:text-rose-700 transition-colors duration-300">
+                <Link href="#reviews" className="relative group hover:text-amber-600 transition-colors duration-300">
                   Reviews
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-rose-700 transition-all duration-300 group-hover:w-full"></span>
-                </Link>
-                <Link href="#footer" className="relative group hover:text-amber-600 transition-colors duration-300">
-                  Contact
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all duration-300 group-hover:w-full"></span>
+                </Link>
+                <Link href="#footer" className="relative group hover:text-rose-700 transition-colors duration-300">
+                  Contact
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-rose-700 transition-all duration-300 group-hover:w-full"></span>
                 </Link>
                 <button className="hover:text-primary hover:scale-125 transition-all duration-300 p-1 flex items-center" aria-label="Search">
                   <Search className="h-4 w-4" />
@@ -146,7 +100,6 @@ export default function LandingPage() {
               </nav>
             </div>
 
-            {/* Shop Now Button - Right */}
             <div className="lg:col-span-3 flex justify-end">
               <Button 
                 asChild 
@@ -161,10 +114,8 @@ export default function LandingPage() {
         </header>
       </div>
 
-      {/* Spacer to prevent content from jumping behind the fixed header */}
       <div className="h-20 md:h-24"></div>
 
-      {/* Luxury Brand Title Banner */}
       <div className="w-full py-1.5 md:py-2.5 text-center border-b border-stone-200/40 overflow-hidden relative">
         <div className="max-w-4xl mx-auto px-4 relative z-10">
           <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold font-headline tracking-[0.12em] leading-tight
@@ -180,7 +131,6 @@ export default function LandingPage() {
       </div>
 
       <main className="relative z-10">
-        {/* Hero Section - Direct on Background */}
         <section className="relative min-h-[85vh] flex flex-col items-center justify-center overflow-hidden py-24 px-6">
           <div className="max-w-5xl mx-auto text-center space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
             <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-stone-100/50 border border-stone-200/50 text-stone-500 text-[10px] font-black uppercase tracking-[0.4em] mx-auto shadow-sm">
@@ -204,7 +154,6 @@ export default function LandingPage() {
               </Button>
             </div>
 
-            {/* Artisan Storybook Image */}
             {storyImage && (
               <div className="pt-16 max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-300">
                 <div className="rounded-[3rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] border-[12px] border-white/80 hover:scale-[1.02] transition-transform duration-700 bg-white">
@@ -224,7 +173,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Featured Collections Showcase */}
         <section className="py-32 px-6">
           <div className="max-w-7xl mx-auto space-y-20">
             <div className="flex flex-col md:flex-row items-end justify-between gap-8">
@@ -277,7 +225,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Founder Story Section - Explicitly Titled "Our Story" */}
         <section id="story" className="py-32 px-6 bg-stone-900 text-white overflow-hidden relative rounded-[3rem] mx-4 md:mx-8 shadow-2xl">
           <div className="absolute top-0 right-0 w-96 h-96 bg-amber-600/10 blur-[120px] rounded-full -mr-48 -mt-48"></div>
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-20 items-center relative z-10">
@@ -328,111 +275,21 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* NEW Inside Roseberry Section */}
         <InsideRoseberryPreview />
 
-        {/* Community Testimonials Section */}
-        <section id="reviews" className="py-32 px-6 bg-stone-50 relative overflow-hidden">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-[0.03] pointer-events-none z-0">
-             <Quote className="w-full h-full text-primary" />
-          </div>
-          
-          <div className="max-w-7xl mx-auto space-y-20 relative z-10">
-            <div className="text-center space-y-6 max-w-3xl mx-auto">
-              <Badge className="bg-primary/10 text-primary border-none px-6 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.4em] shadow-sm">
-                Community Voices
+        {/* Premium Animated Testimonial Section */}
+        <section id="reviews" className="py-24 md:py-32 overflow-hidden bg-stone-50/50 backdrop-blur-sm relative">
+           <div className="max-w-7xl mx-auto px-6 mb-16 text-center space-y-4 relative z-10">
+              <Badge variant="outline" className="border-primary/20 text-primary px-6 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.4em] bg-white/50 backdrop-blur-sm shadow-sm">
+                Patron Stories
               </Badge>
-              <h2 className="text-5xl md:text-6xl font-bold font-headline text-stone-900 tracking-tight leading-tight">
-                Patron Testimonials
-              </h2>
-              <p className="text-stone-500 text-lg md:text-xl font-light leading-relaxed">
-                Join our growing community of connoisseurs who celebrate the art of handmade chocolate.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-              {testimonials.map((testimonial, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1, duration: 0.8 }}
-                  viewport={{ once: true }}
-                >
-                  <Card className="rounded-[2.5rem] border-none shadow-sm hover:shadow-xl transition-all duration-500 bg-white overflow-hidden group">
-                    <CardContent className="p-10 space-y-8">
-                       <div className="flex justify-between items-start">
-                          <div className="flex items-center gap-6">
-                            <div className="h-20 w-20 relative rounded-full overflow-hidden border-4 border-stone-50 shadow-md transition-transform duration-500 group-hover:scale-110">
-                               <Image src={testimonial.image} alt={testimonial.name} fill className="object-cover" />
-                            </div>
-                            <div>
-                               <h4 className="text-xl font-bold font-headline text-stone-900">{testimonial.name}</h4>
-                               <p className="text-[10px] font-black uppercase tracking-widest text-primary opacity-60">
-                                  {testimonial.role} • {testimonial.location}
-                               </p>
-                               <div className="flex gap-1 mt-2 text-amber-500">
-                                  {[...Array(testimonial.rating)].map((_, i) => <Star key={i} className="h-3 w-3 fill-current" />)}
-                               </div>
-                            </div>
-                          </div>
-                          <Quote className="h-12 w-12 text-stone-100 group-hover:text-primary/10 transition-colors duration-500" />
-                       </div>
-                       
-                       <div className="relative">
-                          <p className="text-stone-600 text-lg font-light leading-relaxed italic relative z-10">
-                            "{testimonial.content}"
-                          </p>
-                       </div>
-                       
-                       <div className="pt-6 border-t border-stone-50 flex items-center gap-3">
-                          <CheckCircle2 className="h-4 w-4 text-green-500" />
-                          <span className="text-[10px] font-bold uppercase tracking-tight text-stone-400">Verified Artisan Experience</span>
-                       </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-            
-            <div className="text-center pt-8">
-               <Button variant="outline" className="rounded-full px-10 h-14 border-stone-200 text-stone-400 font-bold uppercase text-[10px] tracking-[0.2em] hover:text-primary hover:border-primary transition-all">
-                  Join the Community
-               </Button>
-            </div>
-          </div>
+              <h2 className="text-4xl md:text-6xl font-bold font-headline text-stone-900 tracking-tight">Sweet Words from Our Customers</h2>
+              <p className="text-stone-400 text-lg font-light italic">Moments of Happiness, Shared by You</p>
+           </div>
+           
+           <TestimonialMarquee />
         </section>
 
-        {/* Demi Chocolate Gallery Showcase */}
-        <section className="py-24 px-6 relative overflow-hidden">
-          <div className="max-w-7xl mx-auto space-y-16">
-            <div className="text-center space-y-4">
-              <Badge variant="outline" className="border-primary/20 text-primary px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em]">The Demi Collection</Badge>
-              <h2 className="text-3xl md:text-5xl font-bold font-headline text-stone-900 tracking-tight">Artisan Pieces</h2>
-              <p className="text-stone-400 max-w-xl mx-auto text-sm font-light">Explore our individual hand-crafted demis, each a perfect miniature of our grandest flavors.</p>
-            </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
-              {demiPieces.map((item, i) => (
-                <div key={i} className="group text-center space-y-4">
-                   <div className="aspect-square relative bg-white rounded-3xl border border-stone-100 shadow-sm overflow-hidden p-6 hover:shadow-xl transition-all duration-500 group-hover:-translate-y-2">
-                      <Image 
-                        src={item.imageUrl} 
-                        alt={item.description} 
-                        fill 
-                        className="object-contain p-4 group-hover:scale-110 transition-transform duration-500 opacity-80 group-hover:opacity-100"
-                        data-ai-hint={item.imageHint}
-                        sizes="(max-width: 768px) 150px, 200px"
-                      />
-                   </div>
-                   <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500 leading-tight px-2">{item.description.replace('Artisan ', '').replace('Luxury ', '').replace('Single-origin ', '').replace('Hand-crafted ', '')}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Why Choose Us Features */}
         <section className="py-32 px-6">
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-16">
             {[
@@ -454,7 +311,6 @@ export default function LandingPage() {
         </section>
       </main>
 
-      {/* Public Footer */}
       <footer id="footer" className="bg-stone-900 py-24 px-6 text-center text-white relative z-10 border-t border-white/5">
         <div className="max-w-7xl mx-auto space-y-12">
           <div className="flex justify-center">

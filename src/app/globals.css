@@ -123,3 +123,13 @@
   animation: blink-label 1s ease-in-out infinite;
   font-weight: 900 !important;
 }
+
+@keyframes shimmer-brand {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.animate-shimmer-brand {
+  background-size: 200% auto;
+  animation: shimmer-brand 8s linear infinite;
+}
