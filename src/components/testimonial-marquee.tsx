@@ -18,35 +18,35 @@ type Testimonial = {
 
 const TESTIMONIAL_DATA: Omit<Testimonial, 'id'>[] = [
   // --- Group 1: Kolkata (Highest) ---
-  { name: 'Ananya Chatterjee', location: 'Salt Lake, Kolkata', text: 'অপূর্ব স্বাদ! কলকাতার সেরা হ্যান্ডমেড চকলেট। ডার্ক চকোলেট ট্রাফলটা আমার ফেভারিট।', lang: 'bn', rating: 5, group: 'kolkata', gender: 'female' },
+  { name: 'Ananya Chatterjee', location: 'Salt Lake, Kolkata', text: 'অপূর্ব স্বাদ! কলকাতার সেরা হ্যান্ডমেড চকলেট। ডার্ক চকোলেট ট্রাফলটা আমার ফেভারিট।', lang: 'bn', rating: 4, group: 'kolkata', gender: 'female' },
   { name: 'Sayan Banerjee', location: 'Ballygunge, Kolkata', text: 'Best artisan chocolate in town. The packaging is as premium as the taste. Highly recommended!', lang: 'en', rating: 5, group: 'kolkata', gender: 'male' },
-  { name: 'Riya Mukherjee', location: 'New Town, Kolkata', text: 'আমি জন্মদিন উপলক্ষে অর্ডার করেছিলাম, সবাই খুব প্রশংসা করেছে। প্রেজেন্টেশন একদম টপ-নচ।', lang: 'bn', rating: 5, group: 'kolkata', gender: 'female' },
-  { name: 'Arindam Ghosh', location: 'Alipore, Kolkata', text: 'The texture is incredibly smooth. You can tell it is made with pure cocoa butter. Excellent craftsmanship.', lang: 'en', rating: 5, group: 'kolkata', gender: 'male' },
-  { name: 'Soham Dutta', location: 'Jadavpur, Kolkata', text: 'রোজবেরি চকোলেট আমার প্রিয়। এদের মান অসাধারণ এবং ডেলিভারি খুব তাড়াতাড়ি হয়।', lang: 'bn', rating: 5, group: 'kolkata', gender: 'male' },
+  { name: 'Riya Mukherjee', location: 'New Town, Kolkata', text: 'আমি জন্মদিন উপলক্ষে অর্ডার করেছিলাম, সবাই খুব প্রশংসা করেছে। প্রেজেন্টেশন একদম টপ-নচ।', lang: 'bn', rating: 4, group: 'kolkata', gender: 'female' },
+  { name: 'Arindam Ghosh', location: 'Alipore, Kolkata', text: 'The texture is incredibly smooth. You can tell it is made with pure cocoa butter. Excellent craftsmanship.', lang: 'en', rating: 4, group: 'kolkata', gender: 'male' },
+  { name: 'Soham Dutta', location: 'Jadavpur, Kolkata', text: 'রোজবেরি চকোলেট ভালো, কিন্তু ডেলিভারি একটু দেরি হয়েছিল। তবে স্বাদ খুব সুন্দর।', lang: 'bn', rating: 3, group: 'kolkata', gender: 'male' },
   { name: 'Moumita Roy', location: 'Tollygunge, Kolkata', text: 'Authentic flavors and beautiful designs. Best gift for anniversaries!', lang: 'en', rating: 5, group: 'kolkata', gender: 'female' },
-  { name: 'Debanjan Sen', location: 'Behala, Kolkata', text: 'কলকাতার বুকে এরকম ইন্টারন্যাশনাল মানের চকোলেট সত্যিই বিরল। দারুণ অভিজ্ঞতা!', lang: 'bn', rating: 5, group: 'kolkata', gender: 'male' },
-  { name: 'Tiyasha Das', location: 'Dum Dum, Kolkata', text: 'The sea salt caramel is a revelation. Balanced, rich, and addictive!', lang: 'en', rating: 5, group: 'kolkata', gender: 'female' },
-  { name: 'Nilanjan Mitra', location: 'Park Street, Kolkata', text: 'Professional service and world-class chocolates. A must-try for everyone.', lang: 'en', rating: 5, group: 'kolkata', gender: 'male' },
+  { name: 'Debanjan Sen', location: 'Behala, Kolkata', text: 'কলকাতার বুকে এরকম ইন্টারন্যাশনাল মানের চকোলেট সত্যিই বিরল। দারুণ অভিজ্ঞতা!', lang: 'bn', rating: 4, group: 'kolkata', gender: 'male' },
+  { name: 'Tiyasha Das', location: 'Dum Dum, Kolkata', text: 'The sea salt caramel is a revelation. Balanced, rich, and addictive!', lang: 'en', rating: 4, group: 'kolkata', gender: 'female' },
+  { name: 'Nilanjan Mitra', location: 'Park Street, Kolkata', text: 'Professional service and world-class chocolates. A must-try for everyone.', lang: 'en', rating: 4, group: 'kolkata', gender: 'male' },
   { name: 'Priyanka Bose', location: 'Shyambazar, Kolkata', text: 'এদের চকোলেটের প্রত্যেকটি বাইট যেন একটা আলাদা অনুভূতি। খুব ভালো প্যাকেজিং।', lang: 'bn', rating: 5, group: 'kolkata', gender: 'female' },
-  { name: 'Abhishek Rakshit', location: 'Lake Town, Kolkata', text: 'बिल्कुल ताज़ा और लाजवाब! कोलकाता में इससे अच्छी हैंडमेड चॉकलेट कहीं नहीं मिलेगी।', lang: 'hi', rating: 5, group: 'kolkata', gender: 'male' },
+  { name: 'Abhishek Rakshit', location: 'Lake Town, Kolkata', text: 'बिल्कुल ताज़ा और लाजवाब! स्वाद बहुत अच्छा है, लेकिन स्टॉक अक्सर खत्म हो जाता है।', lang: 'hi', rating: 3, group: 'kolkata', gender: 'male' },
 
   // --- Group 2: Other Indian Cities ---
-  { name: 'Aarav Sharma', location: 'Mumbai, Maharashtra', text: 'इनके चॉकलेट्स का स्वाद वाकई लाजवाब है। मुंबई में भी ऐसी क्वालिटी मिलना मुश्किल है।', lang: 'hi', rating: 5, group: 'india', gender: 'male' },
+  { name: 'Aarav Sharma', location: 'Mumbai, Maharashtra', text: 'इनके चॉकलेट्स का स्वाद वाकई लाजवाब है। मुंबई में भी ऐसी क्वालिटी मिलना मुश्किल है।', lang: 'hi', rating: 4, group: 'india', gender: 'male' },
   { name: 'Priya Nair', location: 'Bengaluru, Karnataka', text: 'Ordered a custom box for my corporate team. The branding and quality were exceptional. Thank you, Roseberry!', lang: 'en', rating: 5, group: 'india', gender: 'female' },
-  { name: 'Rohan Mehta', location: 'Delhi, NCR', text: 'गिफ्टिंग के लिए इससे बेहतर कुछ नहीं हो सकता। बहुत ही शानदार और प्रीमियम फील।', lang: 'hi', rating: 5, group: 'india', gender: 'male' },
-  { name: 'Kavya Iyer', location: 'Chennai, Tamil Nadu', text: 'Safe and timely delivery all the way to Chennai. The chocolates arrived in perfect condition despite the heat.', lang: 'en', rating: 5, group: 'india', gender: 'female' },
-  { name: 'Aditya Verma', location: 'Hyderabad, Telangana', text: 'बेहतरीन स्वाद और शुद्धता। डार्क चॉकलेट के शौकीनों के लिए जन्नत है।', lang: 'hi', rating: 5, group: 'india', gender: 'male' },
-  { name: 'Sneha Kapoor', location: 'Pune, Maharashtra', text: 'Unique flavor combinations! The raspberry ganache is a masterpiece of artisan chocolate.', lang: 'en', rating: 5, group: 'india', gender: 'female' },
+  { name: 'Rohan Mehta', location: 'Delhi, NCR', text: 'गिफ्टिंग के लिए इससे बेहतर कुछ नहीं हो सकता। बहुत ही शानदार और प्रीमियम फील।', lang: 'hi', rating: 4, group: 'india', gender: 'male' },
+  { name: 'Kavya Iyer', location: 'Chennai, Tamil Nadu', text: 'Taste is great, but transit during summer is tricky. Arrived a bit soft, though customer care was helpful.', lang: 'en', rating: 3, group: 'india', gender: 'female' },
+  { name: 'Aditya Verma', location: 'Hyderabad, Telangana', text: 'बेहतरीन स्वाद और शुद्धता। डार्क चॉकलेट के शौकीनों के लिए जन्नत है।', lang: 'hi', rating: 4, group: 'india', gender: 'male' },
+  { name: 'Sneha Kapoor', location: 'Pune, Maharashtra', text: 'Unique flavor combinations! The raspberry ganache is a masterpiece of artisan chocolate.', lang: 'en', rating: 4, group: 'india', gender: 'female' },
   { name: 'Rahul Das', location: 'Guwahati, Assam', text: 'The attention to detail in tempering is visible. Proper snap and rich mouthfeel.', lang: 'en', rating: 5, group: 'india', gender: 'male' },
-  { name: 'Neha Singh', location: 'Jaipur, Rajasthan', text: 'बहुत ही खूबसूरत पैकिंग। स्वाद तो और भी बेहतर है। फेस्टिवल्स के लिए बेस्ट गिफ्ट।', lang: 'hi', rating: 5, group: 'india', gender: 'female' },
+  { name: 'Neha Singh', location: 'Jaipur, Rajasthan', text: 'बहुत ही खूबसूरत पैकिंग। स्वाद तो और भी बेहतर है। फेस्टिवल्स के लिए बेस्ट गिफ्ट।', lang: 'hi', rating: 4, group: 'india', gender: 'female' },
 
   // --- Group 3: International ---
   { name: 'Olivia Smith', location: 'London, UK', text: 'Roseberry chocolates have a sophisticated profile that rivals the best European brands. Truly world-class.', lang: 'en', rating: 5, group: 'international', gender: 'female' },
-  { name: 'Daniel Wilson', location: 'New York, USA', text: 'Authentic single-origin beans. You can taste the terroir in every bite. Exceptional quality!', lang: 'en', rating: 5, group: 'international', gender: 'male' },
-  { name: 'Emma Brown', location: 'Toronto, Canada', text: 'Beautifully crafted. It is clear that extraordinary patience goes into every piece. Highly recommend.', lang: 'en', rating: 5, group: 'international', gender: 'female' },
-  { name: 'Lucas Martin', location: 'Paris, France', text: 'Un délice artisanal! Very impressed with the balance of flavors and the high-quality cocoa used.', lang: 'en', rating: 5, group: 'international', gender: 'male' },
-  { name: 'Sophia Lee', location: 'Singapore', text: 'Exquisite truffles that melt in your mouth. The packaging makes it the perfect gift for luxury seekers.', lang: 'en', rating: 5, group: 'international', gender: 'female' },
-  { name: 'Noah Williams', location: 'Sydney, Australia', text: 'The best handmade chocolate I have found from India. Pure ingredients and wonderful presentation.', lang: 'en', rating: 5, group: 'international', gender: 'male' },
+  { name: 'Daniel Wilson', location: 'New York, USA', text: 'Authentic single-origin beans. You can taste the terroir in every bite. Exceptional quality!', lang: 'en', rating: 4, group: 'international', gender: 'male' },
+  { name: 'Emma Brown', location: 'Toronto, Canada', text: 'Beautifully crafted, though international shipping took longer than expected. Worth the wait!', lang: 'en', rating: 3, group: 'international', gender: 'female' },
+  { name: 'Lucas Martin', location: 'Paris, France', text: 'Un délice artisanal! Very impressed with the balance of flavors and the high-quality cocoa used.', lang: 'en', rating: 4, group: 'international', gender: 'male' },
+  { name: 'Sophia Lee', location: 'Singapore', text: 'Exquisite truffles that melt in your mouth. The packaging makes it the perfect gift for luxury seekers.', lang: 'en', rating: 4, group: 'international', gender: 'female' },
+  { name: 'Noah Williams', location: 'Sydney, Australia', text: 'Top-tier quality from India, though the premium pricing makes it more of a special occasion treat.', lang: 'en', rating: 4, group: 'international', gender: 'male' },
 ];
 
 const getAvatarColors = (name: string) => {
@@ -93,12 +93,12 @@ export function TestimonialMarquee() {
       <div className="flex overflow-hidden py-10">
         <motion.div
           className="flex gap-6 md:gap-8 whitespace-nowrap"
-          animate={shouldReduceMotion ? {} : { x: [0, -2500] }} // Loop distance adjustment
+          animate={shouldReduceMotion ? {} : { x: [0, -9000] }} 
           transition={{
             x: {
               repeat: Infinity,
               repeatType: "loop",
-              duration: 120, // Slow, premium speed
+              duration: 180, // Slow, premium speed
               ease: "linear",
             },
           }}
@@ -106,7 +106,7 @@ export function TestimonialMarquee() {
           style={{ width: 'fit-content' }}
         >
           {marqueeItems.map((testimonial, idx) => (
-            <Card key={`${testimonial.id}-${idx}`} testimonial={testimonial} />
+            <TestimonialCard key={`${testimonial.id}-${idx}`} testimonial={testimonial} />
           ))}
         </motion.div>
       </div>
@@ -124,7 +124,7 @@ export function TestimonialMarquee() {
   );
 }
 
-function Card({ testimonial }: { testimonial: Testimonial }) {
+function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
   const initials = testimonial.name
     .split(' ')
     .map((n) => n[0])
@@ -169,8 +169,14 @@ function Card({ testimonial }: { testimonial: Testimonial }) {
 
         <div className="mt-8 pt-6 border-t border-stone-100/50 flex justify-between items-center">
           <div className="flex gap-0.5 text-amber-500">
-            {[...Array(testimonial.rating)].map((_, i) => (
-              <Star key={i} className="h-3 w-3 fill-current" />
+            {[...Array(5)].map((_, i) => (
+              <Star 
+                key={i} 
+                className={cn(
+                  "h-3 w-3", 
+                  i < testimonial.rating ? "fill-current" : "text-stone-200 fill-none"
+                )} 
+              />
             ))}
           </div>
           <div className="flex items-center gap-2">
