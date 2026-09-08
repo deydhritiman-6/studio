@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "Ingredient": {
@@ -131,6 +130,25 @@
         "approvedAt": { "type": "string" }
       },
       "required": ["name", "city", "country", "testimonial", "rating", "status"]
+    },
+    "SiteSettings": {
+      "title": "Site Settings",
+      "description": "Global website configuration including footer data.",
+      "type": "object",
+      "properties": {
+        "brand": { "type": "object" },
+        "address": { "type": "object" },
+        "contact": { "type": "object" },
+        "hours": { "type": "object" },
+        "legal": { "type": "object" },
+        "bank": { "type": "object" },
+        "maps": { "type": "object" },
+        "social": { "type": "object" },
+        "links": { "type": "array" },
+        "policies": { "type": "array" },
+        "visibility": { "type": "object" },
+        "updatedAt": { "type": "string" }
+      }
     }
   },
   "auth": {
@@ -152,6 +170,10 @@
     "/testimonials/{testimonialId}": {
       "schema": "#/backend/entities/Testimonial",
       "description": "Customer reviews and patron stories."
+    },
+    "/settings/{settingId}": {
+      "schema": "#/backend/entities/SiteSettings",
+      "description": "Global configuration settings."
     }
   }
 }

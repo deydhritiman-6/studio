@@ -28,6 +28,7 @@ import type { Product, Testimonial } from '@/lib/types';
 import { InsideRoseberryPreview } from '@/components/inside-roseberry-preview';
 import { TestimonialMarquee } from '@/components/testimonial-marquee';
 import { motion } from 'framer-motion';
+import { Footer } from '@/components/footer';
 
 export default function LandingPage() {
   const firestore = useFirestore();
@@ -99,9 +100,6 @@ export default function LandingPage() {
                   Contact
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-rose-700 transition-all duration-300 group-hover:w-full"></span>
                 </Link>
-                <button className="hover:text-primary hover:scale-125 transition-all duration-300 p-1 flex items-center" aria-label="Search">
-                  <Search className="h-4 w-4" />
-                </button>
               </nav>
             </div>
 
@@ -322,32 +320,7 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer id="footer" className="bg-stone-900 py-24 px-6 text-center text-white relative z-10 border-t border-white/5">
-        <div className="max-w-7xl mx-auto space-y-12">
-          <div className="flex justify-center">
-              <Logo className="h-14 md:h-16 w-auto" />
-          </div>
-          
-          <nav className="flex flex-wrap justify-center gap-8 md:gap-16 text-[10px] font-black uppercase tracking-[0.3em] text-stone-500">
-            <Link href="/shop" className="hover:text-white transition-colors">Catalog</Link>
-            <Link href="#story" className="hover:text-white transition-colors">Our Heritage</Link>
-            <Link href="/shop/my-orders" className="hover:text-white transition-colors">Track Order</Link>
-            <Link href="/login" className="hover:text-white transition-colors">Wholesale Portal</Link>
-          </nav>
-
-          <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
-            <p className="text-stone-500 text-xs">&copy; {new Date().getFullYear()} Roseberry Chocolate. Kolkata, India.</p>
-            <div className="flex items-center gap-6">
-               <div className="flex items-center gap-2 text-stone-500 text-[10px] font-bold uppercase tracking-widest">
-                  <Heart className="h-3 w-3 text-rose-500" /> Handmade in India
-               </div>
-               <div className="flex items-center gap-2 text-stone-500 text-[10px] font-bold uppercase tracking-widest">
-                  <Truck className="h-3 w-3 text-amber-500" /> Pan-India Shipping
-               </div>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

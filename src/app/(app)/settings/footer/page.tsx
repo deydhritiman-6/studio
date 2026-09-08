@@ -1,0 +1,403 @@
+
+'use client';
+
+import React, { useState, useEffect, useMemo } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { PageHeader } from '@/components/page-header';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { useToast } from '@/hooks/use-toast';
+import { useDoc, useFirestore } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { 
+  Save, 
+  Loader2, 
+  Building, 
+  Mail, 
+  Phone, 
+  MapPin, 
+  ShieldCheck, 
+  Link as LinkIcon, 
+  Clock, 
+  Globe, 
+  CreditCard,
+  Instagram,
+  Facebook,
+  Youtube,
+  Twitter,
+  Linkedin
+} from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { saveFooterSettingsAction } from './actions';
+
+const footerSchema = z.object({
+  brand: z.object({
+    description: z.string().optional(),
+    tagline: z.string().optional(),
+  }),
+  address: z.object({
+    businessName: z.string().min(1, 'Business name is required'),
+    line1: z.string().min(1, 'Address is required'),
+    line2: z.string().optional(),
+    area: z.string().optional(),
+    city: z.string().min(1, 'City is required'),
+    state: z.string().min(1, 'State is required'),
+    zip: z.string().min(1, 'Pincode is required'),
+    country: z.string().default('India'),
+  }),
+  contact: z.object({
+    phone: z.string().optional(),
+    altPhone: z.string().optional(),
+    whatsapp: z.string().optional(),
+    email: z.string().email().optional().or(z.literal('')),
+    supportEmail: z.string().email().optional().or(z.literal('')),
+  }),
+  legal: z.object({
+    gstin: z.string().optional(),
+    fssaiNumber: z.string().optional(),
+    cin: z.string().optional(),
+    pan: z.string().optional(),
+  }),
+  bank: z.object({
+    enabled: z.boolean().default(false),
+    masked: z.boolean().default(true),
+    accountName: z.string().optional(),
+    bankName: z.string().optional(),
+    accountNumber: z.string().optional(),
+    ifsc: z.string().optional(),
+    upiId: z.string().optional(),
+  }),
+  maps: z.object({
+    locationName: z.string().optional(),
+    mapUrl: z.string().optional(),
+    embedUrl: z.string().optional(),
+  }),
+  social: z.object({
+    instagram: z.string().optional(),
+    facebook: z.string().optional(),
+    youtube: z.string().optional(),
+    twitter: z.string().optional(),
+    linkedin: z.string().optional(),
+  }),
+  visibility: z.object({
+    showBankDetails: z.boolean().default(false),
+    showGST: z.boolean().default(false),
+    showFSSAI: z.boolean().default(false),
+    showBusinessHours: z.boolean().default(false),
+    showMap: z.boolean().default(true),
+  }),
+});
+
+type FooterFormValues = z.infer<typeof footerSchema>;
+
+export default function FooterManagementPage() {
+  const { toast } = useToast();
+  const firestore = useFirestore();
+  const [isSaving, setIsSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState('brand');
+
+  const settingsRef = useMemo(() => (firestore ? doc(firestore, 'settings', 'footer') : null), [firestore]);
+  const { data: existingSettings, loading } = useDoc<any>(settingsRef as any);
+
+  const form = useForm<FooterFormValues>({
+    resolver: zodResolver(footerSchema),
+    defaultValues: {
+      brand: { description: '', tagline: '' },
+      address: { businessName: 'Roseberry Chocolate', line1: '', line2: '', area: '', city: 'Kolkata', state: 'West Bengal', zip: '', country: 'India' },
+      contact: { phone: '', altPhone: '', whatsapp: '', email: '', supportEmail: '' },
+      legal: { gstin: '', fssaiNumber: '', cin: '', pan: '' },
+      bank: { enabled: false, masked: true, accountName: '', bankName: '', accountNumber: '', ifsc: '', upiId: '' },
+      maps: { locationName: '', mapUrl: '', embedUrl: '' },
+      social: { instagram: '', facebook: '', youtube: '', twitter: '', linkedin: '' },
+      visibility: { showBankDetails: false, showGST: false, showFSSAI: false, showBusinessHours: false, showMap: true },
+    }
+  });
+
+  useEffect(() => {
+    if (existingSettings) {
+      form.reset(existingSettings as any);
+    }
+  }, [existingSettings, form]);
+
+  const onSubmit = async (values: FooterFormValues) => {
+    setIsSaving(true);
+    try {
+      await saveFooterSettingsAction(values);
+      toast({ title: 'Configuration Synchronized', description: 'Public footer has been updated in real-time.' });
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Update Failed' });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>;
+
+  return (
+    <>
+      <PageHeader title="Footer Architecture" actions={
+        <Button onClick={form.handleSubmit(onSubmit)} disabled={isSaving} className="h-12 px-8 rounded-xl shadow-xl shadow-primary/20">
+          {isSaving ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : <Save className="mr-2 h-4 w-4" />}
+          Synchronize Footer
+        </Button>
+      } />
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-7 mb-8 h-12 rounded-2xl bg-muted/50 p-1 overflow-x-auto overflow-y-hidden no-scrollbar">
+          <TabsTrigger value="brand" className="rounded-xl text-[10px] font-bold uppercase">Identity</TabsTrigger>
+          <TabsTrigger value="contact" className="rounded-xl text-[10px] font-bold uppercase">Contact</TabsTrigger>
+          <TabsTrigger value="legal" className="rounded-xl text-[10px] font-bold uppercase">Legal</TabsTrigger>
+          <TabsTrigger value="bank" className="rounded-xl text-[10px] font-bold uppercase">Financial</TabsTrigger>
+          <TabsTrigger value="social" className="rounded-xl text-[10px] font-bold uppercase">Social</TabsTrigger>
+          <TabsTrigger value="maps" className="rounded-xl text-[10px] font-bold uppercase">Location</TabsTrigger>
+          <TabsTrigger value="visibility" className="rounded-xl text-[10px] font-bold uppercase text-primary">Policy</TabsTrigger>
+        </TabsList>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <ScrollArea className="h-[calc(100vh-250px)] pr-6">
+              
+              <TabsContent value="brand" className="space-y-8 mt-0">
+                <Card className="rounded-[2rem] border-none shadow-xl">
+                  <CardHeader className="p-10 border-b bg-muted/30">
+                    <CardTitle className="text-2xl font-headline flex items-center gap-3">
+                      <Building className="h-6 w-6 text-primary" /> Brand Identity
+                    </CardTitle>
+                    <CardDescription>Visual and narrative representation in the footer.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-10 space-y-8">
+                    <FormField control={form.control} name="brand.tagline" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Footer Tagline</FormLabel>
+                        <FormControl><Input className="h-12 rounded-xl" placeholder="e.g. Handmade with Love in Kolkata" {...field} /></FormControl>
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="brand.description" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">About Description</FormLabel>
+                        <FormControl><Textarea className="rounded-xl min-h-[120px]" placeholder="Brief narrative about Roseberry Chocolate..." {...field} /></FormControl>
+                      </FormItem>
+                    )} />
+                  </CardContent>
+                </Card>
+
+                <Card className="rounded-[2rem] border-none shadow-xl">
+                  <CardHeader className="p-10 border-b">
+                    <CardTitle className="text-xl font-headline">Operational Headquarters</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <FormField control={form.control} name="address.businessName" render={({ field }) => (
+                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Registered Entity Name</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                    )} />
+                    <FormField control={form.control} name="address.line1" render={({ field }) => (
+                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Address Line 1</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                    )} />
+                    <FormField control={form.control} name="address.line2" render={({ field }) => (
+                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Address Line 2</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                    )} />
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField control={form.control} name="address.city" render={({ field }) => (
+                        <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">City</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                      )} />
+                      <FormField control={form.control} name="address.zip" render={({ field }) => (
+                        <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Pincode</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                      )} />
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="contact" className="space-y-8 mt-0">
+                <Card className="rounded-[2rem] border-none shadow-xl">
+                  <CardHeader className="p-10 border-b bg-muted/30">
+                    <CardTitle className="text-2xl font-headline flex items-center gap-3">
+                      <Mail className="h-6 w-6 text-primary" /> Reachability
+                    </CardTitle>
+                    <CardDescription>Direct communication channels for patrons.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-10 grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <FormField control={form.control} name="contact.phone" render={({ field }) => (
+                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Primary Hotline</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                    )} />
+                    <FormField control={form.control} name="contact.whatsapp" render={({ field }) => (
+                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">WhatsApp Business</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                    )} />
+                    <FormField control={form.control} name="contact.email" render={({ field }) => (
+                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Official Email</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                    )} />
+                    <FormField control={form.control} name="contact.supportEmail" render={({ field }) => (
+                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Customer Care Email</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                    )} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="legal" className="space-y-8 mt-0">
+                <Card className="rounded-[2rem] border-none shadow-xl">
+                  <CardHeader className="p-10 border-b bg-muted/30">
+                    <CardTitle className="text-2xl font-headline flex items-center gap-3">
+                      <ShieldCheck className="h-6 w-6 text-primary" /> Regulatory Matrix
+                    </CardTitle>
+                    <CardDescription>Legal registration and certification numbers.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-10 grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <FormField control={form.control} name="legal.gstin" render={({ field }) => (
+                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">GSTIN Number</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                    )} />
+                    <FormField control={form.control} name="legal.fssaiNumber" render={({ field }) => (
+                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">FSSAI License No.</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                    )} />
+                    <FormField control={form.control} name="legal.cin" render={({ field }) => (
+                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">CIN (Corporate ID)</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                    )} />
+                    <FormField control={form.control} name="legal.pan" render={({ field }) => (
+                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Business PAN</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                    )} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="bank" className="space-y-8 mt-0">
+                <Card className="rounded-[2rem] border-none shadow-xl">
+                  <CardHeader className="p-10 border-b bg-muted/30">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <CardTitle className="text-2xl font-headline flex items-center gap-3">
+                          <CreditCard className="h-6 w-6 text-primary" /> Financial Facilitation
+                        </CardTitle>
+                        <CardDescription>Bank account details for direct transactions.</CardDescription>
+                      </div>
+                      <FormField control={form.control} name="bank.enabled" render={({ field }) => (
+                        <FormItem className="flex items-center gap-3 space-y-0 p-4 rounded-xl border bg-background shadow-sm">
+                           <FormLabel className="text-[10px] font-black uppercase">Enable Component</FormLabel>
+                           <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                        </FormItem>
+                      )} />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-10 space-y-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                       <FormField control={form.control} name="bank.accountName" render={({ field }) => (
+                        <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Beneficiary Name</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                      )} />
+                      <FormField control={form.control} name="bank.bankName" render={({ field }) => (
+                        <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Bank Name</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                      )} />
+                      <FormField control={form.control} name="bank.accountNumber" render={({ field }) => (
+                        <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Account Number</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                      )} />
+                      <FormField control={form.control} name="bank.ifsc" render={({ field }) => (
+                        <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">IFSC Code</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                      )} />
+                    </div>
+                    <Separator />
+                    <div className="flex flex-col md:flex-row gap-10">
+                      <FormField control={form.control} name="bank.upiId" render={({ field }) => (
+                        <FormItem className="flex-1"><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">UPI ID / VPA</FormLabel><FormControl><Input className="h-12 rounded-xl" placeholder="roseberry@upi" {...field} /></FormControl></FormItem>
+                      )} />
+                      <FormField control={form.control} name="bank.masked" render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-xl border p-4 bg-muted/20 w-full md:w-64">
+                          <div className="space-y-0.5"><FormLabel className="text-xs font-bold uppercase">Privacy Mask</FormLabel><FormDescription className="text-[9px]">Mask account number in footer.</FormDescription></div>
+                          <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                        </FormItem>
+                      )} />
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="social" className="space-y-8 mt-0">
+                <Card className="rounded-[2rem] border-none shadow-xl">
+                  <CardHeader className="p-10 border-b bg-muted/30">
+                    <CardTitle className="text-2xl font-headline flex items-center gap-3">
+                      <Instagram className="h-6 w-6 text-primary" /> Social Presence
+                    </CardTitle>
+                    <CardDescription>Links to your boutique's official social channels.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-10 grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <FormField control={form.control} name="social.instagram" render={({ field }) => (
+                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground flex items-center gap-2"><Instagram className="h-3 w-3" /> Instagram URL</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                    )} />
+                    <FormField control={form.control} name="social.facebook" render={({ field }) => (
+                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground flex items-center gap-2"><Facebook className="h-3 w-3" /> Facebook URL</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                    )} />
+                    <FormField control={form.control} name="social.youtube" render={({ field }) => (
+                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground flex items-center gap-2"><Youtube className="h-3 w-3" /> YouTube Channel</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                    )} />
+                    <FormField control={form.control} name="social.twitter" render={({ field }) => (
+                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground flex items-center gap-2"><Twitter className="h-3 w-3" /> X / Twitter URL</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                    )} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="maps" className="space-y-8 mt-0">
+                <Card className="rounded-[2rem] border-none shadow-xl">
+                  <CardHeader className="p-10 border-b bg-muted/30">
+                    <CardTitle className="text-2xl font-headline flex items-center gap-3">
+                      <MapPin className="h-6 w-6 text-primary" /> Geospatial Intelligence
+                    </CardTitle>
+                    <CardDescription>Enable patrons to locate the studio via Google Maps.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-10 space-y-10">
+                    <FormField control={form.control} name="maps.embedUrl" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Google Maps Embed URL (Iframe src)</FormLabel>
+                        <FormControl><Input className="h-12 rounded-xl" placeholder="https://www.google.com/maps/embed?..." {...field} /></FormControl>
+                        <FormDescription className="text-[9px]">Get this from Share > Embed a map on Google Maps.</FormDescription>
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="maps.mapUrl" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Direct Navigation URL</FormLabel>
+                        <FormControl><Input className="h-12 rounded-xl" placeholder="https://maps.app.goo.gl/..." {...field} /></FormControl>
+                      </FormItem>
+                    )} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="visibility" className="space-y-8 mt-0">
+                <Card className="rounded-[2rem] border-none shadow-xl overflow-hidden">
+                  <CardHeader className="p-10 border-b bg-stone-900 text-white">
+                    <CardTitle className="text-2xl font-headline flex items-center gap-3">
+                      <Globe className="h-6 w-6 text-primary" /> Global Visibility Policy
+                    </CardTitle>
+                    <CardDescription className="text-stone-400">Control which dynamic components are exposed to public patrons.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-10 space-y-4">
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {[
+                          { key: 'showGST', label: 'Display GST Information' },
+                          { key: 'showFSSAI', label: 'Display FSSAI License' },
+                          { key: 'showBankDetails', label: 'Display Payment Info (Bank/UPI)' },
+                          { key: 'showMap', label: 'Display Google Map Preview' },
+                          { key: 'showBusinessHours', label: 'Display Operating Hours' },
+                        ].map((policy) => (
+                          <FormField key={policy.key} control={form.control} name={`visibility.${policy.key}` as any} render={({ field }) => (
+                            <FormItem className="flex items-center justify-between p-6 rounded-2xl border bg-muted/10 hover:bg-muted/20 transition-colors">
+                              <FormLabel className="text-sm font-bold uppercase tracking-tight cursor-pointer">{policy.label}</FormLabel>
+                              <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                            </FormItem>
+                          )} />
+                        ))}
+                     </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+            </ScrollArea>
+          </form>
+        </Form>
+      </Tabs>
+    </>
+  );
+}

@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -25,6 +24,7 @@ import { useCollection, useDoc, useFirestore } from '@/firebase';
 import { collection, query, where, doc } from 'firebase/firestore';
 import type { Facility, FacilitiesPageSettings } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { Footer } from '@/components/footer';
 
 export default function InsideRoseberryPage() {
   const firestore = useFirestore();
@@ -214,15 +214,7 @@ export default function InsideRoseberryPage() {
         </section>
       </main>
 
-      <footer className="bg-stone-50 py-20 px-6 border-t text-center">
-        <div className="max-w-7xl mx-auto space-y-8">
-           <Logo className="h-10 w-auto opacity-30 mx-auto grayscale" />
-           <p className="text-stone-400 text-xs font-bold uppercase tracking-widest leading-relaxed">
-             Roseberry Chocolate Studio • Handmade in Kolkata <br />
-             &copy; {new Date().getFullYear()} Registered Facility
-           </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

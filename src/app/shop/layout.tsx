@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -9,6 +10,7 @@ import { useAuth, useUser } from '@/firebase';
 import { signInAnonymously } from 'firebase/auth';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import { Footer } from '@/components/footer';
 
 export default function ShopLayout({ children }: { children: React.ReactNode }) {
   const [isAuthInitializing, setIsAuthInitializing] = useState(true);
@@ -177,19 +179,9 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
           </div>
         ) : children}
       </main>
-      <footer className="border-t bg-white py-12 md:py-16 px-6 text-center text-muted-foreground text-sm mt-auto max-w-[50%] mx-auto w-full rounded-b-3xl shadow-sm">
-        <div className="mb-8 flex justify-center">
-            <Logo className="opacity-30 grayscale h-8 sm:h-10 w-auto" />
-        </div>
-        <div className="flex flex-wrap justify-center gap-4 sm:gap-8 mb-8 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">
-          <Link href="/shop" className="hover:text-primary transition-colors">Catalog</Link>
-          <Link href="/shop/cart" className="hover:text-primary transition-colors">Your Basket</Link>
-          <Link href="/shop/my-orders" className="hover:text-primary transition-colors">Track Orders</Link>
-          <Link href="/login" className="hover:text-primary transition-colors">Wholesale Portal</Link>
-        </div>
-        <p className="text-stone-400 text-xs sm:text-sm">&copy; {new Date().getFullYear()} Roseberry Chocolate Kolkata. All rights reserved.</p>
-        <p className="mt-4 text-[8px] sm:text-[10px] font-bold uppercase tracking-widest opacity-40">Artisanally crafted for the connoisseur.</p>
-      </footer>
+      
+      <Footer />
+      
       <style jsx global>{`
         .pulse-glow {
           animation: pulse-glow 2s infinite;

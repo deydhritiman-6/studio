@@ -26,7 +26,7 @@ service cloud.firestore {
     }
 
     match /settings/{settingId} {
-      allow get: if settingId == 'facilities' || isAuthenticated();
+      allow get: if true; // Public can read settings for footer display
       allow list, write: if isAuthenticated();
     }
 

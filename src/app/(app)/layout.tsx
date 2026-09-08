@@ -52,7 +52,8 @@ import {
   Store,
   Wallet,
   Building,
-  MessageSquareQuote
+  MessageSquareQuote,
+  Layout
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -146,6 +147,7 @@ const navItems = [
     subItems: [
       { href: '/seo-dashboard', icon: Search, label: 'SEO Intelligence' },
       { href: '/settings/firestore-rules', icon: Lock, label: 'Security Rules' },
+      { href: '/settings/footer', icon: Layout, label: 'Footer Architecture' },
     ],
   },
 ];
