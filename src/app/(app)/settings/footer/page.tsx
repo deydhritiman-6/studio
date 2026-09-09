@@ -31,16 +31,14 @@ import {
   Youtube,
   Twitter,
   Linkedin,
-  AlertCircle
+  AlertCircle,
+  Eye
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
-/**
- * Enhanced Footer Schema with Conditional Validation.
- */
 const footerSchema = z.object({
   brand: z.object({
     description: z.string().optional().default(''),
@@ -71,7 +69,7 @@ const footerSchema = z.object({
   }),
   bank: z.object({
     enabled: z.boolean().default(false),
-    masked: z.boolean().default(true),
+    masked: z.boolean().default(false),
     accountName: z.string().optional().default(''),
     bankName: z.string().optional().default(''),
     branch: z.string().optional().default(''),
@@ -93,43 +91,14 @@ const footerSchema = z.object({
   }),
   visibility: z.object({
     showBankDetails: z.boolean().default(false),
-    showGST: z.boolean().default(false),
-    showFSSAI: z.boolean().default(false),
+    showGST: z.boolean().default(true),
+    showFSSAI: z.boolean().default(true),
     showBusinessHours: z.boolean().default(false),
     showMap: z.boolean().default(true),
   }),
 });
 
 type FooterFormValues = z.infer<typeof footerSchema>;
-
-const FIELD_TO_TAB: Record<string, string> = {
-  'brand': 'brand',
-  'address': 'brand',
-  'contact': 'contact',
-  'legal': 'legal',
-  'bank': 'bank',
-  'social': 'social',
-  'maps': 'maps',
-  'visibility': 'visibility',
-};
-
-const FIELD_LABELS: Record<string, string> = {
-  'brand.description': 'Brand Description',
-  'address.businessName': 'Business Name',
-  'address.line1': 'Address Line 1',
-  'address.city': 'City',
-  'address.state': 'State',
-  'address.zip': 'Pincode',
-  'contact.email': 'Official Email',
-  'contact.supportEmail': 'Support Email',
-  'bank.accountName': 'Beneficiary Name',
-  'bank.bankName': 'Bank Name',
-  'bank.branch': 'Bank Branch',
-  'bank.accountNumber': 'Account Number',
-  'bank.ifsc': 'IFSC Code',
-  'bank.upiId': 'UPI ID',
-  'maps.embedUrl': 'Google Maps Embed URL',
-};
 
 export default function FooterManagementPage() {
   const { toast } = useToast();
@@ -147,10 +116,10 @@ export default function FooterManagementPage() {
       address: { businessName: 'Roseberry Chocolate', line1: '', line2: '', area: '', city: 'Kolkata', state: 'West Bengal', zip: '', country: 'India' },
       contact: { phone: '', altPhone: '', whatsapp: '', email: '', supportEmail: '' },
       legal: { gstin: '', fssaiNumber: '', cin: '', pan: '' },
-      bank: { enabled: false, masked: true, accountName: '', bankName: '', branch: '', accountNumber: '', ifsc: '', upiId: '' },
+      bank: { enabled: false, masked: false, accountName: '', bankName: '', branch: '', accountNumber: '', ifsc: '', upiId: '' },
       maps: { locationName: '', mapUrl: '', embedUrl: '' },
       social: { instagram: '', facebook: '', youtube: '', twitter: '', linkedin: '' },
-      visibility: { showBankDetails: false, showGST: false, showFSSAI: false, showBusinessHours: false, showMap: true },
+      visibility: { showBankDetails: false, showGST: true, showFSSAI: true, showBusinessHours: false, showMap: true },
     }
   });
 
@@ -307,6 +276,31 @@ export default function FooterManagementPage() {
               </TabsContent>
 
               <TabsContent value="bank" className="space-y-8 mt-0">
+                <Card className="rounded-[2rem] border-none shadow-xl">
+                   <CardHeader className="p-10 border-b bg-primary/5">
+                      <div className="flex items-center justify-between">
+                         <div className="space-y-1">
+                            <CardTitle className="text-xl font-headline flex items-center gap-2">
+                               <Eye className="h-5 w-5 text-primary" /> Component Policy
+                            </CardTitle>
+                            <CardDescription>Control the public visibility of this financial section.</CardDescription>
+                         </div>
+                         <FormField control={form.control} name="visibility.showBankDetails" render={({ field }) => (
+                            <FormItem className="flex items-center space-x-3 bg-white p-3 rounded-2xl border shadow-sm">
+                               <FormLabel className="text-[10px] font-black uppercase tracking-widest m-0 leading-none">Enable Component</FormLabel>
+                               <FormControl>
+                                  <Switch 
+                                    checked={field.value} 
+                                    onCheckedChange={field.onChange} 
+                                    className="data-[state=checked]:bg-primary"
+                                  />
+                               </FormControl>
+                            </FormItem>
+                         )} />
+                      </div>
+                   </CardHeader>
+                </Card>
+
                 <Card className="rounded-[2rem] border-none shadow-xl">
                   <CardHeader className="p-10 border-b bg-muted/30">
                     <CardTitle className="text-2xl font-headline flex items-center gap-3">

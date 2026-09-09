@@ -132,7 +132,7 @@ export function Footer() {
 
   const hasBankData = useMemo(() => {
     const bank = footerData?.bank || {};
-    return bank.bankName || bank.accountName || bank.accountNumber || bank.ifsc || bank.upiId || bank.branch;
+    return !!(bank.bankName || bank.accountName || bank.accountNumber || bank.ifsc || bank.upiId);
   }, [footerData]);
 
   if (loading) return null;
@@ -144,6 +144,7 @@ export function Footer() {
     legal = {},
     bank = {},
     maps = {},
+    visibility = {},
   } = footerData || {};
 
   return (
@@ -253,17 +254,17 @@ export function Footer() {
               </div>
             </div>
 
-            {/* Prominent Business & Legal Badge Section */}
+            {/* Prominent Business & Legal Section */}
             {(legal.gstin || legal.fssaiNumber) && (
               <div className="space-y-6 pt-6 border-t border-stone-200/50">
                 <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Business & Legal</h4>
-                <div className="space-y-3 bg-stone-50/50 p-4 rounded-2xl border border-stone-100">
+                <div className="space-y-3 bg-stone-50/50 p-6 rounded-2xl border border-stone-100 shadow-inner">
                     {legal.fssaiNumber && (
                       <div className="flex items-center gap-3">
                          <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
                          <div className="flex flex-col">
                             <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">FSSAI License No.</span>
-                            <span className="text-[13px] text-stone-900 font-bold">{legal.fssaiNumber}</span>
+                            <span className="text-[14px] text-stone-900 font-bold">{legal.fssaiNumber}</span>
                          </div>
                       </div>
                     )}
@@ -272,7 +273,7 @@ export function Footer() {
                          <CheckCircle className="h-4 w-4 text-primary shrink-0" />
                          <div className="flex flex-col">
                             <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">GSTIN</span>
-                            <span className="text-[13px] text-stone-900 font-bold uppercase">{legal.gstin}</span>
+                            <span className="text-[14px] text-stone-900 font-bold uppercase">{legal.gstin}</span>
                          </div>
                       </div>
                     )}
@@ -323,8 +324,8 @@ export function Footer() {
 
           {/* Financial Facilitation & Map Section */}
           <motion.div variants={panelVariants(2.2)} animate="animate" className="space-y-12">
-            {/* Bank Details Section */}
-            {hasBankData && (
+            {/* Bank Details Section - Respects visibility.showBankDetails toggle */}
+            {visibility.showBankDetails && hasBankData && (
               <div className="space-y-6">
                 <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3">
                   <CreditCard className="h-3.5 w-3.5" /> Financial Facilitation
