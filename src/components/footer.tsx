@@ -18,7 +18,8 @@ import {
   Sparkles,
   Heart,
   Globe,
-  CheckCircle
+  CheckCircle,
+  CheckCircle2
 } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useDoc, useFirestore } from '@/firebase';
@@ -270,7 +271,7 @@ export function Footer() {
                     )}
                     {legal.gstin && (
                       <div className="flex items-center gap-3">
-                         <CheckCircle className="h-4 w-4 text-primary shrink-0" />
+                         <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
                          <div className="flex flex-col">
                             <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">GSTIN</span>
                             <span className="text-[14px] text-stone-900 font-bold uppercase">{legal.gstin}</span>

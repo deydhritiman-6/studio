@@ -276,29 +276,28 @@ export default function FooterManagementPage() {
               </TabsContent>
 
               <TabsContent value="bank" className="space-y-8 mt-0">
-                <Card className="rounded-[2rem] border-none shadow-xl">
-                   <CardHeader className="p-10 border-b bg-primary/5">
-                      <div className="flex items-center justify-between">
-                         <div className="space-y-1">
-                            <CardTitle className="text-xl font-headline flex items-center gap-2">
-                               <Eye className="h-5 w-5 text-primary" /> Component Policy
-                            </CardTitle>
-                            <CardDescription>Control the public visibility of this financial section.</CardDescription>
-                         </div>
-                         <FormField control={form.control} name="visibility.showBankDetails" render={({ field }) => (
-                            <FormItem className="flex items-center space-x-3 bg-white p-3 rounded-2xl border shadow-sm">
-                               <FormLabel className="text-[10px] font-black uppercase tracking-widest m-0 leading-none">Enable Component</FormLabel>
-                               <FormControl>
-                                  <Switch 
-                                    checked={field.value} 
-                                    onCheckedChange={field.onChange} 
-                                    className="data-[state=checked]:bg-primary"
-                                  />
-                               </FormControl>
-                            </FormItem>
-                         )} />
+                {/* Unified Toggle Card for Bank Component */}
+                <Card className="rounded-[2rem] border-none shadow-xl bg-stone-50 border border-stone-200">
+                   <CardContent className="p-8 flex items-center justify-between">
+                      <div className="space-y-1">
+                         <h3 className="text-xl font-headline font-bold flex items-center gap-2">
+                            <Eye className="h-5 w-5 text-primary" /> Financial Component Policy
+                         </h3>
+                         <p className="text-xs text-muted-foreground">Control the public visibility of bank details in the footer.</p>
                       </div>
-                   </CardHeader>
+                      <FormField control={form.control} name="visibility.showBankDetails" render={({ field }) => (
+                         <FormItem className="flex items-center space-x-3 bg-white p-4 rounded-2xl border-2 border-primary/20 shadow-lg">
+                            <FormLabel className="text-xs font-black uppercase tracking-widest m-0 leading-none text-primary">Enable Component</FormLabel>
+                            <FormControl>
+                               <Switch 
+                                 checked={field.value} 
+                                 onCheckedChange={field.onChange} 
+                                 className="data-[state=checked]:bg-primary"
+                               />
+                            </FormControl>
+                         </FormItem>
+                      )} />
+                   </CardContent>
                 </Card>
 
                 <Card className="rounded-[2rem] border-none shadow-xl">
