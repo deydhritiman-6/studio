@@ -36,7 +36,8 @@ import {
   Upload,
   RefreshCw,
   X,
-  ExternalLink
+  ExternalLink,
+  Sparkles
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -315,7 +316,7 @@ export default function FooterManagementPage() {
                    <CardContent className="p-10 flex flex-col sm:flex-row items-center justify-between gap-10">
                       <div className="space-y-2 text-center sm:text-left">
                          <h3 className="text-2xl font-headline font-bold flex items-center gap-3 text-primary justify-center sm:justify-start">
-                            <Eye className="h-7 w-7" /> Master Visibility Policy
+                            <Eye className="h-7 w-7" /> Financial Visibility Policy
                          </h3>
                          <p className="text-sm text-stone-600 font-medium">Toggle the public display of the Financial Facilitation block in the footer.</p>
                       </div>
@@ -433,27 +434,58 @@ export default function FooterManagementPage() {
               </TabsContent>
 
               <TabsContent value="maps" className="space-y-8 mt-0">
+                <Card className="rounded-[2.5rem] border-none shadow-2xl bg-primary/5 border border-primary/20 overflow-hidden mb-10 transition-all hover:shadow-primary/5">
+                   <CardContent className="p-10 flex flex-col sm:flex-row items-center justify-between gap-10">
+                      <div className="space-y-2 text-center sm:text-left">
+                         <h3 className="text-2xl font-headline font-bold flex items-center gap-3 text-primary justify-center sm:justify-start">
+                            <MapPin className="h-7 w-7" /> Map Visibility Policy
+                         </h3>
+                         <p className="text-sm text-stone-600 font-medium">Toggle the public display of the Location Matrix in the footer.</p>
+                      </div>
+                      <FormField control={form.control} name="visibility.showMap" render={({ field }) => (
+                         <FormItem className="flex items-center gap-8 bg-white p-6 rounded-[2rem] border-2 border-primary/20 shadow-2xl hover:scale-[1.02] transition-transform duration-300">
+                            <FormLabel className="text-sm font-black uppercase tracking-[0.2em] m-0 leading-none text-primary cursor-pointer select-none">
+                              ENABLE COMPONENT
+                            </FormLabel>
+                            <FormControl>
+                               <Switch 
+                                 checked={field.value} 
+                                 onCheckedChange={field.onChange} 
+                                 className="w-[56px] h-[30px] data-[state=checked]:bg-primary data-[state=unchecked]:bg-stone-200 border-none hover:shadow-md transition-all shadow-inner"
+                                 thumbClassName="h-6 w-6 data-[state=checked]:translate-x-[26px] data-[state=unchecked]:translate-x-1 shadow-md"
+                                 aria-label="Toggle map visibility"
+                               />
+                            </FormControl>
+                         </FormItem>
+                      )} />
+                   </CardContent>
+                </Card>
+
                 <Card className="rounded-[2rem] border-none shadow-xl">
                   <CardHeader className="p-10 border-b bg-muted/30">
                     <CardTitle className="text-2xl font-headline flex items-center gap-3">
-                      <MapPin className="h-6 w-6 text-primary" /> Location Matrix
+                      <Globe className="h-6 w-6 text-primary" /> Location Matrix
                     </CardTitle>
-                    <CardDescription>Configure Google Maps accessibility.</CardDescription>
+                    <CardDescription>Configure interactive map and navigation endpoints.</CardDescription>
                   </CardHeader>
                   <CardContent className="p-10 space-y-10">
                     <FormField control={form.control} name="maps.mapUrl" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Google Maps Place URL</FormLabel>
-                        <FormControl><Input className="h-12 rounded-xl" placeholder="https://www.google.com/maps/place/..." {...field} /></FormControl>
-                        <FormDescription className="text-[9px]">The standard browser URL for your location (used for "View on Google Maps" button).</FormDescription>
+                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground flex items-center gap-2">
+                           <ExternalLink className="h-3 w-3" /> Google Maps Place URL
+                        </FormLabel>
+                        <FormControl><Input className="h-12 rounded-xl border-stone-200 focus:ring-primary/20" placeholder="https://www.google.com/maps/place/..." {...field} /></FormControl>
+                        <FormDescription className="text-[9px] font-medium text-stone-400">Used for the "VIEW ON GOOGLE MAPS" navigation button.</FormDescription>
                       </FormItem>
                     )} />
                     
                     <FormField control={form.control} name="maps.embedUrl" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Google Maps Embed URL</FormLabel>
-                        <FormControl><Input className="h-12 rounded-xl" placeholder="https://www.google.com/maps/embed?pb=..." {...field} /></FormControl>
-                        <FormDescription className="text-[9px]">The 'src' attribute from the 'Embed a map' share tab on Google Maps.</FormDescription>
+                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-primary flex items-center gap-2">
+                           <Sparkles className="h-3 w-3" /> Google Maps Embed URL
+                        </FormLabel>
+                        <FormControl><Input className="h-12 rounded-xl border-primary/20 focus:ring-primary/20" placeholder="https://www.google.com/maps/embed?pb=..." {...field} /></FormControl>
+                        <FormDescription className="text-[9px] font-medium text-stone-400">Required for the interactive map display. Extract the 'src' value from the 'Embed a map' HTML.</FormDescription>
                       </FormItem>
                     )} />
                   </CardContent>
@@ -466,7 +498,7 @@ export default function FooterManagementPage() {
                     <CardTitle className="text-2xl font-headline flex items-center gap-3">
                       <Globe className="h-6 w-6 text-primary" /> Global Visibility Policy
                     </CardTitle>
-                    <CardDescription className="text-stone-400">Control what is visible to the public.</CardDescription>
+                    <CardDescription className="text-stone-400">Master controls for public-facing modules.</CardDescription>
                   </CardHeader>
                   <CardContent className="p-10 space-y-4">
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -474,7 +506,7 @@ export default function FooterManagementPage() {
                           { key: 'showGST', label: 'Display GST Information' },
                           { key: 'showFSSAI', label: 'Display FSSAI License' },
                           { key: 'showBankDetails', label: 'Display Financial Panel' },
-                          { key: 'showMap', label: 'Display Map Preview' },
+                          { key: 'showMap', label: 'Display Location Matrix' },
                         ].map((policy) => (
                           <FormField key={policy.key} control={form.control} name={`visibility.${policy.key}` as any} render={({ field }) => (
                             <FormItem className="flex items-center justify-between p-6 rounded-2xl border bg-muted/10">

@@ -19,7 +19,8 @@ import {
   Heart,
   Globe,
   CheckCircle,
-  QrCode
+  QrCode,
+  ArrowRight
 } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useDoc, useFirestore } from '@/firebase';
@@ -140,7 +141,7 @@ export function Footer() {
 
   const isValidEmbedUrl = (url?: string) => {
     if (!url) return false;
-    return url.includes('google.com/maps/embed') || url.includes('<iframe');
+    return url.includes('google.com/maps/embed') || url.includes('https://');
   };
 
   if (loading) return null;
@@ -400,55 +401,73 @@ export function Footer() {
             )}
 
             {/* Location Matrix Section */}
-            <div className="space-y-6">
-              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3">
-                <Globe className="h-3.5 w-3.5" /> Location Matrix
-              </h4>
-              
-              <div className="relative group overflow-hidden rounded-[2.5rem] border-2 border-white/60 shadow-xl bg-white/40 backdrop-blur-md">
-                {isValidEmbedUrl(maps.embedUrl) ? (
-                  <div className="aspect-[16/10] w-full opacity-90 group-hover:opacity-100 transition-all duration-700">
-                    <iframe 
-                      src={maps.embedUrl} 
-                      width="100%" 
-                      height="100%" 
-                      style={{ border: 0 }} 
-                      allowFullScreen 
-                      loading="lazy" 
-                      referrerPolicy="no-referrer-when-downgrade" 
-                    />
-                  </div>
-                ) : (
-                  <div className="aspect-[16/10] w-full p-8 flex flex-col items-center justify-center bg-stone-50/50 text-center space-y-4">
-                    <MapPin className="h-8 w-8 text-stone-300 opacity-50" />
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-400">Roseberry Studio Location</p>
-                      <p className="text-xs text-stone-500 font-medium leading-relaxed italic max-w-[200px] mx-auto">
-                        {address.line1}, {address.city}
-                      </p>
+            {visibility.showMap && (
+              <div className="space-y-6">
+                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3">
+                  <Globe className="h-3.5 w-3.5" /> Location Matrix
+                </h4>
+                
+                <div className="relative group overflow-hidden rounded-[2.5rem] border-2 border-white/60 shadow-2xl bg-white/40 backdrop-blur-md transition-all duration-500 hover:shadow-primary/5">
+                  {isValidEmbedUrl(maps.embedUrl) ? (
+                    <div className="flex flex-col">
+                      <div className="aspect-video w-full opacity-90 group-hover:opacity-100 transition-all duration-700 border-b border-white/20">
+                        <iframe 
+                          src={maps.embedUrl} 
+                          width="100%" 
+                          height="100%" 
+                          style={{ border: 0 }} 
+                          allowFullScreen 
+                          loading="lazy" 
+                          referrerPolicy="no-referrer-when-downgrade" 
+                          className="grayscale-[20%] hover:grayscale-0 transition-all duration-700"
+                        />
+                      </div>
+                      <div className="p-8 space-y-6 bg-white/60">
+                         <div className="flex items-start gap-4">
+                            <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                               <MapPin className="h-5 w-5" />
+                            </div>
+                            <div className="space-y-1">
+                               <p className="text-[10px] font-black uppercase tracking-widest text-primary">Roseberry Studio Location</p>
+                               <p className="text-sm text-stone-900 font-bold leading-relaxed tracking-tight">
+                                 {address.line1}, {address.city}
+                               </p>
+                            </div>
+                         </div>
+
+                         {maps.mapUrl && (
+                           <Button 
+                            asChild 
+                            className="w-full h-14 rounded-2xl bg-stone-900 text-white hover:bg-stone-800 font-bold uppercase text-[10px] tracking-widest shadow-xl shadow-stone-900/20 group/map"
+                           >
+                            <a href={maps.mapUrl} target="_blank" rel="noopener noreferrer">
+                              View on Google Maps <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/map:translate-x-1" />
+                            </a>
+                           </Button>
+                         )}
+                      </div>
                     </div>
-                    {maps.mapUrl && (
-                      <Button asChild variant="outline" size="sm" className="rounded-full text-[9px] font-black uppercase tracking-widest border-primary/20 text-primary hover:bg-primary hover:text-white">
-                        <a href={maps.mapUrl} target="_blank" rel="noopener noreferrer">View on Google Maps</a>
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </div>
-              
-              {maps.mapUrl && isValidEmbedUrl(maps.embedUrl) && (
-                <div className="flex justify-center mt-4">
-                   <a 
-                    href={maps.mapUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="text-[9px] font-black uppercase tracking-[0.2em] text-stone-400 hover:text-primary transition-colors flex items-center gap-2"
-                   >
-                     View full interactive map <ExternalLink className="h-3 w-3" />
-                   </a>
+                  ) : (
+                    <div className="aspect-video w-full p-8 flex flex-col items-center justify-center bg-stone-50/50 text-center space-y-6">
+                      <div className="h-16 w-16 bg-white rounded-3xl shadow-xl flex items-center justify-center">
+                        <MapPin className="h-8 w-8 text-stone-200" />
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-[11px] font-black uppercase tracking-[0.2em] text-stone-400">Location map unavailable</p>
+                        <p className="text-xs text-stone-500 font-medium leading-relaxed italic max-w-[200px] mx-auto">
+                          {address.line1}, {address.city}
+                        </p>
+                      </div>
+                      {maps.mapUrl && (
+                        <Button asChild variant="outline" className="rounded-full h-12 px-8 font-bold uppercase text-[10px] tracking-widest border-primary/20 text-primary hover:bg-primary hover:text-white transition-all">
+                          <a href={maps.mapUrl} target="_blank" rel="noopener noreferrer">Navigate to Studio</a>
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             <motion.div animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }} className="p-6 bg-rose-500/5 rounded-2xl border border-rose-500/10 flex items-center gap-4">
                 <div className="h-10 w-10 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-600 shadow-inner"><Heart className="h-5 w-5 fill-current" /></div>
