@@ -40,28 +40,28 @@ function PremiumBackground() {
       {/* 2. Soft Textured Overlay */}
       <div className="absolute inset-0 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]" />
 
-      {/* 3. High-Intensity Drifting Auras */}
+      {/* 3. High-Intensity Drifting Auras - Wide Paths */}
       {!shouldReduceMotion && (
         <>
-          {/* Cyan Glow - Wide Drift */}
-          <div className="absolute top-[-30%] left-[-30%] w-[1000px] h-[1000px] bg-cyan-400/30 rounded-full blur-[150px] animate-drifting-glow" />
+          {/* Cyan Glow - Wide Diagonal Drift */}
+          <div className="absolute top-[-30%] left-[-30%] w-[1200px] h-[1200px] bg-cyan-400/25 rounded-full blur-[180px] animate-drifting-glow" />
           
-          {/* Magenta Glow - Wide Drift */}
-          <div className="absolute top-[10%] left-[10%] w-[900px] h-[900px] bg-fuchsia-400/25 rounded-full blur-[160px] animate-drifting-glow-reverse" />
+          {/* Magenta Glow - Opposing Slow Drift */}
+          <div className="absolute top-[10%] left-[10%] w-[1000px] h-[1000px] bg-fuchsia-400/20 rounded-full blur-[200px] animate-drifting-glow-reverse" />
 
-          {/* Olive Green Glow - Wide Drift */}
-          <div className="absolute top-[-25%] right-[-30%] w-[1000px] h-[1000px] bg-emerald-400/30 rounded-full blur-[150px] animate-drifting-glow" />
+          {/* Olive Green Glow - Vertical/Horizontal Move */}
+          <div className="absolute top-[-25%] right-[-30%] w-[1100px] h-[1100px] bg-emerald-400/25 rounded-full blur-[180px] animate-drifting-glow" />
 
-          {/* Cherry Red Glow - Wide Drift */}
-          <div className="absolute bottom-[-30%] left-[30%] w-[800px] h-[800px] bg-rose-400/20 rounded-full blur-[130px] animate-drifting-glow-reverse" />
+          {/* Cherry Red Glow - Localized Pulse */}
+          <div className="absolute bottom-[-30%] left-[30%] w-[800px] h-[800px] bg-rose-400/15 rounded-full blur-[150px] animate-drifting-glow-reverse" />
         </>
       )}
 
       {/* 4. Elegant Abstract Chocolate Ribbons with Wave Motion */}
       <motion.svg 
-        animate={!shouldReduceMotion ? { y: [0, -20, 0], scaleY: [1, 1.1, 1] } : {}}
-        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute bottom-0 left-0 w-full h-auto opacity-[0.04] text-stone-900" 
+        animate={!shouldReduceMotion ? { y: [0, -20, 0], scaleY: [1, 1.08, 1] } : {}}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute bottom-0 left-0 w-full h-auto opacity-[0.04] text-stone-900 animate-ribbon-flow" 
         viewBox="0 0 1440 320" 
         fill="none" 
         xmlns="http://www.w3.org/2000/svg"
@@ -73,7 +73,7 @@ function PremiumBackground() {
 }
 
 /**
- * High-Density Floating Light Particles.
+ * High-Density Floating Light Particles (Double Density).
  */
 function FloatingParticles() {
   const shouldReduceMotion = useReducedMotion();
@@ -81,9 +81,9 @@ function FloatingParticles() {
 
   const particles = Array.from({ length: 50 }).map((_, i) => ({
     left: `${Math.random() * 100}%`,
-    delay: `${Math.random() * 15}s`,
+    delay: `${Math.random() * 20}s`,
     color: ['bg-cyan-300', 'bg-fuchsia-300', 'bg-emerald-300', 'bg-rose-300', 'bg-white', 'bg-amber-200'][i % 6],
-    duration: `${Math.random() * 10 + 10}s`
+    duration: `${Math.random() * 15 + 10}s`
   }));
 
   return (
@@ -154,10 +154,10 @@ export function Footer() {
       <div className="container max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-10 mb-24">
           
-          {/* Brand Identity Panel */}
+          {/* Brand Identity Panel - Staggered Float */}
           <motion.div 
-            animate={!shouldReduceMotion ? { y: [-4, 4, -4] } : {}}
-            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+            animate={!shouldReduceMotion ? { y: [-6, 6, -6] } : {}}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
             className="group space-y-8 bg-white/45 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/60 shadow-xl transition-all duration-700 hover:shadow-2xl"
           >
             <div className="space-y-6">
@@ -200,10 +200,10 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* Links Section */}
+          {/* Links Section - Staggered Float */}
           <motion.div 
-            animate={!shouldReduceMotion ? { y: [4, -4, 4] } : {}}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            animate={!shouldReduceMotion ? { y: [6, -6, 6] } : {}}
+            transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
             className="grid grid-cols-2 gap-8 py-6"
           >
             <div className="space-y-10">
@@ -243,10 +243,10 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* Contact Section */}
+          {/* Contact Section - Staggered Float */}
           <motion.div 
-            animate={!shouldReduceMotion ? { y: [-3, 3, -3] } : {}}
-            transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+            animate={!shouldReduceMotion ? { y: [-5, 5, -5] } : {}}
+            transition={{ duration: 7.5, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
             className="space-y-12 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm"
           >
             <div className="space-y-6">
@@ -306,15 +306,15 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* Maps Section */}
+          {/* Maps Section - Staggered Float */}
           <motion.div 
-            animate={!shouldReduceMotion ? { y: [3, -3, 3] } : {}}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+            animate={!shouldReduceMotion ? { y: [5, -5, 5] } : {}}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2.2 }}
             className="space-y-12"
           >
             <div className="space-y-6">
               <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700">Location Matrix</h4>
-              {visibility.showMap !== false && (maps.embedUrl) ? (
+              {visibility.showMap !== false && maps.embedUrl ? (
                 <div className="relative group overflow-hidden rounded-[2.5rem] border-2 border-white/60 shadow-xl bg-white/40 backdrop-blur-md">
                   <div className="aspect-[16/10] w-full opacity-90 group-hover:opacity-100 transition-all duration-700">
                     <iframe src={maps.embedUrl} width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
