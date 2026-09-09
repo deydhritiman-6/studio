@@ -62,7 +62,7 @@ function PremiumBackground() {
       <motion.svg 
         animate={!shouldReduceMotion ? { y: [0, -20, 0], scaleY: [1, 1.08, 1] } : {}}
         transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute bottom-0 left-0 w-full h-auto opacity-[0.04] text-stone-900 animate-ribbon-flow" 
+        className="absolute bottom-0 left-0 w-full h-auto opacity-[0.04] text-stone-900" 
         viewBox="0 0 1440 320" 
         fill="none" 
         xmlns="http://www.w3.org/2000/svg"
@@ -248,7 +248,7 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* Contact Section - Staggered Float */}
+          {/* Contact & Headquarters Section - Staggered Float */}
           <motion.div 
             variants={panelVariants(0.8)}
             animate="animate"
@@ -310,7 +310,7 @@ export function Footer() {
               </div>
             </div>
 
-            {/* Business & Legal Block - Dynamic Display */}
+            {/* Business & Legal Block - Dedicated High-Visibility Section */}
             {(legal.gstin || legal.fssaiNumber) && (
               <div className="space-y-6 pt-6 border-t border-stone-200/50">
                 <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500 flex items-center gap-3">
@@ -342,7 +342,7 @@ export function Footer() {
           >
             <div className="space-y-6">
               <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700">Location Matrix</h4>
-              {visibility.showMap !== false && maps.embedUrl ? (
+              {maps.embedUrl ? (
                 <div className="relative group overflow-hidden rounded-[2.5rem] border-2 border-white/60 shadow-xl bg-white/40 backdrop-blur-md">
                   <div className="aspect-[16/10] w-full opacity-90 group-hover:opacity-100 transition-all duration-700">
                     <iframe src={maps.embedUrl} width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
@@ -379,7 +379,7 @@ export function Footer() {
             © {new Date().getFullYear()} {address.businessName || "Roseberry Chocolate"}. Crafted with patience.
           </p>
           <div className="flex gap-10 text-[12px] font-black uppercase tracking-[0.4em] text-stone-600">
-             {/* Portal link removed as per request */}
+             {/* Admin Portal access is handled externally */}
           </div>
         </div>
       </div>

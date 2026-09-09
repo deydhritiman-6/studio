@@ -126,7 +126,7 @@
   width: max-content !important;
   max-width: none !important;
   align-items: stretch !important;
-  animation: testimonialMarquee 55s linear infinite !important;
+  animation: testimonialMarquee 42s linear infinite !important; /* Increased speed from 55s to 42s */
   animation-play-state: running !important;
   will-change: transform !important;
 }
