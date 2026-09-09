@@ -294,7 +294,7 @@ export default function FooterManagementPage() {
                       <div className="space-y-1">
                         <CardTitle className="text-2xl font-headline flex items-center gap-3">
                           <CreditCard className="h-6 w-6 text-primary" /> Financial Facilitation
-                        </div>
+                        </CardTitle>
                         <CardDescription>Bank account details for direct transactions.</CardDescription>
                       </div>
                       <FormField control={form.control} name="bank.enabled" render={({ field }) => (

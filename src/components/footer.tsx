@@ -31,56 +31,56 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 /**
- * Enhanced Artistic Background Decorations
- * Features a warm "Biscuit" light brown base with Cyan, Magenta, and Green glows.
+ * Modern Light Colorful Background Decorations
+ * Predominantly light with sophisticated Cyan, Magenta, and Green auras.
  */
 function BackgroundDecorations() {
   const shouldReduceMotion = useReducedMotion();
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      {/* 1. Base Layer - Warm Premium Biscuit Canvas */}
-      <div className="absolute inset-0 bg-[#f1e5d1]" /> 
+      {/* 1. Base Layer - Clean Premium White/Light Canvas */}
+      <div className="absolute inset-0 bg-stone-50" /> 
       
-      {/* 2. Soft Modern Colorful Aura orbs */}
+      {/* 2. Soft Modern Colorful Aura orbs - Sophisticated and Premium */}
       {!shouldReduceMotion && (
         <>
-          {/* Cyan / Aqua Glow - Left */}
+          {/* Cyan / Aqua Glow - Primary Accent */}
           <motion.div 
             animate={{ 
-              x: [0, 40, -30, 0], 
-              y: [0, -30, 20, 0],
+              x: [0, 60, -40, 0], 
+              y: [0, -40, 30, 0],
+              opacity: [0.15, 0.25, 0.15]
+            }}
+            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+            className="absolute top-[-5%] left-[-5%] w-[800px] h-[800px] bg-cyan-400/30 rounded-full blur-[120px]"
+          />
+          
+          {/* Magenta / Pink Glow - Premium Highlight */}
+          <motion.div 
+            animate={{ 
+              x: [0, -70, 50, 0], 
+              y: [0, 60, -40, 0],
               opacity: [0.1, 0.2, 0.1]
             }}
             transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-            className="absolute top-[-10%] left-[-10%] w-[900px] h-[900px] bg-cyan-400/20 rounded-full blur-[140px]"
-          />
-          
-          {/* Magenta / Pink Glow - Center */}
-          <motion.div 
-            animate={{ 
-              x: [0, -50, 30, 0], 
-              y: [0, 40, -30, 0],
-              opacity: [0.08, 0.15, 0.08]
-            }}
-            transition={{ duration: 35, repeat: Infinity, ease: "linear" }}
-            className="absolute top-[20%] left-[20%] w-[700px] h-[700px] bg-fuchsia-400/20 rounded-full blur-[160px]"
+            className="absolute top-[25%] left-[25%] w-[600px] h-[600px] bg-fuchsia-400/25 rounded-full blur-[140px]"
           />
 
-          {/* Green / Mint Glow - Right */}
+          {/* Green / Mint Glow - Fresh Accent */}
           <motion.div 
             animate={{ 
-              opacity: [0.09, 0.18, 0.09],
-              scale: [1, 1.1, 1]
+              opacity: [0.12, 0.22, 0.12],
+              scale: [1, 1.15, 1]
             }}
-            transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute bottom-[-10%] right-[-10%] w-[800px] h-[800px] bg-emerald-400/20 rounded-full blur-[140px]"
+            transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute bottom-[-5%] right-[-5%] w-[700px] h-[700px] bg-emerald-400/30 rounded-full blur-[120px]"
           />
         </>
       )}
       
-      {/* 3. Subtle Texture Overlay - Paper/Cracker artisan feel */}
-      <div className="absolute inset-0 opacity-[0.04] bg-[url('https://www.transparenttextures.com/patterns/parchment.png')]" />
+      {/* 3. Subtle Texture Overlay */}
+      <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]" />
     </div>
   );
 }
@@ -189,7 +189,6 @@ export function Footer() {
                     )}
                     aria-label={`Follow us on ${platform}`}
                   >
-                    {/* Animated colorful background fill on hover */}
                     <div className={cn(
                       "absolute inset-0 opacity-0 group-hover/soc:opacity-100 transition-opacity duration-500",
                       config.hoverBg
