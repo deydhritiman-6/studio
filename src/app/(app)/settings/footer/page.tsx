@@ -38,52 +38,52 @@ import { Separator } from '@/components/ui/separator';
 
 const footerSchema = z.object({
   brand: z.object({
-    description: z.string().optional(),
-    tagline: z.string().optional(),
+    description: z.string().optional().default(''),
+    tagline: z.string().optional().default(''),
   }),
   address: z.object({
     businessName: z.string().min(1, 'Business name is required'),
     line1: z.string().min(1, 'Address is required'),
-    line2: z.string().optional(),
-    area: z.string().optional(),
+    line2: z.string().optional().default(''),
+    area: z.string().optional().default(''),
     city: z.string().min(1, 'City is required'),
     state: z.string().min(1, 'State is required'),
     zip: z.string().min(1, 'Pincode is required'),
     country: z.string().default('India'),
   }),
   contact: z.object({
-    phone: z.string().optional(),
-    altPhone: z.string().optional(),
-    whatsapp: z.string().optional(),
-    email: z.string().email().optional().or(z.literal('')),
-    supportEmail: z.string().email().optional().or(z.literal('')),
+    phone: z.string().optional().default(''),
+    altPhone: z.string().optional().default(''),
+    whatsapp: z.string().optional().default(''),
+    email: z.string().email().optional().or(z.literal('')).default(''),
+    supportEmail: z.string().email().optional().or(z.literal('')).default(''),
   }),
   legal: z.object({
-    gstin: z.string().optional(),
-    fssaiNumber: z.string().optional(),
-    cin: z.string().optional(),
-    pan: z.string().optional(),
+    gstin: z.string().optional().default(''),
+    fssaiNumber: z.string().optional().default(''),
+    cin: z.string().optional().default(''),
+    pan: z.string().optional().default(''),
   }),
   bank: z.object({
     enabled: z.boolean().default(false),
     masked: z.boolean().default(true),
-    accountName: z.string().optional(),
-    bankName: z.string().optional(),
-    accountNumber: z.string().optional(),
-    ifsc: z.string().optional(),
-    upiId: z.string().optional(),
+    accountName: z.string().optional().default(''),
+    bankName: z.string().optional().default(''),
+    accountNumber: z.string().optional().default(''),
+    ifsc: z.string().optional().default(''),
+    upiId: z.string().optional().default(''),
   }),
   maps: z.object({
-    locationName: z.string().optional(),
-    mapUrl: z.string().optional(),
-    embedUrl: z.string().optional(),
+    locationName: z.string().optional().default(''),
+    mapUrl: z.string().optional().default(''),
+    embedUrl: z.string().optional().default(''),
   }),
   social: z.object({
-    instagram: z.string().optional(),
-    facebook: z.string().optional(),
-    youtube: z.string().optional(),
-    twitter: z.string().optional(),
-    linkedin: z.string().optional(),
+    instagram: z.string().optional().default(''),
+    facebook: z.string().optional().default(''),
+    youtube: z.string().optional().default(''),
+    twitter: z.string().optional().default(''),
+    linkedin: z.string().optional().default(''),
   }),
   visibility: z.object({
     showBankDetails: z.boolean().default(false),
@@ -173,7 +173,7 @@ export default function FooterManagementPage() {
       } />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-7 mb-8 h-12 rounded-2xl bg-muted/50 p-1 overflow-x-auto overflow-y-hidden no-scrollbar">
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-7 mb-8 h-12 rounded-2xl bg-muted/50 p-1">
           <TabsTrigger value="brand" className="rounded-xl text-[10px] font-bold uppercase">Identity</TabsTrigger>
           <TabsTrigger value="contact" className="rounded-xl text-[10px] font-bold uppercase">Contact</TabsTrigger>
           <TabsTrigger value="legal" className="rounded-xl text-[10px] font-bold uppercase">Legal</TabsTrigger>
@@ -184,7 +184,7 @@ export default function FooterManagementPage() {
         </TabsList>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form className="space-y-8">
             <ScrollArea className="h-[calc(100vh-250px)] pr-6">
               
               <TabsContent value="brand" className="space-y-8 mt-0">
@@ -217,20 +217,20 @@ export default function FooterManagementPage() {
                   </CardHeader>
                   <CardContent className="p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
                     <FormField control={form.control} name="address.businessName" render={({ field }) => (
-                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Registered Entity Name</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Registered Entity Name</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="address.line1" render={({ field }) => (
-                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Address Line 1</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Address Line 1</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="address.line2" render={({ field }) => (
                       <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Address Line 2</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
                     )} />
                     <div className="grid grid-cols-2 gap-4">
                       <FormField control={form.control} name="address.city" render={({ field }) => (
-                        <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">City</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                        <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">City</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
                       <FormField control={form.control} name="address.zip" render={({ field }) => (
-                        <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Pincode</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                        <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Pincode</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
                     </div>
                   </CardContent>
@@ -277,12 +277,6 @@ export default function FooterManagementPage() {
                     <FormField control={form.control} name="legal.fssaiNumber" render={({ field }) => (
                       <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">FSSAI License No.</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
                     )} />
-                    <FormField control={form.control} name="legal.cin" render={({ field }) => (
-                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">CIN (Corporate ID)</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
-                    )} />
-                    <FormField control={form.control} name="legal.pan" render={({ field }) => (
-                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Business PAN</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
-                    )} />
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -313,24 +307,6 @@ export default function FooterManagementPage() {
                       <FormField control={form.control} name="bank.bankName" render={({ field }) => (
                         <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Bank Name</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
                       )} />
-                      <FormField control={form.control} name="bank.accountNumber" render={({ field }) => (
-                        <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Account Number</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
-                      )} />
-                      <FormField control={form.control} name="bank.ifsc" render={({ field }) => (
-                        <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">IFSC Code</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
-                      )} />
-                    </div>
-                    <Separator />
-                    <div className="flex flex-col md:flex-row gap-10">
-                      <FormField control={form.control} name="bank.upiId" render={({ field }) => (
-                        <FormItem className="flex-1"><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">UPI ID / VPA</FormLabel><FormControl><Input className="h-12 rounded-xl" placeholder="roseberry@upi" {...field} /></FormControl></FormItem>
-                      )} />
-                      <FormField control={form.control} name="bank.masked" render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-xl border p-4 bg-muted/20 w-full md:w-64">
-                          <div className="space-y-0.5"><FormLabel className="text-xs font-bold uppercase">Privacy Mask</FormLabel><FormDescription className="text-[9px]">Mask account number in footer.</FormDescription></div>
-                          <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                        </FormItem>
-                      )} />
                     </div>
                   </CardContent>
                 </Card>
@@ -346,16 +322,10 @@ export default function FooterManagementPage() {
                   </CardHeader>
                   <CardContent className="p-10 grid grid-cols-1 md:grid-cols-2 gap-10">
                     <FormField control={form.control} name="social.instagram" render={({ field }) => (
-                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground flex items-center gap-2"><Instagram className="h-3 w-3" /> Instagram URL</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Instagram URL</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
                     )} />
                     <FormField control={form.control} name="social.facebook" render={({ field }) => (
-                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground flex items-center gap-2"><Facebook className="h-3 w-3" /> Facebook URL</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
-                    )} />
-                    <FormField control={form.control} name="social.youtube" render={({ field }) => (
-                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground flex items-center gap-2"><Youtube className="h-3 w-3" /> YouTube Channel</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
-                    )} />
-                    <FormField control={form.control} name="social.twitter" render={({ field }) => (
-                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground flex items-center gap-2"><Twitter className="h-3 w-3" /> X / Twitter URL</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Facebook URL</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
                     )} />
                   </CardContent>
                 </Card>
@@ -377,12 +347,6 @@ export default function FooterManagementPage() {
                         <FormDescription className="text-[9px]">Get this from Share &gt; Embed a map on Google Maps.</FormDescription>
                       </FormItem>
                     )} />
-                    <FormField control={form.control} name="maps.mapUrl" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Direct Navigation URL</FormLabel>
-                        <FormControl><Input className="h-12 rounded-xl" placeholder="https://maps.app.goo.gl/..." {...field} /></FormControl>
-                      </FormItem>
-                    )} />
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -402,7 +366,6 @@ export default function FooterManagementPage() {
                           { key: 'showFSSAI', label: 'Display FSSAI License' },
                           { key: 'showBankDetails', label: 'Display Payment Info (Bank/UPI)' },
                           { key: 'showMap', label: 'Display Google Map Preview' },
-                          { key: 'showBusinessHours', label: 'Display Operating Hours' },
                         ].map((policy) => (
                           <FormField key={policy.key} control={form.control} name={`visibility.${policy.key}` as any} render={({ field }) => (
                             <FormItem className="flex items-center justify-between p-6 rounded-2xl border bg-muted/10 hover:bg-muted/20 transition-colors">
