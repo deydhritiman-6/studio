@@ -410,7 +410,7 @@ export function Footer() {
                 <div className="relative group overflow-hidden rounded-[2.5rem] border-2 border-white/60 shadow-2xl bg-white/40 backdrop-blur-md transition-all duration-500 hover:shadow-primary/5">
                   {isValidEmbedUrl(maps.embedUrl) ? (
                     <div className="flex flex-col">
-                      <div className="aspect-video w-full opacity-90 group-hover:opacity-100 transition-all duration-700 border-b border-white/20">
+                      <div className="h-[300px] md:h-[450px] w-full opacity-90 group-hover:opacity-100 transition-all duration-700 border-b border-white/20">
                         <iframe 
                           src={maps.embedUrl} 
                           width="100%" 
