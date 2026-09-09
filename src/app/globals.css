@@ -253,11 +253,23 @@
   animation: ribbonFlow 10s ease-in-out infinite;
 }
 
+/* --- Link Vibration Effect --- */
+@keyframes vibrate-side {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+.hover-vibrate-side:hover {
+  animation: vibrate-side 0.18s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-drifting-glow,
   .animate-drifting-glow-reverse,
   .animate-particle-float,
-  .animate-ribbon-flow {
+  .animate-ribbon-flow,
+  .hover-vibrate-side:hover {
     animation: none !important;
   }
 }

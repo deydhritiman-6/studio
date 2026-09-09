@@ -140,7 +140,6 @@ export function Footer() {
     brand = {},
     address = {},
     contact = {},
-    legal = {},
     links = [],
     policies = [],
     visibility = {},
@@ -157,7 +156,7 @@ export function Footer() {
           
           {/* Brand Identity Panel */}
           <motion.div 
-            animate={!shouldReduceMotion ? { y: [-6, 6, -6] } : {}}
+            animate={!shouldReduceMotion ? { y: [-4, 4, -4] } : {}}
             transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
             className="group space-y-8 bg-white/45 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/60 shadow-xl transition-all duration-700 hover:shadow-2xl"
           >
@@ -203,7 +202,7 @@ export function Footer() {
 
           {/* Links Section */}
           <motion.div 
-            animate={!shouldReduceMotion ? { y: [6, -6, 6] } : {}}
+            animate={!shouldReduceMotion ? { y: [4, -4, 4] } : {}}
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
             className="grid grid-cols-2 gap-8 py-6"
           >
@@ -217,7 +216,7 @@ export function Footer() {
                   { text: 'Our Facilities', url: '/inside-roseberry' },
                 ]).map((link: any) => (
                   <li key={link.text}>
-                    <Link href={link.url} className="text-stone-900 text-[15px] hover:text-fuchsia-600 transition-all duration-300 font-bold tracking-wide">
+                    <Link href={link.url} className="inline-block text-stone-900 text-[15px] hover:text-fuchsia-600 transition-all duration-300 font-bold tracking-wide hover-vibrate-side">
                       {link.text}
                     </Link>
                   </li>
@@ -235,7 +234,7 @@ export function Footer() {
                   { text: 'Return Policy', url: '#' },
                 ]).map((policy: any) => (
                   <li key={policy.text}>
-                    <Link href={policy.url} className="text-stone-900 text-[15px] hover:text-fuchsia-600 transition-all duration-300 font-bold tracking-wide">
+                    <Link href={policy.url} className="inline-block text-stone-900 text-[15px] hover:text-fuchsia-600 transition-all duration-300 font-bold tracking-wide hover-vibrate-side">
                       {policy.text}
                     </Link>
                   </li>
@@ -246,7 +245,7 @@ export function Footer() {
 
           {/* Contact Section */}
           <motion.div 
-            animate={!shouldReduceMotion ? { y: [-5, 5, -5] } : {}}
+            animate={!shouldReduceMotion ? { y: [-3, 3, -3] } : {}}
             transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
             className="space-y-12 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm"
           >
@@ -309,7 +308,7 @@ export function Footer() {
 
           {/* Maps Section */}
           <motion.div 
-            animate={!shouldReduceMotion ? { y: [4, -4, 4] } : {}}
+            animate={!shouldReduceMotion ? { y: [3, -3, 3] } : {}}
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
             className="space-y-12"
           >
