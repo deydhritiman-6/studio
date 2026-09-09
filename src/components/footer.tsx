@@ -45,20 +45,20 @@ function BackgroundDecorations() {
             animate={{ 
               x: [0, 40, -30, 0], 
               y: [0, -30, 20, 0],
-              opacity: [0.15, 0.25, 0.15]
+              opacity: [0.1, 0.2, 0.1]
             }}
             transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-            className="absolute top-[-10%] left-[-5%] w-[800px] h-[800px] bg-cyan-400/30 rounded-full blur-[120px]"
+            className="absolute top-[-10%] left-[-5%] w-[800px] h-[800px] bg-cyan-400/20 rounded-full blur-[120px]"
           />
           
           {/* Magenta Glow - Center */}
           <motion.div 
             animate={{ 
-              opacity: [0.1, 0.2, 0.1],
+              opacity: [0.08, 0.15, 0.08],
               scale: [1, 1.1, 1]
             }}
             transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-[10%] left-[30%] w-[600px] h-[600px] bg-fuchsia-400/25 rounded-full blur-[140px]"
+            className="absolute top-[10%] left-[30%] w-[600px] h-[600px] bg-fuchsia-400/15 rounded-full blur-[140px]"
           />
 
           {/* Green Glow - Right */}
@@ -66,10 +66,10 @@ function BackgroundDecorations() {
             animate={{ 
               x: [0, -40, 30, 0], 
               y: [0, 40, -20, 0],
-              opacity: [0.12, 0.22, 0.12]
+              opacity: [0.08, 0.18, 0.08]
             }}
             transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-            className="absolute bottom-[-10%] right-[-5%] w-[700px] h-[700px] bg-emerald-400/30 rounded-full blur-[120px]"
+            className="absolute bottom-[-10%] right-[-5%] w-[700px] h-[700px] bg-emerald-400/20 rounded-full blur-[120px]"
           />
         </>
       )}
@@ -264,16 +264,10 @@ export function Footer() {
           <div className="space-y-12">
             <div className="space-y-6">
               <h4 className="text-[15px] font-black uppercase tracking-[0.4em] text-stone-600">Location Matrix</h4>
-              {visibility.showMap !== false && (maps.embedUrl || maps.mapUrl) ? (
+              {visibility.showMap !== false && (maps.embedUrl) ? (
                 <div className="relative group overflow-hidden rounded-[2.5rem] border-2 border-white/60 shadow-xl bg-white/40 backdrop-blur-md">
                   <div className="aspect-[16/10] w-full opacity-90 group-hover:opacity-100 transition-all duration-700">
-                    {maps.embedUrl ? (
-                      <iframe src={maps.embedUrl} width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
-                    ) : (
-                      <div className="h-full w-full flex items-center justify-center bg-stone-100">
-                        <MapPin className="h-8 w-8 text-stone-300" />
-                      </div>
-                    )}
+                    <iframe src={maps.embedUrl} width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
                   </div>
                 </div>
               ) : (

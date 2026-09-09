@@ -166,16 +166,10 @@
   animation: starShimmer 3s ease-in-out infinite;
 }
 
-/* Accessibility: Respect motion preferences */
+/* Accessibility: Respect motion preferences for non-essential effects only */
 @media (prefers-reduced-motion: reduce) {
-  .testimonial-track {
-    animation-duration: 180s !important;
-  }
   .animate-star-shimmer {
     animation: none !important;
-  }
-  .testimonial-viewport:hover .testimonial-track {
-    animation-play-state: paused !important;
   }
 }
 
