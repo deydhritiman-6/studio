@@ -137,6 +137,11 @@ export function Footer() {
       }));
   }, [footerData]);
 
+  const hasBankData = useMemo(() => {
+    const bank = footerData?.bank || {};
+    return bank.bankName || bank.accountName || bank.accountNumber || bank.ifsc || bank.upiId;
+  }, [footerData]);
+
   if (loading) return null;
 
   const {
@@ -248,7 +253,7 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* Contact, Financial & Legal Section */}
+          {/* Headquarters Section */}
           <motion.div 
             variants={panelVariants(0.8)}
             animate="animate"
@@ -328,8 +333,8 @@ export function Footer() {
               </div>
             </div>
 
-            {/* Financial Facilitation Section */}
-            {visibility.showBankDetails && (
+            {/* Financial Facilitation Section - Decoupled from visibility toggle for data integrity */}
+            {hasBankData && (
               <div className="space-y-6 pt-6 border-t border-stone-200/50">
                 <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500 flex items-center gap-3">
                   <CreditCard className="h-3.5 w-3.5 text-primary" /> Financial Facilitation
