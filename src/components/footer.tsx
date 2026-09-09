@@ -89,35 +89,32 @@ export function Footer() {
   const firestore = useFirestore();
   const settingsRef = useMemo(() => (firestore ? doc(firestore, 'settings', 'footer') : null), [firestore]);
   const { data: footerData, loading } = useDoc<any>(settingsRef as any);
+  const shouldReduceMotion = useReducedMotion();
 
   const socialIcons: Record<string, any> = {
-    instagram: Instagram,
-    facebook: Facebook,
-    youtube: Youtube,
-    linkedin: Linkedin,
-    twitter: Twitter,
-    whatsapp: MessageCircle,
+    instagram: { icon: Instagram, color: 'text-fuchsia-600', aura: 'rgba(217, 70, 239, 0.3)', hoverBg: 'bg-fuchsia-50' },
+    facebook: { icon: Facebook, color: 'text-cyan-600', aura: 'rgba(6, 182, 212, 0.3)', hoverBg: 'bg-cyan-50' },
+    whatsapp: { icon: MessageCircle, color: 'text-emerald-600', aura: 'rgba(16, 185, 129, 0.3)', hoverBg: 'bg-emerald-50' },
+    youtube: { icon: Youtube, color: 'text-rose-600', aura: 'rgba(225, 29, 72, 0.3)', hoverBg: 'bg-rose-50' },
+    linkedin: { icon: Linkedin, color: 'text-blue-600', aura: 'rgba(37, 99, 235, 0.3)', hoverBg: 'bg-blue-50' },
+    twitter: { icon: Twitter, color: 'text-sky-600', aura: 'rgba(2, 132, 199, 0.3)', hoverBg: 'bg-sky-50' },
   };
 
   const activeSocials = useMemo(() => {
-    // 1. Get raw social data from Firebase
     const social = footerData?.social || {};
-    
-    // 2. Map entries that have valid URLs
     const entries = Object.entries(social)
       .filter(([_, url]) => url && typeof url === 'string' && url.trim().length > 0)
       .map(([platform, url]) => ({
         platform,
         url: url as string,
-        Icon: socialIcons[platform.toLowerCase()] || ExternalLink
+        config: socialIcons[platform.toLowerCase()] || { icon: ExternalLink, color: 'text-stone-600', aura: 'rgba(0,0,0,0.1)', hoverBg: 'bg-stone-50' }
       }));
 
-    // 3. Fallback: Provide some default social icons if none are configured in database
     if (entries.length === 0) {
       return [
-        { platform: 'instagram', url: 'https://instagram.com', Icon: Instagram },
-        { platform: 'facebook', url: 'https://facebook.com', Icon: Facebook },
-        { platform: 'whatsapp', url: 'https://wa.me', Icon: MessageCircle },
+        { platform: 'instagram', url: 'https://instagram.com', config: socialIcons.instagram },
+        { platform: 'facebook', url: 'https://facebook.com', config: socialIcons.facebook },
+        { platform: 'whatsapp', url: 'https://wa.me', config: socialIcons.whatsapp },
       ];
     }
 
@@ -142,15 +139,12 @@ export function Footer() {
 
   return (
     <footer className="relative text-stone-900 pt-32 overflow-hidden selection:bg-primary/20 border-t border-stone-200 shadow-[0_-10px_50px_rgba(0,0,0,0.02)]">
-      {/* Artistic Modern Background */}
       <BackgroundDecorations />
 
       <div className="container max-w-7xl mx-auto px-6 relative z-10">
-        {/* Main Information Matrix */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-10 mb-24">
           
-          {/* Brand/Identity Block - Premium Light Glass Panel */}
-          <div className="group space-y-8 bg-white/60 backdrop-blur-3xl p-10 rounded-[2.5rem] border border-white/70 shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all duration-700 hover:border-cyan-200/50 hover:shadow-2xl hover:shadow-cyan-500/5">
+          <div className="group space-y-8 bg-white/60 backdrop-blur-3xl p-10 rounded-[2.5rem] border border-white/70 shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all duration-700 hover:border-white/90 hover:shadow-2xl">
             <div className="space-y-6">
               <Link href="/" className="inline-block transition-transform duration-500 hover:scale-105">
                 <Logo className="h-12 w-auto" />
@@ -166,26 +160,52 @@ export function Footer() {
               </div>
             </div>
             
-            <div className="space-y-5 pt-4">
+            <div className="space-y-6 pt-4">
               <h4 className="text-[15px] font-black uppercase tracking-[0.4em] text-stone-500">Patron Communities</h4>
-              <div className="flex flex-wrap gap-4">
-                {activeSocials.map(({ platform, url, Icon }) => (
-                  <a 
+              <div className="flex flex-wrap gap-5">
+                {activeSocials.map(({ platform, url, config }) => (
+                  <motion.a 
                     key={platform} 
                     href={url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="h-11 w-11 rounded-xl bg-white border border-stone-100 flex items-center justify-center text-stone-600 hover:text-cyan-600 hover:border-cyan-200 hover:bg-cyan-50/50 transition-all duration-500 hover:-translate-y-1 group/soc shadow-sm"
+                    whileHover={{ scale: 1.15, rotate: 5 }}
+                    whileTap={{ scale: 0.9 }}
+                    animate={!shouldReduceMotion ? {
+                      boxShadow: [
+                        `0 0 0px ${config.aura}`,
+                        `0 0 15px ${config.aura}`,
+                        `0 0 0px ${config.aura}`
+                      ]
+                    } : {}}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                    className={cn(
+                      "h-12 w-12 rounded-2xl bg-white border border-stone-100 flex items-center justify-center transition-all duration-500 shadow-sm relative group/soc overflow-hidden",
+                      `hover:border-stone-200`
+                    )}
                     aria-label={`Follow us on ${platform}`}
                   >
-                    <Icon className="h-5 w-5 transition-transform group-hover/soc:scale-110" />
-                  </a>
+                    {/* Animated colorful background fill on hover */}
+                    <div className={cn(
+                      "absolute inset-0 opacity-0 group-hover/soc:opacity-100 transition-opacity duration-500",
+                      config.hoverBg
+                    )} />
+                    
+                    <config.icon className={cn(
+                      "h-5 w-5 transition-all duration-500 relative z-10",
+                      "text-stone-500 group-hover/soc:scale-110",
+                      `group-hover/soc:${config.color}`
+                    )} />
+                  </motion.a>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Navigation Intelligence */}
           <div className="grid grid-cols-2 gap-8 py-6">
             <div className="space-y-10">
               <h4 className="text-[15px] font-black uppercase tracking-[0.4em] text-cyan-600">Discovery</h4>
@@ -231,7 +251,6 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Contact Details - Polished Panel */}
           <div className="space-y-12 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm">
             <div className="space-y-6">
               <h4 className="text-[15px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3">
@@ -275,7 +294,6 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Location & Bulletin */}
           <div className="space-y-12">
             <div className="space-y-6">
               <h4 className="text-[15px] font-black uppercase tracking-[0.4em] text-cyan-600">Location Matrix</h4>
@@ -341,10 +359,8 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Dynamic Registry Panel */}
         {(visibility.showGST || visibility.showFSSAI || visibility.showBankDetails) && (
           <div className="mb-24 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
-            {/* Regulatory Identity */}
             {(visibility.showGST || visibility.showFSSAI) && (
               <div className="lg:col-span-5 p-10 rounded-[2.5rem] bg-white/60 border border-white/70 shadow-sm space-y-8 backdrop-blur-3xl">
                 <h4 className="text-[15px] font-black uppercase tracking-[0.4em] text-stone-500 flex items-center gap-3">
@@ -367,7 +383,6 @@ export function Footer() {
               </div>
             )}
 
-            {/* Private/Masked Banking */}
             {visibility.showBankDetails && bank.enabled && (
               <div className="lg:col-span-7 p-10 rounded-[2.5rem] bg-white/60 border border-white/70 shadow-sm space-y-8 backdrop-blur-3xl group transition-colors hover:border-cyan-200">
                 <h4 className="text-[15px] font-black uppercase tracking-[0.4em] text-stone-500 flex items-center gap-3">
@@ -402,7 +417,6 @@ export function Footer() {
 
         <Separator className="bg-stone-200/50 mb-12" />
 
-        {/* Global Exit Bar */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-10 text-center md:text-left pb-16">
           <div className="space-y-4">
             <p className="text-stone-600 text-[12px] font-black uppercase tracking-[0.3em]">
@@ -430,7 +444,6 @@ export function Footer() {
         </div>
       </div>
       
-      {/* Visual Terminal Shimmer */}
       <div className="h-px w-full bg-gradient-to-r from-transparent via-cyan-200 to-transparent" />
     </footer>
   );
