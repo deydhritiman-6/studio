@@ -19,7 +19,6 @@ import {
   Heart,
   Globe,
   CheckCircle,
-  CheckCircle2,
   QrCode
 } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -151,7 +150,7 @@ export function Footer() {
   } = footerData || {};
 
   return (
-    <footer className="relative text-stone-900 pt-32 overflow-hidden border-t border-stone-200">
+    <footer id="footer" className="relative text-stone-900 pt-32 overflow-hidden border-t border-stone-200">
       <PremiumBackground />
       <FloatingParticles />
 
@@ -273,7 +272,7 @@ export function Footer() {
                     )}
                     {legal.gstin && (
                       <div className="flex items-center gap-3">
-                         <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                         <CheckCircle className="h-4 w-4 text-primary shrink-0" />
                          <div className="flex flex-col">
                             <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">GSTIN</span>
                             <span className="text-[14px] text-stone-900 font-bold uppercase">{legal.gstin}</span>
@@ -327,7 +326,7 @@ export function Footer() {
 
           {/* Financial Facilitation & Map Section */}
           <motion.div variants={panelVariants(2.2)} animate="animate" className="space-y-12">
-            {/* Bank Details Section - Respects visibility.showBankDetails toggle */}
+            {/* Bank Details Section */}
             {visibility.showBankDetails && hasBankData && (
               <div className="space-y-8">
                 <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3">
@@ -335,18 +334,11 @@ export function Footer() {
                 </h4>
                 
                 <div className="space-y-6">
-                  {/* Account Text Data */}
                   <div className="space-y-4 bg-white/50 backdrop-blur-md p-6 rounded-[2.5rem] border border-white/60 shadow-xl">
                     {bank.bankName && (
                       <div className="flex flex-col">
                           <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Bank</span>
                           <span className="text-[14px] text-stone-900 font-bold">{bank.bankName}</span>
-                      </div>
-                    )}
-                    {bank.branch && (
-                      <div className="flex flex-col">
-                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Branch</span>
-                          <span className="text-[14px] text-stone-900 font-bold">{bank.branch}</span>
                       </div>
                     )}
                     {bank.accountName && (
@@ -375,7 +367,6 @@ export function Footer() {
                     )}
                   </div>
 
-                  {/* QR Code Section */}
                   {bank.qrCodeUrl && (
                     <motion.div 
                       initial={{ opacity: 0, scale: 0.95 }}
@@ -387,13 +378,12 @@ export function Footer() {
                             <QrCode className="h-4 w-4 text-primary" />
                             <span className="text-[10px] font-black uppercase tracking-widest">Scan to Pay</span>
                          </div>
-                         <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
                       </div>
                       <div className="aspect-square relative w-full bg-white rounded-2xl overflow-hidden border border-stone-50 shadow-inner">
                          <Image src={bank.qrCodeUrl} alt="Payment QR" fill className="object-contain p-4" />
                       </div>
                       <p className="text-[9px] text-center text-stone-400 font-medium italic">
-                        Scan the QR code to make a secure payment.
+                        Scan for secure artisan payment.
                       </p>
                     </motion.div>
                   )}
@@ -403,11 +393,24 @@ export function Footer() {
 
             <div className="space-y-6">
               <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700">Location Matrix</h4>
-              {maps.embedUrl && (
+              {maps.embedUrl ? (
                 <div className="relative group overflow-hidden rounded-[2.5rem] border-2 border-white/60 shadow-xl bg-white/40 backdrop-blur-md">
                   <div className="aspect-[16/10] w-full opacity-90 group-hover:opacity-100 transition-all duration-700">
-                    <iframe src={maps.embedUrl} width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
+                    <iframe 
+                      src={maps.embedUrl} 
+                      width="100%" 
+                      height="100%" 
+                      style={{ border: 0 }} 
+                      allowFullScreen 
+                      loading="lazy" 
+                      referrerPolicy="no-referrer-when-downgrade" 
+                    />
                   </div>
+                </div>
+              ) : (
+                <div className="aspect-[16/10] w-full rounded-[2.5rem] border-2 border-dashed border-stone-200 flex flex-col items-center justify-center bg-stone-50/50 text-stone-400">
+                  <MapPin className="h-6 w-6 mb-2 opacity-20" />
+                  <p className="text-[10px] font-black uppercase tracking-widest">Location map unavailable</p>
                 </div>
               )}
             </div>
