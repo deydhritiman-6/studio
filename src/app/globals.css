@@ -241,7 +241,7 @@
 }
 
 /* --- Premium Link Vibration Effect --- */
-@keyframes discoveryAssistantVibrate {
+@keyframes footerLinkVibrate {
   0% { transform: translateX(0); }
   20% { transform: translateX(-2px); }
   40% { transform: translateX(2px); }
@@ -250,8 +250,8 @@
   100% { transform: translateX(0); }
 }
 
-.hover-vibrate-side:hover {
-  animation: discoveryAssistantVibrate 0.8s ease-in-out infinite;
+.footer-navigation-link:hover {
+  animation: footerLinkVibrate 0.55s ease-in-out;
   display: inline-block;
   will-change: transform;
 }
@@ -261,7 +261,7 @@
   .animate-drifting-glow-reverse,
   .animate-particle-float,
   .animate-ribbon-flow,
-  .hover-vibrate-side:hover {
+  .footer-navigation-link:hover {
     animation: none !important;
   }
 }

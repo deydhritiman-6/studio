@@ -221,7 +221,7 @@ export function Footer() {
                   { text: 'Our Facilities', url: '/inside-roseberry' },
                 ]).map((link: any) => (
                   <li key={link.text}>
-                    <Link href={link.url} className="inline-block text-stone-900 text-[15px] hover:text-fuchsia-600 transition-all duration-300 font-bold tracking-wide hover-vibrate-side">
+                    <Link href={link.url} className="footer-navigation-link inline-block text-stone-900 text-[15px] hover:text-fuchsia-600 transition-all duration-300 font-bold tracking-wide">
                       {link.text}
                     </Link>
                   </li>
@@ -239,7 +239,7 @@ export function Footer() {
                   { text: 'Return Policy', url: '#' },
                 ]).map((policy: any) => (
                   <li key={policy.text}>
-                    <Link href={policy.url} className="inline-block text-stone-900 text-[15px] hover:text-fuchsia-600 transition-all duration-300 font-bold tracking-wide hover-vibrate-side">
+                    <Link href={policy.url} className="footer-navigation-link inline-block text-stone-900 text-[15px] hover:text-fuchsia-600 transition-all duration-300 font-bold tracking-wide">
                       {policy.text}
                     </Link>
                   </li>
