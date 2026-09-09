@@ -27,7 +27,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 /**
- * Premium Layered Background with Intensely Drifting Auras and Textures.
+ * Premium Layered Background with Wide-Range Drifting Auras and Textures.
  */
 function PremiumBackground() {
   const shouldReduceMotion = useReducedMotion();
@@ -40,27 +40,27 @@ function PremiumBackground() {
       {/* 2. Soft Textured Overlay */}
       <div className="absolute inset-0 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]" />
 
-      {/* 3. Drifting Premium Auras - Expanded Ranges */}
+      {/* 3. High-Intensity Drifting Auras */}
       {!shouldReduceMotion && (
         <>
-          {/* Cyan Glow - Upper Left */}
-          <div className="absolute top-[-20%] left-[-20%] w-[800px] h-[800px] bg-cyan-400/30 rounded-full blur-[120px] animate-drifting-glow" />
+          {/* Cyan Glow - Wide Drift */}
+          <div className="absolute top-[-30%] left-[-30%] w-[1000px] h-[1000px] bg-cyan-400/30 rounded-full blur-[150px] animate-drifting-glow" />
           
-          {/* Magenta Glow - Center */}
-          <div className="absolute top-[5%] left-[20%] w-[700px] h-[700px] bg-fuchsia-400/25 rounded-full blur-[140px] animate-drifting-glow-reverse" />
+          {/* Magenta Glow - Wide Drift */}
+          <div className="absolute top-[10%] left-[10%] w-[900px] h-[900px] bg-fuchsia-400/25 rounded-full blur-[160px] animate-drifting-glow-reverse" />
 
-          {/* Olive Green Glow - Right */}
-          <div className="absolute top-[-15%] right-[-20%] w-[800px] h-[800px] bg-emerald-400/30 rounded-full blur-[130px] animate-drifting-glow" />
+          {/* Olive Green Glow - Wide Drift */}
+          <div className="absolute top-[-25%] right-[-30%] w-[1000px] h-[1000px] bg-emerald-400/30 rounded-full blur-[150px] animate-drifting-glow" />
 
-          {/* Cherry Red Glow - Lower */}
-          <div className="absolute bottom-[-25%] left-[35%] w-[600px] h-[600px] bg-rose-400/20 rounded-full blur-[110px] animate-drifting-glow-reverse" />
+          {/* Cherry Red Glow - Wide Drift */}
+          <div className="absolute bottom-[-30%] left-[30%] w-[800px] h-[800px] bg-rose-400/20 rounded-full blur-[130px] animate-drifting-glow-reverse" />
         </>
       )}
 
-      {/* 4. Elegant Abstract Chocolate Ribbons (SVG) with Wave Motion */}
+      {/* 4. Elegant Abstract Chocolate Ribbons with Wave Motion */}
       <motion.svg 
-        animate={!shouldReduceMotion ? { y: [0, -15, 0], scaleY: [1, 1.05, 1] } : {}}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        animate={!shouldReduceMotion ? { y: [0, -20, 0], scaleY: [1, 1.1, 1] } : {}}
+        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
         className="absolute bottom-0 left-0 w-full h-auto opacity-[0.04] text-stone-900" 
         viewBox="0 0 1440 320" 
         fill="none" 
@@ -73,29 +73,18 @@ function PremiumBackground() {
 }
 
 /**
- * Increased Density Floating Light Particles.
+ * High-Density Floating Light Particles.
  */
 function FloatingParticles() {
   const shouldReduceMotion = useReducedMotion();
   if (shouldReduceMotion) return null;
 
-  const particles = [
-    { left: '5%', delay: '0s', color: 'bg-cyan-300' },
-    { left: '15%', delay: '4s', color: 'bg-fuchsia-300' },
-    { left: '25%', delay: '2s', color: 'bg-emerald-300' },
-    { left: '35%', delay: '7s', color: 'bg-rose-300' },
-    { left: '45%', delay: '1s', color: 'bg-white' },
-    { left: '55%', delay: '5s', color: 'bg-amber-200' },
-    { left: '65%', delay: '9s', color: 'bg-cyan-200' },
-    { left: '75%', delay: '11s', color: 'bg-fuchsia-200' },
-    { left: '85%', delay: '3s', color: 'bg-emerald-200' },
-    { left: '95%', delay: '13s', color: 'bg-rose-200' },
-    { left: '10%', delay: '2.5s', color: 'bg-white' },
-    { left: '30%', delay: '6s', color: 'bg-cyan-400' },
-    { left: '50%', delay: '1.5s', color: 'bg-fuchsia-400' },
-    { left: '70%', delay: '8.5s', color: 'bg-emerald-400' },
-    { left: '90%', delay: '10s', color: 'bg-rose-400' },
-  ];
+  const particles = Array.from({ length: 25 }).map((_, i) => ({
+    left: `${Math.random() * 100}%`,
+    delay: `${Math.random() * 15}s`,
+    color: ['bg-cyan-300', 'bg-fuchsia-300', 'bg-emerald-300', 'bg-rose-300', 'bg-white', 'bg-amber-200'][i % 6],
+    duration: `${Math.random() * 10 + 10}s`
+  }));
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
@@ -103,7 +92,7 @@ function FloatingParticles() {
         <div 
           key={i}
           className={cn("absolute bottom-0 w-1.5 h-1.5 rounded-full blur-[1px] opacity-0 animate-particle-float", p.color)}
-          style={{ left: p.left, animationDelay: p.delay }}
+          style={{ left: p.left, animationDelay: p.delay, animationDuration: p.duration }}
         />
       ))}
     </div>
@@ -166,9 +155,9 @@ export function Footer() {
       <div className="container max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-10 mb-24">
           
-          {/* Brand Identity Panel / Panel 1 */}
+          {/* Brand Identity Panel */}
           <motion.div 
-            animate={!shouldReduceMotion ? { y: [0, -10, 0] } : {}}
+            animate={!shouldReduceMotion ? { y: [0, -15, 0] } : {}}
             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
             className="group space-y-8 bg-white/45 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/60 shadow-xl transition-all duration-700 hover:shadow-2xl"
           >
@@ -201,7 +190,7 @@ export function Footer() {
                     animate={!shouldReduceMotion ? {
                       boxShadow: [
                         `0 0 0px ${config.aura}`,
-                        `0 0 25px ${config.aura}`,
+                        `0 0 35px ${config.aura}`,
                         `0 0 0px ${config.aura}`
                       ]
                     } : {}}
@@ -216,9 +205,9 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* Links Section / Panel 2 */}
+          {/* Links Section */}
           <motion.div 
-            animate={!shouldReduceMotion ? { y: [0, -8, 0] } : {}}
+            animate={!shouldReduceMotion ? { y: [0, -12, 0] } : {}}
             transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
             className="grid grid-cols-2 gap-8 py-6"
           >
@@ -259,9 +248,9 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* Contact Section / Panel 3 */}
+          {/* Contact Section */}
           <motion.div 
-            animate={!shouldReduceMotion ? { y: [0, -12, 0] } : {}}
+            animate={!shouldReduceMotion ? { y: [0, -18, 0] } : {}}
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
             className="space-y-12 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm"
           >
@@ -294,6 +283,14 @@ export function Footer() {
                     <span className="text-[15px] text-stone-900 font-bold tracking-wide">{contact.phone}</span>
                   </a>
                 )}
+                {contact.whatsapp && (
+                  <a href={`https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 group/contact">
+                    <div className="h-10 w-10 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 group/contact:hover:text-emerald-600 group/contact:hover:border-emerald-200 transition-all shadow-sm">
+                      <MessageCircle className="h-4 w-4" />
+                    </div>
+                    <span className="text-[15px] text-stone-900 font-bold tracking-wide">{contact.whatsapp}</span>
+                  </a>
+                )}
                 {contact.email && (
                   <a href={`mailto:${contact.email}`} className="flex items-center gap-4 group/contact">
                     <div className="h-10 w-10 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 group/contact:hover:text-emerald-600 group/contact:hover:border-emerald-200 transition-all shadow-sm">
@@ -306,9 +303,9 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* Maps Section / Panel 4 */}
+          {/* Maps Section */}
           <motion.div 
-            animate={!shouldReduceMotion ? { y: [0, -6, 0] } : {}}
+            animate={!shouldReduceMotion ? { y: [0, -10, 0] } : {}}
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
             className="space-y-12"
           >
@@ -328,7 +325,6 @@ export function Footer() {
               )}
             </div>
 
-            {/* Cherry Red Accent - Secure Badge */}
             <motion.div 
               animate={!shouldReduceMotion ? { scale: [1, 1.05, 1] } : {}}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
