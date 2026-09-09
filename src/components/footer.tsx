@@ -189,7 +189,7 @@ export function Footer() {
                     className="h-12 w-12 rounded-2xl bg-white/80 border border-stone-100 flex items-center justify-center transition-all duration-500 shadow-sm relative group/soc overflow-hidden"
                   >
                     <div className={cn("absolute inset-0 opacity-0 group-hover/soc:opacity-100 transition-opacity duration-500", config.hoverBg)} />
-                    <config.icon className={cn("h-5 w-5 transition-all duration-500 relative z-10 text-stone-500", `group-hover/soc:${config.color}`)} />
+                    <config.icon className={cn("h-5 w-5 transition-all duration-500 relative z-10 text-stone-500", config.color)} />
                     <div 
                       className="absolute inset-0 opacity-20 pointer-events-none group-hover/soc:opacity-40 transition-opacity"
                       style={{ boxShadow: `inset 0 0 15px ${config.aura}` }}
