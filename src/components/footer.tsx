@@ -17,14 +17,14 @@ import {
   ShieldCheck,
   Sparkles,
   Heart,
-  Globe
+  Globe,
+  CheckCircle2
 } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useDoc, useFirestore } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { Logo } from '@/components/logo';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 /**
@@ -116,7 +116,6 @@ export function Footer() {
   const firestore = useFirestore();
   const settingsRef = useMemo(() => (firestore ? doc(firestore, 'settings', 'footer') : null), [firestore]);
   const { data: footerData, loading } = useDoc<any>(settingsRef as any);
-  const shouldReduceMotion = useReducedMotion();
 
   const socialIcons: Record<string, any> = {
     instagram: { icon: Instagram, color: 'text-fuchsia-600', aura: 'rgba(217, 70, 239, 0.5)', hoverBg: 'bg-fuchsia-50' },
@@ -269,7 +268,7 @@ export function Footer() {
                     {address.city || "Kolkata"}, {address.state || "West Bengal"} {address.zip || "700001"}
                   </p>
                   
-                  {/* FSSAI and GST badges in Headquarters section for higher visibility */}
+                  {/* Dynamic Legal Identifiers */}
                   <div className="pt-4 flex flex-col gap-2">
                     {legal.fssaiNumber && (
                       <div className="flex items-center gap-2">
@@ -329,7 +328,7 @@ export function Footer() {
               </div>
             </div>
 
-            {/* Financial Facilitation Section - Integrated Display */}
+            {/* Financial Facilitation Section */}
             {visibility.showBankDetails && (
               <div className="space-y-6 pt-6 border-t border-stone-200/50">
                 <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500 flex items-center gap-3">
@@ -395,30 +394,8 @@ export function Footer() {
               )}
             </div>
 
-            {/* Dedicated Business & Legal Panel for Public Access */}
-            <div className="space-y-6">
-              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Business & Legal</h4>
-              <div className="bg-white/40 backdrop-blur-md border border-white/60 p-6 rounded-[2rem] space-y-4 shadow-sm">
-                {legal.fssaiNumber && (
-                   <div className="flex flex-col gap-1">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-stone-400">FSSAI License No.</span>
-                      <span className="text-[14px] text-stone-900 font-black tracking-tight">{legal.fssaiNumber}</span>
-                   </div>
-                )}
-                {legal.gstin && (
-                   <div className="flex flex-col gap-1">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-stone-400">GSTIN</span>
-                      <span className="text-[14px] text-stone-900 font-black tracking-tight">{legal.gstin}</span>
-                   </div>
-                )}
-                {!legal.fssaiNumber && !legal.gstin && (
-                  <p className="text-[10px] text-stone-400 italic">Certified Artisan Operator</p>
-                )}
-              </div>
-            </div>
-
             <motion.div 
-              animate={!shouldReduceMotion ? { scale: [1, 1.05, 1] } : {}}
+              animate={{ scale: [1, 1.05, 1] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               className="p-6 bg-rose-500/5 rounded-2xl border border-rose-500/10 flex items-center gap-4"
             >
