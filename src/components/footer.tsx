@@ -116,22 +116,13 @@ export function Footer() {
 
   const activeSocials = useMemo(() => {
     const social = footerData?.social || {};
-    const entries = Object.entries(social)
+    return Object.entries(social)
       .filter(([_, url]) => url && typeof url === 'string' && url.trim().length > 0)
       .map(([platform, url]) => ({
         platform,
         url: url as string,
         config: socialIcons[platform.toLowerCase()] || { icon: ExternalLink, color: 'text-stone-600', aura: 'rgba(0,0,0,0.1)', hoverBg: 'bg-stone-50' }
       }));
-
-    if (entries.length === 0) {
-      return [
-        { platform: 'instagram', url: 'https://instagram.com', config: socialIcons.instagram },
-        { platform: 'facebook', url: 'https://facebook.com', config: socialIcons.facebook },
-        { platform: 'whatsapp', url: 'https://wa.me', config: socialIcons.whatsapp },
-      ];
-    }
-    return entries;
   }, [footerData]);
 
   if (loading) return null;
@@ -351,7 +342,7 @@ export function Footer() {
             © {new Date().getFullYear()} {address.businessName || "Roseberry Chocolate"}. Crafted with patience.
           </p>
           <div className="flex gap-10 text-[12px] font-black uppercase tracking-[0.4em] text-stone-600">
-            <Link href="/login" className="px-7 py-2.5 rounded-full border border-stone-200 bg-white/80 hover:border-primary transition-all duration-500 shadow-sm hover:shadow-md hover:-translate-y-0.5">Portal</Link>
+             {/* Portal link removed as per request */}
           </div>
         </div>
       </div>
