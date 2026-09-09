@@ -295,6 +295,14 @@ export function Footer() {
                     <span className="text-[15px] text-stone-900 font-bold tracking-wide break-all leading-none">{contact.email}</span>
                   </a>
                 )}
+                {contact.supportEmail && (
+                  <a href={`mailto:${contact.supportEmail}`} className="flex items-center gap-4 group/contact">
+                    <div className="h-10 w-10 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 group/contact:hover:text-emerald-600 group/contact:hover:border-emerald-200 transition-all shadow-sm">
+                      <Mail className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="text-[15px] text-stone-900 font-bold tracking-wide break-all leading-none">{contact.supportEmail}</span>
+                  </a>
+                )}
               </div>
             </div>
           </motion.div>
