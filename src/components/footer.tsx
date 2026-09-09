@@ -139,7 +139,7 @@ export function Footer() {
 
   const hasBankData = useMemo(() => {
     const bank = footerData?.bank || {};
-    return bank.bankName || bank.accountName || bank.accountNumber || bank.ifsc || bank.upiId;
+    return bank.bankName || bank.accountName || bank.accountNumber || bank.ifsc || bank.upiId || bank.branch;
   }, [footerData]);
 
   if (loading) return null;
@@ -253,7 +253,7 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* Headquarters Section */}
+          {/* Headquarters & Communication & Financial Panel */}
           <motion.div 
             variants={panelVariants(0.8)}
             animate="animate"
@@ -277,7 +277,7 @@ export function Footer() {
                   <div className="pt-4 flex flex-col gap-2">
                     {legal.fssaiNumber && (
                       <div className="flex items-center gap-2">
-                         <ShieldCheck className="h-3 w-3 text-primary" />
+                         <CheckCircle2 className="h-3 w-3 text-primary" />
                          <span className="text-[9px] font-black uppercase tracking-widest text-stone-400">FSSAI No.</span>
                          <span className="text-[11px] text-stone-900 font-bold">{legal.fssaiNumber}</span>
                       </div>
@@ -333,7 +333,7 @@ export function Footer() {
               </div>
             </div>
 
-            {/* Financial Facilitation Section - Decoupled from visibility toggle for data integrity */}
+            {/* Financial Facilitation Section */}
             {hasBankData && (
               <div className="space-y-6 pt-6 border-t border-stone-200/50">
                 <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500 flex items-center gap-3">
@@ -346,6 +346,12 @@ export function Footer() {
                         <span className="text-[13px] text-stone-900 font-bold">{bank.bankName}</span>
                      </div>
                    )}
+                   {bank.branch && (
+                     <div className="flex flex-col">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Branch</span>
+                        <span className="text-[13px] text-stone-900 font-bold">{bank.branch}</span>
+                     </div>
+                   )}
                    {bank.accountName && (
                      <div className="flex flex-col">
                         <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Beneficiary</span>
@@ -356,7 +362,7 @@ export function Footer() {
                      <div className="flex flex-col">
                         <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">A/C No.</span>
                         <span className="text-[13px] text-stone-900 font-bold font-mono">
-                          {bank.masked ? `••••${bank.accountNumber.slice(-4)}` : bank.accountNumber}
+                          {bank.accountNumber}
                         </span>
                      </div>
                    )}

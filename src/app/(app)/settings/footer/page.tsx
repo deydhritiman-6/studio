@@ -74,6 +74,7 @@ const footerSchema = z.object({
     masked: z.boolean().default(true),
     accountName: z.string().optional().default(''),
     bankName: z.string().optional().default(''),
+    branch: z.string().optional().default(''),
     accountNumber: z.string().optional().default(''),
     ifsc: z.string().optional().default(''),
     upiId: z.string().optional().default(''),
@@ -147,6 +148,7 @@ const FIELD_LABELS: Record<string, string> = {
   'contact.supportEmail': 'Support Email',
   'bank.accountName': 'Beneficiary Name',
   'bank.bankName': 'Bank Name',
+  'bank.branch': 'Bank Branch',
   'bank.accountNumber': 'Account Number',
   'bank.ifsc': 'IFSC Code',
   'maps.embedUrl': 'Google Maps Embed URL',
@@ -173,7 +175,7 @@ export default function FooterManagementPage() {
       address: { businessName: 'Roseberry Chocolate', line1: '', line2: '', area: '', city: 'Kolkata', state: 'West Bengal', zip: '', country: 'India' },
       contact: { phone: '', altPhone: '', whatsapp: '', email: '', supportEmail: '' },
       legal: { gstin: '', fssaiNumber: '', cin: '', pan: '' },
-      bank: { enabled: false, masked: true, accountName: '', bankName: '', accountNumber: '', ifsc: '', upiId: '' },
+      bank: { enabled: false, masked: true, accountName: '', bankName: '', branch: '', accountNumber: '', ifsc: '', upiId: '' },
       maps: { locationName: '', mapUrl: '', embedUrl: '' },
       social: { instagram: '', facebook: '', youtube: '', twitter: '', linkedin: '' },
       visibility: { showBankDetails: false, showGST: false, showFSSAI: false, showBusinessHours: false, showMap: true },
@@ -397,11 +399,17 @@ export default function FooterManagementPage() {
                       <FormField control={form.control} name="bank.bankName" render={({ field }) => (
                         <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Bank Name</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
+                      <FormField control={form.control} name="bank.branch" render={({ field }) => (
+                        <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Bank Branch</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl><FormMessage /></FormItem>
+                      )} />
                       <FormField control={form.control} name="bank.accountNumber" render={({ field }) => (
                         <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Account Number</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
                       <FormField control={form.control} name="bank.ifsc" render={({ field }) => (
                         <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">IFSC Code</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl><FormMessage /></FormItem>
+                      )} />
+                      <FormField control={form.control} name="bank.upiId" render={({ field }) => (
+                        <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">UPI ID</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
                     </div>
                   </CardContent>
