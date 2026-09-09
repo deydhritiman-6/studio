@@ -13,7 +13,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useDoc, useFirestore } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 import { 
   Save, 
   Loader2, 
@@ -22,8 +24,6 @@ import {
   Phone, 
   MapPin, 
   ShieldCheck, 
-  Link as LinkIcon, 
-  Clock, 
   Globe, 
   CreditCard,
   Instagram,
@@ -35,7 +35,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { saveFooterSettingsAction } from './actions';
 
 const footerSchema = z.object({
   brand: z.object({
@@ -127,15 +126,27 @@ export default function FooterManagementPage() {
   }, [existingSettings, form]);
 
   const onSubmit = async (values: FooterFormValues) => {
+    if (!firestore || !settingsRef) return;
     setIsSaving(true);
-    try {
-      await saveFooterSettingsAction(values);
-      toast({ title: 'Configuration Synchronized', description: 'Public footer has been updated in real-time.' });
-    } catch (e) {
-      toast({ variant: 'destructive', title: 'Update Failed' });
-    } finally {
-      setIsSaving(false);
-    }
+
+    const finalData = {
+      ...values,
+      updatedAt: new Date().toISOString(),
+    };
+
+    setDoc(settingsRef, finalData, { merge: true })
+      .then(() => {
+        toast({ title: 'Configuration Synchronized', description: 'Public footer has been updated in real-time.' });
+      })
+      .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: settingsRef.path,
+          operation: 'write',
+          requestResourceData: finalData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      })
+      .finally(() => setIsSaving(false));
   };
 
   if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>;
@@ -143,7 +154,19 @@ export default function FooterManagementPage() {
   return (
     <>
       <PageHeader title="Footer Architecture" actions={
-        <Button onClick={form.handleSubmit(onSubmit)} disabled={isSaving} className="h-12 px-8 rounded-xl shadow-xl shadow-primary/20">
+        <Button 
+          type="button"
+          onClick={form.handleSubmit(onSubmit, (errors) => {
+            console.error('Validation Errors:', errors);
+            toast({ 
+              variant: 'destructive', 
+              title: 'Validation Error', 
+              description: 'Please check all tabs for missing or invalid information.' 
+            });
+          })} 
+          disabled={isSaving} 
+          className="h-12 px-8 rounded-xl shadow-xl shadow-primary/20"
+        >
           {isSaving ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : <Save className="mr-2 h-4 w-4" />}
           Synchronize Footer
         </Button>
@@ -271,7 +294,7 @@ export default function FooterManagementPage() {
                       <div className="space-y-1">
                         <CardTitle className="text-2xl font-headline flex items-center gap-3">
                           <CreditCard className="h-6 w-6 text-primary" /> Financial Facilitation
-                        </CardTitle>
+                        </div>
                         <CardDescription>Bank account details for direct transactions.</CardDescription>
                       </div>
                       <FormField control={form.control} name="bank.enabled" render={({ field }) => (
