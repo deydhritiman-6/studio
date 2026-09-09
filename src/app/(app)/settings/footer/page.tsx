@@ -119,7 +119,16 @@ export default function FooterManagementPage() {
     resolver: zodResolver(footerSchema),
     defaultValues: {
       brand: { description: '', tagline: '' },
-      address: { businessName: 'Roseberry Chocolate', line1: '', line2: '', area: '', city: 'Kolkata', state: 'West Bengal', zip: '', country: 'India' },
+      address: { 
+        businessName: 'Roseberry Chocolate LLP', 
+        line1: 'Aashiyana Bhaban, 1A, Roypara-Hatiara Rd', 
+        line2: 'Noapara, Hatiara', 
+        area: 'Newtown', 
+        city: 'Kolkata', 
+        state: 'West Bengal', 
+        zip: '700157', 
+        country: 'India' 
+      },
       contact: { phone: '', altPhone: '', whatsapp: '', email: '', supportEmail: '' },
       legal: { gstin: '', fssaiNumber: '', cin: '', pan: '' },
       bank: { accountName: '', bankName: '', branch: '', accountNumber: '', ifsc: '', upiId: '', qrCodeUrl: '' },

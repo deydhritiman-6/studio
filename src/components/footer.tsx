@@ -253,12 +253,12 @@ export function Footer() {
               </h4>
               <div className="space-y-3">
                   <p className="text-[16px] text-stone-900 font-black leading-tight">
-                    {address.businessName || "Roseberry Chocolate Studio"}
+                    {address.businessName || "Roseberry Chocolate LLP"}
                   </p>
                   <p className="text-[15px] text-stone-900 font-bold leading-relaxed tracking-wide">
-                    {address.line1 || "123 Chocolate Lane"}<br />
-                    {address.line2 && <>{address.line2}<br /></>}
-                    {address.city || "Kolkata"}, {address.state || "West Bengal"} {address.zip || "700001"}
+                    {address.line1 || "Aashiyana Bhaban, 1A, Roypara-Hatiara Rd"}<br />
+                    {address.line2 ? <>{address.line2}<br /></> : <>Noapara, Hatiara<br /></>}
+                    {address.city || "Newtown, Kolkata"}, {address.state || "West Bengal"} {address.zip || "700157"}
                   </p>
               </div>
             </div>
@@ -430,7 +430,7 @@ export function Footer() {
                             <div className="space-y-1">
                                <p className="text-[10px] font-black uppercase tracking-widest text-primary">Roseberry Studio Location</p>
                                <p className="text-sm text-stone-900 font-bold leading-relaxed tracking-tight">
-                                 {address.line1}, {address.city}
+                                 {address.line1 || "Aashiyana Bhaban, 1A, Roypara-Hatiara Rd"}, {address.city || "Newtown, Kolkata"}
                                </p>
                             </div>
                          </div>
@@ -455,7 +455,7 @@ export function Footer() {
                       <div className="space-y-2">
                         <p className="text-[11px] font-black uppercase tracking-[0.2em] text-stone-400">Location map unavailable</p>
                         <p className="text-xs text-stone-500 font-medium leading-relaxed italic max-w-[200px] mx-auto">
-                          {address.line1}, {address.city}
+                          {address.line1 || "Aashiyana Bhaban, 1A, Roypara-Hatiara Rd"}, {address.city || "Newtown, Kolkata"}
                         </p>
                       </div>
                       {maps.mapUrl && (
