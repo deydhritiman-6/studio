@@ -276,23 +276,27 @@ export default function FooterManagementPage() {
               </TabsContent>
 
               <TabsContent value="bank" className="space-y-8 mt-0">
-                {/* Unified Toggle Card for Bank Component */}
-                <Card className="rounded-[2rem] border-none shadow-xl bg-stone-50 border border-stone-200">
-                   <CardContent className="p-8 flex items-center justify-between">
-                      <div className="space-y-1">
-                         <h3 className="text-xl font-headline font-bold flex items-center gap-2">
-                            <Eye className="h-5 w-5 text-primary" /> Financial Component Policy
+                {/* Redesigned Unified Toggle Card for Bank Component Visibility */}
+                <Card className="rounded-[2.5rem] border-none shadow-2xl bg-primary/5 border border-primary/20 overflow-hidden mb-10 transition-all hover:shadow-primary/5">
+                   <CardContent className="p-10 flex flex-col sm:flex-row items-center justify-between gap-10">
+                      <div className="space-y-2 text-center sm:text-left">
+                         <h3 className="text-2xl font-headline font-bold flex items-center gap-3 text-primary justify-center sm:justify-start">
+                            <Eye className="h-7 w-7" /> Financial Component Visibility
                          </h3>
-                         <p className="text-xs text-muted-foreground">Control the public visibility of bank details in the footer.</p>
+                         <p className="text-sm text-stone-600 font-medium">Control the public visibility of bank details in the footer.</p>
                       </div>
                       <FormField control={form.control} name="visibility.showBankDetails" render={({ field }) => (
-                         <FormItem className="flex items-center space-x-3 bg-white p-4 rounded-2xl border-2 border-primary/20 shadow-lg">
-                            <FormLabel className="text-xs font-black uppercase tracking-widest m-0 leading-none text-primary">Enable Component</FormLabel>
+                         <FormItem className="flex items-center gap-8 bg-white p-6 rounded-[2rem] border-2 border-primary/20 shadow-2xl hover:scale-[1.02] transition-transform duration-300">
+                            <FormLabel className="text-sm font-black uppercase tracking-[0.2em] m-0 leading-none text-primary cursor-pointer select-none">
+                              ENABLE COMPONENT
+                            </FormLabel>
                             <FormControl>
                                <Switch 
                                  checked={field.value} 
                                  onCheckedChange={field.onChange} 
-                                 className="data-[state=checked]:bg-primary"
+                                 className="w-14 h-[30px] data-[state=checked]:bg-primary data-[state=unchecked]:bg-stone-200 border-none hover:shadow-md transition-all shadow-inner"
+                                 thumbClassName="h-6 w-6 data-[state=checked]:translate-x-[26px] data-[state=unchecked]:translate-x-1 shadow-md"
+                                 aria-label="Toggle bank details visibility"
                                />
                             </FormControl>
                          </FormItem>
