@@ -18,7 +18,7 @@ import {
   Sparkles,
   Heart,
   Globe,
-  CheckCircle2
+  CheckCircle
 } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useDoc, useFirestore } from '@/firebase';
@@ -44,21 +44,14 @@ function PremiumBackground() {
       {/* 3. High-Intensity Drifting Auras - Wide Paths */}
       {!shouldReduceMotion && (
         <>
-          {/* Cyan Glow - Wide Diagonal Drift */}
           <div className="absolute top-[-30%] left-[-30%] w-[1200px] h-[1200px] bg-cyan-400/25 rounded-full blur-[180px] animate-drifting-glow" />
-          
-          {/* Magenta Glow - Opposing Slow Drift */}
           <div className="absolute top-[10%] left-[10%] w-[1000px] h-[1000px] bg-fuchsia-400/20 rounded-full blur-[200px] animate-drifting-glow-reverse" />
-
-          {/* Olive Green Glow - Vertical/Horizontal Move */}
           <div className="absolute top-[-25%] right-[-30%] w-[1100px] h-[1100px] bg-emerald-400/25 rounded-full blur-[180px] animate-drifting-glow" />
-
-          {/* Cherry Red Glow - Localized Pulse */}
           <div className="absolute bottom-[-30%] left-[30%] w-[800px] h-[800px] bg-rose-400/15 rounded-full blur-[150px] animate-drifting-glow-reverse" />
         </>
       )}
 
-      {/* 4. Elegant Abstract Chocolate Ribbons with Wave Motion */}
+      {/* 4. Elegant Abstract Chocolate Ribbons */}
       <motion.svg 
         animate={!shouldReduceMotion ? { y: [0, -20, 0], scaleY: [1, 1.08, 1] } : {}}
         transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
@@ -74,7 +67,7 @@ function PremiumBackground() {
 }
 
 /**
- * High-Density Floating Light Particles (50 Points).
+ * High-Density Floating Light Particles.
  */
 function FloatingParticles() {
   const shouldReduceMotion = useReducedMotion();
@@ -150,10 +143,7 @@ export function Footer() {
     contact = {},
     legal = {},
     bank = {},
-    links = [],
-    policies = [],
-    visibility = {},
-    maps = {}
+    maps = {},
   } = footerData || {};
 
   return (
@@ -200,31 +190,24 @@ export function Footer() {
                   >
                     <div className={cn("absolute inset-0 opacity-0 group-hover/soc:opacity-100 transition-opacity duration-500", config.hoverBg)} />
                     <config.icon className={cn("h-5 w-5 transition-all duration-500 relative z-10 text-stone-500", config.color)} />
-                    <div 
-                      className="absolute inset-0 opacity-20 pointer-events-none group-hover/soc:opacity-40 transition-opacity"
-                      style={{ boxShadow: `inset 0 0 15px ${config.aura}` }}
-                    />
+                    <div className="absolute inset-0 opacity-20 pointer-events-none group-hover/soc:opacity-40 transition-opacity" style={{ boxShadow: `inset 0 0 15px ${config.aura}` }} />
                   </motion.a>
                 ))}
               </div>
             </div>
           </motion.div>
 
-          {/* Links Section */}
-          <motion.div 
-            variants={panelVariants(1.2)}
-            animate="animate"
-            className="grid grid-cols-2 gap-8 py-6"
-          >
+          {/* Navigation Sections */}
+          <motion.div variants={panelVariants(1.2)} animate="animate" className="grid grid-cols-2 gap-8 py-6">
             <div className="space-y-10">
               <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-fuchsia-700">Discovery</h4>
               <ul className="space-y-5">
-                {(links.length > 0 ? links : [
+                {[
                   { text: 'Our Story', url: '/#story' },
                   { text: 'Collections', url: '/shop' },
                   { text: 'Artisan Journey', url: '/shop/my-orders' },
                   { text: 'Our Facilities', url: '/inside-roseberry' },
-                ]).map((link: any) => (
+                ].map((link) => (
                   <li key={link.text}>
                     <Link href={link.url} className="footer-navigation-link inline-block text-stone-900 text-[15px] hover:text-fuchsia-600 transition-all duration-300 font-bold tracking-wide">
                       {link.text}
@@ -233,19 +216,18 @@ export function Footer() {
                 ))}
               </ul>
             </div>
-            
             <div className="space-y-10">
               <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-fuchsia-700">Assistance</h4>
               <ul className="space-y-5">
-                {(policies.length > 0 ? policies : [
+                {[
                   { text: 'Privacy Policy', url: '#' },
                   { text: 'Terms of Service', url: '#' },
                   { text: 'Shipping Policy', url: '#' },
                   { text: 'Return Policy', url: '#' },
-                ]).map((policy: any) => (
-                  <li key={policy.text}>
-                    <Link href={policy.url} className="footer-navigation-link inline-block text-stone-900 text-[15px] hover:text-fuchsia-600 transition-all duration-300 font-bold tracking-wide">
-                      {policy.text}
+                ].map((link) => (
+                  <li key={link.text}>
+                    <Link href={link.url} className="footer-navigation-link inline-block text-stone-900 text-[15px] hover:text-fuchsia-600 transition-all duration-300 font-bold tracking-wide">
+                      {link.text}
                     </Link>
                   </li>
                 ))}
@@ -253,12 +235,8 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* Headquarters & Communication & Financial Panel */}
-          <motion.div 
-            variants={panelVariants(0.8)}
-            animate="animate"
-            className="space-y-12 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm"
-          >
+          {/* Headquarters & Business Section */}
+          <motion.div variants={panelVariants(0.8)} animate="animate" className="space-y-10 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm">
             <div className="space-y-6">
               <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3">
                  <MapPin className="h-3.5 w-3.5" /> Headquarters
@@ -272,147 +250,139 @@ export function Footer() {
                     {address.line2 && <>{address.line2}<br /></>}
                     {address.city || "Kolkata"}, {address.state || "West Bengal"} {address.zip || "700001"}
                   </p>
-                  
-                  {/* Dynamic Legal Identifiers */}
-                  <div className="pt-4 flex flex-col gap-2">
+              </div>
+            </div>
+
+            {/* Prominent Business & Legal Badge Section */}
+            {(legal.gstin || legal.fssaiNumber) && (
+              <div className="space-y-6 pt-6 border-t border-stone-200/50">
+                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Business & Legal</h4>
+                <div className="space-y-3 bg-stone-50/50 p-4 rounded-2xl border border-stone-100">
                     {legal.fssaiNumber && (
-                      <div className="flex items-center gap-2">
-                         <CheckCircle2 className="h-3 w-3 text-primary" />
-                         <span className="text-[9px] font-black uppercase tracking-widest text-stone-400">FSSAI No.</span>
-                         <span className="text-[11px] text-stone-900 font-bold">{legal.fssaiNumber}</span>
+                      <div className="flex items-center gap-3">
+                         <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
+                         <div className="flex flex-col">
+                            <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">FSSAI License No.</span>
+                            <span className="text-[13px] text-stone-900 font-bold">{legal.fssaiNumber}</span>
+                         </div>
                       </div>
                     )}
                     {legal.gstin && (
-                      <div className="flex items-center gap-2">
-                         <CheckCircle2 className="h-3 w-3 text-primary" />
-                         <span className="text-[9px] font-black uppercase tracking-widest text-stone-400">GSTIN</span>
-                         <span className="text-[11px] text-stone-900 font-bold">{legal.gstin}</span>
+                      <div className="flex items-center gap-3">
+                         <CheckCircle className="h-4 w-4 text-primary shrink-0" />
+                         <div className="flex flex-col">
+                            <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">GSTIN</span>
+                            <span className="text-[13px] text-stone-900 font-bold uppercase">{legal.gstin}</span>
+                         </div>
                       </div>
                     )}
-                  </div>
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="space-y-6">
               <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3">
                 <Phone className="h-3.5 w-3.5" /> Communication
               </h4>
-              <div className="space-y-5">
+              <div className="space-y-4">
                 {contact.phone && (
                   <a href={`tel:${contact.phone}`} className="flex items-center gap-4 group/contact">
-                    <div className="h-10 w-10 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 group/contact:hover:text-emerald-600 group/contact:hover:border-emerald-200 transition-all shadow-sm">
+                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm">
                       <Phone className="h-4 w-4" />
                     </div>
-                    <span className="text-[15px] text-stone-900 font-bold tracking-wide">{contact.phone}</span>
+                    <span className="text-[14px] text-stone-900 font-bold tracking-wide">{contact.phone}</span>
                   </a>
                 )}
                 {contact.whatsapp && (
                   <a href={`https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 group/contact">
-                    <div className="h-10 w-10 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 group/contact:hover:text-emerald-600 group/contact:hover:border-emerald-200 transition-all shadow-sm">
+                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm">
                       <MessageCircle className="h-4 w-4" />
                     </div>
-                    <span className="text-[15px] text-stone-900 font-bold tracking-wide">{contact.whatsapp}</span>
+                    <span className="text-[14px] text-stone-900 font-bold tracking-wide">{contact.whatsapp}</span>
                   </a>
                 )}
                 {contact.email && (
                   <a href={`mailto:${contact.email}`} className="flex items-center gap-4 group/contact">
-                    <div className="h-10 w-10 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 group/contact:hover:text-emerald-600 group/contact:hover:border-emerald-200 transition-all shadow-sm">
+                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm">
                       <Mail className="h-4 w-4" />
                     </div>
-                    <span className="text-[15px] text-stone-900 font-bold tracking-wide break-all leading-none">{contact.email}</span>
+                    <span className="text-[14px] text-stone-900 font-bold tracking-wide break-all leading-tight">{contact.email}</span>
                   </a>
                 )}
                 {contact.supportEmail && (
                   <a href={`mailto:${contact.supportEmail}`} className="flex items-center gap-4 group/contact">
-                    <div className="h-10 w-10 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 group/contact:hover:text-emerald-600 group/contact:hover:border-emerald-200 transition-all shadow-sm">
+                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm">
                       <Mail className="h-4 w-4 text-primary" />
                     </div>
-                    <span className="text-[15px] text-stone-900 font-bold tracking-wide break-all leading-none">{contact.supportEmail}</span>
+                    <span className="text-[14px] text-stone-900 font-bold tracking-wide break-all leading-tight">{contact.supportEmail}</span>
                   </a>
                 )}
               </div>
             </div>
+          </motion.div>
 
-            {/* Financial Facilitation Section */}
+          {/* Financial Facilitation & Map Section */}
+          <motion.div variants={panelVariants(2.2)} animate="animate" className="space-y-12">
+            {/* Bank Details Section */}
             {hasBankData && (
-              <div className="space-y-6 pt-6 border-t border-stone-200/50">
-                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500 flex items-center gap-3">
-                  <CreditCard className="h-3.5 w-3.5 text-primary" /> Financial Facilitation
+              <div className="space-y-6">
+                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3">
+                  <CreditCard className="h-3.5 w-3.5" /> Financial Facilitation
                 </h4>
-                <div className="space-y-4 bg-white/30 p-5 rounded-2xl border border-white/50 shadow-inner">
+                <div className="space-y-4 bg-white/50 backdrop-blur-md p-6 rounded-[2.5rem] border border-white/60 shadow-xl">
                    {bank.bankName && (
                      <div className="flex flex-col">
                         <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Bank</span>
-                        <span className="text-[13px] text-stone-900 font-bold">{bank.bankName}</span>
+                        <span className="text-[14px] text-stone-900 font-bold">{bank.bankName}</span>
                      </div>
                    )}
                    {bank.branch && (
                      <div className="flex flex-col">
                         <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Branch</span>
-                        <span className="text-[13px] text-stone-900 font-bold">{bank.branch}</span>
+                        <span className="text-[14px] text-stone-900 font-bold">{bank.branch}</span>
                      </div>
                    )}
                    {bank.accountName && (
                      <div className="flex flex-col">
                         <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Beneficiary</span>
-                        <span className="text-[13px] text-stone-900 font-bold">{bank.accountName}</span>
+                        <span className="text-[14px] text-stone-900 font-bold">{bank.accountName}</span>
                      </div>
                    )}
                    {bank.accountNumber && (
                      <div className="flex flex-col">
                         <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">A/C No.</span>
-                        <span className="text-[13px] text-stone-900 font-bold font-mono">
-                          {bank.accountNumber}
-                        </span>
+                        <span className="text-[14px] text-stone-900 font-bold font-mono">{bank.accountNumber}</span>
                      </div>
                    )}
                    {bank.ifsc && (
                      <div className="flex flex-col">
                         <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">IFSC Code</span>
-                        <span className="text-[13px] text-stone-900 font-bold font-mono">{bank.ifsc}</span>
+                        <span className="text-[14px] text-stone-900 font-bold font-mono uppercase">{bank.ifsc}</span>
                      </div>
                    )}
                    {bank.upiId && (
                      <div className="flex flex-col">
                         <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">UPI ID</span>
-                        <span className="text-[13px] text-stone-900 font-bold text-primary">{bank.upiId}</span>
+                        <span className="text-[14px] text-primary font-bold">{bank.upiId}</span>
                      </div>
                    )}
                 </div>
               </div>
             )}
-          </motion.div>
 
-          {/* Maps Section */}
-          <motion.div 
-            variants={panelVariants(2.2)}
-            animate="animate"
-            className="space-y-12"
-          >
             <div className="space-y-6">
               <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700">Location Matrix</h4>
-              {maps.embedUrl ? (
+              {maps.embedUrl && (
                 <div className="relative group overflow-hidden rounded-[2.5rem] border-2 border-white/60 shadow-xl bg-white/40 backdrop-blur-md">
                   <div className="aspect-[16/10] w-full opacity-90 group-hover:opacity-100 transition-all duration-700">
                     <iframe src={maps.embedUrl} width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
                   </div>
                 </div>
-              ) : (
-                <div className="p-10 rounded-[2.5rem] border-2 border-dashed border-stone-200 bg-white/30 backdrop-blur-sm text-center">
-                  <Sparkles className="h-6 w-6 text-cyan-600 mx-auto mb-4" />
-                  <p className="text-[12px] font-black text-stone-600 uppercase tracking-[0.3em]">Artisanal Studio • Kolkata</p>
-                </div>
               )}
             </div>
 
-            <motion.div 
-              animate={{ scale: [1, 1.05, 1] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              className="p-6 bg-rose-500/5 rounded-2xl border border-rose-500/10 flex items-center gap-4"
-            >
-                <div className="h-10 w-10 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-600 shadow-inner">
-                    <Heart className="h-5 w-5 fill-current" />
-                </div>
+            <motion.div animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }} className="p-6 bg-rose-500/5 rounded-2xl border border-rose-500/10 flex items-center gap-4">
+                <div className="h-10 w-10 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-600 shadow-inner"><Heart className="h-5 w-5 fill-current" /></div>
                 <div className="space-y-0.5">
                     <p className="text-[10px] font-black uppercase tracking-widest text-rose-700 leading-none">Artisan Commitment</p>
                     <p className="text-[12px] font-bold text-rose-900/60 leading-tight">Handmade with Extraordinary Patience</p>
@@ -425,7 +395,7 @@ export function Footer() {
 
         <div className="flex flex-col md:flex-row justify-between items-center gap-10 text-center md:text-left pb-16">
           <p className="text-stone-600 text-[12px] font-black uppercase tracking-[0.3em]">
-            © {new Date().getFullYear()} {address.businessName || "Roseberry Chocolate"}. Crafted with patience.
+            © {new Date().getFullYear()} {address.businessName || "Roseberry Chocolate"}. Crafted with patience in Kolkata.
           </p>
         </div>
       </div>
