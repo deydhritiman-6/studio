@@ -268,18 +268,20 @@ export function Footer() {
                     {address.city || "Kolkata"}, {address.state || "West Bengal"} {address.zip || "700001"}
                   </p>
 
-                  {/* FSSAI & GST Visibility */}
+                  {/* FSSAI & GST Visibility - FIXED */}
                   {(visibility.showGST && legal.gstin) || (visibility.showFSSAI && legal.fssaiNumber) ? (
-                    <div className="flex flex-wrap gap-2 pt-2">
+                    <div className="flex flex-col gap-2 pt-4">
                        {visibility.showGST && legal.gstin && (
-                         <Badge variant="outline" className="text-[9px] font-black border-primary/20 text-primary bg-white/50 uppercase tracking-tighter">
-                            GSTIN: {legal.gstin}
-                         </Badge>
+                         <div className="flex items-center gap-2">
+                            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-stone-600">GSTIN • {legal.gstin}</span>
+                         </div>
                        )}
                        {visibility.showFSSAI && legal.fssaiNumber && (
-                         <Badge variant="outline" className="text-[9px] font-black border-primary/20 text-primary bg-white/50 uppercase tracking-tighter">
-                            FSSAI: {legal.fssaiNumber}
-                         </Badge>
+                         <div className="flex items-center gap-2">
+                            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-stone-600">FSSAI License No. • {legal.fssaiNumber}</span>
+                         </div>
                        )}
                     </div>
                   ) : null}
