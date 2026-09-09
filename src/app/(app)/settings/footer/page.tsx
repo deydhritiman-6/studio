@@ -149,6 +149,18 @@ export default function FooterManagementPage() {
       .finally(() => setIsSaving(false));
   };
 
+  const onInvalid = (errors: any) => {
+    const errorCount = Object.keys(errors).length;
+    if (errorCount > 0) {
+      console.warn('Footer form validation errors:', errors);
+      toast({ 
+        variant: 'destructive', 
+        title: 'Validation Error', 
+        description: 'Please check all tabs for missing or invalid information.' 
+      });
+    }
+  };
+
   if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>;
 
   return (
@@ -156,14 +168,7 @@ export default function FooterManagementPage() {
       <PageHeader title="Footer Architecture" actions={
         <Button 
           type="button"
-          onClick={form.handleSubmit(onSubmit, (errors) => {
-            console.error('Validation Errors:', errors);
-            toast({ 
-              variant: 'destructive', 
-              title: 'Validation Error', 
-              description: 'Please check all tabs for missing or invalid information.' 
-            });
-          })} 
+          onClick={form.handleSubmit(onSubmit, onInvalid)} 
           disabled={isSaving} 
           className="h-12 px-8 rounded-xl shadow-xl shadow-primary/20"
         >
