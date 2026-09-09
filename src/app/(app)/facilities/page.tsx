@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
@@ -113,7 +112,7 @@ export default function FacilitiesManagerPage() {
       title: 'Inside Roseberry Chocolate',
       subtitle: 'A Journey of Care, Craft and Commitment',
       description: 'From the finest ingredients to the final delivery, every step at Roseberry Chocolate is handled with passion, precision and care.',
-      heroImageUrl: 'https://picsum.photos/seed/hero/1200/800',
+      heroImageUrl: '/Roseberry Chocolate Inside Story.jpeg',
       homepageTitle: 'Inside Roseberry Chocolate',
       homepageSubtitle: 'A Journey of Care, Craft and Commitment',
       homepageDescription: 'From the finest ingredients to the final delivery, every step at Roseberry Chocolate is handled with passion, precision and care.',
@@ -204,7 +203,7 @@ export default function FacilitiesManagerPage() {
 
     setDoc(facilityRef, data)
       .then(() => {
-        toast({ title: editingFacility ? 'Facility Refined' : 'Facility Registered' });
+        toast({ title: f.title ? 'Facility Refined' : 'Facility Registered' });
         setIsAddOpen(false);
         setEditingFacility(null);
       })

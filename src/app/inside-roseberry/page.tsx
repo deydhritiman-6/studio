@@ -65,7 +65,7 @@ export default function InsideRoseberryPage() {
     title: "Inside Roseberry Chocolate",
     subtitle: "A Journey of Care, Craft and Commitment",
     description: "From the finest ingredients to the final delivery, every step at Roseberry Chocolate is handled with passion, precision and care.",
-    heroImageUrl: "https://picsum.photos/seed/hero/1200/800",
+    heroImageUrl: "/Roseberry Chocolate Inside Story.jpeg",
     bottomStatement: "Crafted with Passion. Handled with Care. Delivered with Love.",
     bottomDescription: "Every piece tells a story of artisanal excellence and dedication to quality."
   };
