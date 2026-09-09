@@ -16,7 +16,8 @@ import {
   CreditCard,
   ShieldCheck,
   Sparkles,
-  Heart
+  Heart,
+  Globe
 } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useDoc, useFirestore } from '@/firebase';
@@ -99,6 +100,18 @@ function FloatingParticles() {
   );
 }
 
+const panelVariants = (delay: number) => ({
+  animate: {
+    y: [0, -8, 0],
+    transition: {
+      duration: 7,
+      repeat: Infinity,
+      ease: "easeInOut",
+      delay
+    }
+  }
+});
+
 export function Footer() {
   const firestore = useFirestore();
   const settingsRef = useMemo(() => (firestore ? doc(firestore, 'settings', 'footer') : null), [firestore]);
@@ -131,6 +144,7 @@ export function Footer() {
     brand = {},
     address = {},
     contact = {},
+    legal = {},
     links = [],
     policies = [],
     visibility = {},
@@ -147,8 +161,8 @@ export function Footer() {
           
           {/* Brand Identity Panel - Staggered Float */}
           <motion.div 
-            animate={!shouldReduceMotion ? { y: [-6, 6, -6] } : {}}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            variants={panelVariants(0)}
+            animate="animate"
             className="group space-y-8 bg-white/45 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/60 shadow-xl transition-all duration-700 hover:shadow-2xl"
           >
             <div className="space-y-6">
@@ -193,8 +207,8 @@ export function Footer() {
 
           {/* Links Section - Staggered Float */}
           <motion.div 
-            animate={!shouldReduceMotion ? { y: [6, -6, 6] } : {}}
-            transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+            variants={panelVariants(1.2)}
+            animate="animate"
             className="grid grid-cols-2 gap-8 py-6"
           >
             <div className="space-y-10">
@@ -236,8 +250,8 @@ export function Footer() {
 
           {/* Contact Section - Staggered Float */}
           <motion.div 
-            animate={!shouldReduceMotion ? { y: [-5, 5, -5] } : {}}
-            transition={{ duration: 7.5, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
+            variants={panelVariants(0.8)}
+            animate="animate"
             className="space-y-12 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm"
           >
             <div className="space-y-6">
@@ -253,6 +267,22 @@ export function Footer() {
                     {address.line2 && <>{address.line2}<br /></>}
                     {address.city || "Kolkata"}, {address.state || "West Bengal"} {address.zip || "700001"}
                   </p>
+
+                  {/* FSSAI & GST Visibility */}
+                  {(visibility.showGST && legal.gstin) || (visibility.showFSSAI && legal.fssaiNumber) ? (
+                    <div className="flex flex-wrap gap-2 pt-2">
+                       {visibility.showGST && legal.gstin && (
+                         <Badge variant="outline" className="text-[9px] font-black border-primary/20 text-primary bg-white/50 uppercase tracking-tighter">
+                            GSTIN: {legal.gstin}
+                         </Badge>
+                       )}
+                       {visibility.showFSSAI && legal.fssaiNumber && (
+                         <Badge variant="outline" className="text-[9px] font-black border-primary/20 text-primary bg-white/50 uppercase tracking-tighter">
+                            FSSAI: {legal.fssaiNumber}
+                         </Badge>
+                       )}
+                    </div>
+                  ) : null}
               </div>
             </div>
 
@@ -299,8 +329,8 @@ export function Footer() {
 
           {/* Maps Section - Staggered Float */}
           <motion.div 
-            animate={!shouldReduceMotion ? { y: [5, -5, 5] } : {}}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2.2 }}
+            variants={panelVariants(2.2)}
+            animate="animate"
             className="space-y-12"
           >
             <div className="space-y-6">
@@ -322,7 +352,7 @@ export function Footer() {
             <motion.div 
               animate={!shouldReduceMotion ? { scale: [1, 1.05, 1] } : {}}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              className="p-6 bg-rose-500/5 rounded-2xl border border-rose-500/10 flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-1000"
+              className="p-6 bg-rose-500/5 rounded-2xl border border-rose-500/10 flex items-center gap-4"
             >
                 <div className="h-10 w-10 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-600 shadow-inner">
                     <Heart className="h-5 w-5 fill-current" />

@@ -131,7 +131,6 @@
   will-change: transform !important;
 }
 
-/* Freezes the entire marquee when hovered for easier reading */
 .testimonial-viewport:hover .testimonial-track {
   animation-play-state: paused !important;
 }
@@ -166,13 +165,6 @@
   animation: starShimmer 3s ease-in-out infinite;
 }
 
-/* Accessibility: Respect motion preferences for non-essential effects only */
-@media (prefers-reduced-motion: reduce) {
-  .animate-star-shimmer {
-    animation: none !important;
-  }
-}
-
 @keyframes bell-shake {
   0%, 100% { transform: rotate(0); }
   10%, 30%, 50%, 70%, 90% { transform: rotate(10deg); }
@@ -190,11 +182,6 @@
   border-radius: 0.75rem;
   position: relative;
   z-index: 10;
-}
-
-.artisan-label-blink {
-  animation: blink-label 1s ease-in-out infinite;
-  font-weight: 900 !important;
 }
 
 @keyframes shimmer-brand {
