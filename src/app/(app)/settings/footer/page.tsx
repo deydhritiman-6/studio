@@ -35,7 +35,8 @@ import {
   QrCode,
   Upload,
   RefreshCw,
-  X
+  X,
+  ExternalLink
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -314,9 +315,9 @@ export default function FooterManagementPage() {
                    <CardContent className="p-10 flex flex-col sm:flex-row items-center justify-between gap-10">
                       <div className="space-y-2 text-center sm:text-left">
                          <h3 className="text-2xl font-headline font-bold flex items-center gap-3 text-primary justify-center sm:justify-start">
-                            <Eye className="h-7 w-7" /> Financial Component Visibility
+                            <Eye className="h-7 w-7" /> Master Visibility Policy
                          </h3>
-                         <p className="text-sm text-stone-600 font-medium">Control the public visibility of bank details in the footer.</p>
+                         <p className="text-sm text-stone-600 font-medium">Toggle the public display of the Financial Facilitation block in the footer.</p>
                       </div>
                       <FormField control={form.control} name="visibility.showBankDetails" render={({ field }) => (
                          <FormItem className="flex items-center gap-8 bg-white p-6 rounded-[2rem] border-2 border-primary/20 shadow-2xl hover:scale-[1.02] transition-transform duration-300">
@@ -327,7 +328,7 @@ export default function FooterManagementPage() {
                                <Switch 
                                  checked={field.value} 
                                  onCheckedChange={field.onChange} 
-                                 className="w-14 h-[30px] data-[state=checked]:bg-primary data-[state=unchecked]:bg-stone-200 border-none hover:shadow-md transition-all shadow-inner"
+                                 className="w-[56px] h-[30px] data-[state=checked]:bg-primary data-[state=unchecked]:bg-stone-200 border-none hover:shadow-md transition-all shadow-inner"
                                  thumbClassName="h-6 w-6 data-[state=checked]:translate-x-[26px] data-[state=unchecked]:translate-x-1 shadow-md"
                                  aria-label="Toggle bank details visibility"
                                />
@@ -437,14 +438,22 @@ export default function FooterManagementPage() {
                     <CardTitle className="text-2xl font-headline flex items-center gap-3">
                       <MapPin className="h-6 w-6 text-primary" /> Location Matrix
                     </CardTitle>
-                    <CardDescription>Google Maps integration.</CardDescription>
+                    <CardDescription>Configure Google Maps accessibility.</CardDescription>
                   </CardHeader>
-                  <CardContent className="p-10 space-y-8">
+                  <CardContent className="p-10 space-y-10">
+                    <FormField control={form.control} name="maps.mapUrl" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Google Maps Place URL</FormLabel>
+                        <FormControl><Input className="h-12 rounded-xl" placeholder="https://www.google.com/maps/place/..." {...field} /></FormControl>
+                        <FormDescription className="text-[9px]">The standard browser URL for your location (used for "View on Google Maps" button).</FormDescription>
+                      </FormItem>
+                    )} />
+                    
                     <FormField control={form.control} name="maps.embedUrl" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Google Maps Embed URL</FormLabel>
-                        <FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl>
-                        <FormDescription className="text-[9px]">The iframe src URL from Google Maps share panel.</FormDescription>
+                        <FormControl><Input className="h-12 rounded-xl" placeholder="https://www.google.com/maps/embed?pb=..." {...field} /></FormControl>
+                        <FormDescription className="text-[9px]">The 'src' attribute from the 'Embed a map' share tab on Google Maps.</FormDescription>
                       </FormItem>
                     )} />
                   </CardContent>

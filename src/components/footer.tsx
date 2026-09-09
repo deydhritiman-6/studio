@@ -28,6 +28,7 @@ import { Logo } from '@/components/logo';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import { Button } from '@/components/ui/button';
 
 /**
  * Premium Layered Background with Wide-Range Drifting Auras and Textures.
@@ -132,10 +133,15 @@ export function Footer() {
       }));
   }, [footerData]);
 
-  const hasBankData = useMemo(() => {
+  const hasAnyBankData = useMemo(() => {
     const bank = footerData?.bank || {};
     return !!(bank.bankName || bank.accountName || bank.accountNumber || bank.ifsc || bank.upiId || bank.qrCodeUrl);
   }, [footerData]);
+
+  const isValidEmbedUrl = (url?: string) => {
+    if (!url) return false;
+    return url.includes('google.com/maps/embed') || url.includes('<iframe');
+  };
 
   if (loading) return null;
 
@@ -260,7 +266,7 @@ export function Footer() {
             {(legal.gstin || legal.fssaiNumber) && (
               <div className="space-y-6 pt-6 border-t border-stone-200/50">
                 <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Business & Legal</h4>
-                <div className="space-y-3 bg-stone-50/50 p-6 rounded-2xl border border-stone-100 shadow-inner">
+                <div className="space-y-4">
                     {legal.fssaiNumber && (
                       <div className="flex items-center gap-3">
                          <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
@@ -327,7 +333,7 @@ export function Footer() {
           {/* Financial Facilitation & Map Section */}
           <motion.div variants={panelVariants(2.2)} animate="animate" className="space-y-12">
             {/* Bank Details Section */}
-            {visibility.showBankDetails && hasBankData && (
+            {visibility.showBankDetails && hasAnyBankData && (
               <div className="space-y-8">
                 <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3">
                   <CreditCard className="h-3.5 w-3.5" /> Financial Facilitation
@@ -338,7 +344,9 @@ export function Footer() {
                     {bank.bankName && (
                       <div className="flex flex-col">
                           <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Bank</span>
-                          <span className="text-[14px] text-stone-900 font-bold">{bank.bankName}</span>
+                          <span className="text-[14px] text-stone-900 font-bold">
+                            {bank.bankName} {bank.branch && <span className="text-[10px] text-stone-400 font-medium ml-1">({bank.branch})</span>}
+                          </span>
                       </div>
                     )}
                     {bank.accountName && (
@@ -349,18 +357,18 @@ export function Footer() {
                     )}
                     {bank.accountNumber && (
                       <div className="flex flex-col">
-                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">A/C No.</span>
-                          <span className="text-[14px] text-stone-900 font-bold font-mono">{bank.accountNumber}</span>
+                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Account Number</span>
+                          <span className="text-[14px] text-stone-900 font-bold font-mono tracking-tight">{bank.accountNumber}</span>
                       </div>
                     )}
                     {bank.ifsc && (
                       <div className="flex flex-col">
                           <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">IFSC Code</span>
-                          <span className="text-[14px] text-stone-900 font-bold font-mono uppercase">{bank.ifsc}</span>
+                          <span className="text-[14px] text-stone-900 font-bold font-mono uppercase tracking-widest">{bank.ifsc}</span>
                       </div>
                     )}
                     {bank.upiId && (
-                      <div className="flex flex-col">
+                      <div className="flex flex-col pt-2 border-t border-stone-200/50">
                           <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">UPI ID</span>
                           <span className="text-[14px] text-primary font-bold">{bank.upiId}</span>
                       </div>
@@ -391,10 +399,14 @@ export function Footer() {
               </div>
             )}
 
+            {/* Location Matrix Section */}
             <div className="space-y-6">
-              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700">Location Matrix</h4>
-              {maps.embedUrl ? (
-                <div className="relative group overflow-hidden rounded-[2.5rem] border-2 border-white/60 shadow-xl bg-white/40 backdrop-blur-md">
+              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3">
+                <Globe className="h-3.5 w-3.5" /> Location Matrix
+              </h4>
+              
+              <div className="relative group overflow-hidden rounded-[2.5rem] border-2 border-white/60 shadow-xl bg-white/40 backdrop-blur-md">
+                {isValidEmbedUrl(maps.embedUrl) ? (
                   <div className="aspect-[16/10] w-full opacity-90 group-hover:opacity-100 transition-all duration-700">
                     <iframe 
                       src={maps.embedUrl} 
@@ -406,11 +418,34 @@ export function Footer() {
                       referrerPolicy="no-referrer-when-downgrade" 
                     />
                   </div>
-                </div>
-              ) : (
-                <div className="aspect-[16/10] w-full rounded-[2.5rem] border-2 border-dashed border-stone-200 flex flex-col items-center justify-center bg-stone-50/50 text-stone-400">
-                  <MapPin className="h-6 w-6 mb-2 opacity-20" />
-                  <p className="text-[10px] font-black uppercase tracking-widest">Location map unavailable</p>
+                ) : (
+                  <div className="aspect-[16/10] w-full p-8 flex flex-col items-center justify-center bg-stone-50/50 text-center space-y-4">
+                    <MapPin className="h-8 w-8 text-stone-300 opacity-50" />
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-400">Roseberry Studio Location</p>
+                      <p className="text-xs text-stone-500 font-medium leading-relaxed italic max-w-[200px] mx-auto">
+                        {address.line1}, {address.city}
+                      </p>
+                    </div>
+                    {maps.mapUrl && (
+                      <Button asChild variant="outline" size="sm" className="rounded-full text-[9px] font-black uppercase tracking-widest border-primary/20 text-primary hover:bg-primary hover:text-white">
+                        <a href={maps.mapUrl} target="_blank" rel="noopener noreferrer">View on Google Maps</a>
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+              
+              {maps.mapUrl && isValidEmbedUrl(maps.embedUrl) && (
+                <div className="flex justify-center mt-4">
+                   <a 
+                    href={maps.mapUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-[9px] font-black uppercase tracking-[0.2em] text-stone-400 hover:text-primary transition-colors flex items-center gap-2"
+                   >
+                     View full interactive map <ExternalLink className="h-3 w-3" />
+                   </a>
                 </div>
               )}
             </div>
