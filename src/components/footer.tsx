@@ -268,6 +268,24 @@ export function Footer() {
                     {address.line2 && <>{address.line2}<br /></>}
                     {address.city || "Kolkata"}, {address.state || "West Bengal"} {address.zip || "700001"}
                   </p>
+                  
+                  {/* FSSAI and GST badges in Headquarters section for higher visibility */}
+                  <div className="pt-4 flex flex-col gap-2">
+                    {legal.fssaiNumber && (
+                      <div className="flex items-center gap-2">
+                         <ShieldCheck className="h-3 w-3 text-primary" />
+                         <span className="text-[9px] font-black uppercase tracking-widest text-stone-400">FSSAI No.</span>
+                         <span className="text-[11px] text-stone-900 font-bold">{legal.fssaiNumber}</span>
+                      </div>
+                    )}
+                    {legal.gstin && (
+                      <div className="flex items-center gap-2">
+                         <CheckCircle2 className="h-3 w-3 text-primary" />
+                         <span className="text-[9px] font-black uppercase tracking-widest text-stone-400">GSTIN</span>
+                         <span className="text-[11px] text-stone-900 font-bold">{legal.gstin}</span>
+                      </div>
+                    )}
+                  </div>
               </div>
             </div>
 
@@ -311,13 +329,13 @@ export function Footer() {
               </div>
             </div>
 
-            {/* Financial Facilitation Section */}
-            {visibility.showBankDetails && bank.enabled && (
+            {/* Financial Facilitation Section - Integrated Display */}
+            {visibility.showBankDetails && (
               <div className="space-y-6 pt-6 border-t border-stone-200/50">
                 <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500 flex items-center gap-3">
-                  <CreditCard className="h-3.5 w-3.5 text-primary" /> Financial
+                  <CreditCard className="h-3.5 w-3.5 text-primary" /> Financial Facilitation
                 </h4>
-                <div className="space-y-3 bg-white/30 p-4 rounded-2xl border border-white/50">
+                <div className="space-y-4 bg-white/30 p-5 rounded-2xl border border-white/50 shadow-inner">
                    {bank.bankName && (
                      <div className="flex flex-col">
                         <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Bank</span>
@@ -353,29 +371,6 @@ export function Footer() {
                 </div>
               </div>
             )}
-
-            {/* Business & Legal Information */}
-            {(legal.gstin || legal.fssaiNumber) && (
-              <div className="space-y-6 pt-6 border-t border-stone-200/50">
-                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500 flex items-center gap-3">
-                  <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Business & Legal
-                </h4>
-                <div className="space-y-4">
-                  {legal.fssaiNumber && (
-                    <div className="flex flex-col">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-stone-400">FSSAI License No.</span>
-                      <span className="text-[14px] text-stone-900 font-bold tracking-wide">{legal.fssaiNumber}</span>
-                    </div>
-                  )}
-                  {legal.gstin && (
-                    <div className="flex flex-col">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-stone-400">GSTIN</span>
-                      <span className="text-[14px] text-stone-900 font-bold tracking-wide">{legal.gstin}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
           </motion.div>
 
           {/* Maps Section */}
@@ -400,6 +395,28 @@ export function Footer() {
               )}
             </div>
 
+            {/* Dedicated Business & Legal Panel for Public Access */}
+            <div className="space-y-6">
+              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Business & Legal</h4>
+              <div className="bg-white/40 backdrop-blur-md border border-white/60 p-6 rounded-[2rem] space-y-4 shadow-sm">
+                {legal.fssaiNumber && (
+                   <div className="flex flex-col gap-1">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-stone-400">FSSAI License No.</span>
+                      <span className="text-[14px] text-stone-900 font-black tracking-tight">{legal.fssaiNumber}</span>
+                   </div>
+                )}
+                {legal.gstin && (
+                   <div className="flex flex-col gap-1">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-stone-400">GSTIN</span>
+                      <span className="text-[14px] text-stone-900 font-black tracking-tight">{legal.gstin}</span>
+                   </div>
+                )}
+                {!legal.fssaiNumber && !legal.gstin && (
+                  <p className="text-[10px] text-stone-400 italic">Certified Artisan Operator</p>
+                )}
+              </div>
+            </div>
+
             <motion.div 
               animate={!shouldReduceMotion ? { scale: [1, 1.05, 1] } : {}}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
@@ -422,9 +439,6 @@ export function Footer() {
           <p className="text-stone-600 text-[12px] font-black uppercase tracking-[0.3em]">
             © {new Date().getFullYear()} {address.businessName || "Roseberry Chocolate"}. Crafted with patience.
           </p>
-          <div className="flex gap-10 text-[12px] font-black uppercase tracking-[0.4em] text-stone-600">
-             {/* Admin Portal access is handled externally */}
-          </div>
         </div>
       </div>
     </footer>

@@ -126,7 +126,7 @@
   width: max-content !important;
   max-width: none !important;
   align-items: stretch !important;
-  animation: testimonialMarquee 80s linear infinite !important; /* Slowed down to 80s for luxurious movement */
+  animation: testimonialMarquee 80s linear infinite !important;
   animation-play-state: running !important;
   will-change: transform !important;
 }
