@@ -126,7 +126,7 @@
   width: max-content !important;
   max-width: none !important;
   align-items: stretch !important;
-  animation: testimonialMarquee 42s linear infinite !important; /* Increased speed from 55s to 42s */
+  animation: testimonialMarquee 80s linear infinite !important; /* Slowed down to 80s for luxurious movement */
   animation-play-state: running !important;
   will-change: transform !important;
 }
@@ -242,11 +242,11 @@
 
 /* --- Premium Link Vibration Effect --- */
 @keyframes footerLinkVibrate {
-  0% { transform: translateX(0); }
-  20% { transform: translateX(-2px); }
-  40% { transform: translateX(2px); }
-  60% { transform: translateX(-1.5px); }
-  80% { transform: translateX(1.5px); }
+  0%   { transform: translateX(0); }
+  20%  { transform: translateX(-2px); }
+  40%  { transform: translateX(2px); }
+  60%  { transform: translateX(-1.5px); }
+  80%  { transform: translateX(1.5px); }
   100% { transform: translateX(0); }
 }
 
