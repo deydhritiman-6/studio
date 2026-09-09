@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -31,13 +31,17 @@ import {
   Youtube,
   Twitter,
   Linkedin,
-  AlertCircle,
-  Eye
+  Eye,
+  QrCode,
+  Upload,
+  RefreshCw,
+  X
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 const footerSchema = z.object({
   brand: z.object({
@@ -68,14 +72,13 @@ const footerSchema = z.object({
     pan: z.string().optional().default(''),
   }),
   bank: z.object({
-    enabled: z.boolean().default(false),
-    masked: z.boolean().default(false),
     accountName: z.string().optional().default(''),
     bankName: z.string().optional().default(''),
     branch: z.string().optional().default(''),
     accountNumber: z.string().optional().default(''),
     ifsc: z.string().optional().default(''),
     upiId: z.string().optional().default(''),
+    qrCodeUrl: z.string().optional().default(''),
   }),
   maps: z.object({
     locationName: z.string().optional().default(''),
@@ -105,6 +108,7 @@ export default function FooterManagementPage() {
   const firestore = useFirestore();
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('brand');
+  const qrInputRef = useRef<HTMLInputElement>(null);
 
   const settingsRef = useMemo(() => (firestore ? doc(firestore, 'settings', 'footer') : null), [firestore]);
   const { data: existingSettings, loading } = useDoc<any>(settingsRef as any);
@@ -116,7 +120,7 @@ export default function FooterManagementPage() {
       address: { businessName: 'Roseberry Chocolate', line1: '', line2: '', area: '', city: 'Kolkata', state: 'West Bengal', zip: '', country: 'India' },
       contact: { phone: '', altPhone: '', whatsapp: '', email: '', supportEmail: '' },
       legal: { gstin: '', fssaiNumber: '', cin: '', pan: '' },
-      bank: { enabled: false, masked: false, accountName: '', bankName: '', branch: '', accountNumber: '', ifsc: '', upiId: '' },
+      bank: { accountName: '', bankName: '', branch: '', accountNumber: '', ifsc: '', upiId: '', qrCodeUrl: '' },
       maps: { locationName: '', mapUrl: '', embedUrl: '' },
       social: { instagram: '', facebook: '', youtube: '', twitter: '', linkedin: '' },
       visibility: { showBankDetails: false, showGST: true, showFSSAI: true, showBusinessHours: false, showMap: true },
@@ -128,6 +132,36 @@ export default function FooterManagementPage() {
       form.reset(existingSettings as any);
     }
   }, [existingSettings, form]);
+
+  const optimizeImage = (dataUrl: string): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 500;
+        const scale = MAX_WIDTH / img.width;
+        canvas.width = MAX_WIDTH;
+        canvas.height = img.height * scale;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.8));
+      };
+      img.src = dataUrl;
+    });
+  };
+
+  const handleQrUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const optimized = await optimizeImage(event.target?.result as string);
+      form.setValue('bank.qrCodeUrl', optimized, { shouldDirty: true });
+      toast({ title: 'QR Code Prepared', description: 'Click Synchronize Footer to save permanently.' });
+    };
+    reader.readAsDataURL(file);
+  };
 
   const onSubmit = async (values: FooterFormValues) => {
     if (!firestore || !settingsRef) return;
@@ -276,7 +310,6 @@ export default function FooterManagementPage() {
               </TabsContent>
 
               <TabsContent value="bank" className="space-y-8 mt-0">
-                {/* Redesigned Unified Toggle Card for Bank Component Visibility */}
                 <Card className="rounded-[2.5rem] border-none shadow-2xl bg-primary/5 border border-primary/20 overflow-hidden mb-10 transition-all hover:shadow-primary/5">
                    <CardContent className="p-10 flex flex-col sm:flex-row items-center justify-between gap-10">
                       <div className="space-y-2 text-center sm:text-left">
@@ -304,36 +337,79 @@ export default function FooterManagementPage() {
                    </CardContent>
                 </Card>
 
-                <Card className="rounded-[2rem] border-none shadow-xl">
-                  <CardHeader className="p-10 border-b bg-muted/30">
-                    <CardTitle className="text-2xl font-headline flex items-center gap-3">
-                      <CreditCard className="h-6 w-6 text-primary" /> Financial Facilitation
-                    </CardTitle>
-                    <CardDescription>Bank account details for direct transactions.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-10 space-y-10">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                       <FormField control={form.control} name="bank.accountName" render={({ field }) => (
-                        <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Beneficiary Name</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
-                      )} />
-                      <FormField control={form.control} name="bank.bankName" render={({ field }) => (
-                        <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Bank Name</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
-                      )} />
-                      <FormField control={form.control} name="bank.branch" render={({ field }) => (
-                        <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Bank Branch</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
-                      )} />
-                      <FormField control={form.control} name="bank.accountNumber" render={({ field }) => (
-                        <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Account Number</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
-                      )} />
-                      <FormField control={form.control} name="bank.ifsc" render={({ field }) => (
-                        <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">IFSC Code</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
-                      )} />
-                      <FormField control={form.control} name="bank.upiId" render={({ field }) => (
-                        <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">UPI ID</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
-                      )} />
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                  <div className="lg:col-span-8">
+                    <Card className="rounded-[2rem] border-none shadow-xl">
+                      <CardHeader className="p-10 border-b bg-muted/30">
+                        <CardTitle className="text-2xl font-headline flex items-center gap-3">
+                          <CreditCard className="h-6 w-6 text-primary" /> Financial Facilitation
+                        </CardTitle>
+                        <CardDescription>Bank account details for direct transactions.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="p-10 space-y-10">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                           <FormField control={form.control} name="bank.accountName" render={({ field }) => (
+                            <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Beneficiary Name</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                          )} />
+                          <FormField control={form.control} name="bank.bankName" render={({ field }) => (
+                            <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Bank Name</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                          )} />
+                          <FormField control={form.control} name="bank.branch" render={({ field }) => (
+                            <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Bank Branch</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                          )} />
+                          <FormField control={form.control} name="bank.accountNumber" render={({ field }) => (
+                            <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Account Number</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                          )} />
+                          <FormField control={form.control} name="bank.ifsc" render={({ field }) => (
+                            <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">IFSC Code</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                          )} />
+                          <FormField control={form.control} name="bank.upiId" render={({ field }) => (
+                            <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">UPI ID</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                          )} />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <div className="lg:col-span-4">
+                    <Card className="rounded-[2rem] border-none shadow-xl overflow-hidden h-full">
+                      <CardHeader className="p-10 border-b bg-stone-900 text-white">
+                        <CardTitle className="text-xl font-headline flex items-center gap-3">
+                          <QrCode className="h-6 w-6 text-primary" /> Payment QR
+                        </CardTitle>
+                        <CardDescription className="text-stone-400">Scan to Pay acquisition.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="p-10 space-y-6">
+                        <div className="space-y-4">
+                           <div 
+                             onClick={() => qrInputRef.current?.click()}
+                             className={cn(
+                               "aspect-square rounded-[2rem] border-4 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all duration-500 relative overflow-hidden group",
+                               form.watch('bank.qrCodeUrl') ? "border-primary/20 bg-stone-50" : "border-stone-100 hover:border-primary/30"
+                             )}
+                           >
+                              {form.watch('bank.qrCodeUrl') ? (
+                                <>
+                                  <Image src={form.watch('bank.qrCodeUrl')!} alt="QR Preview" fill className="object-contain p-6" />
+                                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                                     <Button type="button" variant="secondary" size="sm" className="rounded-xl"><RefreshCw className="h-3 w-3 mr-2" /> Replace</Button>
+                                     <Button type="button" variant="destructive" size="sm" className="rounded-xl" onClick={(e) => { e.stopPropagation(); form.setValue('bank.qrCodeUrl', '', { shouldDirty: true }); }}><X className="h-3 w-3 mr-2" /> Remove</Button>
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="flex flex-col items-center gap-3 text-stone-300 group-hover:text-primary">
+                                   <Upload className="h-8 w-8" />
+                                   <span className="text-[10px] font-black uppercase tracking-widest">Upload Payment QR</span>
+                                </div>
+                              )}
+                              <input ref={qrInputRef} type="file" className="hidden" accept="image/*" onChange={handleQrUpload} />
+                           </div>
+                           <p className="text-[9px] text-center text-stone-400 font-bold uppercase tracking-widest">Supports UPI / BharatQR</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
               </TabsContent>
 
               <TabsContent value="social" className="space-y-8 mt-0">

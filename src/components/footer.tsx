@@ -19,7 +19,8 @@ import {
   Heart,
   Globe,
   CheckCircle,
-  CheckCircle2
+  CheckCircle2,
+  QrCode
 } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useDoc, useFirestore } from '@/firebase';
@@ -27,6 +28,7 @@ import { doc } from 'firebase/firestore';
 import { Logo } from '@/components/logo';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 /**
  * Premium Layered Background with Wide-Range Drifting Auras and Textures.
@@ -133,7 +135,7 @@ export function Footer() {
 
   const hasBankData = useMemo(() => {
     const bank = footerData?.bank || {};
-    return !!(bank.bankName || bank.accountName || bank.accountNumber || bank.ifsc || bank.upiId);
+    return !!(bank.bankName || bank.accountName || bank.accountNumber || bank.ifsc || bank.upiId || bank.qrCodeUrl);
   }, [footerData]);
 
   if (loading) return null;
@@ -327,47 +329,74 @@ export function Footer() {
           <motion.div variants={panelVariants(2.2)} animate="animate" className="space-y-12">
             {/* Bank Details Section - Respects visibility.showBankDetails toggle */}
             {visibility.showBankDetails && hasBankData && (
-              <div className="space-y-6">
+              <div className="space-y-8">
                 <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3">
                   <CreditCard className="h-3.5 w-3.5" /> Financial Facilitation
                 </h4>
-                <div className="space-y-4 bg-white/50 backdrop-blur-md p-6 rounded-[2.5rem] border border-white/60 shadow-xl">
-                   {bank.bankName && (
-                     <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Bank</span>
-                        <span className="text-[14px] text-stone-900 font-bold">{bank.bankName}</span>
-                     </div>
-                   )}
-                   {bank.branch && (
-                     <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Branch</span>
-                        <span className="text-[14px] text-stone-900 font-bold">{bank.branch}</span>
-                     </div>
-                   )}
-                   {bank.accountName && (
-                     <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Beneficiary</span>
-                        <span className="text-[14px] text-stone-900 font-bold">{bank.accountName}</span>
-                     </div>
-                   )}
-                   {bank.accountNumber && (
-                     <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">A/C No.</span>
-                        <span className="text-[14px] text-stone-900 font-bold font-mono">{bank.accountNumber}</span>
-                     </div>
-                   )}
-                   {bank.ifsc && (
-                     <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">IFSC Code</span>
-                        <span className="text-[14px] text-stone-900 font-bold font-mono uppercase">{bank.ifsc}</span>
-                     </div>
-                   )}
-                   {bank.upiId && (
-                     <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">UPI ID</span>
-                        <span className="text-[14px] text-primary font-bold">{bank.upiId}</span>
-                     </div>
-                   )}
+                
+                <div className="space-y-6">
+                  {/* Account Text Data */}
+                  <div className="space-y-4 bg-white/50 backdrop-blur-md p-6 rounded-[2.5rem] border border-white/60 shadow-xl">
+                    {bank.bankName && (
+                      <div className="flex flex-col">
+                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Bank</span>
+                          <span className="text-[14px] text-stone-900 font-bold">{bank.bankName}</span>
+                      </div>
+                    )}
+                    {bank.branch && (
+                      <div className="flex flex-col">
+                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Branch</span>
+                          <span className="text-[14px] text-stone-900 font-bold">{bank.branch}</span>
+                      </div>
+                    )}
+                    {bank.accountName && (
+                      <div className="flex flex-col">
+                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Beneficiary</span>
+                          <span className="text-[14px] text-stone-900 font-bold">{bank.accountName}</span>
+                      </div>
+                    )}
+                    {bank.accountNumber && (
+                      <div className="flex flex-col">
+                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">A/C No.</span>
+                          <span className="text-[14px] text-stone-900 font-bold font-mono">{bank.accountNumber}</span>
+                      </div>
+                    )}
+                    {bank.ifsc && (
+                      <div className="flex flex-col">
+                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">IFSC Code</span>
+                          <span className="text-[14px] text-stone-900 font-bold font-mono uppercase">{bank.ifsc}</span>
+                      </div>
+                    )}
+                    {bank.upiId && (
+                      <div className="flex flex-col">
+                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">UPI ID</span>
+                          <span className="text-[14px] text-primary font-bold">{bank.upiId}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* QR Code Section */}
+                  {bank.qrCodeUrl && (
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      className="bg-white p-8 rounded-[2.5rem] border-2 border-stone-100 shadow-2xl space-y-4"
+                    >
+                      <div className="flex items-center justify-between">
+                         <div className="flex items-center gap-2">
+                            <QrCode className="h-4 w-4 text-primary" />
+                            <span className="text-[10px] font-black uppercase tracking-widest">Scan to Pay</span>
+                         </div>
+                         <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                      </div>
+                      <div className="aspect-square relative w-full bg-white rounded-2xl overflow-hidden border border-stone-50 shadow-inner">
+                         <Image src={bank.qrCodeUrl} alt="Payment QR" fill className="object-contain p-4" />
+                      </div>
+                      <p className="text-[9px] text-center text-stone-400 font-medium italic">
+                        Scan the QR code to make a secure payment.
+                      </p>
+                    </motion.div>
+                  )}
                 </div>
               </div>
             )}
