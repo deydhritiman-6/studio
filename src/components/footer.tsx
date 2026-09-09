@@ -267,24 +267,6 @@ export function Footer() {
                     {address.line2 && <>{address.line2}<br /></>}
                     {address.city || "Kolkata"}, {address.state || "West Bengal"} {address.zip || "700001"}
                   </p>
-
-                  {/* FSSAI & GST Visibility - FIXED */}
-                  {(visibility.showGST && legal.gstin) || (visibility.showFSSAI && legal.fssaiNumber) ? (
-                    <div className="flex flex-col gap-2 pt-4">
-                       {visibility.showGST && legal.gstin && (
-                         <div className="flex items-center gap-2">
-                            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-stone-600">GSTIN • {legal.gstin}</span>
-                         </div>
-                       )}
-                       {visibility.showFSSAI && legal.fssaiNumber && (
-                         <div className="flex items-center gap-2">
-                            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-stone-600">FSSAI License No. • {legal.fssaiNumber}</span>
-                         </div>
-                       )}
-                    </div>
-                  ) : null}
               </div>
             </div>
 
@@ -327,6 +309,29 @@ export function Footer() {
                 )}
               </div>
             </div>
+
+            {/* Business & Legal Block - Dynamic Display */}
+            {(legal.gstin || legal.fssaiNumber) && (
+              <div className="space-y-6 pt-6 border-t border-stone-200/50">
+                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500 flex items-center gap-3">
+                  <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Business & Legal
+                </h4>
+                <div className="space-y-3">
+                  {legal.fssaiNumber && (
+                    <div className="flex flex-col">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-stone-400">FSSAI License No.</span>
+                      <span className="text-[14px] text-stone-900 font-bold tracking-wide">{legal.fssaiNumber}</span>
+                    </div>
+                  )}
+                  {legal.gstin && (
+                    <div className="flex flex-col">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-stone-400">GSTIN</span>
+                      <span className="text-[14px] text-stone-900 font-bold tracking-wide">{legal.gstin}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </motion.div>
 
           {/* Maps Section - Staggered Float */}
