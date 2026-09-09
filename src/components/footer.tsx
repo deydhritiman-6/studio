@@ -79,7 +79,7 @@ function FloatingParticles() {
   const shouldReduceMotion = useReducedMotion();
   if (shouldReduceMotion) return null;
 
-  const particles = Array.from({ length: 25 }).map((_, i) => ({
+  const particles = Array.from({ length: 50 }).map((_, i) => ({
     left: `${Math.random() * 100}%`,
     delay: `${Math.random() * 15}s`,
     color: ['bg-cyan-300', 'bg-fuchsia-300', 'bg-emerald-300', 'bg-rose-300', 'bg-white', 'bg-amber-200'][i % 6],
@@ -157,8 +157,8 @@ export function Footer() {
           
           {/* Brand Identity Panel */}
           <motion.div 
-            animate={!shouldReduceMotion ? { y: [0, -15, 0] } : {}}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            animate={!shouldReduceMotion ? { y: [-6, 6, -6] } : {}}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
             className="group space-y-8 bg-white/45 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/60 shadow-xl transition-all duration-700 hover:shadow-2xl"
           >
             <div className="space-y-6">
@@ -185,20 +185,16 @@ export function Footer() {
                     href={url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    whileHover={{ scale: 1.3, rotate: 12 }}
-                    whileTap={{ scale: 0.9 }}
-                    animate={!shouldReduceMotion ? {
-                      boxShadow: [
-                        `0 0 0px ${config.aura}`,
-                        `0 0 35px ${config.aura}`,
-                        `0 0 0px ${config.aura}`
-                      ]
-                    } : {}}
-                    transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                    whileHover={{ scale: 1.15, y: -4 }}
+                    whileTap={{ scale: 0.95 }}
                     className="h-12 w-12 rounded-2xl bg-white/80 border border-stone-100 flex items-center justify-center transition-all duration-500 shadow-sm relative group/soc overflow-hidden"
                   >
                     <div className={cn("absolute inset-0 opacity-0 group-hover/soc:opacity-100 transition-opacity duration-500", config.hoverBg)} />
                     <config.icon className={cn("h-5 w-5 transition-all duration-500 relative z-10 text-stone-500", `group-hover/soc:${config.color}`)} />
+                    <div 
+                      className="absolute inset-0 opacity-20 pointer-events-none group-hover/soc:opacity-40 transition-opacity"
+                      style={{ boxShadow: `inset 0 0 15px ${config.aura}` }}
+                    />
                   </motion.a>
                 ))}
               </div>
@@ -207,8 +203,8 @@ export function Footer() {
 
           {/* Links Section */}
           <motion.div 
-            animate={!shouldReduceMotion ? { y: [0, -12, 0] } : {}}
-            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            animate={!shouldReduceMotion ? { y: [6, -6, 6] } : {}}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
             className="grid grid-cols-2 gap-8 py-6"
           >
             <div className="space-y-10">
@@ -250,8 +246,8 @@ export function Footer() {
 
           {/* Contact Section */}
           <motion.div 
-            animate={!shouldReduceMotion ? { y: [0, -18, 0] } : {}}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+            animate={!shouldReduceMotion ? { y: [-5, 5, -5] } : {}}
+            transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
             className="space-y-12 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm"
           >
             <div className="space-y-6">
@@ -305,7 +301,7 @@ export function Footer() {
 
           {/* Maps Section */}
           <motion.div 
-            animate={!shouldReduceMotion ? { y: [0, -10, 0] } : {}}
+            animate={!shouldReduceMotion ? { y: [4, -4, 4] } : {}}
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
             className="space-y-12"
           >
