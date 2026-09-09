@@ -36,6 +36,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 /**
  * Enhanced Footer Schema with Conditional Validation.
@@ -212,8 +213,6 @@ export default function FooterManagementPage() {
   const onInvalid = (errors: any) => {
     const errorPaths = Object.keys(errors);
     if (errorPaths.length === 0) return;
-
-    console.warn('Form Validation Errors:', errors);
 
     // Get the first error and switch to its tab
     const firstErrorPath = errorPaths[0];
