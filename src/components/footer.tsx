@@ -27,7 +27,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 /**
- * Premium Layered Background with Drifting Auras and Textures.
+ * Premium Layered Background with Intensely Drifting Auras and Textures.
  */
 function PremiumBackground() {
   const shouldReduceMotion = useReducedMotion();
@@ -40,44 +40,61 @@ function PremiumBackground() {
       {/* 2. Soft Textured Overlay */}
       <div className="absolute inset-0 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]" />
 
-      {/* 3. Drifting Premium Auras */}
+      {/* 3. Drifting Premium Auras - Expanded Ranges */}
       {!shouldReduceMotion && (
         <>
           {/* Cyan Glow - Upper Left */}
-          <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-cyan-400/20 rounded-full blur-[100px] animate-drifting-glow" />
+          <div className="absolute top-[-20%] left-[-20%] w-[800px] h-[800px] bg-cyan-400/30 rounded-full blur-[120px] animate-drifting-glow" />
           
           {/* Magenta Glow - Center */}
-          <div className="absolute top-[20%] left-[30%] w-[500px] h-[500px] bg-fuchsia-400/15 rounded-full blur-[120px] animate-drifting-glow-reverse" />
+          <div className="absolute top-[5%] left-[20%] w-[700px] h-[700px] bg-fuchsia-400/25 rounded-full blur-[140px] animate-drifting-glow-reverse" />
 
           {/* Olive Green Glow - Right */}
-          <div className="absolute top-[-5%] right-[-10%] w-[600px] h-[600px] bg-emerald-400/20 rounded-full blur-[110px] animate-drifting-glow" />
+          <div className="absolute top-[-15%] right-[-20%] w-[800px] h-[800px] bg-emerald-400/30 rounded-full blur-[130px] animate-drifting-glow" />
 
-          {/* Cherry Red Glow - Lower / Selective */}
-          <div className="absolute bottom-[-15%] left-[45%] w-[400px] h-[400px] bg-rose-400/10 rounded-full blur-[90px] animate-drifting-glow-reverse" />
+          {/* Cherry Red Glow - Lower */}
+          <div className="absolute bottom-[-25%] left-[35%] w-[600px] h-[600px] bg-rose-400/20 rounded-full blur-[110px] animate-drifting-glow-reverse" />
         </>
       )}
 
-      {/* 4. Elegant Abstract Chocolate Ribbons (SVG) */}
-      <svg className="absolute bottom-0 left-0 w-full h-auto opacity-[0.03] text-stone-900" viewBox="0 0 1440 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* 4. Elegant Abstract Chocolate Ribbons (SVG) with Wave Motion */}
+      <motion.svg 
+        animate={!shouldReduceMotion ? { y: [0, -15, 0], scaleY: [1, 1.05, 1] } : {}}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute bottom-0 left-0 w-full h-auto opacity-[0.04] text-stone-900" 
+        viewBox="0 0 1440 320" 
+        fill="none" 
+        xmlns="http://www.w3.org/2000/svg"
+      >
         <path d="M0,192L48,197.3C96,203,192,213,288,192C384,171,480,117,576,122.7C672,128,768,192,864,229.3C960,267,1056,277,1152,256C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z" fill="currentColor" />
-      </svg>
+      </motion.svg>
     </div>
   );
 }
 
 /**
- * Subtle Floating Light Particles.
+ * Increased Density Floating Light Particles.
  */
 function FloatingParticles() {
   const shouldReduceMotion = useReducedMotion();
   if (shouldReduceMotion) return null;
 
   const particles = [
-    { left: '10%', delay: '0s', color: 'bg-cyan-300' },
-    { left: '30%', delay: '4s', color: 'bg-fuchsia-300' },
-    { left: '55%', delay: '2s', color: 'bg-emerald-300' },
-    { left: '80%', delay: '7s', color: 'bg-rose-300' },
-    { left: '90%', delay: '1s', color: 'bg-white' },
+    { left: '5%', delay: '0s', color: 'bg-cyan-300' },
+    { left: '15%', delay: '4s', color: 'bg-fuchsia-300' },
+    { left: '25%', delay: '2s', color: 'bg-emerald-300' },
+    { left: '35%', delay: '7s', color: 'bg-rose-300' },
+    { left: '45%', delay: '1s', color: 'bg-white' },
+    { left: '55%', delay: '5s', color: 'bg-amber-200' },
+    { left: '65%', delay: '9s', color: 'bg-cyan-200' },
+    { left: '75%', delay: '11s', color: 'bg-fuchsia-200' },
+    { left: '85%', delay: '3s', color: 'bg-emerald-200' },
+    { left: '95%', delay: '13s', color: 'bg-rose-200' },
+    { left: '10%', delay: '2.5s', color: 'bg-white' },
+    { left: '30%', delay: '6s', color: 'bg-cyan-400' },
+    { left: '50%', delay: '1.5s', color: 'bg-fuchsia-400' },
+    { left: '70%', delay: '8.5s', color: 'bg-emerald-400' },
+    { left: '90%', delay: '10s', color: 'bg-rose-400' },
   ];
 
   return (
@@ -100,12 +117,12 @@ export function Footer() {
   const shouldReduceMotion = useReducedMotion();
 
   const socialIcons: Record<string, any> = {
-    instagram: { icon: Instagram, color: 'text-fuchsia-600', aura: 'rgba(217, 70, 239, 0.4)', hoverBg: 'bg-fuchsia-50' },
-    facebook: { icon: Facebook, color: 'text-cyan-600', aura: 'rgba(6, 182, 212, 0.4)', hoverBg: 'bg-cyan-50' },
-    whatsapp: { icon: MessageCircle, color: 'text-emerald-600', aura: 'rgba(16, 185, 129, 0.4)', hoverBg: 'bg-emerald-50' },
-    youtube: { icon: Youtube, color: 'text-rose-600', aura: 'rgba(225, 29, 72, 0.4)', hoverBg: 'bg-rose-50' },
-    linkedin: { icon: Linkedin, color: 'text-blue-600', aura: 'rgba(37, 99, 235, 0.4)', hoverBg: 'bg-blue-50' },
-    twitter: { icon: Twitter, color: 'text-sky-600', aura: 'rgba(2, 132, 199, 0.4)', hoverBg: 'bg-sky-50' },
+    instagram: { icon: Instagram, color: 'text-fuchsia-600', aura: 'rgba(217, 70, 239, 0.5)', hoverBg: 'bg-fuchsia-50' },
+    facebook: { icon: Facebook, color: 'text-cyan-600', aura: 'rgba(6, 182, 212, 0.5)', hoverBg: 'bg-cyan-50' },
+    whatsapp: { icon: MessageCircle, color: 'text-emerald-600', aura: 'rgba(16, 185, 129, 0.5)', hoverBg: 'bg-emerald-50' },
+    youtube: { icon: Youtube, color: 'text-rose-600', aura: 'rgba(225, 29, 72, 0.5)', hoverBg: 'bg-rose-50' },
+    linkedin: { icon: Linkedin, color: 'text-blue-600', aura: 'rgba(37, 99, 235, 0.5)', hoverBg: 'bg-blue-50' },
+    twitter: { icon: Twitter, color: 'text-sky-600', aura: 'rgba(2, 132, 199, 0.5)', hoverBg: 'bg-sky-50' },
   };
 
   const activeSocials = useMemo(() => {
@@ -135,11 +152,10 @@ export function Footer() {
     address = {},
     contact = {},
     legal = {},
-    bank = {},
-    maps = {},
     links = [],
     policies = [],
-    visibility = {}
+    visibility = {},
+    maps = {}
   } = footerData || {};
 
   return (
@@ -150,8 +166,12 @@ export function Footer() {
       <div className="container max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-10 mb-24">
           
-          {/* Brand Identity Panel */}
-          <div className="group space-y-8 bg-white/45 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/60 shadow-xl transition-all duration-700 hover:shadow-2xl">
+          {/* Brand Identity Panel / Panel 1 */}
+          <motion.div 
+            animate={!shouldReduceMotion ? { y: [0, -10, 0] } : {}}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            className="group space-y-8 bg-white/45 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/60 shadow-xl transition-all duration-700 hover:shadow-2xl"
+          >
             <div className="space-y-6">
               <Link href="/" className="inline-block transition-transform duration-500 hover:scale-105">
                 <Logo className="h-12 w-auto" />
@@ -176,16 +196,16 @@ export function Footer() {
                     href={url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    whileHover={{ scale: 1.15, rotate: 5 }}
+                    whileHover={{ scale: 1.3, rotate: 12 }}
                     whileTap={{ scale: 0.9 }}
                     animate={!shouldReduceMotion ? {
                       boxShadow: [
                         `0 0 0px ${config.aura}`,
-                        `0 0 15px ${config.aura}`,
+                        `0 0 25px ${config.aura}`,
                         `0 0 0px ${config.aura}`
                       ]
                     } : {}}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
                     className="h-12 w-12 rounded-2xl bg-white/80 border border-stone-100 flex items-center justify-center transition-all duration-500 shadow-sm relative group/soc overflow-hidden"
                   >
                     <div className={cn("absolute inset-0 opacity-0 group-hover/soc:opacity-100 transition-opacity duration-500", config.hoverBg)} />
@@ -194,10 +214,14 @@ export function Footer() {
                 ))}
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Links Section */}
-          <div className="grid grid-cols-2 gap-8 py-6">
+          {/* Links Section / Panel 2 */}
+          <motion.div 
+            animate={!shouldReduceMotion ? { y: [0, -8, 0] } : {}}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            className="grid grid-cols-2 gap-8 py-6"
+          >
             <div className="space-y-10">
               <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-fuchsia-700">Discovery</h4>
               <ul className="space-y-5">
@@ -233,10 +257,14 @@ export function Footer() {
                 ))}
               </ul>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Contact Section */}
-          <div className="space-y-12 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm">
+          {/* Contact Section / Panel 3 */}
+          <motion.div 
+            animate={!shouldReduceMotion ? { y: [0, -12, 0] } : {}}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+            className="space-y-12 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm"
+          >
             <div className="space-y-6">
               <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3">
                  <MapPin className="h-3.5 w-3.5" /> Headquarters
@@ -260,7 +288,7 @@ export function Footer() {
               <div className="space-y-5">
                 {contact.phone && (
                   <a href={`tel:${contact.phone}`} className="flex items-center gap-4 group/contact">
-                    <div className="h-10 w-10 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 group-hover/contact:text-emerald-600 group-hover/contact:border-emerald-200 transition-all shadow-sm">
+                    <div className="h-10 w-10 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 group/contact:hover:text-emerald-600 group/contact:hover:border-emerald-200 transition-all shadow-sm">
                       <Phone className="h-4 w-4" />
                     </div>
                     <span className="text-[15px] text-stone-900 font-bold tracking-wide">{contact.phone}</span>
@@ -268,7 +296,7 @@ export function Footer() {
                 )}
                 {contact.email && (
                   <a href={`mailto:${contact.email}`} className="flex items-center gap-4 group/contact">
-                    <div className="h-10 w-10 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 group-hover/contact:text-emerald-600 group-hover/contact:border-emerald-200 transition-all shadow-sm">
+                    <div className="h-10 w-10 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 group/contact:hover:text-emerald-600 group/contact:hover:border-emerald-200 transition-all shadow-sm">
                       <Mail className="h-4 w-4" />
                     </div>
                     <span className="text-[15px] text-stone-900 font-bold tracking-wide break-all leading-none">{contact.email}</span>
@@ -276,10 +304,14 @@ export function Footer() {
                 )}
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Maps Section */}
-          <div className="space-y-12">
+          {/* Maps Section / Panel 4 */}
+          <motion.div 
+            animate={!shouldReduceMotion ? { y: [0, -6, 0] } : {}}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+            className="space-y-12"
+          >
             <div className="space-y-6">
               <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700">Location Matrix</h4>
               {visibility.showMap !== false && (maps.embedUrl) ? (
@@ -297,7 +329,11 @@ export function Footer() {
             </div>
 
             {/* Cherry Red Accent - Secure Badge */}
-            <div className="p-6 bg-rose-500/5 rounded-2xl border border-rose-500/10 flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+            <motion.div 
+              animate={!shouldReduceMotion ? { scale: [1, 1.05, 1] } : {}}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              className="p-6 bg-rose-500/5 rounded-2xl border border-rose-500/10 flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-1000"
+            >
                 <div className="h-10 w-10 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-600 shadow-inner">
                     <Heart className="h-5 w-5 fill-current" />
                 </div>
@@ -305,8 +341,8 @@ export function Footer() {
                     <p className="text-[10px] font-black uppercase tracking-widest text-rose-700 leading-none">Artisan Commitment</p>
                     <p className="text-[12px] font-bold text-rose-900/60 leading-tight">Handmade with Extraordinary Patience</p>
                 </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
 
         <Separator className="bg-stone-200/50 mb-12" />
@@ -316,7 +352,7 @@ export function Footer() {
             © {new Date().getFullYear()} {address.businessName || "Roseberry Chocolate"}. Crafted with patience.
           </p>
           <div className="flex gap-10 text-[12px] font-black uppercase tracking-[0.4em] text-stone-600">
-            <Link href="/login" className="px-7 py-2.5 rounded-full border border-stone-200 bg-white/80 hover:border-primary transition-all duration-500 shadow-sm">Portal</Link>
+            <Link href="/login" className="px-7 py-2.5 rounded-full border border-stone-200 bg-white/80 hover:border-primary transition-all duration-500 shadow-sm hover:shadow-md hover:-translate-y-0.5">Portal</Link>
           </div>
         </div>
       </div>

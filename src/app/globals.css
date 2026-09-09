@@ -185,11 +185,6 @@
   100% { box-shadow: 0 0 0 0 rgba(188, 145, 66, 0); background-color: transparent; }
 }
 
-@keyframes blink-label {
-  0%, 100% { opacity: 1; color: inherit; }
-  50% { opacity: 0.4; color: hsl(var(--primary)); }
-}
-
 .artisan-field-highlight {
   animation: pulse-highlight 2s ease-in-out infinite;
   border-radius: 0.75rem;
@@ -212,36 +207,48 @@
   animation: shimmer-brand 8s linear infinite;
 }
 
-/* --- Premium Footer Drifting Glows --- */
+/* --- Premium Footer Drifting Glows - High Motion Mode --- */
 @keyframes driftingGlow {
-  0% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(30px, -50px) scale(1.1); }
-  66% { transform: translate(-20px, 20px) scale(0.9); }
-  100% { transform: translate(0, 0) scale(1); }
+  0% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+  25% { transform: translate(180px, -120px) scale(1.3); opacity: 1; }
+  50% { transform: translate(-100px, 150px) scale(0.8); opacity: 0.6; }
+  75% { transform: translate(200px, 60px) scale(1.1); opacity: 0.9; }
+  100% { transform: translate(0, 0) scale(1); opacity: 0.8; }
 }
 
 .animate-drifting-glow {
-  animation: driftingGlow 25s ease-in-out infinite;
+  animation: driftingGlow 30s ease-in-out infinite;
 }
 
 @keyframes driftingGlowReverse {
-  0% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(-40px, 30px) scale(1.05); }
-  66% { transform: translate(50px, -40px) scale(0.95); }
-  100% { transform: translate(0, 0) scale(1); }
+  0% { transform: translate(0, 0) scale(1); opacity: 0.7; }
+  33% { transform: translate(-150px, 100px) scale(1.2); opacity: 1; }
+  66% { transform: translate(200px, -130px) scale(0.75); opacity: 0.8; }
+  100% { transform: translate(0, 0) scale(1); opacity: 0.7; }
 }
 
 .animate-drifting-glow-reverse {
-  animation: driftingGlowReverse 30s ease-in-out infinite;
+  animation: driftingGlowReverse 40s ease-in-out infinite;
 }
 
 @keyframes particleFloat {
-  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
-  10% { opacity: 0.4; }
-  90% { opacity: 0.4; }
-  100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.5; }
+  50% { transform: translate(60px, -200px) rotate(180deg); }
+  90% { opacity: 0.5; }
+  100% { transform: translate(-40px, -400px) rotate(360deg); opacity: 0; }
 }
 
 .animate-particle-float {
-  animation: particleFloat 15s linear infinite;
+  animation: particleFloat 12s linear infinite;
+}
+
+@keyframes ribbonFlow {
+  0% { transform: translateY(0) scaleY(1); }
+  50% { transform: translateY(-20px) scaleY(1.08); }
+  100% { transform: translateY(0) scaleY(1); }
+}
+
+.animate-ribbon-flow {
+  animation: ribbonFlow 10s ease-in-out infinite;
 }
