@@ -74,7 +74,7 @@ function PremiumBackground() {
 }
 
 /**
- * High-Density Floating Light Particles (Double Density).
+ * High-Density Floating Light Particles (50 Points).
  */
 function FloatingParticles() {
   const shouldReduceMotion = useReducedMotion();
@@ -104,7 +104,7 @@ const panelVariants = (delay: number) => ({
   animate: {
     y: [0, -8, 0],
     transition: {
-      duration: 7,
+      duration: 8,
       repeat: Infinity,
       ease: "easeInOut",
       delay
@@ -145,6 +145,7 @@ export function Footer() {
     address = {},
     contact = {},
     legal = {},
+    bank = {},
     links = [],
     policies = [],
     visibility = {},
@@ -159,7 +160,7 @@ export function Footer() {
       <div className="container max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-10 mb-24">
           
-          {/* Brand Identity Panel - Staggered Float */}
+          {/* Brand Identity Panel */}
           <motion.div 
             variants={panelVariants(0)}
             animate="animate"
@@ -205,7 +206,7 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* Links Section - Staggered Float */}
+          {/* Links Section */}
           <motion.div 
             variants={panelVariants(1.2)}
             animate="animate"
@@ -248,7 +249,7 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* Contact & Headquarters Section - Staggered Float */}
+          {/* Contact, Financial & Legal Section */}
           <motion.div 
             variants={panelVariants(0.8)}
             animate="animate"
@@ -310,13 +311,56 @@ export function Footer() {
               </div>
             </div>
 
-            {/* Business & Legal Block - Dedicated High-Visibility Section */}
+            {/* Financial Facilitation Section */}
+            {visibility.showBankDetails && bank.enabled && (
+              <div className="space-y-6 pt-6 border-t border-stone-200/50">
+                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500 flex items-center gap-3">
+                  <CreditCard className="h-3.5 w-3.5 text-primary" /> Financial
+                </h4>
+                <div className="space-y-3 bg-white/30 p-4 rounded-2xl border border-white/50">
+                   {bank.bankName && (
+                     <div className="flex flex-col">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Bank</span>
+                        <span className="text-[13px] text-stone-900 font-bold">{bank.bankName}</span>
+                     </div>
+                   )}
+                   {bank.accountName && (
+                     <div className="flex flex-col">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Beneficiary</span>
+                        <span className="text-[13px] text-stone-900 font-bold">{bank.accountName}</span>
+                     </div>
+                   )}
+                   {bank.accountNumber && (
+                     <div className="flex flex-col">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">A/C No.</span>
+                        <span className="text-[13px] text-stone-900 font-bold font-mono">
+                          {bank.masked ? `••••${bank.accountNumber.slice(-4)}` : bank.accountNumber}
+                        </span>
+                     </div>
+                   )}
+                   {bank.ifsc && (
+                     <div className="flex flex-col">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">IFSC Code</span>
+                        <span className="text-[13px] text-stone-900 font-bold font-mono">{bank.ifsc}</span>
+                     </div>
+                   )}
+                   {bank.upiId && (
+                     <div className="flex flex-col">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">UPI ID</span>
+                        <span className="text-[13px] text-stone-900 font-bold text-primary">{bank.upiId}</span>
+                     </div>
+                   )}
+                </div>
+              </div>
+            )}
+
+            {/* Business & Legal Information */}
             {(legal.gstin || legal.fssaiNumber) && (
               <div className="space-y-6 pt-6 border-t border-stone-200/50">
                 <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500 flex items-center gap-3">
                   <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Business & Legal
                 </h4>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {legal.fssaiNumber && (
                     <div className="flex flex-col">
                       <span className="text-[9px] font-black uppercase tracking-widest text-stone-400">FSSAI License No.</span>
@@ -334,7 +378,7 @@ export function Footer() {
             )}
           </motion.div>
 
-          {/* Maps Section - Staggered Float */}
+          {/* Maps Section */}
           <motion.div 
             variants={panelVariants(2.2)}
             animate="animate"
