@@ -425,6 +425,7 @@
   border-radius: 2.5rem;
   isolation: isolate;
   background: transparent;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
 }
 
 .rainbow-flow-container::before {
@@ -432,23 +433,23 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 250%; /* Large enough to cover corners at all angles */
+  width: 250%; /* Large enough to cover corners during rotation */
   height: 250%;
   background: conic-gradient(
     from 0deg,
-    #ff0000,
-    #ffa500,
-    #ffff00,
-    #008000,
-    #00ffff,
-    #0000ff,
-    #800080,
-    #ffc0cb,
-    #ff0000
+    #ff0000, /* Red */
+    #ffa500, /* Orange */
+    #ffff00, /* Yellow */
+    #00ff00, /* Green */
+    #00ffff, /* Cyan */
+    #0000ff, /* Blue */
+    #8b00ff, /* Purple/Violet */
+    #ff00ff, /* Pink/Magenta */
+    #ff0000  /* Red Loop */
   );
-  animation: rainbow-border-spin 7s linear infinite;
+  animation: rainbow-border-spin 6s linear infinite;
   z-index: -1;
-  filter: blur(1.5px); /* Soften for premium glow */
+  filter: blur(2px) brightness(1.2); /* Substantial but elegant glow */
 }
 
 @media (prefers-reduced-motion: reduce) {
