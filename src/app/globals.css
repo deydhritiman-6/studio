@@ -120,6 +120,15 @@
   will-change: transform !important;
 }
 
+@keyframes marquee {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+.animate-marquee {
+  animation: marquee 100s linear infinite;
+}
+
 /* Star Shimmer/Sparkle Animation */
 @keyframes starShimmer {
   0% { opacity: 0.3; transform: scale(0.9); filter: brightness(1); }
