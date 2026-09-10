@@ -39,9 +39,10 @@ export default function LandingPage() {
 
   const curatedIndulgences = useMemo(() => {
     if (!products) return [];
+    // Displaying 6 items as requested
     return products
       .filter(p => p.productionStatus === 'Product Ready' && !p.isArchived)
-      .slice(0, 3);
+      .slice(0, 6);
   }, [products]);
 
   const storyImage = PlaceHolderImages.find(img => img.id === 'raisa-story-book');
@@ -139,7 +140,7 @@ export default function LandingPage() {
               <Sparkles className="h-3 w-3 text-amber-500" /> Since 2021 • Kolkata
             </div>
             
-            <h1 className="text-3xl md:text-5xl font-bold font-headline text-stone-900 tracking-tight leading-[1.1]">
+            <h1 className="text-2xl md:text-4xl font-bold font-headline text-stone-900 tracking-tight leading-[1.1]">
               Handmade with Love.<br />Crafted for Every <span className="italic font-serif text-primary">Celebration</span>.
             </h1>
             
@@ -192,10 +193,10 @@ export default function LandingPage() {
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
               </div>
             ) : curatedIndulgences.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
                 {curatedIndulgences.map((product) => (
                   <Link key={product.id} href={`/shop/product/${product.id}`} className="group cursor-pointer">
-                    <div className="aspect-[4/5] relative rounded-[2.5rem] overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-700 border border-white/50 bg-white">
+                    <div className="aspect-square relative rounded-[2.5rem] overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-700 border border-white/50 bg-white">
                       <Image 
                         src={product.imageUrls?.[0] || 'https://picsum.photos/seed/rose-choc/600/800'} 
                         alt={product.name} 
