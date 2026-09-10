@@ -247,7 +247,7 @@ export default function LandingPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
                 {sweetDelights.map((product) => (
                   <Link key={product.id} href={`/shop/product/${product.id}`} className="group cursor-pointer">
-                    <div className="aspect-square relative rounded-[2.5rem] overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-700 border border-white/50 bg-white">
+                    <div className="aspect-square relative rounded-[2.5rem] overflow-hidden bg-white artisan-card-premium">
                       <Image 
                         src={product.imageUrls?.[0] || 'https://picsum.photos/seed/rose-choc/600/800'} 
                         alt={product.name} 
