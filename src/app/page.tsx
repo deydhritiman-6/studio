@@ -172,6 +172,59 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Sweet Delights Section - Now sitting above Our Story */}
+        <section className="py-32 px-6">
+          <div className="max-w-7xl mx-auto space-y-20">
+            <div className="flex flex-col md:flex-row items-end justify-between gap-8">
+              <div className="space-y-4">
+                <Badge className="bg-amber-600/10 text-amber-700 border-none px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em]">Signature Range</Badge>
+                <h2 className="text-4xl md:text-6xl font-bold font-headline tracking-tight heading-sweet-delights">Sweet Delights</h2>
+              </div>
+              <Button variant="ghost" className="text-stone-400 hover:text-primary font-bold uppercase tracking-widest text-xs" asChild>
+                <Link href="/shop">View Complete Catalog <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              </Button>
+            </div>
+
+            {productsLoading ? (
+              <div className="flex justify-center py-20">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+              </div>
+            ) : sweetDelights.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
+                {sweetDelights.map((product) => (
+                  <Link key={product.id} href={`/shop/product/${product.id}`} className="group cursor-pointer">
+                    <div className="aspect-square relative rounded-[2.5rem] overflow-hidden bg-white artisan-card-premium">
+                      <Image 
+                        src={product.imageUrls?.[0] || 'https://picsum.photos/seed/rose-choc/600/800'} 
+                        alt={product.name} 
+                        fill 
+                        className="object-cover transition-transform duration-1000 group-hover:scale-110" 
+                        data-ai-hint={product.imageHint || "luxury chocolate"}
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                      />
+                      <div className="absolute inset-0 bg-stone-900/10 group-hover:bg-stone-900/30 transition-colors duration-500"></div>
+                      <div className="absolute bottom-10 left-10 right-10 text-white space-y-2">
+                         <h3 className="text-3xl font-bold font-headline drop-shadow-md">{product.name}</h3>
+                         <p className="text-sm font-light text-white/90 opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 duration-500 drop-shadow-md line-clamp-2">
+                           {product.flavor} — A masterpiece of artisan tempering and pure cacao excellence.
+                         </p>
+                         <p className="text-xl font-bold text-primary opacity-0 group-hover:opacity-100 transition-all duration-500">
+                           ₹{product.price.toLocaleString()}
+                         </p>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-20 border-2 border-dashed rounded-[3rem] bg-white/50 border-stone-200">
+                <p className="text-stone-400 font-headline text-xl italic">New additions to our collection are currently being tempered.</p>
+                <Button variant="link" className="mt-4" asChild><Link href="/shop">Browse existing favorites</Link></Button>
+              </div>
+            )}
+          </div>
+        </section>
+
         <section id="story" className="py-32 px-6 bg-stone-600 text-white overflow-hidden relative rounded-[3rem] mx-4 md:mx-8 shadow-2xl">
           <div className="absolute top-0 right-0 w-96 h-96 bg-amber-600/10 blur-[120px] rounded-full -mr-48 -mt-48"></div>
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-20 items-center relative z-10">
@@ -225,58 +278,6 @@ export default function LandingPage() {
         <InsideRoseberryPreview />
 
         <DirectorMessage />
-
-        <section className="py-32 px-6">
-          <div className="max-w-7xl mx-auto space-y-20">
-            <div className="flex flex-col md:flex-row items-end justify-between gap-8">
-              <div className="space-y-4">
-                <Badge className="bg-amber-600/10 text-amber-700 border-none px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em]">Signature Range</Badge>
-                <h2 className="text-4xl md:text-6xl font-bold font-headline tracking-tight heading-sweet-delights">Sweet Delights</h2>
-              </div>
-              <Button variant="ghost" className="text-stone-400 hover:text-primary font-bold uppercase tracking-widest text-xs" asChild>
-                <Link href="/shop">View Complete Catalog <ArrowRight className="ml-2 h-4 w-4" /></Link>
-              </Button>
-            </div>
-
-            {productsLoading ? (
-              <div className="flex justify-center py-20">
-                <Loader2 className="h-12 w-12 animate-spin text-primary" />
-              </div>
-            ) : sweetDelights.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
-                {sweetDelights.map((product) => (
-                  <Link key={product.id} href={`/shop/product/${product.id}`} className="group cursor-pointer">
-                    <div className="aspect-square relative rounded-[2.5rem] overflow-hidden bg-white artisan-card-premium">
-                      <Image 
-                        src={product.imageUrls?.[0] || 'https://picsum.photos/seed/rose-choc/600/800'} 
-                        alt={product.name} 
-                        fill 
-                        className="object-cover transition-transform duration-1000 group-hover:scale-110" 
-                        data-ai-hint={product.imageHint || "luxury chocolate"}
-                        sizes="(max-width: 768px) 100vw, 33vw"
-                      />
-                      <div className="absolute inset-0 bg-stone-900/10 group-hover:bg-stone-900/30 transition-colors duration-500"></div>
-                      <div className="absolute bottom-10 left-10 right-10 text-white space-y-2">
-                         <h3 className="text-3xl font-bold font-headline drop-shadow-md">{product.name}</h3>
-                         <p className="text-sm font-light text-white/90 opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 duration-500 drop-shadow-md line-clamp-2">
-                           {product.flavor} — A masterpiece of artisan tempering and pure cacao excellence.
-                         </p>
-                         <p className="text-xl font-bold text-primary opacity-0 group-hover:opacity-100 transition-all duration-500">
-                           ₹{product.price.toLocaleString()}
-                         </p>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-20 border-2 border-dashed rounded-[3rem] bg-white/50 border-stone-200">
-                <p className="text-stone-400 font-headline text-xl italic">New additions to our collection are currently being tempered.</p>
-                <Button variant="link" className="mt-4" asChild><Link href="/shop">Browse existing favorites</Link></Button>
-              </div>
-            )}
-          </div>
-        </section>
 
         {/* Premium Animated Testimonial Section */}
         <section id="reviews" className="py-24 md:py-32 overflow-hidden bg-stone-50/50 backdrop-blur-sm relative">
