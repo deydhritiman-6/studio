@@ -23,7 +23,7 @@ export function ArtisanPerimeter({
   children,
   className,
   radius = '2.5rem',
-  speed = 6,
+  speed = 2.5,
   thickness = 2,
 }: ArtisanPerimeterProps) {
   // Unique animation name based on speed to allow multiple instances if needed
