@@ -45,7 +45,7 @@ function FacilityMainCard({ facility, index }: { facility: Facility; index: numb
     if (isExpanded) {
       timerRef.current = setTimeout(() => {
         setIsExpanded(false);
-      }, 30000);
+      }, 15000); // Updated timeout to 15 seconds
     }
   }, [isExpanded, clearCollapseTimer]);
 

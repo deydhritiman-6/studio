@@ -30,7 +30,7 @@ function FacilityPreviewCard({ facility, index }: { facility: Facility; index: n
     if (isExpanded) {
       timerRef.current = setTimeout(() => {
         setIsExpanded(false);
-      }, 30000);
+      }, 15000); // Updated timeout to 15 seconds
     }
   }, [isExpanded, clearCollapseTimer]);
 
@@ -150,7 +150,6 @@ export function InsideRoseberryPreview() {
   const displaySettings = settings || {
     eyebrowText: "INSIDE ROSEBERRY",
     homepageTitle: "Inside Roseberry Chocolate",
-    homepageSubtitle: "A Journey of Care, Craft and Commitment",
     homepageSubtitle: "A Journey of Care, Craft and Commitment",
     homepageDescription: "From the finest ingredients to the final delivery, every step at Roseberry Chocolate is handled with passion, precision and care.",
     homepageButtonText: "Explore Our Facilities",
