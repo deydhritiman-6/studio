@@ -33,7 +33,7 @@ export default function LandingPage() {
   const testimonialsQuery = useMemo(() => (firestore ? query(collection(firestore, 'testimonials'), where('status', '==', 'approved')) : null), [firestore]);
   const { data: liveTestimonials } = useCollection<Testimonial>(testimonialsQuery);
 
-  const curatedIndulgences = useMemo(() => {
+  const sweetDelights = useMemo(() => {
     if (!products) return [];
     // Relaxed filter to ensure grid is populated after potential data resets
     return products
@@ -232,7 +232,7 @@ export default function LandingPage() {
             <div className="flex flex-col md:flex-row items-end justify-between gap-8">
               <div className="space-y-4">
                 <Badge className="bg-amber-600/10 text-amber-700 border-none px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em]">Signature Range</Badge>
-                <h2 className="text-4xl md:text-6xl font-bold font-headline text-stone-900 tracking-tight">Curated Indulgences</h2>
+                <h2 className="text-4xl md:text-6xl font-bold font-headline text-stone-900 tracking-tight">Sweet Delights</h2>
               </div>
               <Button variant="ghost" className="text-stone-400 hover:text-primary font-bold uppercase tracking-widest text-xs" asChild>
                 <Link href="/shop">View Complete Catalog <ArrowRight className="ml-2 h-4 w-4" /></Link>
@@ -243,9 +243,9 @@ export default function LandingPage() {
               <div className="flex justify-center py-20">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
               </div>
-            ) : curatedIndulgences.length > 0 ? (
+            ) : sweetDelights.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
-                {curatedIndulgences.map((product) => (
+                {sweetDelights.map((product) => (
                   <Link key={product.id} href={`/shop/product/${product.id}`} className="group cursor-pointer">
                     <div className="aspect-square relative rounded-[2.5rem] overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-700 border border-white/50 bg-white">
                       <Image 
