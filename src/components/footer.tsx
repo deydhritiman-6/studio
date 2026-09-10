@@ -8,19 +8,14 @@ import {
   MapPin, 
   Instagram, 
   Facebook, 
-  Youtube, 
-  Linkedin, 
-  Twitter, 
-  ExternalLink,
-  MessageCircle,
-  CreditCard,
-  ShieldCheck,
-  Sparkles,
-  Heart,
-  Globe,
-  CheckCircle,
-  QrCode,
-  ArrowRight
+  MessageCircle, 
+  CreditCard, 
+  ShieldCheck, 
+  Globe, 
+  CheckCircle, 
+  QrCode, 
+  ArrowRight,
+  ExternalLink
 } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useDoc, useFirestore } from '@/firebase';
@@ -31,21 +26,12 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 
-/**
- * Premium Layered Background with Wide-Range Drifting Auras and Textures.
- */
 function PremiumBackground() {
   const shouldReduceMotion = useReducedMotion();
-
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      {/* 1. Base Layer - Artisan Biscuit Brown */}
       <div className="absolute inset-0 bg-[#f1e5d1]" /> 
-      
-      {/* 2. Soft Textured Overlay */}
       <div className="absolute inset-0 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]" />
-
-      {/* 3. High-Intensity Drifting Auras - Wide Paths */}
       {!shouldReduceMotion && (
         <>
           <div className="absolute top-[-30%] left-[-30%] w-[1200px] h-[1200px] bg-cyan-400/25 rounded-full blur-[180px] animate-drifting-glow" />
@@ -54,8 +40,6 @@ function PremiumBackground() {
           <div className="absolute bottom-[-30%] left-[30%] w-[800px] h-[800px] bg-rose-400/15 rounded-full blur-[150px] animate-drifting-glow-reverse" />
         </>
       )}
-
-      {/* 4. Elegant Abstract Chocolate Ribbons */}
       <motion.svg 
         animate={!shouldReduceMotion ? { y: [0, -20, 0], scaleY: [1, 1.08, 1] } : {}}
         transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
@@ -70,20 +54,15 @@ function PremiumBackground() {
   );
 }
 
-/**
- * High-Density Floating Light Particles.
- */
 function FloatingParticles() {
   const shouldReduceMotion = useReducedMotion();
   if (shouldReduceMotion) return null;
-
   const particles = Array.from({ length: 50 }).map((_, i) => ({
     left: `${Math.random() * 100}%`,
     delay: `${Math.random() * 20}s`,
     color: ['bg-cyan-300', 'bg-fuchsia-300', 'bg-emerald-300', 'bg-rose-300', 'bg-white', 'bg-amber-200'][i % 6],
     duration: `${Math.random() * 15 + 10}s`
   }));
-
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
       {particles.map((p, i) => (
@@ -118,9 +97,6 @@ export function Footer() {
     instagram: { icon: Instagram, color: 'text-fuchsia-600', aura: 'rgba(217, 70, 239, 0.5)', hoverBg: 'bg-fuchsia-50' },
     facebook: { icon: Facebook, color: 'text-cyan-600', aura: 'rgba(6, 182, 212, 0.5)', hoverBg: 'bg-cyan-50' },
     whatsapp: { icon: MessageCircle, color: 'text-emerald-600', aura: 'rgba(16, 185, 129, 0.5)', hoverBg: 'bg-emerald-50' },
-    youtube: { icon: Youtube, color: 'text-rose-600', aura: 'rgba(225, 29, 72, 0.5)', hoverBg: 'bg-rose-50' },
-    linkedin: { icon: Linkedin, color: 'text-blue-600', aura: 'rgba(37, 99, 235, 0.5)', hoverBg: 'bg-blue-50' },
-    twitter: { icon: Twitter, color: 'text-sky-600', aura: 'rgba(2, 132, 199, 0.5)', hoverBg: 'bg-sky-50' },
   };
 
   const activeSocials = useMemo(() => {
@@ -130,13 +106,8 @@ export function Footer() {
       .map(([platform, url]) => ({
         platform,
         url: url as string,
-        config: socialIcons[platform.toLowerCase()] || { icon: ExternalLink, color: 'text-stone-600', aura: 'rgba(0,0,0,0.1)', hoverBg: 'bg-stone-50' }
+        config: socialIcons[platform.toLowerCase()] || { icon: Globe, color: 'text-stone-600', aura: 'rgba(0,0,0,0.1)', hoverBg: 'bg-stone-50' }
       }));
-  }, [footerData]);
-
-  const hasAnyBankData = useMemo(() => {
-    const bank = footerData?.bank || {};
-    return !!(bank.bankName || bank.accountName || bank.accountNumber || bank.ifsc || bank.upiId || bank.qrCodeUrl);
   }, [footerData]);
 
   const isValidEmbedUrl = (url?: string) => {
@@ -164,7 +135,6 @@ export function Footer() {
       <div className="container max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-10 mb-24">
           
-          {/* Brand Identity Panel */}
           <motion.div 
             variants={panelVariants(0)}
             animate="animate"
@@ -200,14 +170,12 @@ export function Footer() {
                   >
                     <div className={cn("absolute inset-0 opacity-0 group-hover/soc:opacity-100 transition-opacity duration-500", config.hoverBg)} />
                     <config.icon className={cn("h-5 w-5 transition-all duration-500 relative z-10 text-stone-500", config.color)} />
-                    <div className="absolute inset-0 opacity-20 pointer-events-none group-hover/soc:opacity-40 transition-opacity" style={{ boxShadow: `inset 0 0 15px ${config.aura}` }} />
                   </motion.a>
                 ))}
               </div>
             </div>
           </motion.div>
 
-          {/* Navigation Sections & Location Matrix */}
           <motion.div variants={panelVariants(1.2)} animate="animate" className="grid grid-cols-2 gap-8 py-6">
             <div className="space-y-10">
               <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-fuchsia-700">Discovery</h4>
@@ -219,7 +187,7 @@ export function Footer() {
                   { text: 'Our Facilities', url: '/inside-roseberry' },
                 ].map((link) => (
                   <li key={link.text}>
-                    <Link href={link.url} className="footer-navigation-link inline-block text-stone-900 text-[15px] hover:text-fuchsia-600 transition-all duration-300 font-bold tracking-wide">
+                    <Link href={link.url} className="text-stone-900 text-[15px] hover:text-fuchsia-600 transition-all duration-300 font-bold tracking-wide">
                       {link.text}
                     </Link>
                   </li>
@@ -236,7 +204,7 @@ export function Footer() {
                   { text: 'Return Policy', url: '#' },
                 ].map((link) => (
                   <li key={link.text}>
-                    <Link href={link.url} className="footer-navigation-link inline-block text-stone-900 text-[15px] hover:text-fuchsia-600 transition-all duration-300 font-bold tracking-wide">
+                    <Link href={link.url} className="text-stone-900 text-[15px] hover:text-fuchsia-600 transition-all duration-300 font-bold tracking-wide">
                       {link.text}
                     </Link>
                   </li>
@@ -244,34 +212,21 @@ export function Footer() {
               </ul>
             </div>
 
-            {/* Location Matrix Section - Moved here below Discovery/Assistance */}
             <div className="col-span-2 pt-8">
               {visibility.showMap && (
                 <div className="space-y-6">
                   <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3">
                     <Globe className="h-3.5 w-3.5" /> Location Matrix
                   </h4>
-                  
-                  <div className="relative group overflow-hidden rounded-[2.5rem] border-2 border-white/60 shadow-2xl bg-white/40 backdrop-blur-md transition-all duration-500 hover:shadow-primary/5">
+                  <div className="relative group overflow-hidden rounded-[2.5rem] border-2 border-white/60 shadow-2xl bg-white/40 backdrop-blur-md transition-all duration-500">
                     {isValidEmbedUrl(maps.embedUrl) ? (
                       <div className="flex flex-col">
-                        <div className="h-[220px] w-full opacity-90 group-hover:opacity-100 transition-all duration-700 border-b border-white/20">
-                          <iframe 
-                            src={maps.embedUrl} 
-                            width="100%" 
-                            height="100%" 
-                            style={{ border: 0 }} 
-                            allowFullScreen 
-                            loading="lazy" 
-                            referrerPolicy="no-referrer-when-downgrade" 
-                            className="grayscale-[20%] hover:grayscale-0 transition-all duration-700"
-                          />
+                        <div className="h-[220px] w-full border-b border-white/20">
+                          <iframe src={maps.embedUrl} width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" className="grayscale-[20%] hover:grayscale-0 transition-all duration-700" />
                         </div>
                         <div className="p-6 space-y-4 bg-white/60">
                            <div className="flex items-start gap-3">
-                              <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                                 <MapPin className="h-4 w-4" />
-                              </div>
+                              <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0"><MapPin className="h-4 w-4" /></div>
                               <div className="space-y-0.5">
                                  <p className="text-[9px] font-black uppercase tracking-widest text-primary">Artisan Studio Location</p>
                                  <p className="text-xs text-stone-900 font-bold leading-tight tracking-tight">
@@ -279,35 +234,17 @@ export function Footer() {
                                  </p>
                               </div>
                            </div>
-
                            {maps.mapUrl && (
-                             <Button 
-                              asChild 
-                              className="w-full h-10 rounded-xl bg-stone-900 text-white hover:bg-stone-800 font-bold uppercase text-[9px] tracking-widest shadow-xl shadow-stone-900/20 group/map"
-                             >
-                              <a href={maps.mapUrl} target="_blank" rel="noopener noreferrer">
-                                View on Google Maps <ArrowRight className="ml-2 h-3 w-3 transition-transform group-hover/map:translate-x-1" />
-                              </a>
+                             <Button asChild className="w-full h-10 rounded-xl bg-stone-900 text-white hover:bg-stone-800 font-bold uppercase text-[9px] tracking-widest">
+                              <a href={maps.mapUrl} target="_blank" rel="noopener noreferrer">View on Google Maps <ArrowRight className="ml-2 h-3 w-3" /></a>
                              </Button>
                            )}
                         </div>
                       </div>
                     ) : (
-                      <div className="aspect-video w-full p-6 flex flex-col items-center justify-center bg-stone-50/50 text-center space-y-4">
-                        <div className="h-12 w-12 bg-white rounded-2xl shadow-xl flex items-center justify-center">
-                          <MapPin className="h-6 w-6 text-stone-200" />
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Location map unavailable</p>
-                          <p className="text-[10px] text-stone-500 font-medium italic max-w-[180px] mx-auto">
-                            {address.line1 || "Aashiyana Bhaban, 1A, Roypara-Hatiara Rd"}, {address.city || "Newtown, Kolkata"}
-                          </p>
-                        </div>
-                        {maps.mapUrl && (
-                          <Button asChild variant="outline" className="rounded-full h-10 px-6 font-bold uppercase text-[9px] tracking-widest border-primary/20 text-primary hover:bg-primary hover:text-white transition-all">
-                            <a href={maps.mapUrl} target="_blank" rel="noopener noreferrer">Navigate to Studio</a>
-                          </Button>
-                        )}
+                      <div className="p-10 text-center space-y-4">
+                        <MapPin className="h-8 w-8 mx-auto text-stone-200" />
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Location map unavailable</p>
                       </div>
                     )}
                   </div>
@@ -316,25 +253,18 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* Headquarters & Business Section */}
           <motion.div variants={panelVariants(0.8)} animate="animate" className="space-y-10 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm">
             <div className="space-y-6">
-              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3">
-                 <MapPin className="h-3.5 w-3.5" /> Headquarters
-              </h4>
+              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3"><MapPin className="h-3.5 w-3.5" /> Headquarters</h4>
               <div className="space-y-3">
-                  <p className="text-[16px] text-stone-900 font-black leading-tight">
-                    {address.businessName || "Roseberry Chocolate LLP"}
-                  </p>
+                  <p className="text-[16px] text-stone-900 font-black leading-tight">{address.businessName || "Roseberry Chocolate LLP"}</p>
                   <p className="text-[15px] text-stone-900 font-bold leading-relaxed tracking-wide">
                     {address.line1 || "Aashiyana Bhaban, 1A, Roypara-Hatiara Rd"}<br />
-                    {address.line2 ? <>{address.line2}<br /></> : <>Noapara, Hatiara<br /></>}
                     {address.city || "Newtown, Kolkata"}, {address.state || "West Bengal"} {address.zip || "700157"}
                   </p>
               </div>
             </div>
 
-            {/* Prominent Business & Legal Section */}
             {(legal.gstin || legal.fssaiNumber) && (
               <div className="space-y-6 pt-6 border-t border-stone-200/50">
                 <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Business & Legal</h4>
@@ -362,81 +292,40 @@ export function Footer() {
             )}
 
             <div className="space-y-6">
-              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3">
-                <Phone className="h-3.5 w-3.5" /> Communication
-              </h4>
+              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3"><Phone className="h-3.5 w-3.5" /> Communication</h4>
               <div className="space-y-4">
                 {contact.phone && (
                   <a href={`tel:${contact.phone}`} className="flex items-center gap-4 group/contact">
-                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm">
-                      <Phone className="h-4 w-4" />
-                    </div>
+                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Phone className="h-4 w-4" /></div>
                     <span className="text-[14px] text-stone-900 font-bold tracking-wide">{contact.phone}</span>
-                  </a>
-                )}
-                {contact.whatsapp && (
-                  <a href={`https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 group/contact">
-                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm">
-                      <MessageCircle className="h-4 w-4" />
-                    </div>
-                    <span className="text-[14px] text-stone-900 font-bold tracking-wide">{contact.whatsapp}</span>
                   </a>
                 )}
                 {contact.email && (
                   <a href={`mailto:${contact.email}`} className="flex items-center gap-4 group/contact">
-                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm">
-                      <Mail className="h-4 w-4" />
-                    </div>
+                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Mail className="h-4 w-4" /></div>
                     <span className="text-[14px] text-stone-900 font-bold tracking-wide break-all leading-tight">{contact.email}</span>
-                  </a>
-                )}
-                {contact.supportEmail && (
-                  <a href={`mailto:${contact.supportEmail}`} className="flex items-center gap-4 group/contact">
-                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm">
-                      <Mail className="h-4 w-4 text-primary" />
-                    </div>
-                    <span className="text-[14px] text-stone-900 font-bold tracking-wide break-all leading-tight">{contact.supportEmail}</span>
                   </a>
                 )}
               </div>
             </div>
           </motion.div>
 
-          {/* Financial Facilitation Section */}
           <motion.div variants={panelVariants(2.2)} animate="animate" className="space-y-12">
-            {/* Bank Details Section */}
-            {visibility.showBankDetails && hasAnyBankData && (
+            {visibility.showBankDetails && (
               <div className="space-y-8">
-                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3">
-                  <CreditCard className="h-3.5 w-3.5" /> Financial Facilitation
-                </h4>
-                
+                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3"><CreditCard className="h-3.5 w-3.5" /> Financial Facilitation</h4>
                 <div className="space-y-6">
                   <div className="space-y-4 bg-white/50 backdrop-blur-md p-6 rounded-[2.5rem] border border-white/60 shadow-xl">
                     {bank.bankName && (
                       <div className="flex flex-col">
                           <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Bank</span>
-                          <span className="text-[14px] text-stone-900 font-bold">
-                            {bank.bankName} {bank.branch && <span className="text-[10px] text-stone-400 font-medium ml-1">({bank.branch})</span>}
-                          </span>
-                      </div>
-                    )}
-                    {bank.accountName && (
-                      <div className="flex flex-col">
-                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Beneficiary</span>
-                          <span className="text-[14px] text-stone-900 font-bold">{bank.accountName}</span>
+                          <span className="text-[14px] text-stone-900 font-bold">{bank.bankName}</span>
                       </div>
                     )}
                     {bank.accountNumber && (
                       <div className="flex flex-col">
                           <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Account Number</span>
                           <span className="text-[14px] text-stone-900 font-bold font-mono tracking-tight">{bank.accountNumber}</span>
-                      </div>
-                    )}
-                    {bank.ifsc && (
-                      <div className="flex flex-col">
-                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">IFSC Code</span>
-                          <span className="text-[14px] text-stone-900 font-bold font-mono uppercase tracking-widest">{bank.ifsc}</span>
                       </div>
                     )}
                     {bank.upiId && (
@@ -446,36 +335,20 @@ export function Footer() {
                       </div>
                     )}
                   </div>
-
                   {bank.qrCodeUrl && (
-                    <motion.div 
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      className="bg-white p-8 rounded-[2.5rem] border-2 border-stone-100 shadow-2xl space-y-4"
-                    >
-                      <div className="flex items-center justify-between">
-                         <div className="flex items-center gap-2">
-                            <QrCode className="h-4 w-4 text-primary" />
-                            <span className="text-[10px] font-black uppercase tracking-widest">Scan to Pay</span>
-                         </div>
-                      </div>
-                      <div className="aspect-square relative w-full bg-white rounded-2xl overflow-hidden border border-stone-50 shadow-inner">
-                         <Image src={bank.qrCodeUrl} alt="Payment QR" fill className="object-contain p-4" />
-                      </div>
-                      <p className="text-[9px] text-center text-stone-400 font-medium italic">
-                        Scan for secure artisan payment.
-                      </p>
-                    </motion.div>
+                    <div className="bg-white p-8 rounded-[2.5rem] border-2 border-stone-100 shadow-2xl space-y-4">
+                      <div className="flex items-center gap-2"><QrCode className="h-4 w-4 text-primary" /><span className="text-[10px] font-black uppercase tracking-widest">Scan to Pay</span></div>
+                      <div className="aspect-square relative w-full bg-white rounded-2xl overflow-hidden border border-stone-50 shadow-inner"><Image src={bank.qrCodeUrl} alt="Payment QR" fill className="object-contain p-4" /></div>
+                    </div>
                   )}
                 </div>
               </div>
             )}
-
             <motion.div animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }} className="p-6 bg-rose-500/5 rounded-2xl border border-rose-500/10 flex items-center gap-4">
                 <div className="h-10 w-10 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-600 shadow-inner"><Heart className="h-5 w-5 fill-current" /></div>
                 <div className="space-y-0.5">
                     <p className="text-[10px] font-black uppercase tracking-widest text-rose-700 leading-none">Artisan Commitment</p>
-                    <p className="text-[12px] font-bold text-rose-900/60 leading-tight">Handmade with Extraordinary Patience</p>
+                    <p className="text-[12px] font-bold text-rose-900/60 leading-tight">Handmade with Love</p>
                 </div>
             </motion.div>
           </motion.div>

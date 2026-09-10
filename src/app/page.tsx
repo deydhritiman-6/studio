@@ -7,17 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   ArrowRight, 
-  Star, 
   Sparkles, 
   Heart, 
   History, 
   Crown, 
   CheckCircle2, 
   Truck,
-  Search,
-  Loader2,
-  Quote,
-  MessageSquareQuote
+  Loader2
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -26,7 +22,6 @@ import { collection, query, where } from 'firebase/firestore';
 import type { Product, Testimonial } from '@/lib/types';
 import { InsideRoseberryPreview } from '@/components/inside-roseberry-preview';
 import { TestimonialMarquee } from '@/components/testimonial-marquee';
-import { motion } from 'framer-motion';
 import { Footer } from '@/components/footer';
 
 export default function LandingPage() {
@@ -39,9 +34,9 @@ export default function LandingPage() {
 
   const curatedIndulgences = useMemo(() => {
     if (!products) return [];
-    // Displaying 6 items as requested
+    // Ensuring 6 items are displayed and loosening filter for better population
     return products
-      .filter(p => p.productionStatus === 'Product Ready' && !p.isArchived)
+      .filter(p => !p.isArchived)
       .slice(0, 6);
   }, [products]);
 
@@ -140,11 +135,11 @@ export default function LandingPage() {
               <Sparkles className="h-3 w-3 text-amber-500" /> Since 2021 • Kolkata
             </div>
             
-            <h1 className="text-xl md:text-3xl font-bold font-headline text-stone-900 tracking-tight leading-[1.1]">
+            <h1 className="text-lg md:text-2xl font-bold font-headline text-stone-900 tracking-tight leading-[1.1]">
               Handmade with Love.<br />Crafted for Every <span className="italic font-serif text-primary">Celebration</span>.
             </h1>
             
-            <p className="text-stone-500 text-lg md:text-2xl font-light max-w-2xl mx-auto leading-relaxed">
+            <p className="text-stone-500 text-lg md:text-xl font-light max-w-2xl mx-auto leading-relaxed">
               Indulge in the finest single-origin chocolates, meticulously tempered in our Kolkata kitchen for the true connoisseur.
             </p>
 
@@ -291,7 +286,7 @@ export default function LandingPage() {
               
               <div className="pt-8">
                 <Button asChild variant="outline" className="rounded-full h-12 px-8 border-primary/20 text-primary hover:bg-primary/5">
-                    <Link href="/share-experience"><MessageSquareQuote className="mr-2 h-4 w-4" /> Share Your Sweet Experience</Link>
+                    <Link href="/share-experience">Share Your Sweet Experience</Link>
                 </Button>
               </div>
            </div>
