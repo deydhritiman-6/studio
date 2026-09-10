@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useMemo } from 'react';
@@ -30,7 +29,7 @@ export function DirectorMessage() {
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center justify-center relative z-10">
         
-        {/* Left: Director Portrait - Now 4 columns instead of 5 */}
+        {/* Left: Director Portrait */}
         <motion.div 
           initial={{ opacity: 0, x: -30 }}
           whileInView={{ opacity: 1, x: 0 }}
@@ -60,7 +59,7 @@ export function DirectorMessage() {
           </motion.div>
         </motion.div>
 
-        {/* Right: Personal Message - 6-7 columns span */}
+        {/* Right: Personal Message */}
         <div className="lg:col-span-6 space-y-8">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -72,7 +71,7 @@ export function DirectorMessage() {
             <Badge variant="outline" className="border-primary/20 text-primary px-4 py-0.5 rounded-full text-[9px] font-black uppercase tracking-[0.4em] bg-white shadow-sm">
               From the Director
             </Badge>
-            <h2 className="text-3xl md:text-5xl font-bold font-headline text-stone-900 tracking-tight leading-tight">
+            <h2 className="text-3xl md:text-5xl font-bold font-headline tracking-tight leading-tight heading-olive-emboss">
               A Message from <br /> Our Director
             </h2>
           </motion.div>
