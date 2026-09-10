@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState, useRef } from 'react';
 import { MapPin, Quote, Globe, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -77,7 +77,6 @@ const ArtisanStar = ({ active, index }: { active: boolean; index: number }) => {
           stroke={active ? "#92400E" : "currentColor"}
           strokeWidth="0.5"
         />
-        {/* Specular Highlight */}
         {active && (
           <path
             d="M12 4l1.5 3.5 3.5 0.5-2.5 2.5 0.5 3.5L12 12.5"
@@ -86,7 +85,6 @@ const ArtisanStar = ({ active, index }: { active: boolean; index: number }) => {
           />
         )}
       </svg>
-      {/* Sparkle Element */}
       {active && (
         <div 
           className="absolute inset-0 flex items-center justify-center animate-star-shimmer pointer-events-none"
@@ -112,10 +110,17 @@ const getCardVariant = (id: string) => {
 
 export function TestimonialMarquee({ liveTestimonials = [] }: { liveTestimonials?: Testimonial[] }) {
   const [mounted, setMounted] = useState(false);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const requestRef = useRef<number>();
+  const xRef = useRef(0);
+  const lastTimeRef = useRef<number>();
+  const pauseTimerRef = useRef<number>(0);
+  const lastSnappedIndex = useRef<number>(-1);
+  const isHoveredRef = useRef(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const cardWidth = 330;
+  const gap = 24;
+  const step = cardWidth + gap;
 
   const combinedData = useMemo(() => {
     const liveMapped: TestimonialDisplay[] = liveTestimonials.map(t => ({
@@ -133,11 +138,90 @@ export function TestimonialMarquee({ liveTestimonials = [] }: { liveTestimonials
     return base.sort((a, b) => a.id.localeCompare(b.id));
   }, [liveTestimonials]);
 
+  const combinedDataRef = useRef(combinedData);
+  useEffect(() => {
+    combinedDataRef.current = combinedData;
+  }, [combinedData]);
+
+  const animate = (time: number) => {
+    if (!lastTimeRef.current) lastTimeRef.current = time;
+    const deltaTime = time - lastTimeRef.current;
+    lastTimeRef.current = time;
+
+    if (trackRef.current && mounted) {
+      const viewportCenter = window.innerWidth / 2;
+      const totalCount = combinedDataRef.current.length;
+      const groupWidth = totalCount * step;
+
+      // Base target speed (pixels per millisecond)
+      const targetSpeed = 0.06;
+      let currentSpeed = targetSpeed;
+
+      if (isHoveredRef.current) {
+        currentSpeed = 0;
+      } else if (pauseTimerRef.current > 0) {
+        pauseTimerRef.current -= deltaTime;
+        currentSpeed = 0;
+      } else {
+        // Calculate nearest snap point (center of card)
+        const nearestIndex = Math.round((viewportCenter - xRef.current - cardWidth / 2) / step);
+        const snapX = viewportCenter - (nearestIndex * step) - (cardWidth / 2);
+        const distance = Math.abs(xRef.current - snapX);
+
+        // Slow down as we approach the center
+        if (nearestIndex !== lastSnappedIndex.current && distance < 100) {
+          // Gently slow down using a power curve for smoothness
+          const factor = Math.pow(distance / 100, 1.5);
+          currentSpeed = targetSpeed * factor;
+
+          // If close enough to center, snap and pause
+          if (distance < 0.5) {
+            xRef.current = snapX;
+            currentSpeed = 0;
+            pauseTimerRef.current = 750; // Pause for 0.75 seconds
+            lastSnappedIndex.current = nearestIndex;
+          }
+        } else if (nearestIndex === lastSnappedIndex.current && distance < 100) {
+          // Smoothly accelerate as we leave the center
+          const factor = Math.pow(distance / 100, 0.5);
+          currentSpeed = targetSpeed * Math.max(0.2, factor);
+        }
+      }
+
+      xRef.current -= currentSpeed * deltaTime;
+
+      // Seamless loop reset
+      if (xRef.current <= -groupWidth) {
+        xRef.current += groupWidth;
+        lastSnappedIndex.current -= totalCount; 
+      } else if (xRef.current > 0) {
+          xRef.current -= groupWidth;
+          lastSnappedIndex.current += totalCount;
+      }
+
+      trackRef.current.style.transform = `translate3d(${xRef.current}px, 0, 0)`;
+    }
+
+    requestRef.current = requestAnimationFrame(animate);
+  };
+
+  useEffect(() => {
+    setMounted(true);
+    requestRef.current = requestAnimationFrame(animate);
+    return () => {
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
+    };
+  }, []);
+
   if (!mounted) return null;
 
   return (
-    <div className="testimonial-viewport">
-      <div className="testimonial-track">
+    <div 
+        className="testimonial-viewport"
+        onMouseEnter={() => { isHoveredRef.current = true; }}
+        onMouseLeave={() => { isHoveredRef.current = false; }}
+    >
+      <div className="testimonial-track" ref={trackRef}>
         <div className="testimonial-group">
           {combinedData.map((t) => (
             <TestimonialCard key={t.id} testimonial={t} />

@@ -126,35 +126,11 @@
   width: max-content !important;
   max-width: none !important;
   align-items: stretch !important;
-  animation: testimonialMarquee 80s linear infinite !important;
-  animation-play-state: running !important;
+  /* Removed CSS animation to allow JS-driven center-pause logic */
   will-change: transform !important;
 }
 
-.testimonial-viewport:hover .testimonial-track {
-  animation-play-state: paused !important;
-}
-
-.testimonial-group {
-  display: flex !important;
-  flex-direction: row !important;
-  flex-wrap: nowrap !important;
-  flex-shrink: 0 !important;
-  width: max-content !important;
-  gap: 24px !important;
-  padding-right: 24px !important;
-}
-
-.testimonial-card {
-  flex: 0 0 330px !important;
-  width: 330px !important;
-  min-width: 330px !important;
-  max-width: 330px !important;
-  height: 280px !important;
-  position: relative !important;
-}
-
-/* --- Star Shimmer/Sparkle Animation --- */
+/* Star Shimmer/Sparkle Animation */
 @keyframes starShimmer {
   0% { opacity: 0.3; transform: scale(0.9); filter: brightness(1); }
   50% { opacity: 1; transform: scale(1.1); filter: brightness(1.4) drop-shadow(0 0 4px rgba(212, 175, 55, 0.4)); }
