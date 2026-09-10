@@ -269,10 +269,10 @@
 .artisan-card-premium {
   position: relative;
   transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 2.5px solid rgba(212, 175, 55, 0.45);
+  border: 3px solid rgba(212, 175, 55, 0.45);
   box-shadow: 
-    0 25px 50px -12px rgba(0, 0, 0, 0.15),
-    0 15px 35px -5px rgba(61, 30, 22, 0.1),
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 15px 35px -5px rgba(61, 30, 22, 0.15),
     0 0 0 1px rgba(212, 175, 55, 0.05);
 }
 
@@ -280,9 +280,9 @@
   transform: translateY(-8px);
   border-color: rgba(212, 175, 55, 1);
   box-shadow: 
-    0 50px 100px -20px rgba(61, 30, 22, 0.3),
-    0 30px 60px -10px rgba(61, 30, 22, 0.2),
-    0 15px 30px -5px rgba(0, 0, 0, 0.1);
+    0 50px 100px -20px rgba(61, 30, 22, 0.35),
+    0 30px 60px -10px rgba(61, 30, 22, 0.25),
+    0 15px 30px -5px rgba(0, 0, 0, 0.15);
 }
 
 /* Electric Shimmer Base (Top-Right) */
@@ -327,11 +327,13 @@
 
 /* --- Sweet Delights Heading Implementation --- */
 .heading-sweet-delights {
-  /* Step 1: Layout Maintenance - Ensures 'g' descender is NOT clipped */
+  /* Step 1: Layout Maintenance - Ensures glyphs are NOT clipped horizontally or vertically */
   display: inline-block;
   position: relative;
   line-height: 1.4;
   padding-bottom: 0.25em;
+  padding-left: 0.15em;
+  padding-right: 0.15em;
   
   /* Step 2: Artisan Gradient Definition */
   background-image: linear-gradient(
@@ -371,8 +373,8 @@
   content: "Sweet Delights"; /* Must match parent text exactly */
   position: absolute;
   top: 0;
-  left: 0;
-  width: 100%;
+  left: 0.15em; /* Match parent horizontal padding */
+  width: calc(100% - 0.3em); /* Subtract parent horizontal padding */
   height: 100%;
   pointer-events: none;
   
