@@ -137,10 +137,11 @@ export default function LandingPage() {
             </div>
             
             <h1 className="text-2xl md:text-4xl font-bold font-headline text-stone-900 tracking-tight leading-[1.1]">
-              Handmade with Love.<br />Crafted for Every <span className="italic font-serif text-primary">Celebration</span>.
+              Handmade with <span className="text-[#800020]">Love.</span><br />
+              Crafted for Every <span className="italic font-serif text-primary">Celebration</span>.
             </h1>
             
-            <p className="text-stone-500 text-lg md:text-xl font-light max-w-2xl mx-auto leading-relaxed">
+            <p className="text-stone-500 text-lg md:text-xl font-light max-w-2xl mx-auto leading-relaxed px-4">
               Indulge in the finest single-origin chocolates, meticulously tempered in our Kolkata kitchen for the true connoisseur.
             </p>
 
