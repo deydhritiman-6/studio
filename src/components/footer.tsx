@@ -129,6 +129,12 @@ export function Footer() {
     visibility = {},
   } = footerData || {};
 
+  // Visibility flags with explicit true checks for OFF handling
+  const showGST = visibility?.showGST === true;
+  const showFSSAI = visibility?.showFSSAI === true;
+  const showBankDetails = visibility?.showBankDetails === true;
+  const showMap = visibility?.showMap === true;
+
   return (
     <footer id="footer" className="relative text-stone-900 pt-32 overflow-hidden border-t border-stone-200">
       <PremiumBackground />
@@ -215,7 +221,7 @@ export function Footer() {
             </div>
 
             <div className="col-span-2 pt-8">
-              {visibility.showMap && maps.embedUrl && (
+              {showMap && maps.embedUrl && (
                 <div className="space-y-6">
                   <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3">
                     <Globe className="h-3.5 w-3.5" /> Location Matrix
@@ -277,11 +283,11 @@ export function Footer() {
               </div>
             </div>
 
-            {((visibility.showGST && legal.gstin) || (visibility.showFSSAI && legal.fssaiNumber)) && (
+            {((showGST && legal.gstin) || (showFSSAI && legal.fssaiNumber)) && (
               <div className="space-y-6 pt-6 border-t border-stone-200/50">
                 <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Business & Legal</h4>
                 <div className="space-y-4">
-                    {visibility.showFSSAI && legal.fssaiNumber && (
+                    {showFSSAI && legal.fssaiNumber && (
                       <div className="flex items-center gap-3">
                          <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
                          <div className="flex flex-col">
@@ -290,7 +296,7 @@ export function Footer() {
                          </div>
                       </div>
                     )}
-                    {visibility.showGST && legal.gstin && (
+                    {showGST && legal.gstin && (
                       <div className="flex items-center gap-3">
                          <CheckCircle className="h-4 w-4 text-primary shrink-0" />
                          <div className="flex flex-col">
@@ -347,7 +353,7 @@ export function Footer() {
           </motion.div>
 
           <motion.div variants={panelVariants(2.2)} animate="animate" className="space-y-12">
-            {visibility.showBankDetails && (
+            {showBankDetails && (
               <div className="space-y-8">
                 <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3"><CreditCard className="h-3.5 w-3.5" /> Financial Facilitation</h4>
                 <div className="space-y-6">
