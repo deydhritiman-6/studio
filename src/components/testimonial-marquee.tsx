@@ -1,6 +1,7 @@
+
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { MapPin, Quote, Globe, Search, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -108,52 +109,6 @@ const getCardVariant = (id: string) => {
   return variants[hash % variants.length];
 };
 
-export function TestimonialMarquee({ liveTestimonials = [] }: { liveTestimonials?: Testimonial[] }) {
-  const combinedData = useMemo(() => {
-    const liveMapped: TestimonialDisplay[] = liveTestimonials.map(t => ({
-        id: t.id,
-        name: t.name,
-        location: `${t.city}, ${t.country}`,
-        text: t.testimonial,
-        lang: t.language as any,
-        rating: t.rating,
-        photoUrl: t.photoUrl,
-        source: 'Website'
-    }));
-
-    const base = [...SEED_TESTIMONIALS, ...liveMapped];
-    return base.sort((a, b) => a.id.localeCompare(b.id));
-  }, [liveTestimonials]);
-
-  return (
-    <div className="testimonial-viewport">
-      <div className="testimonial-track animate-marquee">
-        <div className="testimonial-group">
-          {combinedData.map((t) => (
-            <TestimonialCard key={t.id} testimonial={t} />
-          ))}
-        </div>
-        {/* Duplicate group for seamless infinite loop */}
-        <div className="testimonial-group" aria-hidden="true">
-          {combinedData.map((t) => (
-            <TestimonialCard key={`dup-${t.id}`} testimonial={t} />
-          ))}
-        </div>
-      </div>
-
-      <style jsx>{`
-        .testimonial-group {
-          display: flex;
-          flex-direction: row;
-          gap: 24px;
-          padding-right: 24px;
-          flex-shrink: 0;
-        }
-      `}</style>
-    </div>
-  );
-}
-
 function TestimonialCard({ testimonial }: { testimonial: TestimonialDisplay }) {
   const initials = testimonial.name
     .split(' ')
@@ -235,5 +190,128 @@ function TestimonialCard({ testimonial }: { testimonial: TestimonialDisplay }) {
         </div>
       </div>
     </article>
+  );
+}
+
+export function TestimonialMarquee({ liveTestimonials = [] }: { liveTestimonials?: Testimonial[] }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [isPaused, setIsPaused] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  const combinedData = useMemo(() => {
+    const liveMapped: TestimonialDisplay[] = liveTestimonials.map(t => ({
+        id: t.id,
+        name: t.name,
+        location: `${t.city}, ${t.country}`,
+        text: t.testimonial,
+        lang: t.language as any,
+        rating: t.rating,
+        photoUrl: t.photoUrl,
+        source: 'Website'
+    }));
+
+    const base = [...SEED_TESTIMONIALS, ...liveMapped];
+    return base.sort((a, b) => a.id.localeCompare(b.id));
+  }, [liveTestimonials]);
+
+  useEffect(() => {
+    setMounted(true);
+    if (typeof window === 'undefined') return;
+
+    const track = trackRef.current;
+    if (!track) return;
+
+    let x = 0;
+    let baseSpeed = 0.8;
+    let currentSpeed = baseSpeed;
+    let pauseEndTime = 0;
+    let lastSnappedCardId = '';
+
+    const animate = (time: number) => {
+      if (!track) return;
+      const groupWidth = track.firstElementChild?.scrollWidth || 0;
+      const viewportCenter = window.innerWidth / 2;
+
+      // Handle the infinite loop reset
+      if (x <= -groupWidth) {
+        x += groupWidth;
+        lastSnappedCardId = ''; // Reset snap history on loop
+      }
+
+      const now = performance.now();
+
+      // Check if we should be currently pausing
+      if (now < pauseEndTime) {
+        currentSpeed = 0;
+      } else {
+        // Find the card closest to the center
+        const cards = Array.from(track.querySelectorAll('.testimonial-card'));
+        let closestCard: HTMLElement | null = null;
+        let minDistance = Infinity;
+
+        cards.forEach((card) => {
+          const rect = card.getBoundingClientRect();
+          const cardCenter = rect.left + rect.width / 2;
+          const distance = Math.abs(cardCenter - viewportCenter);
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestCard = card as HTMLElement;
+          }
+        });
+
+        const snapZone = 100; // px from center to start slowing down
+        const cardId = closestCard ? (closestCard as any).dataset.id : '';
+
+        if (minDistance < snapZone && cardId !== lastSnappedCardId) {
+          // Gently slow down as we approach center
+          currentSpeed = baseSpeed * (minDistance / snapZone);
+          
+          // Snap threshold: if very close to center, trigger the 0.6s pause
+          if (minDistance < 2) {
+            pauseEndTime = now + 600; // 0.6 second pause
+            lastSnappedCardId = cardId;
+            currentSpeed = 0;
+          }
+        } else {
+          // Smoothly accelerate back to base speed
+          currentSpeed = baseSpeed;
+        }
+      }
+
+      x -= currentSpeed;
+      track.style.transform = `translate3d(${x}px, 0, 0)`;
+      requestAnimationFrame(animate);
+    };
+
+    const rafId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(rafId);
+  }, [combinedData]);
+
+  if (!mounted) return null;
+
+  return (
+    <div ref={containerRef} className="testimonial-viewport">
+      <div 
+        ref={trackRef} 
+        className="testimonial-track" 
+        style={{ display: 'flex', width: 'max-content' }}
+      >
+        <div className="testimonial-group" style={{ display: 'flex', gap: '24px', paddingRight: '24px' }}>
+          {combinedData.map((t) => (
+            <div key={t.id} data-id={t.id}>
+              <TestimonialCard testimonial={t} />
+            </div>
+          ))}
+        </div>
+        <div className="testimonial-group" aria-hidden="true" style={{ display: 'flex', gap: '24px', paddingRight: '24px' }}>
+          {combinedData.map((t) => (
+            <div key={`dup-${t.id}`} data-id={`dup-${t.id}`}>
+              <TestimonialCard testimonial={t} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
