@@ -295,6 +295,15 @@ export function Footer() {
                     </div>
                   </a>
                 )}
+                {contact.altPhone && (
+                  <a href={`tel:${contact.altPhone}`} className="flex items-center gap-4 group/contact">
+                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Phone className="h-4 w-4" /></div>
+                    <div className="flex flex-col">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">SECONDARY LINE</span>
+                      <span className="text-[14px] text-stone-900 font-bold tracking-wide">{contact.altPhone}</span>
+                    </div>
+                  </a>
+                )}
                 {contact.whatsapp && (
                   <a href={`https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 group/contact">
                     <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><MessageCircle className="h-4 w-4" /></div>
