@@ -15,7 +15,8 @@ import {
   CheckCircle, 
   QrCode, 
   ArrowRight,
-  ExternalLink
+  ExternalLink,
+  Heart
 } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useDoc, useFirestore } from '@/firebase';
