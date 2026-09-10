@@ -211,7 +211,10 @@ export default function FooterManagementPage() {
       <PageHeader title="Footer Architecture" actions={
         <Button 
           type="button"
-          onClick={form.handleSubmit(onSubmit)} 
+          onClick={form.handleSubmit(onSubmit, (errors) => {
+            console.warn('Footer Form Validation Errors:', errors);
+            toast({ variant: 'destructive', title: 'Validation Error', description: 'Please check all tabs for missing or invalid information.' });
+          })} 
           disabled={isSaving} 
           className="h-12 px-8 rounded-xl shadow-xl shadow-primary/20"
         >
@@ -336,18 +339,23 @@ export default function FooterManagementPage() {
                          <p className="text-sm text-stone-600 font-medium">When enabled, the configured bank details will be visible on the public website footer.</p>
                       </div>
                       <FormField control={form.control} name="visibility.showBankDetails" render={({ field }) => (
-                         <FormItem className="flex items-center gap-8 bg-white p-6 rounded-[2rem] border-2 border-primary/20 shadow-2xl hover:scale-[1.02] transition-transform duration-300">
+                         <FormItem 
+                           className="flex items-center gap-8 bg-white p-6 rounded-[2rem] border-2 border-primary/20 shadow-2xl hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
+                           onClick={() => field.onChange(!field.value)}
+                         >
                             <FormLabel className="text-sm font-black uppercase tracking-[0.2em] m-0 leading-none text-primary cursor-pointer select-none">
                               Show Bank Details in Public Footer
                             </FormLabel>
                             <FormControl>
-                               <Switch 
-                                 checked={field.value} 
-                                 onCheckedChange={field.onChange} 
-                                 className="w-[56px] h-[30px] data-[state=checked]:bg-primary data-[state=unchecked]:bg-stone-200 border-none hover:shadow-md transition-all shadow-inner"
-                                 thumbClassName="h-6 w-6 data-[state=checked]:translate-x-[26px] data-[state=unchecked]:translate-x-1 shadow-md"
-                                 aria-label="Toggle bank details visibility"
-                               />
+                               <div onClick={(e) => e.stopPropagation()}>
+                                 <Switch 
+                                   checked={field.value} 
+                                   onCheckedChange={field.onChange} 
+                                   className="w-[56px] h-[30px] data-[state=checked]:bg-primary data-[state=unchecked]:bg-stone-200 border-none hover:shadow-md transition-all shadow-inner"
+                                   thumbClassName="h-6 w-6 data-[state=checked]:translate-x-[26px] data-[state=unchecked]:translate-x-1 shadow-md"
+                                   aria-label="Toggle bank details visibility"
+                                 />
+                               </div>
                             </FormControl>
                          </FormItem>
                       )} />
@@ -458,18 +466,23 @@ export default function FooterManagementPage() {
                          <p className="text-sm text-stone-600 font-medium">Toggle the public display of the Location Matrix in the footer.</p>
                       </div>
                       <FormField control={form.control} name="visibility.showMap" render={({ field }) => (
-                         <FormItem className="flex items-center gap-8 bg-white p-6 rounded-[2rem] border-2 border-primary/20 shadow-2xl hover:scale-[1.02] transition-transform duration-300">
+                         <FormItem 
+                            className="flex items-center gap-8 bg-white p-6 rounded-[2rem] border-2 border-primary/20 shadow-2xl hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
+                            onClick={() => field.onChange(!field.value)}
+                         >
                             <FormLabel className="text-sm font-black uppercase tracking-[0.2em] m-0 leading-none text-primary cursor-pointer select-none">
                               ENABLE COMPONENT
                             </FormLabel>
                             <FormControl>
-                               <Switch 
-                                 checked={field.value} 
-                                 onCheckedChange={field.onChange} 
-                                 className="w-[56px] h-[30px] data-[state=checked]:bg-primary data-[state=unchecked]:bg-stone-200 border-none hover:shadow-md transition-all shadow-inner"
-                                 thumbClassName="h-6 w-6 data-[state=checked]:translate-x-[26px] data-[state=unchecked]:translate-x-1 shadow-md"
-                                 aria-label="Toggle map visibility"
-                               />
+                               <div onClick={(e) => e.stopPropagation()}>
+                                 <Switch 
+                                   checked={field.value} 
+                                   onCheckedChange={field.onChange} 
+                                   className="w-[56px] h-[30px] data-[state=checked]:bg-primary data-[state=unchecked]:bg-stone-200 border-none hover:shadow-md transition-all shadow-inner"
+                                   thumbClassName="h-6 w-6 data-[state=checked]:translate-x-[26px] data-[state=unchecked]:translate-x-1 shadow-md"
+                                   aria-label="Toggle map visibility"
+                                 />
+                               </div>
                             </FormControl>
                          </FormItem>
                       )} />
@@ -518,15 +531,22 @@ export default function FooterManagementPage() {
                   <CardContent className="p-10 space-y-4">
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {[
-                          { key: 'showGST', label: 'Display GST Information' },
-                          { key: 'showFSSAI', label: 'Display FSSAI License' },
-                          { key: 'showBankDetails', label: 'Display Financial Panel' },
-                          { key: 'showMap', label: 'Display Location Matrix' },
+                          { key: 'showGST', label: 'DISPLAY GSTIN INFORMATION' },
+                          { key: 'showFSSAI', label: 'DISPLAY FSSAI LICENSE' },
+                          { key: 'showBankDetails', label: 'DISPLAY FINANCIAL PANEL' },
+                          { key: 'showMap', label: 'DISPLAY LOCATION MATRIX' },
                         ].map((policy) => (
                           <FormField key={policy.key} control={form.control} name={`visibility.${policy.key}` as any} render={({ field }) => (
-                            <FormItem className="flex items-center justify-between p-6 rounded-2xl border bg-muted/10">
-                              <FormLabel className="text-sm font-bold uppercase tracking-tight">{policy.label}</FormLabel>
-                              <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                            <FormItem 
+                               className="flex items-center justify-between p-6 rounded-2xl border bg-muted/10 cursor-pointer hover:bg-muted/20 transition-colors"
+                               onClick={() => field.onChange(!field.value)}
+                            >
+                              <FormLabel className="text-sm font-bold uppercase tracking-tight cursor-pointer">{policy.label}</FormLabel>
+                              <FormControl>
+                                <div onClick={(e) => e.stopPropagation()}>
+                                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                </div>
+                              </FormControl>
                             </FormItem>
                           )} />
                         ))}

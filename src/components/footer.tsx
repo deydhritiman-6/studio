@@ -215,7 +215,7 @@ export function Footer() {
             </div>
 
             <div className="col-span-2 pt-8">
-              {visibility.showMap && (
+              {visibility.showMap && maps.embedUrl && (
                 <div className="space-y-6">
                   <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3">
                     <Globe className="h-3.5 w-3.5" /> Location Matrix
@@ -225,7 +225,6 @@ export function Footer() {
                       <div className="flex flex-col">
                         <div className="h-[220px] w-full border-b border-white/20 relative group/map">
                           <iframe src={maps.embedUrl} width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" className="grayscale-[20%] hover:grayscale-0 transition-all duration-700" />
-                          {/* Functional "Open in Maps ↗" Overlay */}
                           {maps.mapUrl && (
                             <a 
                               href={maps.mapUrl} 
@@ -278,11 +277,11 @@ export function Footer() {
               </div>
             </div>
 
-            {(legal.gstin || legal.fssaiNumber) && (
+            {((visibility.showGST && legal.gstin) || (visibility.showFSSAI && legal.fssaiNumber)) && (
               <div className="space-y-6 pt-6 border-t border-stone-200/50">
                 <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Business & Legal</h4>
                 <div className="space-y-4">
-                    {legal.fssaiNumber && (
+                    {visibility.showFSSAI && legal.fssaiNumber && (
                       <div className="flex items-center gap-3">
                          <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
                          <div className="flex flex-col">
@@ -291,7 +290,7 @@ export function Footer() {
                          </div>
                       </div>
                     )}
-                    {legal.gstin && (
+                    {visibility.showGST && legal.gstin && (
                       <div className="flex items-center gap-3">
                          <CheckCircle className="h-4 w-4 text-primary shrink-0" />
                          <div className="flex flex-col">
