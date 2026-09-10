@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -36,6 +35,7 @@ export default function LandingPage() {
 
   const curatedIndulgences = useMemo(() => {
     if (!products) return [];
+    // Relaxed filter to ensure grid is populated after potential data resets
     return products
       .filter(p => !p.isArchived)
       .slice(0, 6);

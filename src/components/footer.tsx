@@ -26,6 +26,7 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 function PremiumBackground() {
   const shouldReduceMotion = useReducedMotion();
@@ -245,7 +246,7 @@ export function Footer() {
                     ) : (
                       <div className="p-10 text-center space-y-4">
                         <MapPin className="h-8 w-8 mx-auto text-stone-200" />
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Location map unavailable</p>
+                        <p className="text-[10px] font-black uppercase tracking-0.2em text-stone-400">Location map unavailable</p>
                       </div>
                     )}
                   </div>
@@ -298,13 +299,37 @@ export function Footer() {
                 {contact.phone && (
                   <a href={`tel:${contact.phone}`} className="flex items-center gap-4 group/contact">
                     <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Phone className="h-4 w-4" /></div>
-                    <span className="text-[14px] text-stone-900 font-bold tracking-wide">{contact.phone}</span>
+                    <div className="flex flex-col">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Primary Hotline</span>
+                      <span className="text-[14px] text-stone-900 font-bold tracking-wide">{contact.phone}</span>
+                    </div>
+                  </a>
+                )}
+                {contact.altPhone && (
+                  <a href={`tel:${contact.altPhone}`} className="flex items-center gap-4 group/contact">
+                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Phone className="h-4 w-4" /></div>
+                    <div className="flex flex-col">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Secondary Line</span>
+                      <span className="text-[14px] text-stone-900 font-bold tracking-wide">{contact.altPhone}</span>
+                    </div>
                   </a>
                 )}
                 {contact.email && (
                   <a href={`mailto:${contact.email}`} className="flex items-center gap-4 group/contact">
                     <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Mail className="h-4 w-4" /></div>
-                    <span className="text-[14px] text-stone-900 font-bold tracking-wide break-all leading-tight">{contact.email}</span>
+                    <div className="flex flex-col">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Official Email</span>
+                      <span className="text-[14px] text-stone-900 font-bold tracking-wide break-all leading-tight">{contact.email}</span>
+                    </div>
+                  </a>
+                )}
+                {contact.supportEmail && (
+                  <a href={`mailto:${contact.supportEmail}`} className="flex items-center gap-4 group/contact">
+                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Mail className="h-4 w-4" /></div>
+                    <div className="flex flex-col">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Customer Care</span>
+                      <span className="text-[14px] text-stone-900 font-bold tracking-wide break-all leading-tight">{contact.supportEmail}</span>
+                    </div>
                   </a>
                 )}
               </div>
@@ -317,16 +342,34 @@ export function Footer() {
                 <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3"><CreditCard className="h-3.5 w-3.5" /> Financial Facilitation</h4>
                 <div className="space-y-6">
                   <div className="space-y-4 bg-white/50 backdrop-blur-md p-6 rounded-[2.5rem] border border-white/60 shadow-xl">
+                    {bank.accountName && (
+                      <div className="flex flex-col">
+                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Account Holder</span>
+                          <span className="text-[14px] text-stone-900 font-bold">{bank.accountName}</span>
+                      </div>
+                    )}
                     {bank.bankName && (
                       <div className="flex flex-col">
                           <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Bank</span>
                           <span className="text-[14px] text-stone-900 font-bold">{bank.bankName}</span>
                       </div>
                     )}
+                    {bank.branch && (
+                      <div className="flex flex-col">
+                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Branch</span>
+                          <span className="text-[14px] text-stone-900 font-bold">{bank.branch}</span>
+                      </div>
+                    )}
                     {bank.accountNumber && (
                       <div className="flex flex-col">
                           <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Account Number</span>
                           <span className="text-[14px] text-stone-900 font-bold font-mono tracking-tight">{bank.accountNumber}</span>
+                      </div>
+                    )}
+                    {bank.ifsc && (
+                      <div className="flex flex-col">
+                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">IFSC Code</span>
+                          <span className="text-[14px] text-stone-900 font-bold uppercase">{bank.ifsc}</span>
                       </div>
                     )}
                     {bank.upiId && (
@@ -352,6 +395,12 @@ export function Footer() {
                     <p className="text-[12px] font-bold text-rose-900/60 leading-tight">Handmade with Love</p>
                 </div>
             </motion.div>
+
+            <div className="pt-6 border-t border-stone-200/50">
+                <Badge className="bg-stone-900/5 text-stone-500 border-none px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
+                  Artisan v1.2
+                </Badge>
+            </div>
           </motion.div>
         </div>
 
