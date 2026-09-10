@@ -44,7 +44,7 @@ export function ChocolatierProfile() {
             <Badge variant="outline" className="border-accent/30 text-accent px-6 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.4em] bg-accent/5 shadow-sm">
               The Artisan Spirit
             </Badge>
-            <h2 className="text-4xl md:text-6xl font-bold font-headline text-stone-900 tracking-tight leading-tight">
+            <h2 className="text-4xl md:text-6xl font-bold font-headline tracking-tight leading-tight heading-red-emboss">
               Meet Our Chocolatier
             </h2>
           </motion.div>
