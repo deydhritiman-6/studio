@@ -31,7 +31,7 @@ const SEED_TESTIMONIALS: TestimonialDisplay[] = [
   { id: 's9', name: 'Arindam Ghosh', location: 'Behala, Kolkata', text: 'কলকাতার বুকে এমন সত্যিকারের আর্টজান চকোলেট স্টুডিও আর একটাও নেই। জাস্ট অসাধারণ।', lang: 'bn', rating: 5, source: 'Google' },
   { id: 's10', name: 'Sneha Kapoor', location: 'Delhi, NCR', text: 'Loved the Indian flavours infusion. The cardamom dark chocolate was a revelation.', lang: 'en', rating: 4, source: 'Google' },
   { id: 's11', name: 'Lucas Martin', location: 'Paris, France', text: 'Exquisite balance of bitterness and sweetness. Very impressive work.', lang: 'en', rating: 5, source: 'Website' },
-  { id: 's12', name: 'Ishita Paul', location: 'Garia, Kolkata', text: 'জন্মদিনের উপহার হিসেবে দারুণ। প্যাকেজিং একদম রাজকীয়।', lang: 'bn', rating: 4, source: 'Website' },
+  { id: 's12', name: 'Ishita Paul', location: 'Garia, Kolkata', text: 'জন্মদিনের উপহার হিসেবে দারুণ। প্যাকেজিং একদম রাজকীয়।', lang: 'bn', rating: 4, source: 'Website' },
   { id: 's13', name: 'Rahul Singh', location: 'Lucknow, UP', text: 'स्वाद और शुद्धता का बेजोड़ संगम। रोज़बेरी के चॉकलेटे वाकई लाजवाब हैं।', lang: 'hi', rating: 5, source: 'Google' },
   { id: 's14', name: 'Emma Brown', location: 'New York, USA', text: 'The raspberry ganache is world-class. Can wait to try the other collections.', lang: 'en', rating: 5, source: 'Google' },
   { id: 's15', name: 'Ritwick Bose', location: 'Shyambazar, Kolkata', text: 'প্রথাগত চকোলেটের বাইরে একদম নতুন স্বাদ। প্রেজেন্টেশন অনবদ্য।', lang: 'bn', rating: 4, source: 'Google' },
@@ -43,7 +43,7 @@ const SEED_TESTIMONIALS: TestimonialDisplay[] = [
   { id: 's21', name: 'Subhojit Das', location: 'Howrah, WB', text: 'বাড়ির লোকজনের খুব পছন্দ হয়েছে। দারুণ উপহার আইটেম।', lang: 'bn', rating: 4, source: 'Website' },
   { id: 's22', name: 'Kavita Reddy', location: 'Hyderabad, TS', text: 'The dark chocolate range is amazing. Truly authentic and artisanal.', lang: 'en', rating: 4, source: 'Google' },
   { id: 's23', name: 'Noah Williams', location: 'Melbourne, Australia', text: 'Impressive delivery speed to international locations. Pristine condition.', lang: 'en', rating: 5, source: 'Website' },
-  { id: 's24', name: 'Moumita Roy', location: 'Baguiati, Kolkata', text: 'ভীষণ সুন্দর ব্যবহার এবং চকোলেটের মানও অসাধারণ। আমাদের প্রিয় স্টোর এখন।', lang: 'bn', rating: 5, source: 'Google' },
+  { id: 's24', name: 'Moumita Roy', location: 'Baguiati, Kolkata', text: 'ভীষণ সুন্দর ব্যবহার এবং চকোলেটের মানও অসাধারণ। আমাদের প্রিয় স্টোর এখন।', lang: 'bn', rating: 5, source: 'Google' },
 ];
 
 const CocoaBeanIcon = ({ className }: { className?: string }) => (
@@ -196,6 +196,7 @@ function TestimonialCard({ testimonial, datasetId }: { testimonial: TestimonialD
 
 export function TestimonialMarquee({ liveTestimonials = [] }: { liveTestimonials?: Testimonial[] }) {
   const trackRef = useRef<HTMLDivElement>(null);
+  const isHoveredRef = useRef(false);
   const [mounted, setMounted] = useState(false);
 
   const combinedData = useMemo(() => {
@@ -222,15 +223,35 @@ export function TestimonialMarquee({ liveTestimonials = [] }: { liveTestimonials
     if (!track) return;
 
     let x = 0;
-    // Fast, confident premium speed (~2x previous pacing)
     const baseSpeed = 2.2; 
     let pauseEndTime = 0;
     let lastSnappedCardId = '';
+    let lastTime = performance.now();
 
     const animate = () => {
       if (!track) return;
+      
+      const now = performance.now();
+      const deltaTime = now - lastTime;
+      lastTime = now;
+
+      // Handle Hover-to-Pause
+      if (isHoveredRef.current) {
+        // If we are currently in a 1.5s center-pause, we must extend the pauseEndTime
+        // by the elapsed real-time to ensure the remaining pause time is preserved 
+        // after the user stops hovering.
+        if (now < pauseEndTime) {
+          pauseEndTime += deltaTime;
+        }
+        requestAnimationFrame(animate);
+        return;
+      }
+
       const firstGroup = track.querySelector('.testimonial-group');
-      if (!firstGroup) return;
+      if (!firstGroup) {
+        requestAnimationFrame(animate);
+        return;
+      }
       
       const groupWidth = firstGroup.scrollWidth;
       const viewportCenter = window.innerWidth / 2;
@@ -240,8 +261,6 @@ export function TestimonialMarquee({ liveTestimonials = [] }: { liveTestimonials
         x += groupWidth;
         lastSnappedCardId = ''; 
       }
-
-      const now = performance.now();
 
       if (now >= pauseEndTime) {
         // Normal fast movement
@@ -273,7 +292,7 @@ export function TestimonialMarquee({ liveTestimonials = [] }: { liveTestimonials
             const snapShift = viewportCenter - cardCenter;
             
             x += snapShift;
-            // Visible 1.5 second focus hold
+            // 1.5 second focus hold
             pauseEndTime = now + 1500; 
             lastSnappedCardId = cardId;
           }
@@ -291,7 +310,11 @@ export function TestimonialMarquee({ liveTestimonials = [] }: { liveTestimonials
   if (!mounted) return null;
 
   return (
-    <div className="testimonial-viewport">
+    <div 
+      className="testimonial-viewport"
+      onMouseEnter={() => { isHoveredRef.current = true; }}
+      onMouseLeave={() => { isHoveredRef.current = false; }}
+    >
       <div 
         ref={trackRef} 
         className="testimonial-track" 
