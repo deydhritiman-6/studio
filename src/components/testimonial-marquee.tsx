@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useEffect, useState, useRef } from 'react';
-import { MapPin, Quote, Globe, Search } from 'lucide-react';
+import { MapPin, Quote, Globe, Search, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import type { Testimonial } from '@/lib/types';
