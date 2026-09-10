@@ -185,8 +185,8 @@ export default function LandingPage() {
             >
               <div className="space-y-4">
                 <Badge className="bg-amber-600/10 text-amber-700 border-none px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em]">Signature Range</Badge>
-                <div className="overflow-visible py-2">
-                  <h2 className="text-4xl md:text-6xl font-bold font-headline tracking-tight heading-sweet-delights">Sweet Delights</h2>
+                <div className="overflow-visible py-2 px-2 md:px-4">
+                  <h2 className="text-3xl sm:text-4xl md:text-6xl font-bold font-headline tracking-tight heading-sweet-delights">Sweet Delights</h2>
                 </div>
               </div>
               <Button variant="ghost" className="text-stone-400 hover:text-primary font-bold uppercase tracking-widest text-xs" asChild>
