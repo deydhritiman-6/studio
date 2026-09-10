@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -24,6 +25,7 @@ import type { Product, Testimonial } from '@/lib/types';
 import { InsideRoseberryPreview } from '@/components/inside-roseberry-preview';
 import { TestimonialMarquee } from '@/components/testimonial-marquee';
 import { DirectorMessage } from '@/components/director-message';
+import { ChocolatierProfile } from '@/components/chocolatier-profile';
 import { Footer } from '@/components/footer';
 
 export default function LandingPage() {
@@ -295,6 +297,8 @@ export default function LandingPage() {
         <InsideRoseberryPreview />
 
         <DirectorMessage />
+        
+        <ChocolatierProfile />
 
         {/* Premium Animated Testimonial Section */}
         <section id="reviews" className="py-24 md:py-32 overflow-hidden bg-stone-50/50 backdrop-blur-sm relative">

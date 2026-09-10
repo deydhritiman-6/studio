@@ -496,3 +496,13 @@ export type DirectorSettings = {
   signatureUrl?: string;
   updatedAt: string;
 };
+
+export type ChocolatierSettings = {
+  name: string;
+  designation: string;
+  description: string;
+  quote?: string;
+  imageUrl: string;
+  isVisible: boolean;
+  updatedAt: string;
+};

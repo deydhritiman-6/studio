@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "Ingredient": {
@@ -149,6 +150,20 @@
         "visibility": { "type": "object" },
         "updatedAt": { "type": "string" }
       }
+    },
+    "ChocolatierSettings": {
+      "title": "Chocolatier Settings",
+      "description": "Dynamic profile for the master chocolatier.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "designation": { "type": "string" },
+        "description": { "type": "string" },
+        "quote": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "isVisible": { "type": "boolean" },
+        "updatedAt": { "type": "string" }
+      }
     }
   },
   "auth": {
@@ -174,6 +189,10 @@
     "/settings/{settingId}": {
       "schema": "#/backend/entities/SiteSettings",
       "description": "Global configuration settings."
+    },
+    "/siteContent/chocolatier": {
+      "schema": "#/backend/entities/ChocolatierSettings",
+      "description": "Artisan chocolatier profile data."
     }
   }
 }
