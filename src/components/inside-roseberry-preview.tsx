@@ -1,10 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight, Sparkles, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -14,10 +14,76 @@ import type { Facility, FacilitiesPageSettings } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ArtisanPerimeter } from '@/components/artisan-perimeter';
 
+function FacilityPreviewCard({ facility, index }: { facility: Facility; index: number }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.1 }}
+      viewport={{ once: true }}
+    >
+      <ArtisanPerimeter radius="2.5rem" className="shadow-sm hover:shadow-2xl transition-all duration-500 h-full">
+        <Card className="group overflow-hidden rounded-[2.5rem] border-none bg-white h-full relative z-10 flex flex-col">
+          <div className="aspect-[16/10] relative overflow-hidden shrink-0">
+            <Image
+              src={facility.imageUrl || 'https://picsum.photos/seed/facility/800/500'}
+              alt={facility.title}
+              fill
+              className="object-cover transition-transform duration-1000 group-hover:scale-110"
+              sizes="(max-width: 768px) 100vw, 33vw"
+            />
+            <div className="absolute top-4 left-6">
+              <span className="text-6xl font-black text-white/20 font-sans tracking-tighter drop-shadow-sm select-none">
+                {(facility.order || index + 1).toString().padStart(2, '0')}
+              </span>
+            </div>
+          </div>
+          <CardContent className="p-8 space-y-3 flex-1 flex flex-col">
+            <h3 className="text-2xl font-bold font-headline text-stone-900 leading-none">
+              {facility.title}
+            </h3>
+            <p className="text-[10px] text-primary font-black uppercase tracking-widest">
+              {facility.caption}
+            </p>
+            
+            <div className="relative flex-1">
+              <motion.div
+                initial={false}
+                animate={{ height: isExpanded ? 'auto' : '3rem' }}
+                className="overflow-hidden"
+              >
+                <p className={cn(
+                  "text-sm text-stone-500 font-light leading-relaxed",
+                  !isExpanded && "line-clamp-2"
+                )}>
+                  {facility.description}
+                </p>
+              </motion.div>
+              
+              <Button
+                variant="ghost"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="mt-3 h-auto p-0 text-[10px] font-black uppercase tracking-[0.2em] text-primary hover:bg-transparent hover:text-rose-700 transition-colors group/btn"
+              >
+                {isExpanded ? (
+                  <>View Less <ChevronUp className="ml-1 h-3 w-3 transition-transform group-hover/btn:-translate-y-0.5" /></>
+                ) : (
+                  <>View More <ChevronDown className="ml-1 h-3 w-3 transition-transform group-hover/btn:translate-y-0.5" /></>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </ArtisanPerimeter>
+    </motion.div>
+  );
+}
+
 export function InsideRoseberryPreview() {
   const firestore = useFirestore();
 
-  // Simplified query to avoid composite index requirement (where + where + orderBy)
   const facilitiesQuery = React.useMemo(() => {
     if (!firestore) return null;
     return query(
@@ -34,7 +100,6 @@ export function InsideRoseberryPreview() {
   const { data: allActiveFacilities, loading: facilitiesLoading } = useCollection<Facility>(facilitiesQuery);
   const { data: settings, loading: settingsLoading } = useDoc<FacilitiesPageSettings>(settingsRef as any);
 
-  // Perform filtering and sorting client-side to satisfy business logic without DB indexes
   const facilities = React.useMemo(() => {
     if (!allActiveFacilities) return [];
     return allActiveFacilities
@@ -65,7 +130,6 @@ export function InsideRoseberryPreview() {
 
   return (
     <section className="py-32 px-6 bg-white/40 backdrop-blur-md relative overflow-hidden">
-      {/* Decorative background elements */}
       <div className="absolute top-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl translate-x-1/3 translate-y-1/3"></div>
 
@@ -85,45 +149,9 @@ export function InsideRoseberryPreview() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 items-start">
           {facilities.map((facility, index) => (
-            <motion.div
-              key={facility.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              viewport={{ once: true }}
-            >
-              <ArtisanPerimeter radius="2.5rem" className="shadow-sm hover:shadow-2xl transition-all duration-500">
-                <Card className="group overflow-hidden rounded-[2.5rem] border-none bg-white h-full relative z-10">
-                  <div className="aspect-[16/10] relative overflow-hidden">
-                    <Image
-                      src={facility.imageUrl || 'https://picsum.photos/seed/facility/800/500'}
-                      alt={facility.title}
-                      fill
-                      className="object-cover transition-transform duration-1000 group-hover:scale-110"
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                    />
-                    <div className="absolute top-4 left-6">
-                      <span className="text-6xl font-black text-white/20 font-sans tracking-tighter drop-shadow-sm select-none">
-                        {(facility.order || index + 1).toString().padStart(2, '0')}
-                      </span>
-                    </div>
-                  </div>
-                  <CardContent className="p-8 space-y-3">
-                    <h3 className="text-2xl font-bold font-headline text-stone-900 leading-none">
-                      {facility.title}
-                    </h3>
-                    <p className="text-[10px] text-primary font-black uppercase tracking-widest">
-                      {facility.caption}
-                    </p>
-                    <p className="text-sm text-stone-500 font-light leading-relaxed line-clamp-2">
-                      {facility.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              </ArtisanPerimeter>
-            </motion.div>
+            <FacilityPreviewCard key={facility.id} facility={facility} index={index} />
           ))}
         </div>
 
