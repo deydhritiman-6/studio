@@ -352,6 +352,8 @@
   animation: sweetDelightsFlow 10s linear infinite;
   filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.3));
   display: inline-block;
+  line-height: 1.4; /* Increase line-height to prevent clipping of descenders */
+  padding-bottom: 0.2em; /* Extra padding for bottom-heavy letters like 'g' */
 }
 
 @keyframes sweetDelightsFlow {
