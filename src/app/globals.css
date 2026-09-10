@@ -349,7 +349,7 @@
   );
   
   /* Step 3: Gradient Sizing for Flow */
-  background-size: 300% auto;
+  background-size: 200% auto;
   background-position: 0% center;
   
   /* Step 4: Text Clipping & Fill - Essential for Animated Text */
@@ -359,13 +359,13 @@
   color: transparent !important;
   
   /* Step 5: Animation & Aesthetics */
-  animation: sweetDelightsFlowFinal 6s linear infinite;
+  animation: sweetDelightsFlowFinal 8s linear infinite;
   filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.35));
 }
 
 @keyframes sweetDelightsFlowFinal {
   0% { background-position: 0% center; }
-  100% { background-position: 150% center; }
+  100% { background-position: 200% center; }
 }
 
 /* Step 6: The Independent Travelling Light Sweep (Glint) */
@@ -400,7 +400,7 @@
   -webkit-text-fill-color: transparent !important;
   
   /* Animate Glint Sweep */
-  animation: sweetDelightsGlintFinal 4s ease-in-out infinite;
+  animation: sweetDelightsGlintFinal 5s ease-in-out infinite;
 }
 
 @keyframes sweetDelightsGlintFinal {

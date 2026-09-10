@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import React, { useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -172,10 +173,16 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Sweet Delights Section - Now sitting above Our Story */}
+        {/* Sweet Delights Section - Now with advanced animations */}
         <section className="py-32 px-6">
           <div className="max-w-7xl mx-auto space-y-20">
-            <div className="flex flex-col md:flex-row items-end justify-between gap-8">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1 }}
+              viewport={{ once: true }}
+              className="flex flex-col md:flex-row items-end justify-between gap-8"
+            >
               <div className="space-y-4">
                 <Badge className="bg-amber-600/10 text-amber-700 border-none px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em]">Signature Range</Badge>
                 <h2 className="text-4xl md:text-6xl font-bold font-headline tracking-tight heading-sweet-delights">Sweet Delights</h2>
@@ -183,7 +190,7 @@ export default function LandingPage() {
               <Button variant="ghost" className="text-stone-400 hover:text-primary font-bold uppercase tracking-widest text-xs" asChild>
                 <Link href="/shop">View Complete Catalog <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
-            </div>
+            </motion.div>
 
             {productsLoading ? (
               <div className="flex justify-center py-20">
@@ -191,29 +198,37 @@ export default function LandingPage() {
               </div>
             ) : sweetDelights.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
-                {sweetDelights.map((product) => (
-                  <Link key={product.id} href={`/shop/product/${product.id}`} className="group cursor-pointer">
-                    <div className="aspect-square relative rounded-[2.5rem] overflow-hidden bg-white artisan-card-premium">
-                      <Image 
-                        src={product.imageUrls?.[0] || 'https://picsum.photos/seed/rose-choc/600/800'} 
-                        alt={product.name} 
-                        fill 
-                        className="object-cover transition-transform duration-1000 group-hover:scale-110" 
-                        data-ai-hint={product.imageHint || "luxury chocolate"}
-                        sizes="(max-width: 768px) 100vw, 33vw"
-                      />
-                      <div className="absolute inset-0 bg-stone-900/10 group-hover:bg-stone-900/30 transition-colors duration-500"></div>
-                      <div className="absolute bottom-10 left-10 right-10 text-white space-y-2">
-                         <h3 className="text-3xl font-bold font-headline drop-shadow-md">{product.name}</h3>
-                         <p className="text-sm font-light text-white/90 opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 duration-500 drop-shadow-md line-clamp-2">
-                           {product.flavor} — A masterpiece of artisan tempering and pure cacao excellence.
-                         </p>
-                         <p className="text-xl font-bold text-primary opacity-0 group-hover:opacity-100 transition-all duration-500">
-                           ₹{product.price.toLocaleString()}
-                         </p>
+                {sweetDelights.map((product, index) => (
+                  <motion.div
+                    key={product.id}
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                  >
+                    <Link href={`/shop/product/${product.id}`} className="group cursor-pointer block">
+                      <div className="aspect-square relative rounded-[2.5rem] overflow-hidden bg-white artisan-card-premium">
+                        <Image 
+                          src={product.imageUrls?.[0] || 'https://picsum.photos/seed/rose-choc/600/800'} 
+                          alt={product.name} 
+                          fill 
+                          className="object-cover transition-transform duration-1000 group-hover:scale-110" 
+                          data-ai-hint={product.imageHint || "luxury chocolate"}
+                          sizes="(max-width: 768px) 100vw, 33vw"
+                        />
+                        <div className="absolute inset-0 bg-stone-900/10 group-hover:bg-stone-900/30 transition-colors duration-500"></div>
+                        <div className="absolute bottom-10 left-10 right-10 text-white space-y-2">
+                           <h3 className="text-3xl font-bold font-headline drop-shadow-md">{product.name}</h3>
+                           <p className="text-sm font-light text-white/90 opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 duration-500 drop-shadow-md line-clamp-2">
+                             {product.flavor} — A masterpiece of artisan tempering and pure cacao excellence.
+                           </p>
+                           <p className="text-xl font-bold text-primary opacity-0 group-hover:opacity-100 transition-all duration-500">
+                             ₹{product.price.toLocaleString()}
+                           </p>
+                        </div>
                       </div>
-                    </div>
-                  </Link>
+                    </Link>
+                  </motion.div>
                 ))}
               </div>
             ) : (
