@@ -266,40 +266,48 @@
 
 @keyframes glint-travel {
   0% { top: 0; left: 0; opacity: 0; transform: scale(0) rotate(0deg); }
-  5% { opacity: 1; transform: scale(1) rotate(45deg); }
-  20% { top: 0; left: 100%; transform: scale(1) rotate(90deg); }
-  45% { top: 100%; left: 100%; transform: scale(1) rotate(180deg); }
-  70% { top: 100%; left: 0; transform: scale(1) rotate(270deg); }
-  95% { opacity: 1; transform: scale(1) rotate(315deg); }
+  5% { opacity: 1; transform: scale(1.2) rotate(45deg); }
+  25% { top: 0; left: 100%; transform: scale(1.2) rotate(90deg); }
+  50% { top: 100%; left: 100%; transform: scale(1.2) rotate(180deg); }
+  75% { top: 100%; left: 0; transform: scale(1.2) rotate(270deg); }
+  95% { opacity: 1; transform: scale(1.2) rotate(315deg); }
   100% { top: 0; left: 0; opacity: 0; transform: scale(0) rotate(360deg); }
 }
 
 .artisan-card-premium {
   position: relative;
   transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1.5px solid rgba(212, 175, 55, 0.35);
-  box-shadow: 0 40px 80px -20px rgba(61, 30, 22, 0.2);
+  border: 2.5px solid rgba(212, 175, 55, 0.45);
+  /* Deeper, wider, multi-layered soft shadow */
+  box-shadow: 
+    0 40px 100px -30px rgba(61, 30, 22, 0.15),
+    0 20px 50px -20px rgba(61, 30, 22, 0.1),
+    0 10px 20px -10px rgba(0, 0, 0, 0.05);
 }
 
 .artisan-card-premium:hover {
-  transform: translateY(-5px) scale(1.02);
-  border-color: rgba(212, 175, 55, 0.8);
-  box-shadow: 0 60px 120px -30px rgba(61, 30, 22, 0.35);
+  transform: translateY(-8px) scale(1.02);
+  border-color: rgba(212, 175, 55, 1);
+  /* Significantly more prominent but still soft shadow on hover */
+  box-shadow: 
+    0 80px 150px -40px rgba(61, 30, 22, 0.3),
+    0 40px 80px -20px rgba(61, 30, 22, 0.2),
+    0 20px 40px -10px rgba(0, 0, 0, 0.1);
 }
 
 /* Sweep trail overlay */
 .artisan-card-premium::before {
   content: '';
   position: absolute;
-  inset: -1.5px;
-  padding: 1.5px;
+  inset: -2.5px;
+  padding: 2.5px;
   border-radius: inherit;
   background: linear-gradient(
     90deg, 
     transparent, 
-    rgba(212, 175, 55, 0.2), 
-    rgba(255, 255, 255, 0.6), 
-    rgba(212, 175, 55, 0.2), 
+    rgba(212, 175, 55, 0.4), 
+    rgba(255, 255, 255, 0.8), 
+    rgba(212, 175, 55, 0.4), 
     transparent
   );
   background-size: 200% 200%;
@@ -316,15 +324,15 @@
 .artisan-card-premium::after {
   content: '';
   position: absolute;
-  width: 12px;
-  height: 12px;
-  background: radial-gradient(circle, #fff 10%, #D4AF37 40%, transparent 70%);
-  filter: drop-shadow(0 0 6px #fff);
+  width: 14px;
+  height: 14px;
+  background: radial-gradient(circle, #fff 15%, #D4AF37 45%, transparent 75%);
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
   clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
   opacity: 0;
   z-index: 50;
   pointer-events: none;
-  margin: -6px 0 0 -6px; /* Offset to center on border */
+  margin: -7px 0 0 -7px; /* Centered on 14px */
 }
 
 .artisan-card-premium:hover::before {
@@ -332,7 +340,7 @@
 }
 
 .artisan-card-premium:hover::after {
-  animation: glint-travel 4s linear infinite;
+  animation: glint-travel 4.5s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
