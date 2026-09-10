@@ -263,17 +263,35 @@
   100% { background-position: 0% 50%; }
 }
 
+@keyframes corner-sparkle-sequence {
+  0%, 100% { opacity: 0; transform: translate(15px, 15px) scale(0) rotate(0deg); }
+  5%, 15% { opacity: 1; transform: translate(15px, 15px) scale(1.4) rotate(45deg); }
+  20% { opacity: 0; transform: translate(15px, 15px) scale(0) rotate(90deg); }
+  
+  25% { opacity: 0; transform: translate(calc(100% - 40px), 15px) scale(0) rotate(90deg); }
+  30%, 40% { opacity: 1; transform: translate(calc(100% - 40px), 15px) scale(1.4) rotate(135deg); }
+  45% { opacity: 0; transform: translate(calc(100% - 40px), 15px) scale(0) rotate(180deg); }
+
+  50% { opacity: 0; transform: translate(calc(100% - 40px), calc(100% - 40px)) scale(0) rotate(180deg); }
+  55%, 65% { opacity: 1; transform: translate(calc(100% - 40px), calc(100% - 40px)) scale(1.4) rotate(225deg); }
+  70% { opacity: 0; transform: translate(calc(100% - 40px), calc(100% - 40px)) scale(0) rotate(270deg); }
+
+  75% { opacity: 0; transform: translate(15px, calc(100% - 40px)) scale(0) rotate(270deg); }
+  80%, 90% { opacity: 1; transform: translate(15px, calc(100% - 40px)) scale(1.4) rotate(315deg); }
+  95% { opacity: 0; transform: translate(15px, calc(100% - 40px)) scale(0) rotate(360deg); }
+}
+
 .artisan-card-premium {
   position: relative;
   transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
   border: 2.5px solid rgba(212, 175, 55, 0.25); /* Slightly thicker soft gold */
-  box-shadow: 0 25px 60px -15px rgba(61, 30, 22, 0.2); /* Deepened base shadow */
+  box-shadow: 0 50px 100px -25px rgba(61, 30, 22, 0.4); /* Deepened base shadow */
 }
 
 .artisan-card-premium:hover {
   transform: scale(1.02);
   border-color: rgba(212, 175, 55, 0.7);
-  box-shadow: 0 50px 100px -25px rgba(61, 30, 22, 0.4); /* Intense elevated shadow */
+  box-shadow: 0 70px 140px -35px rgba(61, 30, 22, 0.5); /* Even deeper on hover */
 }
 
 /* Sparkle overlay */
@@ -304,9 +322,28 @@
   z-index: 10;
 }
 
+/* Corner Sparkle Glint */
+.artisan-card-premium::after {
+  content: '✦';
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: #fff;
+  font-size: 24px;
+  text-shadow: 0 0 10px #D4AF37, 0 0 20px #fff;
+  opacity: 0;
+  z-index: 50;
+  pointer-events: none;
+  filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.8));
+}
+
 .artisan-card-premium:hover::before {
   opacity: 1;
   animation: border-sparkle-travel 4s linear infinite;
+}
+
+.artisan-card-premium:hover::after {
+  animation: corner-sparkle-sequence 4s infinite linear;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -316,7 +353,8 @@
   .animate-ribbon-flow,
   .footer-navigation-link:hover,
   .artisan-card-premium,
-  .artisan-card-premium:hover::before {
+  .artisan-card-premium:hover::before,
+  .artisan-card-premium:hover::after {
     animation: none !important;
     transition: none !important;
     transform: none !important;
