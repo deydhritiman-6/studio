@@ -223,8 +223,19 @@ export function Footer() {
                   <div className="relative group overflow-hidden rounded-[2.5rem] border-2 border-white/60 shadow-2xl bg-white/40 backdrop-blur-md transition-all duration-500">
                     {isValidEmbedUrl(maps.embedUrl) ? (
                       <div className="flex flex-col">
-                        <div className="h-[220px] w-full border-b border-white/20">
+                        <div className="h-[220px] w-full border-b border-white/20 relative group/map">
                           <iframe src={maps.embedUrl} width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" className="grayscale-[20%] hover:grayscale-0 transition-all duration-700" />
+                          {/* Functional "Open in Maps ↗" Overlay */}
+                          {maps.mapUrl && (
+                            <a 
+                              href={maps.mapUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="absolute top-4 right-4 bg-white/90 backdrop-blur-xl px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-stone-900 shadow-2xl opacity-0 group-hover/map:opacity-100 transition-all duration-300 hover:bg-white hover:scale-105 active:scale-95 flex items-center gap-2 border border-white/50 z-30 pointer-events-auto"
+                            >
+                              Open in Maps <ExternalLink className="h-3 w-3" />
+                            </a>
+                          )}
                         </div>
                         <div className="p-6 space-y-4 bg-white/60">
                            <div className="flex items-start gap-3">
@@ -246,7 +257,7 @@ export function Footer() {
                     ) : (
                       <div className="p-10 text-center space-y-4">
                         <MapPin className="h-8 w-8 mx-auto text-stone-200" />
-                        <p className="text-[10px] font-black uppercase tracking-0.2em text-stone-400">Location map unavailable</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Location map unavailable</p>
                       </div>
                     )}
                   </div>
