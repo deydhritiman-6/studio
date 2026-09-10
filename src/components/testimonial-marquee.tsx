@@ -222,13 +222,17 @@ export function TestimonialMarquee({ liveTestimonials = [] }: { liveTestimonials
     if (!track) return;
 
     let x = 0;
-    const baseSpeed = 1.1; // Restored original pacing
+    // Fast, confident premium speed (~2x previous pacing)
+    const baseSpeed = 2.2; 
     let pauseEndTime = 0;
     let lastSnappedCardId = '';
 
     const animate = () => {
       if (!track) return;
-      const groupWidth = track.firstElementChild?.scrollWidth || 0;
+      const firstGroup = track.querySelector('.testimonial-group');
+      if (!firstGroup) return;
+      
+      const groupWidth = firstGroup.scrollWidth;
       const viewportCenter = window.innerWidth / 2;
 
       // Handle infinite loop reset
@@ -240,10 +244,10 @@ export function TestimonialMarquee({ liveTestimonials = [] }: { liveTestimonials
       const now = performance.now();
 
       if (now >= pauseEndTime) {
-        // Normal movement
+        // Normal fast movement
         x -= baseSpeed;
         
-        // Detection for snap point
+        // Precision center-of-screen detection
         const cards = Array.from(track.querySelectorAll('.testimonial-card')) as HTMLElement[];
         let closestCard: HTMLElement | null = null;
         let minDistance = Infinity;
@@ -261,15 +265,16 @@ export function TestimonialMarquee({ liveTestimonials = [] }: { liveTestimonials
         if (closestCard) {
           const cardId = closestCard.dataset.id || '';
           
-          // Trigger snap/pause if we are precisely within reach of center and it's a new card
+          // Trigger snap/pause when the card center aligns with the viewport center
           if (minDistance < baseSpeed && cardId !== lastSnappedCardId) {
-            // SNAP: Calculate exactly how much to shift x to center the card perfectly
+            // Perfect alignment snap
             const rect = closestCard.getBoundingClientRect();
             const cardCenter = rect.left + rect.width / 2;
             const snapShift = viewportCenter - cardCenter;
             
             x += snapShift;
-            pauseEndTime = now + 600; // 600ms hold
+            // Visible 1.5 second focus hold
+            pauseEndTime = now + 1500; 
             lastSnappedCardId = cardId;
           }
         }
