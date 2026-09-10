@@ -53,7 +53,8 @@ import {
   Wallet,
   Building,
   MessageSquareQuote,
-  Layout
+  Layout,
+  MessageSquareText
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -73,8 +74,8 @@ import { collection } from 'firebase/firestore';
 import { signInAnonymously } from 'firebase/auth';
 import type { InventoryItem } from '@/lib/types';
 import { getWorkspaceConfig, WORKSPACE_COLORS } from '@/lib/page-colors';
-import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -146,6 +147,7 @@ const navItems = [
     label: 'Optimization',
     subItems: [
       { href: '/seo-dashboard', icon: Search, label: 'SEO Intelligence' },
+      { href: '/settings/director', icon: MessageSquareText, label: 'Director Message' },
       { href: '/settings/firestore-rules', icon: Lock, label: 'Security Rules' },
       { href: '/settings/footer', icon: Layout, label: 'Footer Architecture' },
     ],

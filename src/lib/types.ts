@@ -486,3 +486,13 @@ export type FacilitiesPageSettings = {
   bottomDescription: string;
   logoUrl?: string;
 };
+
+export type DirectorSettings = {
+  enabled: boolean;
+  name: string;
+  designation?: string;
+  message: string;
+  photoUrl: string;
+  signatureUrl?: string;
+  updatedAt: string;
+};
