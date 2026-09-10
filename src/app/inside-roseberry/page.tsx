@@ -147,20 +147,22 @@ export default function InsideRoseberryPage() {
                     className="group"
                   >
                     <div className="space-y-8">
-                      <div className="aspect-[4/3] relative rounded-[3rem] overflow-hidden shadow-xl border-4 border-white transition-transform duration-700 group-hover:scale-[1.02]">
-                        <Image 
-                          src={facility.imageUrl || 'https://picsum.photos/seed/fac/800/600'} 
-                          alt={facility.title}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, 33vw"
-                        />
-                        <div className="absolute top-6 left-8">
-                          <span className="text-7xl font-black text-white/30 font-sans tracking-tighter drop-shadow-sm select-none">
-                            {(facility.order || index + 1).toString().padStart(2, '0')}
-                          </span>
+                      <div className="rainbow-flow-container rounded-[3rem] shadow-xl transition-transform duration-700 group-hover:scale-[1.02]">
+                        <div className="aspect-[4/3] relative rounded-[3rem] overflow-hidden bg-white relative z-10">
+                          <Image 
+                            src={facility.imageUrl || 'https://picsum.photos/seed/fac/800/600'} 
+                            alt={facility.title}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 100vw, 33vw"
+                          />
+                          <div className="absolute top-6 left-8">
+                            <span className="text-7xl font-black text-white/30 font-sans tracking-tighter drop-shadow-sm select-none">
+                              {(facility.order || index + 1).toString().padStart(2, '0')}
+                            </span>
+                          </div>
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                         </div>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                       </div>
                       
                       <div className="space-y-4 px-4">

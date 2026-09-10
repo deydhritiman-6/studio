@@ -93,8 +93,8 @@ export function InsideRoseberryPreview() {
               transition={{ delay: index * 0.1 }}
               viewport={{ once: true }}
             >
-              <div className="rainbow-flow-container shadow-sm hover:shadow-2xl transition-all duration-500">
-                <Card className="group overflow-hidden rounded-[2.5rem] border-none bg-white h-full">
+              <div className="rainbow-flow-container rounded-[2.5rem] shadow-sm hover:shadow-2xl transition-all duration-500">
+                <Card className="group overflow-hidden rounded-[2.5rem] border-none bg-white h-full relative z-10">
                   <div className="aspect-[16/10] relative overflow-hidden">
                     <Image
                       src={facility.imageUrl || 'https://picsum.photos/seed/facility/800/500'}
