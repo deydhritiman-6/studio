@@ -406,6 +406,49 @@
   100% { background-position: 200% 0; }
 }
 
+/* --- Artisan Rainbow Border Flow --- */
+@keyframes rainbow-border-spin {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.rainbow-flow-container {
+  position: relative;
+  padding: 1.5px; /* Thin, elegant border */
+  overflow: hidden;
+  border-radius: 2.5rem;
+  isolation: isolate;
+  background: transparent;
+}
+
+.rainbow-flow-container::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 250%; /* Large enough to cover corners at all angles */
+  height: 250%;
+  background: conic-gradient(
+    from 0deg,
+    #ff0000,
+    #ffa500,
+    #ffff00,
+    #008000,
+    #00ffff,
+    #0000ff,
+    #800080,
+    #ffc0cb,
+    #ff0000
+  );
+  animation: rainbow-border-spin 7s linear infinite;
+  z-index: -1;
+  filter: blur(1.5px); /* Soften for premium glow */
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-drifting-glow,
   .animate-drifting-glow-reverse,
@@ -416,7 +459,8 @@
   .artisan-card-premium:hover::before,
   .artisan-card-premium:hover::after,
   .heading-sweet-delights,
-  .heading-sweet-delights::after {
+  .heading-sweet-delights::after,
+  .rainbow-flow-container::before {
     animation: none !important;
     transition: none !important;
     transform: none !important;

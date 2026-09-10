@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -94,33 +93,35 @@ export function InsideRoseberryPreview() {
               transition={{ delay: index * 0.1 }}
               viewport={{ once: true }}
             >
-              <Card className="group overflow-hidden rounded-[2.5rem] border-stone-100 shadow-sm hover:shadow-2xl transition-all duration-500 bg-white">
-                <div className="aspect-[16/10] relative overflow-hidden">
-                  <Image
-                    src={facility.imageUrl || 'https://picsum.photos/seed/facility/800/500'}
-                    alt={facility.title}
-                    fill
-                    className="object-cover transition-transform duration-1000 group-hover:scale-110"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
-                  <div className="absolute top-4 left-6">
-                    <span className="text-6xl font-black text-white/20 font-sans tracking-tighter drop-shadow-sm select-none">
-                      {(facility.order || index + 1).toString().padStart(2, '0')}
-                    </span>
+              <div className="rainbow-flow-container shadow-sm hover:shadow-2xl transition-all duration-500">
+                <Card className="group overflow-hidden rounded-[2.5rem] border-none bg-white h-full">
+                  <div className="aspect-[16/10] relative overflow-hidden">
+                    <Image
+                      src={facility.imageUrl || 'https://picsum.photos/seed/facility/800/500'}
+                      alt={facility.title}
+                      fill
+                      className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                    />
+                    <div className="absolute top-4 left-6">
+                      <span className="text-6xl font-black text-white/20 font-sans tracking-tighter drop-shadow-sm select-none">
+                        {(facility.order || index + 1).toString().padStart(2, '0')}
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <CardContent className="p-8 space-y-3">
-                  <h3 className="text-2xl font-bold font-headline text-stone-900 leading-none">
-                    {facility.title}
-                  </h3>
-                  <p className="text-[10px] text-primary font-black uppercase tracking-widest">
-                    {facility.caption}
-                  </p>
-                  <p className="text-sm text-stone-500 font-light leading-relaxed line-clamp-2">
-                    {facility.description}
-                  </p>
-                </CardContent>
-              </Card>
+                  <CardContent className="p-8 space-y-3">
+                    <h3 className="text-2xl font-bold font-headline text-stone-900 leading-none">
+                      {facility.title}
+                    </h3>
+                    <p className="text-[10px] text-primary font-black uppercase tracking-widest">
+                      {facility.caption}
+                    </p>
+                    <p className="text-sm text-stone-500 font-light leading-relaxed line-clamp-2">
+                      {facility.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
             </motion.div>
           ))}
         </div>
