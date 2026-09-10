@@ -154,7 +154,7 @@ export function TestimonialMarquee({ liveTestimonials = [] }: { liveTestimonials
       const groupWidth = totalCount * step;
 
       // Base target speed (pixels per millisecond)
-      const targetSpeed = 0.06;
+      const targetSpeed = 0.055;
       let currentSpeed = targetSpeed;
 
       if (isHoveredRef.current) {
@@ -168,23 +168,23 @@ export function TestimonialMarquee({ liveTestimonials = [] }: { liveTestimonials
         const snapX = viewportCenter - (nearestIndex * step) - (cardWidth / 2);
         const distance = Math.abs(xRef.current - snapX);
 
-        // Slow down as we approach the center
-        if (nearestIndex !== lastSnappedIndex.current && distance < 100) {
-          // Gently slow down using a power curve for smoothness
-          const factor = Math.pow(distance / 100, 1.5);
-          currentSpeed = targetSpeed * factor;
+        // Smoothly slow down as we approach the center
+        if (nearestIndex !== lastSnappedIndex.current && distance < 80) {
+          // Gently slow down using a power curve
+          const factor = Math.pow(distance / 80, 1.4);
+          currentSpeed = targetSpeed * Math.max(0.1, factor);
 
           // If close enough to center, snap and pause
-          if (distance < 0.5) {
+          if (distance < 0.8) {
             xRef.current = snapX;
             currentSpeed = 0;
-            pauseTimerRef.current = 750; // Pause for 0.75 seconds
+            pauseTimerRef.current = 600; // Pause for exactly 0.6 seconds
             lastSnappedIndex.current = nearestIndex;
           }
-        } else if (nearestIndex === lastSnappedIndex.current && distance < 100) {
+        } else if (nearestIndex === lastSnappedIndex.current && distance < 80) {
           // Smoothly accelerate as we leave the center
-          const factor = Math.pow(distance / 100, 0.5);
-          currentSpeed = targetSpeed * Math.max(0.2, factor);
+          const factor = Math.pow(distance / 80, 0.4);
+          currentSpeed = targetSpeed * Math.max(0.15, factor);
         }
       }
 
@@ -233,6 +233,16 @@ export function TestimonialMarquee({ liveTestimonials = [] }: { liveTestimonials
           ))}
         </div>
       </div>
+
+      <style jsx>{`
+        .testimonial-group {
+          display: flex;
+          flex-direction: row;
+          gap: 24px;
+          padding-right: 24px;
+          flex-shrink: 0;
+        }
+      `}</style>
     </div>
   );
 }
@@ -247,14 +257,17 @@ function TestimonialCard({ testimonial }: { testimonial: TestimonialDisplay }) {
   const variant = getCardVariant(testimonial.id);
 
   return (
-    <article className={cn(
-      "testimonial-card",
-      "p-10 rounded-[2.5rem] border-2 bg-gradient-to-br backdrop-blur-xl",
-      "shadow-[0_20px_50px_-20px_rgba(0,0,0,0.1)] transition-all duration-500 ease-out",
-      "hover:-translate-y-2 hover:shadow-[0_30px_60px_-20px_rgba(0,0,0,0.2)] group/card",
-      variant.bg,
-      variant.border
-    )}>
+    <article 
+      className={cn(
+        "testimonial-card",
+        "p-10 rounded-[2.5rem] border-2 bg-gradient-to-br backdrop-blur-xl",
+        "shadow-[0_20px_50px_-20px_rgba(0,0,0,0.1)] transition-all duration-500 ease-out",
+        "hover:-translate-y-2 hover:shadow-[0_30px_60px_-20px_rgba(0,0,0,0.2)] group/card",
+        variant.bg,
+        variant.border
+      )}
+      style={{ width: '330px', flexShrink: 0 }}
+    >
       <Quote className="absolute -top-6 -left-4 h-32 w-32 text-stone-900/[0.02] -z-10 transition-transform group-hover/card:scale-110" />
       
       <div className="flex flex-col h-full justify-between gap-6 relative z-10">
