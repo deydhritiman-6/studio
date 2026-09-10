@@ -109,7 +109,7 @@ const getCardVariant = (id: string) => {
   return variants[hash % variants.length];
 };
 
-function TestimonialCard({ testimonial }: { testimonial: TestimonialDisplay }) {
+function TestimonialCard({ testimonial, datasetId }: { testimonial: TestimonialDisplay, datasetId: string }) {
   const initials = testimonial.name
     .split(' ')
     .map((n) => n[0])
@@ -120,6 +120,7 @@ function TestimonialCard({ testimonial }: { testimonial: TestimonialDisplay }) {
 
   return (
     <article 
+      data-id={datasetId}
       className={cn(
         "testimonial-card",
         "p-10 rounded-[2.5rem] border-2 bg-gradient-to-br backdrop-blur-xl",
@@ -194,9 +195,7 @@ function TestimonialCard({ testimonial }: { testimonial: TestimonialDisplay }) {
 }
 
 export function TestimonialMarquee({ liveTestimonials = [] }: { liveTestimonials?: Testimonial[] }) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
-  const [isPaused, setIsPaused] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   const combinedData = useMemo(() => {
@@ -223,30 +222,29 @@ export function TestimonialMarquee({ liveTestimonials = [] }: { liveTestimonials
     if (!track) return;
 
     let x = 0;
-    let baseSpeed = 0.8;
-    let currentSpeed = baseSpeed;
+    const baseSpeed = 1.1; // Restored original pacing
     let pauseEndTime = 0;
     let lastSnappedCardId = '';
 
-    const animate = (time: number) => {
+    const animate = () => {
       if (!track) return;
       const groupWidth = track.firstElementChild?.scrollWidth || 0;
       const viewportCenter = window.innerWidth / 2;
 
-      // Handle the infinite loop reset
+      // Handle infinite loop reset
       if (x <= -groupWidth) {
         x += groupWidth;
-        lastSnappedCardId = ''; // Reset snap history on loop
+        lastSnappedCardId = ''; 
       }
 
       const now = performance.now();
 
-      // Check if we should be currently pausing
-      if (now < pauseEndTime) {
-        currentSpeed = 0;
-      } else {
-        // Find the card closest to the center
-        const cards = Array.from(track.querySelectorAll('.testimonial-card'));
+      if (now >= pauseEndTime) {
+        // Normal movement
+        x -= baseSpeed;
+        
+        // Detection for snap point
+        const cards = Array.from(track.querySelectorAll('.testimonial-card')) as HTMLElement[];
         let closestCard: HTMLElement | null = null;
         let minDistance = Infinity;
 
@@ -256,30 +254,27 @@ export function TestimonialMarquee({ liveTestimonials = [] }: { liveTestimonials
           const distance = Math.abs(cardCenter - viewportCenter);
           if (distance < minDistance) {
             minDistance = distance;
-            closestCard = card as HTMLElement;
+            closestCard = card;
           }
         });
 
-        const snapZone = 100; // px from center to start slowing down
-        const cardId = closestCard ? (closestCard as any).dataset.id : '';
-
-        if (minDistance < snapZone && cardId !== lastSnappedCardId) {
-          // Gently slow down as we approach center
-          currentSpeed = baseSpeed * (minDistance / snapZone);
+        if (closestCard) {
+          const cardId = closestCard.dataset.id || '';
           
-          // Snap threshold: if very close to center, trigger the 0.6s pause
-          if (minDistance < 2) {
-            pauseEndTime = now + 600; // 0.6 second pause
+          // Trigger snap/pause if we are precisely within reach of center and it's a new card
+          if (minDistance < baseSpeed && cardId !== lastSnappedCardId) {
+            // SNAP: Calculate exactly how much to shift x to center the card perfectly
+            const rect = closestCard.getBoundingClientRect();
+            const cardCenter = rect.left + rect.width / 2;
+            const snapShift = viewportCenter - cardCenter;
+            
+            x += snapShift;
+            pauseEndTime = now + 600; // 600ms hold
             lastSnappedCardId = cardId;
-            currentSpeed = 0;
           }
-        } else {
-          // Smoothly accelerate back to base speed
-          currentSpeed = baseSpeed;
         }
       }
 
-      x -= currentSpeed;
       track.style.transform = `translate3d(${x}px, 0, 0)`;
       requestAnimationFrame(animate);
     };
@@ -291,7 +286,7 @@ export function TestimonialMarquee({ liveTestimonials = [] }: { liveTestimonials
   if (!mounted) return null;
 
   return (
-    <div ref={containerRef} className="testimonial-viewport">
+    <div className="testimonial-viewport">
       <div 
         ref={trackRef} 
         className="testimonial-track" 
@@ -299,16 +294,12 @@ export function TestimonialMarquee({ liveTestimonials = [] }: { liveTestimonials
       >
         <div className="testimonial-group" style={{ display: 'flex', gap: '24px', paddingRight: '24px' }}>
           {combinedData.map((t) => (
-            <div key={t.id} data-id={t.id}>
-              <TestimonialCard testimonial={t} />
-            </div>
+            <TestimonialCard key={t.id} datasetId={t.id} testimonial={t} />
           ))}
         </div>
         <div className="testimonial-group" aria-hidden="true" style={{ display: 'flex', gap: '24px', paddingRight: '24px' }}>
           {combinedData.map((t) => (
-            <div key={`dup-${t.id}`} data-id={`dup-${t.id}`}>
-              <TestimonialCard testimonial={t} />
-            </div>
+            <TestimonialCard key={`dup-${t.id}`} datasetId={`dup-${t.id}`} testimonial={t} />
           ))}
         </div>
       </div>
