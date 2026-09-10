@@ -173,7 +173,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Sweet Delights Section - Now with advanced animations */}
+        {/* Sweet Delights Section */}
         <section className="py-32 px-6">
           <div className="max-w-7xl mx-auto space-y-20">
             <motion.div 
@@ -185,7 +185,9 @@ export default function LandingPage() {
             >
               <div className="space-y-4">
                 <Badge className="bg-amber-600/10 text-amber-700 border-none px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em]">Signature Range</Badge>
-                <h2 className="text-4xl md:text-6xl font-bold font-headline tracking-tight heading-sweet-delights">Sweet Delights</h2>
+                <div className="overflow-visible py-2">
+                  <h2 className="text-4xl md:text-6xl font-bold font-headline tracking-tight heading-sweet-delights">Sweet Delights</h2>
+                </div>
               </div>
               <Button variant="ghost" className="text-stone-400 hover:text-primary font-bold uppercase tracking-widest text-xs" asChild>
                 <Link href="/shop">View Complete Catalog <ArrowRight className="ml-2 h-4 w-4" /></Link>

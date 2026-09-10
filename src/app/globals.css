@@ -325,85 +325,77 @@
   animation: star-twinkle-pulse 2.5s ease-in-out infinite;
 }
 
-/* --- Sweet Delights Heading Implementation --- */
+/* --- Sweet Delights Heading - Premium Redesign --- */
 .heading-sweet-delights {
-  /* Step 1: Layout Maintenance - Ensures glyphs are NOT clipped horizontally or vertically */
   display: inline-block;
   position: relative;
   line-height: 1.4;
-  padding-bottom: 0.25em;
-  padding-left: 0.15em;
-  padding-right: 0.15em;
+  padding-bottom: 0.25em; /* Space for the subtle glow */
+  padding-left: 0.1em;
+  padding-right: 0.25em; /* Prevent 's' clipping */
   
-  /* Step 2: Artisan Gradient Definition */
+  /* Sophisticated Multi-color Gradient */
   background-image: linear-gradient(
     to right,
-    #3D1E16 0%,    /* Chocolate Brown */
+    #3D1E16 0%,    /* Rich Chocolate Brown */
     #C68E17 15%,   /* Caramel */
-    #D4AF37 30%,   /* Gold */
-    #F5F5DC 50%,   /* Cream / Glint */
-    #D4AF37 70%,   /* Gold */
-    #E5A9A9 85%,   /* Subtle Rose */
-    #800020 95%,   /* Subtle Purple */
+    #D4AF37 30%,   /* Warm Gold */
+    #F5F5DC 45%,   /* Champagne Gold / Ivory glint center */
+    #D4AF37 60%,   /* Warm Gold */
+    #E5A9A9 75%,   /* Subtle Rose */
+    #F5F5DC 85%,   /* Champagne Gold */
     #3D1E16 100%   /* Chocolate Loop */
   );
   
-  /* Step 3: Gradient Sizing for Flow */
   background-size: 200% auto;
   background-position: 0% center;
   
-  /* Step 4: Text Clipping & Fill - Essential for Animated Text */
   -webkit-background-clip: text !important;
   background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   
-  /* Step 5: Animation & Aesthetics */
-  animation: sweetDelightsFlowFinal 8s linear infinite;
-  filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.35));
+  /* Smooth Gradient Flow Animation */
+  animation: luxurySweetFlow 5s linear infinite;
+  
+  /* Subtle Premium Glow */
+  filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.3));
 }
 
-@keyframes sweetDelightsFlowFinal {
+@keyframes luxurySweetFlow {
   0% { background-position: 0% center; }
   100% { background-position: 200% center; }
 }
 
-/* Step 6: The Independent Travelling Light Sweep (Glint) */
+/* Refined Golden Shimmer / Light Sweep */
 .heading-sweet-delights::after {
-  content: "Sweet Delights"; /* Must match parent text exactly */
+  content: "Sweet Delights";
   position: absolute;
   top: 0;
-  left: 0.15em; /* Match parent horizontal padding */
-  width: calc(100% - 0.3em); /* Subtract parent horizontal padding */
+  left: 0.1em;
+  width: 100%;
   height: 100%;
   pointer-events: none;
   
-  /* Mirror parent layout to stay perfectly aligned */
-  padding-bottom: inherit;
-  line-height: inherit;
-  
-  /* Shimmer Gradient */
   background: linear-gradient(
     110deg,
     transparent 0%,
-    transparent 35%,
-    rgba(255, 255, 255, 0.85) 50%,
-    transparent 65%,
+    transparent 40%,
+    rgba(255, 255, 255, 0.75) 50%,
+    transparent 60%,
     transparent 100%
   );
   background-size: 200% 100%;
-  background-repeat: no-repeat;
   
-  /* Clip to text layer */
   -webkit-background-clip: text !important;
   background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   
-  /* Animate Glint Sweep */
-  animation: sweetDelightsGlintFinal 5s ease-in-out infinite;
+  /* Gentle Shimmer Animation */
+  animation: luxurySweetShimmer 4s ease-in-out infinite;
 }
 
-@keyframes sweetDelightsGlintFinal {
+@keyframes luxurySweetShimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
