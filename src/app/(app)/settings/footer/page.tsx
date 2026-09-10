@@ -129,7 +129,13 @@ export default function FooterManagementPage() {
         zip: '700157', 
         country: 'India' 
       },
-      contact: { phone: '', altPhone: '', whatsapp: '', email: '', supportEmail: '' },
+      contact: { 
+        phone: '+91 85840 22133', 
+        altPhone: '', 
+        whatsapp: '+91 85858 06077', 
+        email: 'roseberrychocolatellp@gmail.com', 
+        supportEmail: 'customercare.roseberry@gmail.com' 
+      },
       legal: { gstin: '', fssaiNumber: '', cin: '', pan: '' },
       bank: { accountName: '', bankName: '', branch: '', accountNumber: '', ifsc: '', upiId: '', qrCodeUrl: '' },
       maps: { locationName: '', mapUrl: '', embedUrl: '' },
@@ -327,12 +333,12 @@ export default function FooterManagementPage() {
                          <h3 className="text-2xl font-headline font-bold flex items-center gap-3 text-primary justify-center sm:justify-start">
                             <Eye className="h-7 w-7" /> Financial Visibility Policy
                          </h3>
-                         <p className="text-sm text-stone-600 font-medium">Toggle the public display of the Financial Facilitation block in the footer.</p>
+                         <p className="text-sm text-stone-600 font-medium">When enabled, the configured bank details will be visible on the public website footer.</p>
                       </div>
                       <FormField control={form.control} name="visibility.showBankDetails" render={({ field }) => (
                          <FormItem className="flex items-center gap-8 bg-white p-6 rounded-[2rem] border-2 border-primary/20 shadow-2xl hover:scale-[1.02] transition-transform duration-300">
                             <FormLabel className="text-sm font-black uppercase tracking-[0.2em] m-0 leading-none text-primary cursor-pointer select-none">
-                              ENABLE COMPONENT
+                              Show Bank Details in Public Footer
                             </FormLabel>
                             <FormControl>
                                <Switch 

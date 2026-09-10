@@ -300,17 +300,17 @@ export function Footer() {
                   <a href={`tel:${contact.phone}`} className="flex items-center gap-4 group/contact">
                     <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Phone className="h-4 w-4" /></div>
                     <div className="flex flex-col">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Primary Hotline</span>
+                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">PRIMARY HOTLINE</span>
                       <span className="text-[14px] text-stone-900 font-bold tracking-wide">{contact.phone}</span>
                     </div>
                   </a>
                 )}
-                {contact.altPhone && (
-                  <a href={`tel:${contact.altPhone}`} className="flex items-center gap-4 group/contact">
-                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Phone className="h-4 w-4" /></div>
+                {contact.whatsapp && (
+                  <a href={`https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 group/contact">
+                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><MessageCircle className="h-4 w-4" /></div>
                     <div className="flex flex-col">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Secondary Line</span>
-                      <span className="text-[14px] text-stone-900 font-bold tracking-wide">{contact.altPhone}</span>
+                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">WHATSAPP BUSINESS</span>
+                      <span className="text-[14px] text-stone-900 font-bold tracking-wide">{contact.whatsapp}</span>
                     </div>
                   </a>
                 )}
@@ -318,7 +318,7 @@ export function Footer() {
                   <a href={`mailto:${contact.email}`} className="flex items-center gap-4 group/contact">
                     <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Mail className="h-4 w-4" /></div>
                     <div className="flex flex-col">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Official Email</span>
+                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">OFFICIAL EMAIL</span>
                       <span className="text-[14px] text-stone-900 font-bold tracking-wide break-all leading-tight">{contact.email}</span>
                     </div>
                   </a>
@@ -327,7 +327,7 @@ export function Footer() {
                   <a href={`mailto:${contact.supportEmail}`} className="flex items-center gap-4 group/contact">
                     <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Mail className="h-4 w-4" /></div>
                     <div className="flex flex-col">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Customer Care</span>
+                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">CUSTOMER CARE EMAIL</span>
                       <span className="text-[14px] text-stone-900 font-bold tracking-wide break-all leading-tight">{contact.supportEmail}</span>
                     </div>
                   </a>
