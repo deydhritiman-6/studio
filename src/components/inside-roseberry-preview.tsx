@@ -12,6 +12,7 @@ import { useCollection, useDoc, useFirestore } from '@/firebase';
 import { collection, query, where, doc } from 'firebase/firestore';
 import type { Facility, FacilitiesPageSettings } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { ArtisanPerimeter } from '@/components/artisan-perimeter';
 
 export function InsideRoseberryPreview() {
   const firestore = useFirestore();
@@ -93,7 +94,7 @@ export function InsideRoseberryPreview() {
               transition={{ delay: index * 0.1 }}
               viewport={{ once: true }}
             >
-              <div className="rainbow-flow-container rounded-[2.5rem] shadow-sm hover:shadow-2xl transition-all duration-500">
+              <ArtisanPerimeter radius="2.5rem" className="shadow-sm hover:shadow-2xl transition-all duration-500">
                 <Card className="group overflow-hidden rounded-[2.5rem] border-none bg-white h-full relative z-10">
                   <div className="aspect-[16/10] relative overflow-hidden">
                     <Image
@@ -121,7 +122,7 @@ export function InsideRoseberryPreview() {
                     </p>
                   </CardContent>
                 </Card>
-              </div>
+              </ArtisanPerimeter>
             </motion.div>
           ))}
         </div>

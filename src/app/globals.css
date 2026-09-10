@@ -408,50 +408,6 @@
   100% { background-position: 200% 0; }
 }
 
-/* --- Artisan Rainbow Border Flow REBUILT --- */
-@keyframes rainbow-border-rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.rainbow-flow-container {
-  position: relative;
-  padding: 2px; /* Fixed thickness as requested */
-  overflow: hidden;
-  isolation: isolate;
-  display: flex;
-}
-
-.rainbow-flow-container::before {
-  content: '';
-  position: absolute;
-  /* Centered and large enough to ensure rotation covers corners */
-  top: -150%;
-  left: -150%;
-  width: 400%;
-  height: 400%;
-  background: conic-gradient(
-    from 0deg,
-    #ff0000, /* Red */
-    #ffa500, /* Orange */
-    #ffff00, /* Yellow */
-    #00ff00, /* Green */
-    #00ffff, /* Cyan */
-    #0000ff, /* Blue */
-    #8b00ff, /* Purple/Violet */
-    #ff00ff, /* Pink/Magenta */
-    #ff0000  /* Red Loop */
-  );
-  animation: rainbow-border-rotate 6s linear infinite;
-  z-index: -1;
-  /* Substantial but elegant blur for glow effect */
-  filter: blur(1.5px) brightness(1.2);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .animate-drifting-glow,
   .animate-drifting-glow-reverse,
@@ -462,8 +418,7 @@
   .artisan-card-premium:hover::before,
   .artisan-card-premium:hover::after,
   .heading-sweet-delights,
-  .heading-sweet-delights::after,
-  .rainbow-flow-container::before {
+  .heading-sweet-delights::after {
     animation: none !important;
     transition: none !important;
     transform: none !important;

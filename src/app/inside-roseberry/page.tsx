@@ -25,6 +25,7 @@ import { collection, query, where, doc } from 'firebase/firestore';
 import type { Facility, FacilitiesPageSettings } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Footer } from '@/components/footer';
+import { ArtisanPerimeter } from '@/components/artisan-perimeter';
 
 export default function InsideRoseberryPage() {
   const firestore = useFirestore();
@@ -147,7 +148,7 @@ export default function InsideRoseberryPage() {
                     className="group"
                   >
                     <div className="space-y-8">
-                      <div className="rainbow-flow-container rounded-[3rem] shadow-xl transition-transform duration-700 group-hover:scale-[1.02]">
+                      <ArtisanPerimeter radius="3rem" className="shadow-xl transition-transform duration-700 group-hover:scale-[1.02]">
                         <div className="aspect-[4/3] relative rounded-[3rem] overflow-hidden bg-white relative z-10">
                           <Image 
                             src={facility.imageUrl || 'https://picsum.photos/seed/fac/800/600'} 
@@ -163,7 +164,7 @@ export default function InsideRoseberryPage() {
                           </div>
                           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                         </div>
-                      </div>
+                      </ArtisanPerimeter>
                       
                       <div className="space-y-4 px-4">
                         <div className="space-y-1">
