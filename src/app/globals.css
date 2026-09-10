@@ -331,6 +331,34 @@
   animation: star-twinkle-pulse 2.5s ease-in-out infinite;
 }
 
+/* --- Sweet Delights Heading Premium Style --- */
+.heading-sweet-delights {
+  background: linear-gradient(
+    to right,
+    #3D1E16 0%,    /* Chocolate Brown */
+    #800020 15%,   /* Cherry Purple */
+    #C68E17 30%,   /* Caramel */
+    #D4AF37 45%,   /* Gold */
+    #F5F5DC 50%,   /* Cream/Glint */
+    #D4AF37 55%,   /* Gold */
+    #C68E17 70%,   /* Caramel */
+    #E5A9A9 85%,   /* Subtle Pink */
+    #3D1E16 100%   /* Chocolate Brown */
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: sweetDelightsFlow 10s linear infinite;
+  filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.3));
+  display: inline-block;
+}
+
+@keyframes sweetDelightsFlow {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-drifting-glow,
   .animate-drifting-glow-reverse,
@@ -339,7 +367,8 @@
   .footer-navigation-link:hover,
   .artisan-card-premium,
   .artisan-card-premium:hover::before,
-  .artisan-card-premium:hover::after {
+  .artisan-card-premium:hover::after,
+  .heading-sweet-delights {
     animation: none !important;
     transition: none !important;
     transform: none !important;

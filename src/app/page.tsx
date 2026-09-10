@@ -231,7 +231,7 @@ export default function LandingPage() {
             <div className="flex flex-col md:flex-row items-end justify-between gap-8">
               <div className="space-y-4">
                 <Badge className="bg-amber-600/10 text-amber-700 border-none px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em]">Signature Range</Badge>
-                <h2 className="text-4xl md:text-6xl font-bold font-headline text-stone-900 tracking-tight">Sweet Delights</h2>
+                <h2 className="text-4xl md:text-6xl font-bold font-headline tracking-tight heading-sweet-delights">Sweet Delights</h2>
               </div>
               <Button variant="ghost" className="text-stone-400 hover:text-primary font-bold uppercase tracking-widest text-xs" asChild>
                 <Link href="/shop">View Complete Catalog <ArrowRight className="ml-2 h-4 w-4" /></Link>
