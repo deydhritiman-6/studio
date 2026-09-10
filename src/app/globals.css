@@ -269,20 +269,20 @@
 .artisan-card-premium {
   position: relative;
   transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 3px solid rgba(212, 175, 55, 0.5);
+  border: 2.5px solid rgba(212, 175, 55, 0.45);
   box-shadow: 
-    0 40px 100px -30px rgba(61, 30, 22, 0.2),
-    0 20px 50px -20px rgba(61, 30, 22, 0.15),
-    0 10px 20px -10px rgba(0, 0, 0, 0.08);
+    0 25px 50px -12px rgba(0, 0, 0, 0.15),
+    0 15px 35px -5px rgba(61, 30, 22, 0.1),
+    0 0 0 1px rgba(212, 175, 55, 0.05);
 }
 
 .artisan-card-premium:hover {
   transform: translateY(-8px);
   border-color: rgba(212, 175, 55, 1);
   box-shadow: 
-    0 80px 150px -40px rgba(61, 30, 22, 0.35),
-    0 40px 80px -20px rgba(61, 30, 22, 0.25),
-    0 20px 40px -10px rgba(0, 0, 0, 0.12);
+    0 50px 100px -20px rgba(61, 30, 22, 0.3),
+    0 30px 60px -10px rgba(61, 30, 22, 0.2),
+    0 15px 30px -5px rgba(0, 0, 0, 0.1);
 }
 
 /* Electric Shimmer Base (Top-Right) */
@@ -325,48 +325,85 @@
   animation: star-twinkle-pulse 2.5s ease-in-out infinite;
 }
 
-/* --- Sweet Delights Heading Rebuilt Style --- */
+/* --- Sweet Delights Heading Implementation --- */
 .heading-sweet-delights {
-  /* Step 1: Base colors - Rebuilt luxury artisan palette */
-  background: linear-gradient(
+  /* Step 1: Layout Maintenance - Ensures 'g' descender is NOT clipped */
+  display: inline-block;
+  position: relative;
+  line-height: 1.4;
+  padding-bottom: 0.25em;
+  
+  /* Step 2: Artisan Gradient Definition */
+  background-image: linear-gradient(
     to right,
     #3D1E16 0%,    /* Chocolate Brown */
-    #C68E17 20%,   /* Caramel */
-    #D4AF37 40%,   /* Gold */
-    #F5F5DC 50%,   /* Cream Shimmer (The traveling glint) */
-    #D4AF37 60%,   /* Gold */
-    #E5A9A9 80%,   /* Subtle Rose/Pink */
-    #800020 90%,   /* Subtle Purple Highlight */
-    #3D1E16 100%   /* Loop back to Chocolate */
+    #C68E17 15%,   /* Caramel */
+    #D4AF37 30%,   /* Gold */
+    #F5F5DC 50%,   /* Cream / Glint */
+    #D4AF37 70%,   /* Gold */
+    #E5A9A9 85%,   /* Subtle Rose */
+    #800020 95%,   /* Subtle Purple */
+    #3D1E16 100%   /* Chocolate Loop */
   );
   
-  /* Step 2: Sizing for horizontal flow */
-  background-size: 200% auto;
+  /* Step 3: Gradient Sizing for Flow */
+  background-size: 300% auto;
+  background-position: 0% center;
   
-  /* Step 3: Clip effect */
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  /* Step 4: Text Clipping & Fill - Essential for Animated Text */
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
   
-  /* Step 4: Rebuilt smooth flow animation */
-  animation: sweetDelightsFlowRebuilt 12s linear infinite;
-  
-  /* Step 5: Subtle golden glow (sharp but luminous) */
-  filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.3));
-  
-  /* Step 6: Fix for 'g' clipping (Preserved Dimensions) */
-  display: inline-block;
-  line-height: 1.4;
-  padding-bottom: 0.2em;
+  /* Step 5: Animation & Aesthetics */
+  animation: sweetDelightsFlowFinal 6s linear infinite;
+  filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.35));
 }
 
-@keyframes sweetDelightsFlowRebuilt {
-  0% {
-    background-position: 200% center;
-  }
-  100% {
-    background-position: -200% center;
-  }
+@keyframes sweetDelightsFlowFinal {
+  0% { background-position: 0% center; }
+  100% { background-position: 150% center; }
+}
+
+/* Step 6: The Independent Travelling Light Sweep (Glint) */
+.heading-sweet-delights::after {
+  content: "Sweet Delights"; /* Must match parent text exactly */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  
+  /* Mirror parent layout to stay perfectly aligned */
+  padding-bottom: inherit;
+  line-height: inherit;
+  
+  /* Shimmer Gradient */
+  background: linear-gradient(
+    110deg,
+    transparent 0%,
+    transparent 35%,
+    rgba(255, 255, 255, 0.85) 50%,
+    transparent 65%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  
+  /* Clip to text layer */
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  
+  /* Animate Glint Sweep */
+  animation: sweetDelightsGlintFinal 4s ease-in-out infinite;
+}
+
+@keyframes sweetDelightsGlintFinal {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -378,7 +415,8 @@
   .artisan-card-premium,
   .artisan-card-premium:hover::before,
   .artisan-card-premium:hover::after,
-  .heading-sweet-delights {
+  .heading-sweet-delights,
+  .heading-sweet-delights::after {
     animation: none !important;
     transition: none !important;
     transform: none !important;
