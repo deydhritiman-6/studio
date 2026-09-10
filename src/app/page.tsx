@@ -119,7 +119,7 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto px-4 relative z-10">
           <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold font-headline tracking-[0.12em] leading-tight
             bg-gradient-to-r from-[#3D1E16] via-[#D4AF37] via-[#800020] to-[#E5A9A9] 
-            bg-clip-text text-transparent drop-shadow-[0_8px_12px_rgba(0,0,0,0.05)]
+            bg-clip-text text-transparent
             animate-in fade-in slide-in-from-bottom-6 duration-1000 fill-mode-forwards
             animate-shimmer-brand"
           >
