@@ -239,7 +239,7 @@ export function Footer() {
                            {maps.mapUrl && (
                              <Button asChild className="w-full h-10 rounded-xl bg-stone-900 text-white hover:bg-stone-800 font-bold uppercase text-[9px] tracking-widest">
                               <a href={maps.mapUrl} target="_blank" rel="noopener noreferrer">View on Google Maps <ArrowRight className="ml-2 h-3 w-3" /></a>
-                             </Button>
+                           </Button>
                            )}
                         </div>
                       </div>
