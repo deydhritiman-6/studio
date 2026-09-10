@@ -45,7 +45,7 @@ function FacilityMainCard({ facility, index }: { facility: Facility; index: numb
     if (isExpanded) {
       timerRef.current = setTimeout(() => {
         setIsExpanded(false);
-      }, 15000); // Updated timeout to 15 seconds
+      }, 8000); // Updated timeout to 8 seconds
     }
   }, [isExpanded, clearCollapseTimer]);
 
@@ -69,7 +69,7 @@ function FacilityMainCard({ facility, index }: { facility: Facility; index: numb
       onMouseLeave={startCollapseTimer}
     >
       <div className="space-y-8 h-full flex flex-col">
-        <ArtisanPerimeter radius="3rem" className="shadow-xl transition-transform duration-700 group-hover:scale-[1.02] shrink-0">
+        <ArtisanPerimeter radius="3rem" className="shadow-xl transition-transform duration-700 group-hover:scale-[1.02] shrink-0" speed={2.5}>
           <div className="aspect-[4/3] relative rounded-[3rem] overflow-hidden bg-white relative z-10">
             <Image 
               src={facility.imageUrl || 'https://picsum.photos/seed/fac/800/600'} 

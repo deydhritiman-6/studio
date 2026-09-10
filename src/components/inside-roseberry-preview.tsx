@@ -30,7 +30,7 @@ function FacilityPreviewCard({ facility, index }: { facility: Facility; index: n
     if (isExpanded) {
       timerRef.current = setTimeout(() => {
         setIsExpanded(false);
-      }, 15000); // Updated timeout to 15 seconds
+      }, 8000); // Updated timeout to 8 seconds
     }
   }, [isExpanded, clearCollapseTimer]);
 
@@ -52,7 +52,7 @@ function FacilityPreviewCard({ facility, index }: { facility: Facility; index: n
       onMouseEnter={clearCollapseTimer}
       onMouseLeave={startCollapseTimer}
     >
-      <ArtisanPerimeter radius="2.5rem" className="shadow-sm hover:shadow-2xl transition-all duration-500 h-full">
+      <ArtisanPerimeter radius="2.5rem" className="shadow-sm hover:shadow-2xl transition-all duration-500 h-full" speed={2.5}>
         <Card className="group overflow-hidden rounded-[2.5rem] border-none bg-white h-full relative z-10 flex flex-col">
           <div className="aspect-[16/10] relative overflow-hidden shrink-0">
             <Image
