@@ -140,7 +140,7 @@ export default function LandingPage() {
               <Sparkles className="h-3 w-3 text-amber-500" /> Since 2021 • Kolkata
             </div>
             
-            <h1 className="text-2xl md:text-4xl font-bold font-headline text-stone-900 tracking-tight leading-[1.1]">
+            <h1 className="text-xl md:text-3xl font-bold font-headline text-stone-900 tracking-tight leading-[1.1]">
               Handmade with Love.<br />Crafted for Every <span className="italic font-serif text-primary">Celebration</span>.
             </h1>
             

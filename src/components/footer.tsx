@@ -255,7 +255,7 @@ export function Footer() {
                   <div className="relative group overflow-hidden rounded-[2.5rem] border-2 border-white/60 shadow-2xl bg-white/40 backdrop-blur-md transition-all duration-500 hover:shadow-primary/5">
                     {isValidEmbedUrl(maps.embedUrl) ? (
                       <div className="flex flex-col">
-                        <div className="h-[300px] md:h-[450px] w-full opacity-90 group-hover:opacity-100 transition-all duration-700 border-b border-white/20">
+                        <div className="h-[220px] w-full opacity-90 group-hover:opacity-100 transition-all duration-700 border-b border-white/20">
                           <iframe 
                             src={maps.embedUrl} 
                             width="100%" 
@@ -267,14 +267,14 @@ export function Footer() {
                             className="grayscale-[20%] hover:grayscale-0 transition-all duration-700"
                           />
                         </div>
-                        <div className="p-8 space-y-6 bg-white/60">
-                           <div className="flex items-start gap-4">
-                              <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                                 <MapPin className="h-5 w-5" />
+                        <div className="p-6 space-y-4 bg-white/60">
+                           <div className="flex items-start gap-3">
+                              <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                                 <MapPin className="h-4 w-4" />
                               </div>
-                              <div className="space-y-1">
-                                 <p className="text-[10px] font-black uppercase tracking-widest text-primary">Roseberry Studio Location</p>
-                                 <p className="text-sm text-stone-900 font-bold leading-relaxed tracking-tight">
+                              <div className="space-y-0.5">
+                                 <p className="text-[9px] font-black uppercase tracking-widest text-primary">Artisan Studio Location</p>
+                                 <p className="text-xs text-stone-900 font-bold leading-tight tracking-tight">
                                    {address.line1 || "Aashiyana Bhaban, 1A, Roypara-Hatiara Rd"}, {address.city || "Newtown, Kolkata"}
                                  </p>
                               </div>
@@ -283,28 +283,28 @@ export function Footer() {
                            {maps.mapUrl && (
                              <Button 
                               asChild 
-                              className="w-full h-14 rounded-2xl bg-stone-900 text-white hover:bg-stone-800 font-bold uppercase text-[10px] tracking-widest shadow-xl shadow-stone-900/20 group/map"
+                              className="w-full h-10 rounded-xl bg-stone-900 text-white hover:bg-stone-800 font-bold uppercase text-[9px] tracking-widest shadow-xl shadow-stone-900/20 group/map"
                              >
                               <a href={maps.mapUrl} target="_blank" rel="noopener noreferrer">
-                                View on Google Maps <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/map:translate-x-1" />
+                                View on Google Maps <ArrowRight className="ml-2 h-3 w-3 transition-transform group-hover/map:translate-x-1" />
                               </a>
                              </Button>
                            )}
                         </div>
                       </div>
                     ) : (
-                      <div className="aspect-video w-full p-8 flex flex-col items-center justify-center bg-stone-50/50 text-center space-y-6">
-                        <div className="h-16 w-16 bg-white rounded-3xl shadow-xl flex items-center justify-center">
-                          <MapPin className="h-8 w-8 text-stone-200" />
+                      <div className="aspect-video w-full p-6 flex flex-col items-center justify-center bg-stone-50/50 text-center space-y-4">
+                        <div className="h-12 w-12 bg-white rounded-2xl shadow-xl flex items-center justify-center">
+                          <MapPin className="h-6 w-6 text-stone-200" />
                         </div>
-                        <div className="space-y-2">
-                          <p className="text-[11px] font-black uppercase tracking-[0.2em] text-stone-400">Location map unavailable</p>
-                          <p className="text-xs text-stone-500 font-medium leading-relaxed italic max-w-[200px] mx-auto">
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Location map unavailable</p>
+                          <p className="text-[10px] text-stone-500 font-medium italic max-w-[180px] mx-auto">
                             {address.line1 || "Aashiyana Bhaban, 1A, Roypara-Hatiara Rd"}, {address.city || "Newtown, Kolkata"}
                           </p>
                         </div>
                         {maps.mapUrl && (
-                          <Button asChild variant="outline" className="rounded-full h-12 px-8 font-bold uppercase text-[10px] tracking-widest border-primary/20 text-primary hover:bg-primary hover:text-white transition-all">
+                          <Button asChild variant="outline" className="rounded-full h-10 px-6 font-bold uppercase text-[9px] tracking-widest border-primary/20 text-primary hover:bg-primary hover:text-white transition-all">
                             <a href={maps.mapUrl} target="_blank" rel="noopener noreferrer">Navigate to Studio</a>
                           </Button>
                         )}
