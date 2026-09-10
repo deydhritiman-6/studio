@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -31,6 +31,32 @@ import { ArtisanPerimeter } from '@/components/artisan-perimeter';
 
 function FacilityMainCard({ facility, index }: { facility: Facility; index: number }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const clearCollapseTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
+
+  const startCollapseTimer = useCallback(() => {
+    clearCollapseTimer();
+    if (isExpanded) {
+      timerRef.current = setTimeout(() => {
+        setIsExpanded(false);
+      }, 30000);
+    }
+  }, [isExpanded, clearCollapseTimer]);
+
+  useEffect(() => {
+    return () => clearCollapseTimer();
+  }, [clearCollapseTimer]);
+
+  const handleToggle = () => {
+    clearCollapseTimer();
+    setIsExpanded(!isExpanded);
+  };
 
   return (
     <motion.div
@@ -39,6 +65,8 @@ function FacilityMainCard({ facility, index }: { facility: Facility; index: numb
       transition={{ duration: 0.8, delay: index * 0.1 }}
       viewport={{ once: true }}
       className="group"
+      onMouseEnter={clearCollapseTimer}
+      onMouseLeave={startCollapseTimer}
     >
       <div className="space-y-8 h-full flex flex-col">
         <ArtisanPerimeter radius="3rem" className="shadow-xl transition-transform duration-700 group-hover:scale-[1.02] shrink-0">
@@ -85,7 +113,7 @@ function FacilityMainCard({ facility, index }: { facility: Facility; index: numb
             
             <Button
               variant="ghost"
-              onClick={() => setIsExpanded(!isExpanded)}
+              onClick={handleToggle}
               className="mt-4 h-auto p-0 text-xs font-black uppercase tracking-[0.2em] text-primary hover:bg-transparent hover:text-rose-700 transition-all group/btn"
             >
               {isExpanded ? (

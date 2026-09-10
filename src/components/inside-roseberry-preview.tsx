@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,6 +16,32 @@ import { ArtisanPerimeter } from '@/components/artisan-perimeter';
 
 function FacilityPreviewCard({ facility, index }: { facility: Facility; index: number }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const clearCollapseTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
+
+  const startCollapseTimer = useCallback(() => {
+    clearCollapseTimer();
+    if (isExpanded) {
+      timerRef.current = setTimeout(() => {
+        setIsExpanded(false);
+      }, 30000);
+    }
+  }, [isExpanded, clearCollapseTimer]);
+
+  useEffect(() => {
+    return () => clearCollapseTimer();
+  }, [clearCollapseTimer]);
+
+  const handleToggle = () => {
+    clearCollapseTimer();
+    setIsExpanded(!isExpanded);
+  };
 
   return (
     <motion.div
@@ -23,6 +49,8 @@ function FacilityPreviewCard({ facility, index }: { facility: Facility; index: n
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
       viewport={{ once: true }}
+      onMouseEnter={clearCollapseTimer}
+      onMouseLeave={startCollapseTimer}
     >
       <ArtisanPerimeter radius="2.5rem" className="shadow-sm hover:shadow-2xl transition-all duration-500 h-full">
         <Card className="group overflow-hidden rounded-[2.5rem] border-none bg-white h-full relative z-10 flex flex-col">
@@ -64,7 +92,7 @@ function FacilityPreviewCard({ facility, index }: { facility: Facility; index: n
               
               <Button
                 variant="ghost"
-                onClick={() => setIsExpanded(!isExpanded)}
+                onClick={handleToggle}
                 className="mt-3 h-auto p-0 text-[10px] font-black uppercase tracking-[0.2em] text-primary hover:bg-transparent hover:text-rose-700 transition-colors group/btn"
               >
                 {isExpanded ? (
@@ -122,6 +150,7 @@ export function InsideRoseberryPreview() {
   const displaySettings = settings || {
     eyebrowText: "INSIDE ROSEBERRY",
     homepageTitle: "Inside Roseberry Chocolate",
+    homepageSubtitle: "A Journey of Care, Craft and Commitment",
     homepageSubtitle: "A Journey of Care, Craft and Commitment",
     homepageDescription: "From the finest ingredients to the final delivery, every step at Roseberry Chocolate is handled with passion, precision and care.",
     homepageButtonText: "Explore Our Facilities",
