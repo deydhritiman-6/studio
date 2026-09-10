@@ -129,7 +129,7 @@ export function Footer() {
     visibility = {},
   } = footerData || {};
 
-  // Visibility flags with explicit true checks for OFF handling
+  // Visibility flags with strict boolean checks
   const showGST = visibility?.showGST === true;
   const showFSSAI = visibility?.showFSSAI === true;
   const showBankDetails = visibility?.showBankDetails === true;
@@ -283,32 +283,6 @@ export function Footer() {
               </div>
             </div>
 
-            {((showGST && legal.gstin) || (showFSSAI && legal.fssaiNumber)) && (
-              <div className="space-y-6 pt-6 border-t border-stone-200/50">
-                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Business & Legal</h4>
-                <div className="space-y-4">
-                    {showFSSAI && legal.fssaiNumber && (
-                      <div className="flex items-center gap-3">
-                         <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
-                         <div className="flex flex-col">
-                            <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">FSSAI License No.</span>
-                            <span className="text-[14px] text-stone-900 font-bold">{legal.fssaiNumber}</span>
-                         </div>
-                      </div>
-                    )}
-                    {showGST && legal.gstin && (
-                      <div className="flex items-center gap-3">
-                         <CheckCircle className="h-4 w-4 text-primary shrink-0" />
-                         <div className="flex flex-col">
-                            <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">GSTIN</span>
-                            <span className="text-[14px] text-stone-900 font-bold uppercase">{legal.gstin}</span>
-                         </div>
-                      </div>
-                    )}
-                </div>
-              </div>
-            )}
-
             <div className="space-y-6">
               <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3"><Phone className="h-3.5 w-3.5" /> Communication</h4>
               <div className="space-y-4">
@@ -350,6 +324,32 @@ export function Footer() {
                 )}
               </div>
             </div>
+
+            {((showGST && legal.gstin) || (showFSSAI && legal.fssaiNumber)) && (
+              <div className="space-y-6 pt-6 border-t border-stone-200/50">
+                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Business & Legal</h4>
+                <div className="space-y-4">
+                    {showFSSAI && legal.fssaiNumber && (
+                      <div className="flex items-center gap-3">
+                         <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
+                         <div className="flex flex-col">
+                            <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">FSSAI License No.</span>
+                            <span className="text-[14px] text-stone-900 font-bold">{legal.fssaiNumber}</span>
+                         </div>
+                      </div>
+                    )}
+                    {showGST && legal.gstin && (
+                      <div className="flex items-center gap-3">
+                         <CheckCircle className="h-4 w-4 text-primary shrink-0" />
+                         <div className="flex flex-col">
+                            <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">GSTIN</span>
+                            <span className="text-[14px] text-stone-900 font-bold uppercase">{legal.gstin}</span>
+                         </div>
+                      </div>
+                    )}
+                </div>
+              </div>
+            )}
           </motion.div>
 
           <motion.div variants={panelVariants(2.2)} animate="animate" className="space-y-12">
