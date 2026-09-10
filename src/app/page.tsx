@@ -35,7 +35,6 @@ export default function LandingPage() {
 
   const sweetDelights = useMemo(() => {
     if (!products) return [];
-    // Relaxed filter to ensure grid is populated after potential data resets
     return products
       .filter(p => !p.isArchived)
       .slice(0, 6);

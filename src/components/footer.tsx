@@ -129,7 +129,6 @@ export function Footer() {
     visibility = {},
   } = footerData || {};
 
-  // Visibility flags with strict boolean checks
   const showGST = visibility?.showGST === true;
   const showFSSAI = visibility?.showFSSAI === true;
   const showBankDetails = visibility?.showBankDetails === true;

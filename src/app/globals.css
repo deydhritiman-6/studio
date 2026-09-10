@@ -194,7 +194,7 @@
   animation: shimmer-brand 8s linear infinite;
 }
 
-/* --- Premium Footer Drifting Glows - High-Intensity Wide Range --- */
+/* --- Premium Footer Drifting Glows --- */
 @keyframes driftingGlow {
   0% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.8; }
   25% { transform: translate3d(450px, -300px, 0) scale(1.6); opacity: 1; }
@@ -265,33 +265,33 @@
 
 @keyframes corner-sparkle-sequence {
   0%, 100% { opacity: 0; transform: translate(15px, 15px) scale(0) rotate(0deg); }
-  5%, 15% { opacity: 1; transform: translate(15px, 15px) scale(1.4) rotate(45deg); }
+  5%, 15% { opacity: 1; transform: translate(15px, 15px) scale(1.4) rotate(45deg); filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.8)); }
   20% { opacity: 0; transform: translate(15px, 15px) scale(0) rotate(90deg); }
   
   25% { opacity: 0; transform: translate(calc(100% - 40px), 15px) scale(0) rotate(90deg); }
-  30%, 40% { opacity: 1; transform: translate(calc(100% - 40px), 15px) scale(1.4) rotate(135deg); }
+  30%, 40% { opacity: 1; transform: translate(calc(100% - 40px), 15px) scale(1.4) rotate(135deg); filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.8)); }
   45% { opacity: 0; transform: translate(calc(100% - 40px), 15px) scale(0) rotate(180deg); }
 
   50% { opacity: 0; transform: translate(calc(100% - 40px), calc(100% - 40px)) scale(0) rotate(180deg); }
-  55%, 65% { opacity: 1; transform: translate(calc(100% - 40px), calc(100% - 40px)) scale(1.4) rotate(225deg); }
+  55%, 65% { opacity: 1; transform: translate(calc(100% - 40px), calc(100% - 40px)) scale(1.4) rotate(225deg); filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.8)); }
   70% { opacity: 0; transform: translate(calc(100% - 40px), calc(100% - 40px)) scale(0) rotate(270deg); }
 
   75% { opacity: 0; transform: translate(15px, calc(100% - 40px)) scale(0) rotate(270deg); }
-  80%, 90% { opacity: 1; transform: translate(15px, calc(100% - 40px)) scale(1.4) rotate(315deg); }
+  80%, 90% { opacity: 1; transform: translate(15px, calc(100% - 40px)) scale(1.4) rotate(315deg); filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.8)); }
   95% { opacity: 0; transform: translate(15px, calc(100% - 40px)) scale(0) rotate(360deg); }
 }
 
 .artisan-card-premium {
   position: relative;
   transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 2.5px solid rgba(212, 175, 55, 0.25); /* Slightly thicker soft gold */
-  box-shadow: 0 50px 100px -25px rgba(61, 30, 22, 0.4); /* Deepened base shadow */
+  border: 2.5px solid rgba(212, 175, 55, 0.25);
+  box-shadow: 0 50px 100px -25px rgba(61, 30, 22, 0.4);
 }
 
 .artisan-card-premium:hover {
   transform: scale(1.02);
   border-color: rgba(212, 175, 55, 0.7);
-  box-shadow: 0 70px 140px -35px rgba(61, 30, 22, 0.5); /* Even deeper on hover */
+  box-shadow: 0 70px 140px -35px rgba(61, 30, 22, 0.5);
 }
 
 /* Sparkle overlay */
@@ -329,7 +329,7 @@
   top: 0;
   left: 0;
   color: #fff;
-  font-size: 24px;
+  font-size: 20px;
   text-shadow: 0 0 10px #D4AF37, 0 0 20px #fff;
   opacity: 0;
   z-index: 50;
