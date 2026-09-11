@@ -20,7 +20,11 @@ import {
   ChevronDown,
   ChevronUp,
   Building,
-  Search
+  Search,
+  Youtube,
+  Twitter,
+  Linkedin,
+  Link as LinkIcon
 } from 'lucide-react';
 import { motion, useReducedMotion, AnimatePresence } from 'framer-motion';
 import { useDoc, useFirestore } from '@/firebase';
@@ -141,7 +145,7 @@ export function Footer() {
   
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [remainingTime, setRemainingTime] = useState(480000); // 8 minutes default
+  const [remainingTime, setRemainingTime] = useState(480000); 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
 
@@ -156,7 +160,7 @@ export function Footer() {
     if (isAboutExpanded) {
       collapse();
     } else {
-      setRemainingTime(8000); // Set to 8 seconds for the new requirement
+      setRemainingTime(8000); 
       setIsAboutExpanded(true);
     }
   };
@@ -191,21 +195,54 @@ export function Footer() {
     };
   }, [isAboutExpanded, isHovered, remainingTime, collapse]);
 
-  const socialIcons: Record<string, any> = {
+  const socialConfig: Record<string, any> = {
     instagram: { icon: Instagram, color: 'text-fuchsia-600', aura: 'rgba(217, 70, 239, 0.5)', hoverBg: 'bg-fuchsia-50' },
     facebook: { icon: Facebook, color: 'text-cyan-600', aura: 'rgba(6, 182, 212, 0.5)', hoverBg: 'bg-cyan-50' },
     whatsapp: { icon: MessageCircle, color: 'text-emerald-600', aura: 'rgba(16, 185, 129, 0.5)', hoverBg: 'bg-emerald-50' },
+    youtube: { icon: Youtube, color: 'text-rose-600', aura: 'rgba(225, 29, 72, 0.5)', hoverBg: 'bg-rose-50' },
+    twitter: { icon: Twitter, color: 'text-sky-500', aura: 'rgba(14, 165, 233, 0.5)', hoverBg: 'bg-sky-50' },
+    linkedin: { icon: Linkedin, color: 'text-blue-700', aura: 'rgba(29, 78, 216, 0.5)', hoverBg: 'bg-blue-50' },
+    generic: { icon: LinkIcon, color: 'text-stone-600', aura: 'rgba(0,0,0,0.1)', hoverBg: 'bg-stone-50' }
   };
 
   const activeSocials = useMemo(() => {
     const social = footerData?.social || {};
-    return Object.entries(social)
-      .filter(([_, url]) => url && typeof url === 'string' && url.trim().length > 0)
-      .map(([platform, url]) => ({
-        platform,
-        url: url as string,
-        config: socialIcons[platform.toLowerCase()] || { icon: Globe, color: 'text-stone-600', aura: 'rgba(0,0,0,0.1)', hoverBg: 'bg-stone-50' }
-      }));
+    const dynamicFields = social.socialFields || [];
+    
+    // Convert legacy static fields to dynamic format if they exist
+    const legacyFields = [
+      { key: 'instagram', label: 'INSTAGRAM' },
+      { key: 'facebook', label: 'FACEBOOK' },
+      { key: 'youtube', label: 'YOUTUBE' },
+      { key: 'twitter', label: 'TWITTER' },
+      { key: 'linkedin', label: 'LINKEDIN' },
+      { key: 'whatsapp', label: 'WHATSAPP' },
+    ].filter(f => social[f.key] && typeof social[f.key] === 'string' && social[f.key].trim().length > 0)
+     .map(f => ({ id: f.key, label: f.label, value: social[f.key] }));
+
+    // Combine avoiding duplicates (prefer dynamic fields)
+    const combined = [...dynamicFields];
+    legacyFields.forEach(l => {
+      if (!combined.some(c => c.label.toLowerCase() === l.label.toLowerCase())) {
+        combined.push(l);
+      }
+    });
+
+    return combined.map(field => {
+      const label = field.label.toLowerCase();
+      let configKey = 'generic';
+      if (label.includes('instagram')) configKey = 'instagram';
+      else if (label.includes('facebook')) configKey = 'facebook';
+      else if (label.includes('whatsapp')) configKey = 'whatsapp';
+      else if (label.includes('youtube')) configKey = 'youtube';
+      else if (label.includes('twitter') || label === 'x') configKey = 'twitter';
+      else if (label.includes('linkedin')) configKey = 'linkedin';
+
+      return {
+        ...field,
+        config: socialConfig[configKey]
+      };
+    });
   }, [footerData]);
 
   if (loading) return null;
@@ -222,8 +259,6 @@ export function Footer() {
 
   const showBankDetails = visibility?.showBankDetails === true;
   const showMap = visibility?.showMap === true;
-  
-  // Dynamic Regulatory Fields
   const regulatoryFields = legal?.regulatoryFields || [];
 
   return (
@@ -284,7 +319,7 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* ROW 1: DISCOVERY + ASSISTANCE */}
+          {/* Discovery + Assistance */}
           <motion.div 
             variants={panelVariants(0.2)} 
             animate="animate" 
@@ -326,7 +361,7 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* ROW 1: HEADQUARTERS */}
+          {/* Headquarters */}
           <motion.div 
             variants={panelVariants(0.3)} 
             animate="animate" 
@@ -342,7 +377,7 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* ROW 1: FINANCIAL FACILITATION */}
+          {/* Financial Facilitation */}
           <motion.div 
             variants={panelVariants(0.4)} 
             animate="animate"
@@ -362,12 +397,6 @@ export function Footer() {
                 <div className="flex flex-col">
                     <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Bank</span>
                     <span className="text-[14px] text-stone-900 font-bold">{bank.bankName}</span>
-                </div>
-              )}
-              {bank.branch && (
-                <div className="flex flex-col">
-                    <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Branch</span>
-                    <span className="text-[14px] text-stone-900 font-bold">{bank.branch}</span>
                 </div>
               )}
               {bank.accountNumber && (
@@ -391,7 +420,7 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* ROW 2: LOCATION MATRIX / MAP */}
+          {/* Location Matrix */}
           <motion.div 
             variants={panelVariants(0.5)} 
             animate="animate" 
@@ -427,7 +456,7 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* ROW 2: COMMUNICATION */}
+          {/* Communication */}
           <motion.div 
             variants={panelVariants(0.6)} 
             animate="animate" 
@@ -462,19 +491,10 @@ export function Footer() {
                   </div>
                 </a>
               )}
-              {contact.supportEmail && (
-                <a href={`mailto:${contact.supportEmail}`} className="flex items-center gap-4 group/contact">
-                  <div className="h-9 w-9 rounded-xl bg-stone-50 border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Mail className="h-4 w-4" /></div>
-                  <div className="flex flex-col">
-                    <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">FOR CUSTOMER CARE</span>
-                    <span className="text-[14px] text-stone-900 font-bold break-all leading-tight">{contact.supportEmail}</span>
-                  </div>
-                </a>
-              )}
             </div>
           </motion.div>
 
-          {/* ROW 2: BUSINESS & LEGAL (DYNAMIC) */}
+          {/* Regulatory Matrix */}
           <motion.div 
             variants={panelVariants(0.7)} 
             animate="animate" 
@@ -491,43 +511,10 @@ export function Footer() {
                      </div>
                   </div>
                 ))}
-                
-                {/* Fallback legacy fields if array is empty (for transition period) */}
-                {regulatoryFields.length === 0 && (
-                  <>
-                    {legal.gstin && (
-                      <div className="flex items-center gap-3">
-                        <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
-                        <div className="flex flex-col">
-                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">GSTIN</span>
-                          <span className="text-[14px] text-stone-900 font-bold uppercase">{legal.gstin}</span>
-                        </div>
-                      </div>
-                    )}
-                    {legal.fssaiNumber && (
-                      <div className="flex items-center gap-3">
-                        <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
-                        <div className="flex flex-col">
-                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">FSSAI License No.</span>
-                          <span className="text-[14px] text-stone-900 font-bold">{legal.fssaiNumber}</span>
-                        </div>
-                      </div>
-                    )}
-                    {legal.udyamNumber && (
-                      <div className="flex items-center gap-3">
-                        <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
-                        <div className="flex flex-col">
-                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">UDYAM REGISTRATION NO.</span>
-                          <span className="text-[14px] text-stone-900 font-bold uppercase">{legal.udyamNumber}</span>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
             </div>
           </motion.div>
 
-          {/* ROW 2: SCAN TO PAY */}
+          {/* QR Code */}
           <motion.div 
             variants={panelVariants(0.8)} 
             animate="animate"
@@ -548,7 +535,7 @@ export function Footer() {
             )}
           </motion.div>
 
-          {/* ROW 3: PATRON COMMUNITIES */}
+          {/* Patron Communities */}
           <motion.div 
             variants={panelVariants(0.9)} 
             animate="animate" 
@@ -560,10 +547,10 @@ export function Footer() {
                 <p className="text-xs text-stone-400 font-medium italic">Join our artisanal circle for exclusive reveals.</p>
               </div>
               <div className="flex flex-wrap gap-5 justify-center">
-                {activeSocials.map(({ platform, url, config }) => (
+                {activeSocials.map(({ id, value, config }) => (
                   <motion.a 
-                    key={platform} 
-                    href={url} 
+                    key={id} 
+                    href={value} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     whileHover={{ scale: 1.15, y: -4 }}

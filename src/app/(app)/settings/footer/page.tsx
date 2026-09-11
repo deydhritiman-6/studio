@@ -28,6 +28,9 @@ import {
   CreditCard,
   Instagram,
   Facebook,
+  Twitter,
+  Youtube,
+  Linkedin,
   Eye,
   QrCode,
   Upload,
@@ -38,7 +41,8 @@ import {
   Pencil,
   Trash2,
   AlertTriangle,
-  Sparkles
+  Sparkles,
+  Link as LinkIcon
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -97,11 +101,17 @@ const footerSchema = z.object({
     embedUrl: z.string().optional().default(''),
   }),
   social: z.object({
-    instagram: z.string().url('Invalid URL').optional().or(z.literal('')).default(''),
-    facebook: z.string().url('Invalid URL').optional().or(z.literal('')).default(''),
-    youtube: z.string().url('Invalid URL').optional().or(z.literal('')).default(''),
-    twitter: z.string().url('Invalid URL').optional().or(z.literal('')).default(''),
-    linkedin: z.string().url('Invalid URL').optional().or(z.literal('')).default(''),
+    instagram: z.string().optional().default(''),
+    facebook: z.string().optional().default(''),
+    youtube: z.string().optional().default(''),
+    twitter: z.string().optional().default(''),
+    linkedin: z.string().optional().default(''),
+    whatsapp: z.string().optional().default(''),
+    socialFields: z.array(z.object({
+      id: z.string(),
+      label: z.string().min(1, 'Platform name is required'),
+      value: z.string().url('Invalid social URL').min(1, 'URL is required'),
+    })).default([]),
   }),
   visibility: z.object({
     showBankDetails: z.boolean().default(false),
@@ -121,14 +131,19 @@ export default function FooterManagementPage() {
   const [activeTab, setActiveTab] = useState('brand');
   const qrInputRef = useRef<HTMLInputElement>(null);
 
-  // Field Modal State
-  const [isFieldModalOpen, setIsFieldModalOpen] = useState(false);
-  const [editingFieldIdx, setEditingFieldIdx] = useState<number | null>(null);
-  const [fieldLabel, setFieldLabel] = useState('');
-  const [fieldValue, setFieldValue] = useState('');
+  // Regulatory Field Modal State
+  const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
+  const [editingLegalIdx, setEditingLegalIdx] = useState<number | null>(null);
+  const [legalLabel, setLegalLabel] = useState('');
+  const [legalValue, setLegalValue] = useState('');
+  const [legalToDelete, setLegalToDelete] = useState<number | null>(null);
 
-  // Delete Confirmation State
-  const [fieldToDelete, setFieldToDelete] = useState<number | null>(null);
+  // Social Field Modal State
+  const [isSocialModalOpen, setIsSocialModalOpen] = useState(false);
+  const [editingSocialIdx, setEditingSocialIdx] = useState<number | null>(null);
+  const [socialLabel, setSocialLabel] = useState('');
+  const [socialValue, setSocialValue] = useState('');
+  const [socialToDelete, setSocialToDelete] = useState<number | null>(null);
 
   const settingsRef = useMemo(() => (firestore ? doc(firestore, 'settings', 'footer') : null), [firestore]);
   const { data: existingSettings, loading } = useDoc<any>(settingsRef as any);
@@ -164,28 +179,62 @@ export default function FooterManagementPage() {
       },
       bank: { accountName: '', bankName: '', branch: '', accountNumber: '', ifsc: '', upiId: '', qrCodeUrl: '' },
       maps: { locationName: '', mapUrl: '', embedUrl: '' },
-      social: { instagram: '', facebook: '', youtube: '', twitter: '', linkedin: '' },
+      social: { 
+        instagram: '', 
+        facebook: '', 
+        youtube: '', 
+        twitter: '', 
+        linkedin: '', 
+        whatsapp: '', 
+        socialFields: [] 
+      },
       visibility: { showBankDetails: false, showGST: true, showFSSAI: true, showBusinessHours: false, showMap: true },
     }
   });
 
-  const { fields, append, remove, update } = useFieldArray({
+  const { 
+    fields: legalFields, 
+    append: appendLegal, 
+    remove: removeLegal, 
+    update: updateLegal 
+  } = useFieldArray({
     control: form.control,
     name: "legal.regulatoryFields",
+  });
+
+  const { 
+    fields: socialFields, 
+    append: appendSocial, 
+    remove: removeSocial, 
+    update: updateSocial 
+  } = useFieldArray({
+    control: form.control,
+    name: "social.socialFields",
   });
 
   useEffect(() => {
     if (existingSettings) {
       const data = existingSettings as any;
       
-      // Auto-migration logic for existing static fields if dynamic array is empty
-      let initialFields = data.legal?.regulatoryFields || [];
-      if (initialFields.length === 0) {
-        if (data.legal?.gstin) initialFields.push({ id: 'gstin', label: 'GSTIN NUMBER', value: data.legal.gstin });
-        if (data.legal?.fssaiNumber) initialFields.push({ id: 'fssai', label: 'FSSAI LICENSE NO.', value: data.legal.fssaiNumber });
-        if (data.legal?.udyamNumber) initialFields.push({ id: 'udyam', label: 'UDYAM REGISTRATION NO.', value: data.legal.udyamNumber });
-        if (data.legal?.cin) initialFields.push({ id: 'cin', label: 'CIN NUMBER', value: data.legal.cin });
-        if (data.legal?.pan) initialFields.push({ id: 'pan', label: 'PAN NUMBER', value: data.legal.pan });
+      // Auto-migration for Legal
+      let initialLegal = data.legal?.regulatoryFields || [];
+      if (initialLegal.length === 0) {
+        if (data.legal?.gstin) initialLegal.push({ id: 'gstin', label: 'GSTIN NUMBER', value: data.legal.gstin });
+        if (data.legal?.fssaiNumber) initialLegal.push({ id: 'fssai', label: 'FSSAI LICENSE NO.', value: data.legal.fssaiNumber });
+        if (data.legal?.udyamNumber) initialLegal.push({ id: 'udyam', label: 'UDYAM REGISTRATION NO.', value: data.legal.udyamNumber });
+        if (data.legal?.cin) initialLegal.push({ id: 'cin', label: 'CIN NUMBER', value: data.legal.cin });
+        if (data.legal?.pan) initialLegal.push({ id: 'pan', label: 'PAN NUMBER', value: data.legal.pan });
+      }
+
+      // Auto-migration for Social
+      let initialSocial = data.social?.socialFields || [];
+      if (initialSocial.length === 0) {
+        if (data.social?.instagram) initialSocial.push({ id: 'ig', label: 'INSTAGRAM', value: data.social.instagram });
+        if (data.social?.facebook) initialSocial.push({ id: 'fb', label: 'FACEBOOK', value: data.social.facebook });
+        if (data.social?.whatsapp) initialSocial.push({ id: 'wa', label: 'WHATSAPP', value: data.social.whatsapp });
+        if (data.social?.youtube) initialSocial.push({ id: 'yt', label: 'YOUTUBE', value: data.social.youtube });
+        if (data.social?.twitter) initialSocial.push({ id: 'tw', label: 'TWITTER', value: data.social.twitter });
+        if (data.social?.linkedin) initialSocial.push({ id: 'li', label: 'LINKEDIN', value: data.social.linkedin });
       }
 
       form.reset({
@@ -216,7 +265,7 @@ export default function FooterManagementPage() {
           cin: data.legal?.cin ?? '',
           pan: data.legal?.pan ?? '',
           udyamNumber: data.legal?.udyamNumber ?? '',
-          regulatoryFields: initialFields,
+          regulatoryFields: initialLegal,
         },
         bank: {
           accountName: data.bank?.accountName ?? '',
@@ -238,6 +287,8 @@ export default function FooterManagementPage() {
           youtube: data.social?.youtube ?? '',
           twitter: data.social?.twitter ?? '',
           linkedin: data.social?.linkedin ?? '',
+          whatsapp: data.social?.whatsapp ?? '',
+          socialFields: initialSocial,
         },
         visibility: {
           showBankDetails: data.visibility?.showBankDetails ?? false,
@@ -304,35 +355,79 @@ export default function FooterManagementPage() {
       .finally(() => setIsSaving(false));
   };
 
-  const handleOpenAddField = () => {
-    setEditingFieldIdx(null);
-    setFieldLabel('');
-    setFieldValue('');
-    setIsFieldModalOpen(true);
+  // Legal Handlers
+  const handleOpenAddLegal = () => {
+    setEditingLegalIdx(null);
+    setLegalLabel('');
+    setLegalValue('');
+    setIsLegalModalOpen(true);
   };
 
-  const handleOpenEditField = (index: number) => {
-    const field = fields[index];
-    setEditingFieldIdx(index);
-    setFieldLabel(field.label);
-    setFieldValue(field.value);
-    setIsFieldModalOpen(true);
+  const handleOpenEditLegal = (index: number) => {
+    const field = legalFields[index];
+    setEditingLegalIdx(index);
+    setLegalLabel(field.label);
+    setLegalValue(field.value);
+    setIsLegalModalOpen(true);
   };
 
-  const handleSaveField = () => {
-    if (!fieldLabel.trim() || !fieldValue.trim()) {
-      toast({ variant: 'destructive', title: 'Data Missing', description: 'Label and Value are both required.' });
+  const handleSaveLegal = () => {
+    if (!legalLabel.trim() || !legalValue.trim()) {
+      toast({ variant: 'destructive', title: 'Data Missing' });
+      return;
+    }
+    if (editingLegalIdx !== null) {
+      updateLegal(editingLegalIdx, { id: legalFields[editingLegalIdx].id, label: legalLabel, value: legalValue });
+    } else {
+      appendLegal({ id: `legal-${Date.now()}`, label: legalLabel, value: legalValue });
+    }
+    setIsLegalModalOpen(false);
+  };
+
+  // Social Handlers
+  const handleOpenAddSocial = () => {
+    setEditingSocialIdx(null);
+    setSocialLabel('');
+    setSocialValue('');
+    setIsSocialModalOpen(true);
+  };
+
+  const handleOpenEditSocial = (index: number) => {
+    const field = socialFields[index];
+    setEditingSocialIdx(index);
+    setSocialLabel(field.label);
+    setSocialValue(field.value);
+    setIsSocialModalOpen(true);
+  };
+
+  const handleSaveSocial = () => {
+    if (!socialLabel.trim() || !socialValue.trim()) {
+      toast({ variant: 'destructive', title: 'Data Missing' });
+      return;
+    }
+    try {
+      new URL(socialValue);
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Invalid URL', description: 'Please enter a valid social profile link.' });
       return;
     }
 
-    if (editingFieldIdx !== null) {
-      update(editingFieldIdx, { id: fields[editingFieldIdx].id, label: fieldLabel, value: fieldValue });
+    if (editingSocialIdx !== null) {
+      updateSocial(editingSocialIdx, { id: socialFields[editingSocialIdx].id, label: socialLabel, value: socialValue });
     } else {
-      append({ id: `field-${Date.now()}`, label: fieldLabel, value: fieldValue });
+      appendSocial({ id: `social-${Date.now()}`, label: socialLabel, value: socialValue });
     }
+    setIsSocialModalOpen(false);
+  };
 
-    setIsFieldModalOpen(false);
-    toast({ title: editingFieldIdx !== null ? 'Field Updated' : 'Field Added' });
+  const getSocialIcon = (label: string) => {
+    const l = label.toLowerCase();
+    if (l.includes('instagram')) return <Instagram className="h-5 w-5" />;
+    if (l.includes('facebook')) return <Facebook className="h-5 w-5" />;
+    if (l.includes('youtube')) return <Youtube className="h-5 w-5" />;
+    if (l.includes('twitter') || l.includes(' x ')) return <Twitter className="h-5 w-5" />;
+    if (l.includes('linkedin')) return <Linkedin className="h-5 w-5" />;
+    return <LinkIcon className="h-5 w-5" />;
   };
 
   if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>;
@@ -342,10 +437,7 @@ export default function FooterManagementPage() {
       <PageHeader title="Footer Architecture" actions={
         <Button 
           type="button"
-          onClick={form.handleSubmit(onSubmit, (errors) => {
-            console.warn('Footer Form Validation Errors:', errors);
-            toast({ variant: 'destructive', title: 'Validation Error', description: 'Please check all tabs for missing or invalid information.' });
-          })} 
+          onClick={form.handleSubmit(onSubmit)} 
           disabled={isSaving} 
           className="h-12 px-8 rounded-xl shadow-xl shadow-primary/20"
         >
@@ -450,72 +542,45 @@ export default function FooterManagementPage() {
                       </CardTitle>
                       <CardDescription>Manage all dynamic legal information and registrations.</CardDescription>
                     </div>
-                    <Button type="button" onClick={handleOpenAddField} className="rounded-xl shadow-lg">
+                    <Button type="button" onClick={handleOpenAddLegal} className="rounded-xl shadow-lg">
                       <PlusCircle className="mr-2 h-4 w-4" /> Add Legal Field
                     </Button>
                   </CardHeader>
                   <CardContent className="p-10">
-                    <div className="space-y-4">
-                      {fields.length === 0 ? (
-                        <div className="py-12 text-center bg-stone-50 rounded-2xl border-2 border-dashed">
-                          <p className="text-stone-400 italic text-sm">No legal fields registered. Add one to begin.</p>
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {fields.map((field, index) => (
-                            <div key={field.id} className="flex items-center justify-between p-4 bg-muted/20 rounded-2xl border border-muted group hover:border-primary/30 transition-all">
-                              <div className="flex items-center gap-4">
-                                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                                  <ShieldCheck className="h-5 w-5" />
-                                </div>
-                                <div>
-                                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground leading-none mb-1">{field.label}</p>
-                                  <p className="text-sm font-extrabold text-foreground line-clamp-1">{field.value}</p>
-                                </div>
-                              </div>
-                              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button type="button" variant="ghost" size="icon" onClick={() => handleOpenEditField(index)} className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary">
-                                  <Pencil className="h-3.5 w-3.5" />
-                                </Button>
-                                <Button type="button" variant="ghost" size="icon" onClick={() => setFieldToDelete(index)} className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive">
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
-                              </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {legalFields.map((field, index) => (
+                        <div key={field.id} className="flex items-center justify-between p-4 bg-muted/20 rounded-2xl border border-muted group hover:border-primary/30 transition-all">
+                          <div className="flex items-center gap-4">
+                            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary"><ShieldCheck className="h-5 w-5" /></div>
+                            <div>
+                              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground leading-none mb-1">{field.label}</p>
+                              <p className="text-sm font-extrabold text-foreground line-clamp-1">{field.value}</p>
                             </div>
-                          ))}
+                          </div>
+                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button type="button" variant="ghost" size="icon" onClick={() => handleOpenEditLegal(index)} className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary"><Pencil className="h-3.5 w-3.5" /></Button>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => setLegalToDelete(index)} className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>
+                          </div>
                         </div>
-                      )}
+                      ))}
                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
 
               <TabsContent value="bank" className="space-y-8 mt-0">
-                <Card className="rounded-[2.5rem] border-none shadow-2xl bg-primary/5 border border-primary/20 overflow-hidden mb-10 transition-all hover:shadow-primary/5">
+                <Card className="rounded-[2.5rem] border-none shadow-2xl bg-primary/5 border border-primary/20 overflow-hidden mb-10">
                    <CardContent className="p-10 flex flex-col sm:flex-row items-center justify-between gap-10">
                       <div className="space-y-2 text-center sm:text-left">
                          <h3 className="text-2xl font-headline font-bold flex items-center gap-3 text-primary justify-center sm:justify-start">
                             <Eye className="h-7 w-7" /> Financial Visibility Policy
                          </h3>
-                         <p className="text-sm text-stone-600 font-medium">When enabled, the configured bank details will be visible on the public website footer.</p>
+                         <p className="text-sm text-stone-600 font-medium">Toggle visibility of configuration on public footer.</p>
                       </div>
                       <FormField control={form.control} name="visibility.showBankDetails" render={({ field }) => (
-                         <FormItem 
-                           className="flex items-center gap-8 bg-white p-6 rounded-[2rem] border-2 border-primary/20 shadow-2xl hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
-                           onClick={() => field.onChange(!field.value)}
-                         >
-                            <FormLabel className="text-sm font-black uppercase tracking-[0.2em] m-0 leading-none text-primary cursor-pointer select-none">
-                              Show Bank Details
-                            </FormLabel>
-                            <FormControl>
-                               <div onClick={(e) => e.stopPropagation()}>
-                                 <Switch 
-                                   checked={field.value} 
-                                   onCheckedChange={field.onChange} 
-                                   className="w-[56px] h-[30px] data-[state=checked]:bg-primary data-[state=unchecked]:bg-input border-none hover:shadow-md transition-all shadow-inner"
-                                 />
-                               </div>
-                            </FormControl>
+                         <FormItem className="flex items-center gap-8 bg-white p-6 rounded-[2rem] border-2 border-primary/20 shadow-2xl">
+                            <FormLabel className="text-sm font-black uppercase tracking-[0.2em] m-0 leading-none text-primary cursor-pointer select-none">Show Bank Details</FormLabel>
+                            <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                          </FormItem>
                       )} />
                    </CardContent>
@@ -561,34 +626,30 @@ export default function FooterManagementPage() {
                         <CardTitle className="text-xl font-headline flex items-center gap-3">
                           <QrCode className="h-6 w-6 text-primary" /> Payment QR
                         </CardTitle>
-                        <CardDescription className="text-stone-400">Scan to Pay acquisition.</CardDescription>
                       </CardHeader>
                       <CardContent className="p-10 space-y-6">
-                        <div className="space-y-4">
-                           <div 
-                             onClick={() => qrInputRef.current?.click()}
-                             className={cn(
-                               "aspect-square rounded-[2rem] border-4 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all duration-500 relative overflow-hidden group",
-                               form.watch('bank.qrCodeUrl') ? "border-primary/20 bg-stone-50" : "border-stone-100 hover:border-primary/30"
-                             )}
-                           >
-                              {form.watch('bank.qrCodeUrl') ? (
-                                <>
-                                  <Image src={form.watch('bank.qrCodeUrl')!} alt="QR Preview" fill className="object-contain p-6" />
-                                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
-                                     <Button type="button" variant="secondary" size="sm" className="rounded-xl"><RefreshCw className="h-3 w-3 mr-2" /> Replace</Button>
-                                     <Button type="button" variant="destructive" size="sm" className="rounded-xl" onClick={(e) => { e.stopPropagation(); form.setValue('bank.qrCodeUrl', '', { shouldDirty: true }); }}><X className="h-3 w-3 mr-2" /> Remove</Button>
-                                  </div>
-                                </>
-                              ) : (
-                                <div className="flex flex-col items-center gap-3 text-stone-300 group-hover:text-primary">
-                                   <Upload className="h-8 w-8" />
-                                   <span className="text-[10px] font-black uppercase tracking-widest">Upload Payment QR</span>
-                                </div>
-                              )}
-                              <input ref={qrInputRef} type="file" className="hidden" accept="image/*" onChange={handleQrUpload} />
-                           </div>
-                           <p className="text-[9px] text-center text-stone-400 font-bold uppercase tracking-widest">Supports UPI / BharatQR</p>
+                        <div 
+                           onClick={() => qrInputRef.current?.click()}
+                           className={cn(
+                             "aspect-square rounded-[2rem] border-4 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all duration-500 relative overflow-hidden group",
+                             form.watch('bank.qrCodeUrl') ? "border-primary/20 bg-stone-50" : "border-stone-100 hover:border-primary/30"
+                           )}
+                        >
+                           {form.watch('bank.qrCodeUrl') ? (
+                             <>
+                               <Image src={form.watch('bank.qrCodeUrl')!} alt="QR Preview" fill className="object-contain p-6" />
+                               <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                                  <Button type="button" variant="secondary" size="sm" className="rounded-xl"><RefreshCw className="h-3 w-3 mr-2" /> Replace</Button>
+                                  <Button type="button" variant="destructive" size="sm" className="rounded-xl" onClick={(e) => { e.stopPropagation(); form.setValue('bank.qrCodeUrl', '', { shouldDirty: true }); }}><X className="h-3 w-3 mr-2" /> Remove</Button>
+                               </div>
+                             </>
+                           ) : (
+                             <div className="flex flex-col items-center gap-3 text-stone-300 group-hover:text-primary">
+                                <Upload className="h-8 w-8" />
+                                <span className="text-[10px] font-black uppercase tracking-widest">Upload Payment QR</span>
+                             </div>
+                           )}
+                           <input ref={qrInputRef} type="file" className="hidden" accept="image/*" onChange={handleQrUpload} />
                         </div>
                       </CardContent>
                     </Card>
@@ -598,49 +659,54 @@ export default function FooterManagementPage() {
 
               <TabsContent value="social" className="space-y-8 mt-0">
                 <Card className="rounded-[2rem] border-none shadow-xl">
-                  <CardHeader className="p-10 border-b bg-muted/30">
-                    <CardTitle className="text-2xl font-headline flex items-center gap-3">
-                      <Instagram className="h-6 w-6 text-primary" /> Social Presence
-                    </CardTitle>
-                    <CardDescription>Official brand profiles.</CardDescription>
+                  <CardHeader className="p-10 border-b bg-muted/30 flex items-center justify-between">
+                    <div className="space-y-1">
+                      <CardTitle className="text-2xl font-headline flex items-center gap-3">
+                        <Instagram className="h-6 w-6 text-primary" /> Social Presence
+                      </CardTitle>
+                      <CardDescription>Manage your artisanal brand's online identities.</CardDescription>
+                    </div>
+                    <Button type="button" onClick={handleOpenAddSocial} className="rounded-xl shadow-lg">
+                      <PlusCircle className="mr-2 h-4 w-4" /> Add Social Field
+                    </Button>
                   </CardHeader>
-                  <CardContent className="p-10 grid grid-cols-1 md:grid-cols-2 gap-10">
-                    <FormField control={form.control} name="social.instagram" render={({ field }) => (
-                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Instagram URL</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} value={field.value ?? ''} /></FormControl></FormItem>
-                    )} />
-                    <FormField control={form.control} name="social.facebook" render={({ field }) => (
-                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Facebook URL</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} value={field.value ?? ''} /></FormControl></FormItem>
-                    )} />
+                  <CardContent className="p-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {socialFields.map((field, index) => (
+                        <div key={field.id} className="flex items-center justify-between p-4 bg-muted/20 rounded-2xl border border-muted group hover:border-primary/30 transition-all">
+                          <div className="flex items-center gap-4">
+                            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                              {getSocialIcon(field.label)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground leading-none mb-1">{field.label}</p>
+                              <p className="text-sm font-extrabold text-foreground line-clamp-1 break-all">{field.value}</p>
+                            </div>
+                          </div>
+                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                            <Button type="button" variant="ghost" size="icon" onClick={() => handleOpenEditSocial(index)} className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary"><Pencil className="h-3.5 w-3.5" /></Button>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => setSocialToDelete(index)} className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
 
               <TabsContent value="maps" className="space-y-8 mt-0">
-                <Card className="rounded-[2.5rem] border-none shadow-2xl bg-primary/5 border border-primary/20 overflow-hidden mb-10 transition-all hover:shadow-primary/5">
+                <Card className="rounded-[2.5rem] border-none shadow-2xl bg-primary/5 border border-primary/20 overflow-hidden mb-10">
                    <CardContent className="p-10 flex flex-col sm:flex-row items-center justify-between gap-10">
                       <div className="space-y-2 text-center sm:text-left">
                          <h3 className="text-2xl font-headline font-bold flex items-center gap-3 text-primary justify-center sm:justify-start">
                             <MapPin className="h-7 w-7" /> Map Visibility Policy
                          </h3>
-                         <p className="text-sm text-stone-600 font-medium">Toggle the public display of the Location Matrix in the footer.</p>
+                         <p className="text-sm text-stone-600 font-medium">Toggle interactive map display on public footer.</p>
                       </div>
                       <FormField control={form.control} name="visibility.showMap" render={({ field }) => (
-                         <FormItem 
-                            className="flex items-center gap-8 bg-white p-6 rounded-[2rem] border-2 border-primary/20 shadow-2xl hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
-                            onClick={() => field.onChange(!field.value)}
-                         >
-                            <FormLabel className="text-sm font-black uppercase tracking-[0.2em] m-0 leading-none text-primary cursor-pointer select-none">
-                              ENABLE COMPONENT
-                            </FormLabel>
-                            <FormControl>
-                               <div onClick={(e) => e.stopPropagation()}>
-                                 <Switch 
-                                   checked={field.value} 
-                                   onCheckedChange={field.onChange} 
-                                   className="w-[56px] h-[30px] data-[state=checked]:bg-primary data-[state=unchecked]:bg-stone-200 border-none hover:shadow-md transition-all shadow-inner"
-                                 />
-                               </div>
-                            </FormControl>
+                         <FormItem className="flex items-center gap-8 bg-white p-6 rounded-[2rem] border-2 border-primary/20 shadow-2xl">
+                            <FormLabel className="text-sm font-black uppercase tracking-[0.2em] m-0 leading-none text-primary cursor-pointer select-none">ENABLE MAP</FormLabel>
+                            <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                          </FormItem>
                       )} />
                    </CardContent>
@@ -651,26 +717,18 @@ export default function FooterManagementPage() {
                     <CardTitle className="text-2xl font-headline flex items-center gap-3">
                       <Globe className="h-6 w-6 text-primary" /> Location Matrix
                     </CardTitle>
-                    <CardDescription>Configure interactive map and navigation endpoints.</CardDescription>
                   </CardHeader>
                   <CardContent className="p-10 space-y-10">
                     <FormField control={form.control} name="maps.mapUrl" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground flex items-center gap-2">
-                           <ExternalLink className="h-3 w-3" /> Google Maps Place URL
-                        </FormLabel>
-                        <FormControl><Input className="h-12 rounded-xl border-stone-200 focus:ring-primary/20" placeholder="https://www.google.com/maps/place/..." {...field} value={field.value ?? ''} /></FormControl>
-                        <FormDescription className="text-[9px] font-medium text-stone-400">Used for the "VIEW ON GOOGLE MAPS" navigation button.</FormDescription>
+                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground flex items-center gap-2"><ExternalLink className="h-3 w-3" /> Maps Place URL</FormLabel>
+                        <FormControl><Input className="h-12 rounded-xl" placeholder="https://www.google.com/maps/place/..." {...field} value={field.value ?? ''} /></FormControl>
                       </FormItem>
                     )} />
-                    
                     <FormField control={form.control} name="maps.embedUrl" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-primary flex items-center gap-2">
-                           <Sparkles className="h-3 w-3" /> Google Maps Embed URL
-                        </FormLabel>
-                        <FormControl><Input className="h-12 rounded-xl border-primary/20 focus:ring-primary/20" placeholder="https://www.google.com/maps/embed?pb=..." {...field} value={field.value ?? ''} /></FormControl>
-                        <FormDescription className="text-[9px] font-medium text-stone-400">Required for the interactive map display.</FormDescription>
+                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-primary flex items-center gap-2"><Sparkles className="h-3 w-3" /> Maps Embed URL</FormLabel>
+                        <FormControl><Input className="h-12 rounded-xl border-primary/20" placeholder="https://www.google.com/maps/embed?pb=..." {...field} value={field.value ?? ''} /></FormControl>
                       </FormItem>
                     )} />
                   </CardContent>
@@ -681,29 +739,21 @@ export default function FooterManagementPage() {
                 <Card className="rounded-[2rem] border-none shadow-xl overflow-hidden">
                   <CardHeader className="p-10 border-b bg-stone-900 text-white">
                     <CardTitle className="text-2xl font-headline flex items-center gap-3">
-                      <Globe className="h-6 w-6 text-primary" /> Global Visibility Policy
+                      <Globe className="h-6 w-6 text-primary" /> Visibility Overrides
                     </CardTitle>
-                    <CardDescription className="text-stone-400">Master controls for public-facing modules.</CardDescription>
                   </CardHeader>
                   <CardContent className="p-10 space-y-4">
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {[
-                          { key: 'showGST', label: 'DISPLAY GSTIN INFORMATION' },
-                          { key: 'showFSSAI', label: 'DISPLAY FSSAI LICENSE' },
-                          { key: 'showBankDetails', label: 'DISPLAY FINANCIAL PANEL' },
-                          { key: 'showMap', label: 'DISPLAY LOCATION MATRIX' },
+                          { key: 'showGST', label: 'DISPLAY GSTIN' },
+                          { key: 'showFSSAI', label: 'DISPLAY FSSAI' },
+                          { key: 'showBankDetails', label: 'DISPLAY BANK PANEL' },
+                          { key: 'showMap', label: 'DISPLAY MAP' },
                         ].map((policy) => (
                           <FormField key={policy.key} control={form.control} name={`visibility.${policy.key}` as any} render={({ field }) => (
-                            <FormItem 
-                               className="flex items-center justify-between p-6 rounded-2xl border bg-muted/10 cursor-pointer hover:bg-muted/20 transition-colors"
-                               onClick={() => field.onChange(!field.value)}
-                            >
-                              <FormLabel className="text-sm font-bold uppercase tracking-tight cursor-pointer">{policy.label}</FormLabel>
-                              <FormControl>
-                                <div onClick={(e) => e.stopPropagation()}>
-                                  <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                </div>
-                              </FormControl>
+                            <FormItem className="flex items-center justify-between p-6 rounded-2xl border bg-muted/10">
+                              <FormLabel className="text-sm font-bold uppercase tracking-tight">{policy.label}</FormLabel>
+                              <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                             </FormItem>
                           )} />
                         ))}
@@ -717,77 +767,75 @@ export default function FooterManagementPage() {
         </Form>
       </Tabs>
 
-      {/* Add/Edit Field Modal */}
-      <Dialog open={isFieldModalOpen} onOpenChange={setIsFieldModalOpen}>
+      {/* Legal Field Modal */}
+      <Dialog open={isLegalModalOpen} onOpenChange={setIsLegalModalOpen}>
         <DialogContent className="sm:max-w-md rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
           <div className="bg-stone-900 text-white p-8 border-b">
             <DialogHeader>
               <DialogTitle className="text-2xl font-headline flex items-center gap-3">
-                {editingFieldIdx !== null ? <Pencil className="h-6 w-6 text-primary" /> : <PlusCircle className="h-6 w-6 text-primary" />}
-                {editingFieldIdx !== null ? 'Edit Legal Field' : 'Add Legal Field'}
+                <ShieldCheck className="h-6 w-6 text-primary" />
+                {editingLegalIdx !== null ? 'Edit Legal Field' : 'Add Legal Field'}
               </DialogTitle>
-              <DialogDescription className="text-stone-400">Configure label and registration value.</DialogDescription>
             </DialogHeader>
           </div>
           <div className="p-10 space-y-8">
             <div className="space-y-2">
-              <Label className="uppercase text-[10px] font-black tracking-[0.2em] text-stone-400">Field Label / Name</Label>
-              <Input 
-                placeholder="e.g. TRADE LICENSE NO." 
-                value={fieldLabel}
-                onChange={(e) => setFieldLabel(e.target.value)}
-                className="h-12 rounded-xl border-2"
-              />
+              <Label className="uppercase text-[10px] font-black tracking-[0.2em] text-stone-400">Field Label</Label>
+              <Input placeholder="e.g. GSTIN NUMBER" value={legalLabel} onChange={(e) => setLegalLabel(e.target.value)} className="h-12 rounded-xl border-2" />
             </div>
             <div className="space-y-2">
-              <Label className="uppercase text-[10px] font-black tracking-[0.2em] text-stone-400">Field Value / Number</Label>
-              <Input 
-                placeholder="XXXXXXXXXXXX" 
-                value={fieldValue}
-                onChange={(e) => setFieldValue(e.target.value)}
-                className="h-12 rounded-xl border-2"
-              />
+              <Label className="uppercase text-[10px] font-black tracking-[0.2em] text-stone-400">Field Value</Label>
+              <Input placeholder="XXXXXXXXXXXX" value={legalValue} onChange={(e) => setLegalValue(e.target.value)} className="h-12 rounded-xl border-2" />
             </div>
             <div className="flex gap-4 pt-4">
-              <Button variant="ghost" onClick={() => setIsFieldModalOpen(false)} className="flex-1 h-12 rounded-xl">Cancel</Button>
-              <Button onClick={handleSaveField} className="flex-1 h-12 rounded-xl shadow-lg shadow-primary/20">
-                {editingFieldIdx !== null ? 'Save Changes' : 'Add Field'}
-              </Button>
+              <Button variant="ghost" onClick={() => setIsLegalModalOpen(false)} className="flex-1 h-12 rounded-xl">Cancel</Button>
+              <Button onClick={handleSaveLegal} className="flex-1 h-12 rounded-xl">Save</Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={fieldToDelete !== null} onOpenChange={(o) => !o && setFieldToDelete(null)}>
-        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden p-0">
-          <div className="bg-destructive/10 p-8 border-b border-destructive/20">
+      {/* Social Field Modal */}
+      <Dialog open={isSocialModalOpen} onOpenChange={setIsSocialModalOpen}>
+        <DialogContent className="sm:max-w-md rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
+          <div className="bg-stone-900 text-white p-8 border-b">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-headline flex items-center gap-3 text-destructive">
-                <AlertTriangle className="h-8 w-8" />
-                Confirm Deletion
+              <DialogTitle className="text-2xl font-headline flex items-center gap-3">
+                <Instagram className="h-6 w-6 text-primary" />
+                {editingSocialIdx !== null ? 'Edit Social Profile' : 'Add Social Profile'}
               </DialogTitle>
-              <DialogDescription className="text-stone-600">
-                Are you sure you want to delete this legal field? This action will immediately impact the public footer.
-              </DialogDescription>
             </DialogHeader>
           </div>
-          <div className="p-10 flex gap-4">
-            <Button variant="ghost" onClick={() => setFieldToDelete(null)} className="flex-1 h-12 rounded-xl font-bold">Abort</Button>
-            <Button 
-              variant="destructive" 
-              className="flex-1 h-12 rounded-xl font-bold shadow-xl shadow-destructive/20" 
-              onClick={() => {
-                if (fieldToDelete !== null) {
-                  remove(fieldToDelete);
-                  setFieldToDelete(null);
-                  toast({ title: 'Field Removed' });
-                }
-              }}
-            >
-              Final Delete
-            </Button>
+          <div className="p-10 space-y-8">
+            <div className="space-y-2">
+              <Label className="uppercase text-[10px] font-black tracking-[0.2em] text-stone-400">Platform Label</Label>
+              <Input placeholder="e.g. YOUTUBE" value={socialLabel} onChange={(e) => setSocialLabel(e.target.value)} className="h-12 rounded-xl border-2" />
+            </div>
+            <div className="space-y-2">
+              <Label className="uppercase text-[10px] font-black tracking-[0.2em] text-stone-400">Profile URL</Label>
+              <Input placeholder="https://platform.com/roseberry" value={socialValue} onChange={(e) => setSocialValue(e.target.value)} className="h-12 rounded-xl border-2" />
+            </div>
+            <div className="flex gap-4 pt-4">
+              <Button variant="ghost" onClick={() => setIsSocialModalOpen(false)} className="flex-1 h-12 rounded-xl">Cancel</Button>
+              <Button onClick={handleSaveSocial} className="flex-1 h-12 rounded-xl">Save Profile</Button>
+            </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Legal Delete Confirm */}
+      <Dialog open={legalToDelete !== null} onOpenChange={(o) => !o && setLegalToDelete(null)}>
+        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden p-0">
+          <div className="bg-destructive/10 p-8 border-b border-destructive/20"><DialogHeader><DialogTitle className="text-xl font-headline flex items-center gap-3 text-destructive"><AlertTriangle className="h-6 w-6" /> Confirm Deletion</DialogTitle></DialogHeader></div>
+          <div className="p-8 flex gap-4"><Button variant="ghost" onClick={() => setLegalToDelete(null)} className="flex-1 h-12 rounded-xl">Abort</Button><Button variant="destructive" className="flex-1 h-12 rounded-xl" onClick={() => { if (legalToDelete !== null) { removeLegal(legalToDelete); setLegalToDelete(null); } }}>Final Delete</Button></div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Social Delete Confirm */}
+      <Dialog open={socialToDelete !== null} onOpenChange={(o) => !o && setSocialToDelete(null)}>
+        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden p-0">
+          <div className="bg-destructive/10 p-8 border-b border-destructive/20"><DialogHeader><DialogTitle className="text-xl font-headline flex items-center gap-3 text-destructive"><AlertTriangle className="h-6 w-6" /> Confirm Removal</DialogTitle></DialogHeader></div>
+          <div className="p-8 flex gap-4"><Button variant="ghost" onClick={() => setSocialToDelete(null)} className="flex-1 h-12 rounded-xl">Abort</Button><Button variant="destructive" className="flex-1 h-12 rounded-xl" onClick={() => { if (socialToDelete !== null) { removeSocial(socialToDelete); setSocialToDelete(null); } }}>Final Remove</Button></div>
         </DialogContent>
       </Dialog>
     </>
