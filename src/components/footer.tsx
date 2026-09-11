@@ -43,7 +43,6 @@ function PremiumBackground() {
       <div className="absolute inset-0 bg-[#f1e5d1]" /> 
       <div className="absolute inset-0 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]" />
       
-      {/* Drifting Auras - Only start after mount to prevent hydration mismatch */}
       {mounted && !shouldReduceMotion && (
         <>
           <div className="absolute top-[-30%] left-[-30%] w-[1200px] h-[1200px] bg-cyan-400/20 rounded-full blur-[180px] animate-drifting-glow" />
@@ -68,9 +67,6 @@ function PremiumBackground() {
   );
 }
 
-/**
- * FloatingBubbles - Renders soft, blurred, colorful orbs rising from the bottom.
- */
 function FloatingBubbles() {
   const [mounted, setMounted] = useState(false);
   const shouldReduceMotion = useReducedMotion();
@@ -182,13 +178,13 @@ export function Footer() {
       <FloatingBubbles />
 
       <div className="container max-w-7xl mx-auto px-6 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-10 mb-24">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-10 mb-24 items-start">
           
-          {/* Brand/Story Card */}
+          {/* Brand/Story Card - Now Content Driven Height */}
           <motion.div 
             variants={panelVariants(0)}
             animate="animate"
-            className="group space-y-8 bg-white/45 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/60 shadow-xl transition-all duration-700 hover:shadow-2xl relative z-20"
+            className="group space-y-8 bg-white/45 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/60 shadow-xl transition-all duration-700 hover:shadow-2xl relative z-20 h-fit self-start"
           >
             <div className="space-y-6">
               <Link href="/" className="inline-block transition-transform duration-500 hover:scale-105">
@@ -198,13 +194,13 @@ export function Footer() {
               <div className="space-y-4">
                 <motion.div
                   initial={false}
-                  animate={{ height: isAboutExpanded ? 'auto' : '110px' }}
+                  animate={{ height: isAboutExpanded ? 'auto' : '4.5rem' }}
                   transition={{ duration: 0.4, ease: "easeInOut" }}
                   className="overflow-hidden"
                 >
                   <p className={cn(
                     "text-[#3D1E16] text-[15px] leading-relaxed font-bold italic",
-                    !isAboutExpanded && "line-clamp-4"
+                    !isAboutExpanded && "line-clamp-3 md:line-clamp-4"
                   )}>
                     {brand.description || "Every piece is a story of artisanal excellence, meticulously hand-tempered in our Kolkata studio using ethical, single-origin cacao."}
                   </p>
@@ -232,8 +228,8 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* Discovery, Map, and Patron Communities Column */}
-          <motion.div variants={panelVariants(1.2)} animate="animate" className="grid grid-cols-2 gap-8 py-6 relative z-20">
+          {/* Column 2: Discovery, Map, and Patron Communities - Content Driven Height */}
+          <motion.div variants={panelVariants(1.2)} animate="animate" className="grid grid-cols-2 gap-8 py-6 relative z-20 h-fit self-start">
             <div className="space-y-10">
               <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-fuchsia-700">Discovery</h4>
               <ul className="space-y-5">
@@ -270,7 +266,6 @@ export function Footer() {
             </div>
 
             <div className="col-span-2 pt-8 space-y-8">
-              {/* Map Card */}
               {showMap && maps.embedUrl && (
                 <div className="space-y-6">
                   <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3">
@@ -319,7 +314,6 @@ export function Footer() {
                 </div>
               )}
 
-              {/* Independent Patron Communities Card */}
               <div className="space-y-6">
                 <div className="group space-y-6 bg-white/45 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/60 shadow-xl transition-all duration-700 hover:shadow-2xl relative">
                   <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Patron Communities</h4>
@@ -344,7 +338,8 @@ export function Footer() {
             </div>
           </motion.div>
 
-          <motion.div variants={panelVariants(0.8)} animate="animate" className="space-y-10 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm relative z-20">
+          {/* Column 3: Contact/HQ - Content Driven Height */}
+          <motion.div variants={panelVariants(0.8)} animate="animate" className="space-y-10 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm relative z-20 h-fit self-start">
             <div className="space-y-6">
               <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3"><MapPin className="h-3.5 w-3.5" /> Headquarters</h4>
               <div className="space-y-3">
@@ -416,7 +411,8 @@ export function Footer() {
             )}
           </motion.div>
 
-          <motion.div variants={panelVariants(2.2)} animate="animate" className="space-y-12 relative z-20">
+          {/* Column 4: Financial/Policy - Content Driven Height */}
+          <motion.div variants={panelVariants(2.2)} animate="animate" className="space-y-12 relative z-20 h-fit self-start">
             {showBankDetails && (
               <div className="space-y-8">
                 <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3"><CreditCard className="h-3.5 w-3.5" /> Financial Facilitation</h4>
