@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
@@ -142,13 +141,13 @@ export function Footer() {
   
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [remainingTime, setRemainingTime] = useState(8000); 
+  const [remainingTime, setRemainingTime] = useState(480000); // 8 minutes default
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
 
   const collapse = useCallback(() => {
     setIsAboutExpanded(false);
-    setRemainingTime(8000);
+    setRemainingTime(480000);
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = null;
   }, []);
@@ -157,7 +156,7 @@ export function Footer() {
     if (isAboutExpanded) {
       collapse();
     } else {
-      setRemainingTime(8000);
+      setRemainingTime(8000); // Set to 8 seconds for the new requirement
       setIsAboutExpanded(true);
     }
   };
@@ -221,10 +220,11 @@ export function Footer() {
     visibility = {},
   } = footerData || {};
 
-  const showGST = visibility?.showGST === true;
-  const showFSSAI = visibility?.showFSSAI === true;
   const showBankDetails = visibility?.showBankDetails === true;
   const showMap = visibility?.showMap === true;
+  
+  // Dynamic Regulatory Fields
+  const regulatoryFields = legal?.regulatoryFields || [];
 
   return (
     <footer id="footer" className="relative text-stone-900 pt-32 overflow-hidden border-t border-stone-200">
@@ -240,7 +240,7 @@ export function Footer() {
             animate="animate"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            className="group space-y-8 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-[box-shadow] duration-300 ease-out hover:shadow-[0_0_35px_rgba(229,169,169,0.3)] relative z-10 h-fit self-start"
+            className="group space-y-8 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-all duration-300 ease-out hover:shadow-[0_0_35px_rgba(229,169,169,0.3)] relative z-10 h-fit self-start border border-stone-100"
           >
             <div className="space-y-6">
               <Link href="/" className="inline-block transition-transform duration-500 hover:scale-105">
@@ -288,7 +288,7 @@ export function Footer() {
           <motion.div 
             variants={panelVariants(0.2)} 
             animate="animate" 
-            className="grid grid-cols-2 gap-8 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-[box-shadow] duration-300 ease-out hover:shadow-[0_0_35px_rgba(168,85,247,0.2)] z-10 h-fit self-start"
+            className="grid grid-cols-2 gap-8 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-all duration-300 ease-out hover:shadow-[0_0_35px_rgba(168,85,247,0.2)] z-10 h-fit self-start border border-stone-100"
           >
             <div className="space-y-10">
               <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-fuchsia-700">Discovery</h4>
@@ -330,7 +330,7 @@ export function Footer() {
           <motion.div 
             variants={panelVariants(0.3)} 
             animate="animate" 
-            className="space-y-6 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-[box-shadow] duration-300 ease-out hover:shadow-[0_0_35px_rgba(16,185,129,0.25)] z-10 h-fit self-start"
+            className="space-y-6 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-all duration-300 ease-out hover:shadow-[0_0_35px_rgba(16,185,129,0.25)] z-10 h-fit self-start border border-stone-100"
           >
             <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3"><MapPin className="h-3.5 w-3.5" /> Headquarters</h4>
             <div className="space-y-3">
@@ -346,7 +346,7 @@ export function Footer() {
           <motion.div 
             variants={panelVariants(0.4)} 
             animate="animate"
-            className="bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-[box-shadow] duration-300 ease-out hover:shadow-[0_0_35px_rgba(245,158,11,0.25)] space-y-8 z-10 h-fit self-start"
+            className="bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-all duration-300 ease-out hover:shadow-[0_0_35px_rgba(245,158,11,0.25)] space-y-8 z-10 h-fit self-start border border-stone-100"
           >
             <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3">
               <CreditCard className="h-3.5 w-3.5" /> Financial Facilitation
@@ -395,7 +395,7 @@ export function Footer() {
           <motion.div 
             variants={panelVariants(0.5)} 
             animate="animate" 
-            className="space-y-6 bg-white rounded-[2.5rem] shadow-xl transition-[box-shadow] duration-300 ease-out hover:shadow-[0_0_35px_rgba(14,165,233,0.2)] overflow-hidden z-10 h-fit self-start"
+            className="space-y-6 bg-white rounded-[2.5rem] shadow-xl transition-all duration-300 ease-out hover:shadow-[0_0_35px_rgba(14,165,233,0.2)] overflow-hidden z-10 h-fit self-start border border-stone-100"
           >
             <div className="flex flex-col">
               <div className="h-[220px] w-full border-b border-white/20 relative group/map">
@@ -431,7 +431,7 @@ export function Footer() {
           <motion.div 
             variants={panelVariants(0.6)} 
             animate="animate" 
-            className="space-y-6 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-[box-shadow) duration-300 ease-out hover:shadow-[0_0_35px_rgba(6,182,212,0.25)] z-10 h-fit self-start"
+            className="space-y-6 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-all duration-300 ease-out hover:shadow-[0_0_35px_rgba(6,182,212,0.25)] z-10 h-fit self-start border border-stone-100"
           >
             <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3"><Phone className="h-3.5 w-3.5" /> Communication</h4>
             <div className="space-y-4">
@@ -474,40 +474,55 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* ROW 2: BUSINESS & LEGAL */}
+          {/* ROW 2: BUSINESS & LEGAL (DYNAMIC) */}
           <motion.div 
             variants={panelVariants(0.7)} 
             animate="animate" 
-            className="space-y-6 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-[box-shadow] duration-300 ease-out hover:shadow-[0_0_35px_rgba(59,130,246,0.25)] z-10 h-fit self-start"
+            className="space-y-6 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-all duration-300 ease-out hover:shadow-[0_0_35px_rgba(59,130,246,0.25)] z-10 h-fit self-start border border-stone-100"
           >
             <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Business & Legal</h4>
             <div className="space-y-4">
-                {showFSSAI && legal.fssaiNumber && (
-                  <div className="flex items-center gap-3">
+                {regulatoryFields.map((field: any) => (
+                  <div key={field.id} className="flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-500">
                      <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
                      <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">FSSAI License No.</span>
-                        <span className="text-[14px] text-stone-900 font-bold">{legal.fssaiNumber}</span>
+                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">{field.label}</span>
+                        <span className="text-[14px] text-stone-900 font-bold uppercase">{field.value}</span>
                      </div>
                   </div>
-                )}
-                {legal.udyamNumber && (
-                  <div className="flex items-center gap-3">
-                     <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
-                     <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">UDYAM REGISTRATION NO.</span>
-                        <span className="text-[14px] text-stone-900 font-bold uppercase">{legal.udyamNumber}</span>
-                     </div>
-                  </div>
-                )}
-                {showGST && legal.gstin && (
-                  <div className="flex items-center gap-3">
-                     <CheckCircle className="h-4 w-4 text-primary shrink-0" />
-                     <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">GSTIN</span>
-                        <span className="text-[14px] text-stone-900 font-bold uppercase">{legal.gstin}</span>
-                     </div>
-                  </div>
+                ))}
+                
+                {/* Fallback legacy fields if array is empty (for transition period) */}
+                {regulatoryFields.length === 0 && (
+                  <>
+                    {legal.gstin && (
+                      <div className="flex items-center gap-3">
+                        <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
+                        <div className="flex flex-col">
+                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">GSTIN</span>
+                          <span className="text-[14px] text-stone-900 font-bold uppercase">{legal.gstin}</span>
+                        </div>
+                      </div>
+                    )}
+                    {legal.fssaiNumber && (
+                      <div className="flex items-center gap-3">
+                        <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
+                        <div className="flex flex-col">
+                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">FSSAI License No.</span>
+                          <span className="text-[14px] text-stone-900 font-bold">{legal.fssaiNumber}</span>
+                        </div>
+                      </div>
+                    )}
+                    {legal.udyamNumber && (
+                      <div className="flex items-center gap-3">
+                        <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
+                        <div className="flex flex-col">
+                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">UDYAM REGISTRATION NO.</span>
+                          <span className="text-[14px] text-stone-900 font-bold uppercase">{legal.udyamNumber}</span>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
             </div>
           </motion.div>
@@ -516,7 +531,7 @@ export function Footer() {
           <motion.div 
             variants={panelVariants(0.8)} 
             animate="animate"
-            className="bg-white p-8 rounded-[2.5rem] border-2 border-stone-100 shadow-xl transition-[box-shadow] duration-300 ease-out hover:shadow-[0_0_35px_rgba(100,116,139,0.25)] space-y-4 z-10 h-fit self-start"
+            className="bg-white p-8 rounded-[2.5rem] border-2 border-stone-100 shadow-xl transition-all duration-300 ease-out hover:shadow-[0_0_35px_rgba(100,116,139,0.25)] space-y-4 z-10 h-fit self-start"
           >
             <div className="flex items-center gap-2">
               <QrCode className="h-4 w-4 text-primary" />
@@ -537,7 +552,7 @@ export function Footer() {
           <motion.div 
             variants={panelVariants(0.9)} 
             animate="animate" 
-            className="col-span-full group space-y-6 bg-white p-10 rounded-[2.5rem] shadow-xl transition-[box-shadow] duration-300 ease-out hover:shadow-[0_0_45px_rgba(244,63,94,0.15)] relative z-10"
+            className="col-span-full group space-y-6 bg-white p-10 rounded-[2.5rem] shadow-xl transition-all duration-300 ease-out hover:shadow-[0_0_45px_rgba(244,63,94,0.15)] relative z-10 border border-stone-100"
           >
             <div className="flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="space-y-1 text-center md:text-left">
