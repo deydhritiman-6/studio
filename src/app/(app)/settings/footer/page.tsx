@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -124,8 +123,8 @@ export default function FooterManagementPage() {
       address: { 
         businessName: 'Roseberry Chocolate LLP', 
         line1: 'Aashiyana Bhaban, 1A, Roypara-Hatiara Rd', 
-        line2: 'Noapara, Hatiara', 
-        area: 'Newtown', 
+        line2: '', 
+        area: '', 
         city: 'Kolkata', 
         state: 'West Bengal', 
         zip: '700157', 
@@ -148,7 +147,66 @@ export default function FooterManagementPage() {
 
   useEffect(() => {
     if (existingSettings) {
-      form.reset(existingSettings as any);
+      // Ensure every field has a fallback to avoid uncontrolled input errors
+      const data = existingSettings as any;
+      form.reset({
+        brand: {
+          description: data.brand?.description ?? '',
+          tagline: data.brand?.tagline ?? '',
+        },
+        address: {
+          businessName: data.address?.businessName ?? '',
+          line1: data.address?.line1 ?? '',
+          line2: data.address?.line2 ?? '',
+          area: data.address?.area ?? '',
+          city: data.address?.city ?? '',
+          state: data.address?.state ?? '',
+          zip: data.address?.zip ?? '',
+          country: data.address?.country ?? 'India',
+        },
+        contact: {
+          phone: data.contact?.phone ?? '',
+          altPhone: data.contact?.altPhone ?? '',
+          whatsapp: data.contact?.whatsapp ?? '',
+          email: data.contact?.email ?? '',
+          supportEmail: data.contact?.supportEmail ?? '',
+        },
+        legal: {
+          gstin: data.legal?.gstin ?? '',
+          fssaiNumber: data.legal?.fssaiNumber ?? '',
+          cin: data.legal?.cin ?? '',
+          pan: data.legal?.pan ?? '',
+          udyamNumber: data.legal?.udyamNumber ?? '',
+        },
+        bank: {
+          accountName: data.bank?.accountName ?? '',
+          bankName: data.bank?.bankName ?? '',
+          branch: data.bank?.branch ?? '',
+          accountNumber: data.bank?.accountNumber ?? '',
+          ifsc: data.bank?.ifsc ?? '',
+          upiId: data.bank?.upiId ?? '',
+          qrCodeUrl: data.bank?.qrCodeUrl ?? '',
+        },
+        maps: {
+          locationName: data.maps?.locationName ?? '',
+          mapUrl: data.maps?.mapUrl ?? '',
+          embedUrl: data.maps?.embedUrl ?? '',
+        },
+        social: {
+          instagram: data.social?.instagram ?? '',
+          facebook: data.social?.facebook ?? '',
+          youtube: data.social?.youtube ?? '',
+          twitter: data.social?.twitter ?? '',
+          linkedin: data.social?.linkedin ?? '',
+        },
+        visibility: {
+          showBankDetails: data.visibility?.showBankDetails ?? false,
+          showGST: data.visibility?.showGST ?? true,
+          showFSSAI: data.visibility?.showFSSAI ?? true,
+          showBusinessHours: data.visibility?.showBusinessHours ?? false,
+          showMap: data.visibility?.showMap ?? true,
+        },
+      });
     }
   }, [existingSettings, form]);
 

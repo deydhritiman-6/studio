@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -65,7 +64,15 @@ export default function ChocolatierManagementPage() {
 
   useEffect(() => {
     if (existingProfile) {
-      form.reset(existingProfile as any);
+      // Provide explicit fallbacks to prevent uncontrolled component warnings
+      form.reset({
+        isVisible: existingProfile.isVisible ?? false,
+        name: existingProfile.name ?? '',
+        designation: existingProfile.designation ?? 'Master Chocolatier, Roseberry Chocolate',
+        description: existingProfile.description ?? '',
+        imageUrl: existingProfile.imageUrl ?? '',
+        quote: existingProfile.quote ?? '',
+      });
     }
   }, [existingProfile, form]);
 

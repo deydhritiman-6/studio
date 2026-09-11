@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -65,7 +64,15 @@ export default function DirectorSettingsPage() {
 
   useEffect(() => {
     if (existingSettings) {
-      form.reset(existingSettings as any);
+      // Provide explicit fallbacks to prevent uncontrolled component warnings
+      form.reset({
+        enabled: existingSettings.enabled ?? false,
+        name: existingSettings.name ?? '',
+        designation: existingSettings.designation ?? 'Director, Roseberry Chocolate',
+        message: existingSettings.message ?? '',
+        photoUrl: existingSettings.photoUrl ?? '',
+        signatureUrl: existingSettings.signatureUrl ?? '',
+      });
     }
   }, [existingSettings, form]);
 
