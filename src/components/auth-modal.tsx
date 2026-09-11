@@ -21,7 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Mail, Lock, Sparkles, ArrowRight, ShieldCheck, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
+import { Loader2, Mail, Lock, Sparkles, ArrowRight, ShieldCheck, CheckCircle2, AlertCircle, RefreshCw, Eye, EyeOff } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { cn } from '@/lib/utils';
 
@@ -40,6 +40,7 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   const auth = useAuth();
   const { user } = useUser();
@@ -54,6 +55,7 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
         setPassword('');
         setConfirmPassword('');
         setIsLoading(false);
+        setShowPassword(false);
       }, 300);
     }
   }, [isOpen]);
@@ -209,7 +211,22 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
                   </div>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-300" />
-                    <Input type="password" placeholder="••••••••" className="pl-10 h-12 rounded-xl" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                    <Input 
+                      type={showPassword ? "text" : "password"} 
+                      placeholder="••••••••" 
+                      className="pl-10 pr-10 h-12 rounded-xl" 
+                      value={password} 
+                      onChange={(e) => setPassword(e.target.value)} 
+                      required 
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-300 hover:text-stone-500 transition-colors"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -232,11 +249,35 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground ml-1">Access Key</Label>
-                    <Input type="password" placeholder="••••••••" className="h-12 rounded-xl" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                    <div className="relative">
+                      <Input 
+                        type={showPassword ? "text" : "password"} 
+                        placeholder="••••••••" 
+                        className="pr-10 h-12 rounded-xl" 
+                        value={password} 
+                        onChange={(e) => setPassword(e.target.value)} 
+                        required 
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-300 hover:text-stone-500 transition-colors"
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground ml-1">Confirm Key</Label>
-                    <Input type="password" placeholder="••••••••" className="h-12 rounded-xl" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+                    <Input 
+                      type={showPassword ? "text" : "password"} 
+                      placeholder="••••••••" 
+                      className="h-12 rounded-xl" 
+                      value={confirmPassword} 
+                      onChange={(e) => setConfirmPassword(e.target.value)} 
+                      required 
+                    />
                   </div>
                 </div>
               </div>
