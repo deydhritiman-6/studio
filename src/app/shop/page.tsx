@@ -12,9 +12,11 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { Badge } from '@/components/ui/badge';
 import { formatINR } from '@/lib/currency';
+import { useShopAuth } from './layout';
 
 export default function ShopPage() {
   const firestore = useFirestore();
+  const { requireAuth } = useShopAuth();
   const productsQuery = useMemo(() => firestore ? collection(firestore, 'products') : null, [firestore]);
   const galleriesQuery = useMemo(() => firestore ? collection(firestore, 'product-galleries') : null, [firestore]);
   
@@ -74,29 +76,31 @@ export default function ShopPage() {
       return;
     }
 
-    let updatedCart = [];
-    try {
-      const cartRaw = localStorage.getItem('roseberry-cart');
-      updatedCart = (cartRaw && cartRaw.trim()) ? JSON.parse(cartRaw) : [];
-      if (!Array.isArray(updatedCart)) updatedCart = [];
-    } catch (e) {
-      updatedCart = [];
-    }
+    requireAuth(() => {
+      let updatedCart = [];
+      try {
+        const cartRaw = localStorage.getItem('roseberry-cart');
+        updatedCart = (cartRaw && cartRaw.trim()) ? JSON.parse(cartRaw) : [];
+        if (!Array.isArray(updatedCart)) updatedCart = [];
+      } catch (e) {
+        updatedCart = [];
+      }
 
-    const existingIndex = updatedCart.findIndex((item: any) => item.id === product.id);
-    
-    if (existingIndex > -1) {
-      updatedCart[existingIndex].quantity += 1;
-    } else {
-      updatedCart.push({ ...product, quantity: 1 });
-    }
-    
-    localStorage.setItem('roseberry-cart', JSON.stringify(updatedCart));
-    toast({
-      title: "Added to basket",
-      description: `${product.name} is now in your selection.`,
+      const existingIndex = updatedCart.findIndex((item: any) => item.id === product.id);
+      
+      if (existingIndex > -1) {
+        updatedCart[existingIndex].quantity += 1;
+      } else {
+        updatedCart.push({ ...product, quantity: 1 });
+      }
+      
+      localStorage.setItem('roseberry-cart', JSON.stringify(updatedCart));
+      toast({
+        title: "Added to basket",
+        description: `${product.name} is now in your selection.`,
+      });
+      window.dispatchEvent(new Event('cart-updated'));
     });
-    window.dispatchEvent(new Event('cart-updated'));
   };
 
   if ((productsLoading || galleriesLoading) || !firestore) {
