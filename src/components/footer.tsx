@@ -137,13 +137,16 @@ export function Footer() {
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Auto-collapse logic: 8-minute timer starts on expansion
+  // Auto-collapse logic: 8-second timer starts on expansion
   useEffect(() => {
     if (isAboutExpanded) {
-      // Start fresh 8-minute timer (480,000 ms)
+      // Clear any existing timer to avoid overlaps
+      if (timerRef.current) clearTimeout(timerRef.current);
+      
+      // Start fresh 8-second timer
       timerRef.current = setTimeout(() => {
         setIsAboutExpanded(false);
-      }, 480000);
+      }, 8000);
     } else {
       // Clear timer if manually collapsed
       if (timerRef.current) {
@@ -202,9 +205,7 @@ export function Footer() {
       <div className="container max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 mb-12 items-start">
           
-          {/* ROW 1: CORE CARDS */}
-          
-          {/* 1. STORY / ABOUT CARD */}
+          {/* COLUMN 1: STORY / ABOUT */}
           <motion.div 
             variants={panelVariants(0.1)}
             animate="animate"
@@ -218,7 +219,7 @@ export function Footer() {
               <div className="space-y-4">
                 <motion.div
                   initial={false}
-                  animate={{ height: isAboutExpanded ? 'auto' : '6rem' }}
+                  animate={{ height: isAboutExpanded ? 'auto' : '4.5rem' }}
                   transition={{ duration: 0.4, ease: "easeInOut" }}
                   className="overflow-hidden"
                 >
@@ -252,7 +253,7 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* 2. DISCOVERY + ASSISTANCE */}
+          {/* COLUMN 2: DISCOVERY + ASSISTANCE */}
           <motion.div 
             variants={panelVariants(0.2)} 
             animate="animate" 
@@ -294,7 +295,7 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* 3. HEADQUARTERS */}
+          {/* COLUMN 3: HEADQUARTERS */}
           <motion.div 
             variants={panelVariants(0.3)} 
             animate="animate" 
@@ -310,7 +311,7 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* 4. FINANCIAL FACILITATION */}
+          {/* COLUMN 4: FINANCIAL FACILITATION */}
           <motion.div 
             variants={panelVariants(0.4)} 
             animate="animate"
@@ -359,9 +360,9 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* ROW 2: INTERACTIVE / UTILITY CARDS */}
+          {/* ROW 2 CARDS */}
 
-          {/* 5. LOCATION MATRIX / GOOGLE MAP */}
+          {/* 5. LOCATION MATRIX / MAP */}
           <motion.div 
             variants={panelVariants(0.5)} 
             animate="animate" 
@@ -494,7 +495,7 @@ export function Footer() {
             )}
           </motion.div>
 
-          {/* ROW 3: FULL WIDTH PATRON COMMUNITIES */}
+          {/* ROW 3: PATRON COMMUNITIES */}
           <motion.div 
             variants={panelVariants(0.9)} 
             animate="animate" 
