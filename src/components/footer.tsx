@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { 
   Mail, 
@@ -134,34 +134,59 @@ export function Footer() {
   const settingsRef = useMemo(() => (firestore ? doc(firestore, 'settings', 'footer') : null), [firestore]);
   const { data: footerData, loading } = useDoc<any>(settingsRef as any);
   
+  // --- STORY CARD AUTO-COLLAPSE LOGIC ---
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [remainingTime, setRemainingTime] = useState(8000); // 8 seconds in ms
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const startTimeRef = useRef<number>(0);
 
-  // Auto-collapse logic: 8-second timer starts on expansion
-  useEffect(() => {
+  const collapse = useCallback(() => {
+    setIsAboutExpanded(false);
+    setRemainingTime(8000);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = null;
+  }, []);
+
+  const handleToggle = () => {
     if (isAboutExpanded) {
-      // Clear any existing timer to avoid overlaps
-      if (timerRef.current) clearTimeout(timerRef.current);
-      
-      // Start fresh 8-second timer
-      timerRef.current = setTimeout(() => {
-        setIsAboutExpanded(false);
-      }, 8000);
+      collapse();
     } else {
-      // Clear timer if manually collapsed
+      setRemainingTime(8000);
+      setIsAboutExpanded(true);
+    }
+  };
+
+  const handleMouseEnter = () => {
+    if (isAboutExpanded) {
+      setIsHovered(true);
       if (timerRef.current) {
         clearTimeout(timerRef.current);
-        timerRef.current = null;
+        const elapsed = Date.now() - startTimeRef.current;
+        setRemainingTime((prev) => Math.max(0, prev - elapsed));
       }
     }
+  };
 
-    // Cleanup on unmount
+  const handleMouseLeave = () => {
+    if (isAboutExpanded) {
+      setIsHovered(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAboutExpanded && !isHovered && remainingTime > 0) {
+      startTimeRef.current = Date.now();
+      timerRef.current = setTimeout(() => {
+        collapse();
+      }, remainingTime);
+    }
+
     return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
+      if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [isAboutExpanded]);
+  }, [isAboutExpanded, isHovered, remainingTime, collapse]);
+  // ---------------------------------------
 
   const socialIcons: Record<string, any> = {
     instagram: { icon: Instagram, color: 'text-fuchsia-600', aura: 'rgba(217, 70, 239, 0.5)', hoverBg: 'bg-fuchsia-50' },
@@ -205,10 +230,12 @@ export function Footer() {
       <div className="container max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 mb-12 items-start">
           
-          {/* COLUMN 1: STORY / ABOUT */}
+          {/* COLUMN 1: STORY / ABOUT (Auto-collapse with hover pause) */}
           <motion.div 
             variants={panelVariants(0.1)}
             animate="animate"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
             className="group space-y-8 bg-white/45 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/60 shadow-xl transition-all duration-700 hover:shadow-2xl relative z-20 h-fit self-start"
           >
             <div className="space-y-6">
@@ -232,7 +259,7 @@ export function Footer() {
                 </motion.div>
                 
                 <button 
-                  onClick={() => setIsAboutExpanded(!isAboutExpanded)}
+                  onClick={handleToggle}
                   className="text-[10px] font-black uppercase tracking-[0.2em] text-primary hover:text-rose-700 transition-colors flex items-center gap-1 group/view"
                 >
                   {isAboutExpanded ? "VIEW LESS" : "VIEW MORE"}
