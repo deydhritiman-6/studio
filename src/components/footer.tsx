@@ -80,27 +80,33 @@ function FloatingBubbles() {
 
   const bubbles = useMemo(() => {
     if (!mounted) return [];
-    return Array.from({ length: 25 }).map((_, i) => ({
-      left: `${(i * 4.1) % 100}%`,
-      delay: `${(i * 0.8) % 20}s`,
+    return Array.from({ length: 40 }).map((_, i) => ({
+      left: `${(i * 2.5) % 100}%`,
+      delay: `${(i * 0.5) % 15}s`,
       // Varied sizes to ensure visibility as "bubbles" rather than dust
-      size: `${25 + (i % 6) * 15}px`,
+      size: `${30 + (i % 8) * 12}px`,
       // Deep blurs for the atmospheric glowing effect
-      blur: i % 3 === 0 ? 'blur-xl' : i % 3 === 1 ? 'blur-2xl' : 'blur-3xl',
+      blur: i % 4 === 0 ? 'blur-xl' : i % 4 === 1 ? 'blur-2xl' : i % 4 === 2 ? 'blur-3xl' : 'blur-[40px]',
       // Palette: Cyan, Magenta (Fuchsia), Emerald (Olive), Rose (Cherry)
-      color: ['bg-cyan-400/20', 'bg-fuchsia-400/15', 'bg-emerald-400/15', 'bg-rose-400/15', 'bg-white/10'][i % 5],
-      duration: `${18 + (i % 15)}s`
+      color: [
+        'bg-cyan-500/30', 
+        'bg-fuchsia-500/25', 
+        'bg-emerald-500/25', 
+        'bg-rose-500/25', 
+        'bg-amber-400/20'
+      ][i % 5],
+      duration: `${20 + (i % 10)}s`
     }));
   }, [mounted]);
 
   if (!mounted || shouldReduceMotion) return null;
 
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-[5]">
       {bubbles.map((b, i) => (
         <div 
           key={i}
-          className={cn("absolute bottom-0 rounded-full opacity-0 animate-particle-float", b.blur, b.color)}
+          className={cn("absolute bottom-0 rounded-full animate-particle-float", b.blur, b.color)}
           style={{ 
             left: b.left, 
             width: b.size, 
@@ -476,3 +482,4 @@ export function Footer() {
     </footer>
   );
 }
+
