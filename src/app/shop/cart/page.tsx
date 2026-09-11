@@ -24,10 +24,12 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { formatINR } from '@/lib/currency';
+import { useUser } from '@/firebase';
 
 export default function CartPage() {
   const [cart, setCart] = useState<any[]>([]);
   const [isClient, setIsClient] = useState(false);
+  const { user } = useUser();
 
   useEffect(() => {
     setIsClient(true);
@@ -109,6 +111,13 @@ export default function CartPage() {
            <div className="space-y-3">
               <h1 className="text-5xl md:text-6xl font-bold font-headline text-stone-900 tracking-tight">Your Cart</h1>
               <p className="text-stone-400 text-lg md:text-xl font-light max-w-md">Review your items and proceed to checkout for a taste of luxury.</p>
+              
+              {user?.email && (
+                <p className="text-stone-500 text-sm md:text-base font-medium italic">
+                  Welcome, <span className="text-primary font-bold not-italic">{user.email}</span>, to your cart
+                </p>
+              )}
+
               <Badge className="bg-primary/10 text-primary border-none py-1.5 px-4 rounded-full text-xs font-bold mt-2">
                 <ShoppingBag className="h-3.5 w-3.5 mr-2" />
                 {cart.length} {cart.length === 1 ? 'Item' : 'Items'} in your cart
