@@ -79,30 +79,33 @@ function FloatingBubbles() {
 
   const bubbles = useMemo(() => {
     if (!mounted) return [];
-    return Array.from({ length: 40 }).map((_, i) => ({
-      left: `${(i * 2.5) % 100}%`,
-      delay: `${(i * 0.5) % 15}s`,
-      size: `${30 + (i % 8) * 12}px`,
-      blur: i % 4 === 0 ? 'blur-xl' : i % 4 === 1 ? 'blur-2xl' : i % 4 === 2 ? 'blur-3xl' : 'blur-[40px]',
+    // Generating 80 small bubbles for a richer "many small bubbles" effect
+    return Array.from({ length: 80 }).map((_, i) => ({
+      left: `${(i * 1.25) % 100}%`,
+      delay: `${(i * 0.3) % 20}s`,
+      // Smaller requested size range: 3px - 10px
+      size: `${3 + (i % 8)}px`,
+      blur: 'blur-[1px]',
+      // Specific requested pastel colors
       color: [
-        'bg-cyan-500/30', 
-        'bg-fuchsia-500/25', 
-        'bg-emerald-500/25', 
-        'bg-rose-500/25', 
-        'bg-amber-400/20'
+        'bg-pink-200/40',    // light pink
+        'bg-cyan-200/40',    // cyan/blue
+        'bg-purple-200/40',  // lavender/purple
+        'bg-emerald-200/40', // mint green
+        'bg-amber-200/40'    // warm yellow/gold
       ][i % 5],
-      duration: `${20 + (i % 10)}s`
+      duration: `${15 + (i % 15)}s`
     }));
   }, [mounted]);
 
   if (!mounted || shouldReduceMotion) return null;
 
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none z-[5]">
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-[2]">
       {bubbles.map((b, i) => (
         <div 
           key={i}
-          className={cn("absolute bottom-0 rounded-full animate-particle-float", b.blur, b.color)}
+          className={cn("absolute bottom-0 rounded-full animate-particle-float shadow-[0_0_8px_rgba(255,255,255,0.3)]", b.blur, b.color)}
           style={{ 
             left: b.left, 
             width: b.size, 
@@ -230,13 +233,13 @@ export function Footer() {
       <div className="container max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 mb-12 items-start">
           
-          {/* COLUMN 1: STORY / ABOUT (Auto-collapse with hover pause) */}
+          {/* ROW 1: STORY / ABOUT */}
           <motion.div 
             variants={panelVariants(0.1)}
             animate="animate"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            className="group space-y-8 bg-white/45 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/60 shadow-xl transition-all duration-700 hover:shadow-2xl relative z-20 h-fit self-start"
+            className="group space-y-8 bg-white/45 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/60 shadow-xl transition-all duration-700 hover:shadow-2xl relative z-10 h-fit self-start"
           >
             <div className="space-y-6">
               <Link href="/" className="inline-block transition-transform duration-500 hover:scale-105">
@@ -280,11 +283,11 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* COLUMN 2: DISCOVERY + ASSISTANCE */}
+          {/* ROW 1: DISCOVERY + ASSISTANCE */}
           <motion.div 
             variants={panelVariants(0.2)} 
             animate="animate" 
-            className="grid grid-cols-2 gap-8 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm h-fit self-start"
+            className="grid grid-cols-2 gap-8 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm z-10 h-fit self-start"
           >
             <div className="space-y-10">
               <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-fuchsia-700">Discovery</h4>
@@ -322,11 +325,11 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* COLUMN 3: HEADQUARTERS */}
+          {/* ROW 1: HEADQUARTERS */}
           <motion.div 
             variants={panelVariants(0.3)} 
             animate="animate" 
-            className="space-y-6 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm h-fit self-start"
+            className="space-y-6 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm z-10 h-fit self-start"
           >
             <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3"><MapPin className="h-3.5 w-3.5" /> Headquarters</h4>
             <div className="space-y-3">
@@ -338,11 +341,11 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* COLUMN 4: FINANCIAL FACILITATION */}
+          {/* ROW 1: FINANCIAL FACILITATION */}
           <motion.div 
             variants={panelVariants(0.4)} 
             animate="animate"
-            className="bg-white/50 backdrop-blur-md p-10 rounded-[2.5rem] border border-white/60 shadow-xl space-y-8 h-fit self-start"
+            className="bg-white/50 backdrop-blur-md p-10 rounded-[2.5rem] border border-white/60 shadow-xl space-y-8 z-10 h-fit self-start"
           >
             <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3">
               <CreditCard className="h-3.5 w-3.5" /> Financial Facilitation
@@ -387,13 +390,11 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* ROW 2 CARDS */}
-
-          {/* 5. LOCATION MATRIX / MAP */}
+          {/* ROW 2: LOCATION MATRIX / MAP */}
           <motion.div 
             variants={panelVariants(0.5)} 
             animate="animate" 
-            className="space-y-6 bg-white/40 backdrop-blur-md border border-white/60 rounded-[2.5rem] shadow-sm overflow-hidden h-fit self-start"
+            className="space-y-6 bg-white/40 backdrop-blur-md border border-white/60 rounded-[2.5rem] shadow-sm overflow-hidden z-10 h-fit self-start"
           >
             <div className="flex flex-col">
               <div className="h-[220px] w-full border-b border-white/20 relative group/map">
@@ -425,11 +426,11 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* 6. COMMUNICATION */}
+          {/* ROW 2: COMMUNICATION */}
           <motion.div 
             variants={panelVariants(0.6)} 
             animate="animate" 
-            className="space-y-6 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm h-fit self-start"
+            className="space-y-6 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm z-10 h-fit self-start"
           >
             <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3"><Phone className="h-3.5 w-3.5" /> Communication</h4>
             <div className="space-y-4">
@@ -472,11 +473,11 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* 7. BUSINESS & LEGAL */}
+          {/* ROW 2: BUSINESS & LEGAL */}
           <motion.div 
             variants={panelVariants(0.7)} 
             animate="animate" 
-            className="space-y-6 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm h-fit self-start"
+            className="space-y-6 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm z-10 h-fit self-start"
           >
             <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Business & Legal</h4>
             <div className="space-y-4">
@@ -501,11 +502,11 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* 8. SCAN TO PAY */}
+          {/* ROW 2: SCAN TO PAY */}
           <motion.div 
             variants={panelVariants(0.8)} 
             animate="animate"
-            className="bg-white p-8 rounded-[2.5rem] border-2 border-stone-100 shadow-2xl space-y-4 h-fit self-start"
+            className="bg-white p-8 rounded-[2.5rem] border-2 border-stone-100 shadow-2xl space-y-4 z-10 h-fit self-start"
           >
             <div className="flex items-center gap-2">
               <QrCode className="h-4 w-4 text-primary" />
@@ -526,7 +527,7 @@ export function Footer() {
           <motion.div 
             variants={panelVariants(0.9)} 
             animate="animate" 
-            className="col-span-full group space-y-6 bg-white/45 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/60 shadow-xl transition-all duration-700 hover:shadow-2xl relative"
+            className="col-span-full group space-y-6 bg-white/45 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/60 shadow-xl transition-all duration-700 hover:shadow-2xl relative z-10"
           >
             <div className="flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="space-y-1 text-center md:text-left">
@@ -563,7 +564,7 @@ export function Footer() {
 
         <Separator className="bg-stone-200/50 mb-12" />
 
-        <div className="flex flex-col md:flex-row justify-between items-center gap-10 text-center md:text-left pb-16 relative z-20">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-10 text-center md:text-left pb-16 relative z-10">
           <p className="text-stone-600 text-[12px] font-black uppercase tracking-[0.3em]">
             © {new Date().getFullYear()} {address.businessName || "Roseberry Chocolate"}. Crafted with patience in Kolkata.
           </p>
