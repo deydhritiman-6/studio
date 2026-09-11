@@ -133,7 +133,32 @@ export function Footer() {
   const firestore = useFirestore();
   const settingsRef = useMemo(() => (firestore ? doc(firestore, 'settings', 'footer') : null), [firestore]);
   const { data: footerData, loading } = useDoc<any>(settingsRef as any);
+  
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Auto-collapse logic: 8-minute timer starts on expansion
+  useEffect(() => {
+    if (isAboutExpanded) {
+      // Start fresh 8-minute timer (480,000 ms)
+      timerRef.current = setTimeout(() => {
+        setIsAboutExpanded(false);
+      }, 480000);
+    } else {
+      // Clear timer if manually collapsed
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [isAboutExpanded]);
 
   const socialIcons: Record<string, any> = {
     instagram: { icon: Instagram, color: 'text-fuchsia-600', aura: 'rgba(217, 70, 239, 0.5)', hoverBg: 'bg-fuchsia-50' },
@@ -176,6 +201,8 @@ export function Footer() {
 
       <div className="container max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 mb-12 items-start">
+          
+          {/* ROW 1: CORE CARDS */}
           
           {/* 1. STORY / ABOUT CARD */}
           <motion.div 
@@ -284,91 +311,91 @@ export function Footer() {
           </motion.div>
 
           {/* 4. FINANCIAL FACILITATION */}
-          {showBankDetails && (
-            <motion.div 
-              variants={panelVariants(0.4)} 
-              animate="animate"
-              className="bg-white/50 backdrop-blur-md p-10 rounded-[2.5rem] border border-white/60 shadow-xl space-y-8 h-fit self-start"
-            >
-              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3">
-                <CreditCard className="h-3.5 w-3.5" /> Financial Facilitation
-              </h4>
-              <div className="space-y-4">
-                {bank.accountName && (
-                  <div className="flex flex-col">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Account Holder</span>
-                      <span className="text-[14px] text-stone-900 font-bold">{bank.accountName}</span>
-                  </div>
-                )}
-                {bank.bankName && (
-                  <div className="flex flex-col">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Bank</span>
-                      <span className="text-[14px] text-stone-900 font-bold">{bank.bankName}</span>
-                  </div>
-                )}
-                {bank.branch && (
-                  <div className="flex flex-col">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Branch</span>
-                      <span className="text-[14px] text-stone-900 font-bold">{bank.branch}</span>
-                  </div>
-                )}
-                {bank.accountNumber && (
-                  <div className="flex flex-col">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Account Number</span>
-                      <span className="text-[14px] text-stone-900 font-bold font-mono tracking-tight">{bank.accountNumber}</span>
-                  </div>
-                )}
-                {bank.ifsc && (
-                  <div className="flex flex-col">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">IFSC Code</span>
-                      <span className="text-[14px] text-stone-900 font-bold uppercase">{bank.ifsc}</span>
-                  </div>
-                )}
-                {bank.upiId && (
-                  <div className="flex flex-col pt-2 border-t border-stone-200/50">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">UPI ID</span>
-                      <span className="text-[14px] text-primary font-bold">{bank.upiId}</span>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          )}
+          <motion.div 
+            variants={panelVariants(0.4)} 
+            animate="animate"
+            className="bg-white/50 backdrop-blur-md p-10 rounded-[2.5rem] border border-white/60 shadow-xl space-y-8 h-fit self-start"
+          >
+            <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3">
+              <CreditCard className="h-3.5 w-3.5" /> Financial Facilitation
+            </h4>
+            <div className="space-y-4">
+              {bank.accountName && (
+                <div className="flex flex-col">
+                    <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Account Holder</span>
+                    <span className="text-[14px] text-stone-900 font-bold">{bank.accountName}</span>
+                </div>
+              )}
+              {bank.bankName && (
+                <div className="flex flex-col">
+                    <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Bank</span>
+                    <span className="text-[14px] text-stone-900 font-bold">{bank.bankName}</span>
+                </div>
+              )}
+              {bank.branch && (
+                <div className="flex flex-col">
+                    <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Branch</span>
+                    <span className="text-[14px] text-stone-900 font-bold">{bank.branch}</span>
+                </div>
+              )}
+              {bank.accountNumber && (
+                <div className="flex flex-col">
+                    <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Account Number</span>
+                    <span className="text-[14px] text-stone-900 font-bold font-mono tracking-tight">{bank.accountNumber}</span>
+                </div>
+              )}
+              {bank.ifsc && (
+                <div className="flex flex-col">
+                    <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">IFSC Code</span>
+                    <span className="text-[14px] text-stone-900 font-bold uppercase">{bank.ifsc}</span>
+                </div>
+              )}
+              {bank.upiId && (
+                <div className="flex flex-col pt-2 border-t border-stone-200/50">
+                    <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">UPI ID</span>
+                    <span className="text-[14px] text-primary font-bold">{bank.upiId}</span>
+                </div>
+              )}
+            </div>
+          </motion.div>
+
+          {/* ROW 2: INTERACTIVE / UTILITY CARDS */}
 
           {/* 5. LOCATION MATRIX / GOOGLE MAP */}
-          {showMap && maps.embedUrl && (
-            <motion.div 
-              variants={panelVariants(0.5)} 
-              animate="animate" 
-              className="space-y-6 bg-white/40 backdrop-blur-md border border-white/60 rounded-[2.5rem] shadow-sm overflow-hidden h-fit self-start"
-            >
-              <div className="flex flex-col">
-                <div className="h-[220px] w-full border-b border-white/20 relative group/map">
+          <motion.div 
+            variants={panelVariants(0.5)} 
+            animate="animate" 
+            className="space-y-6 bg-white/40 backdrop-blur-md border border-white/60 rounded-[2.5rem] shadow-sm overflow-hidden h-fit self-start"
+          >
+            <div className="flex flex-col">
+              <div className="h-[220px] w-full border-b border-white/20 relative group/map">
+                {showMap && maps.embedUrl && (
                   <iframe src={maps.embedUrl} width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" className="grayscale-[20%] hover:grayscale-0 transition-all duration-700" />
-                  {maps.mapUrl && (
-                    <a 
-                      href={maps.mapUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="absolute top-4 right-4 bg-white/90 backdrop-blur-xl px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-stone-900 shadow-2xl opacity-0 group-hover/map:opacity-100 transition-all duration-300 hover:bg-white hover:scale-105 active:scale-95 flex items-center gap-2 border border-white/50 z-30 pointer-events-auto"
-                    >
-                      Open in Maps <ExternalLink className="h-3 w-3" />
-                    </a>
-                  )}
-                </div>
-                <div className="p-6 space-y-4 bg-white/60">
-                    <div className="flex items-start gap-3">
-                      <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0"><MapPin className="h-4 w-4" /></div>
-                      <div className="space-y-0.5">
-                          <p className="text-[9px] font-black uppercase tracking-widest text-primary">Artisan Studio Location</p>
-                          <p className="text-xs text-stone-900 font-bold leading-tight tracking-tight line-clamp-2">
-                            {address.line1 || "Aashiyana Bhaban, 1A, Roypara-Hatiara Rd"}, {address.city || "Newtown, Kolkata"}
-                          </p>
-                      </div>
-                    </div>
-                </div>
+                )}
+                {showMap && maps.mapUrl && (
+                  <a 
+                    href={maps.mapUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="absolute top-4 right-4 bg-white/90 backdrop-blur-xl px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-stone-900 shadow-2xl opacity-0 group-hover/map:opacity-100 transition-all duration-300 hover:bg-white hover:scale-105 active:scale-95 flex items-center gap-2 border border-white/50 z-30 pointer-events-auto"
+                  >
+                    Open in Maps <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
               </div>
-            </motion.div>
-          )}
+              <div className="p-6 space-y-4 bg-white/60">
+                  <div className="flex items-start gap-3">
+                    <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0"><MapPin className="h-4 w-4" /></div>
+                    <div className="space-y-0.5">
+                        <p className="text-[9px] font-black uppercase tracking-widest text-primary">Artisan Studio Location</p>
+                        <p className="text-xs text-stone-900 font-bold leading-tight tracking-tight line-clamp-2">
+                          {address.line1 || "Aashiyana Bhaban, 1A, Roypara-Hatiara Rd"}, {address.city || "Newtown, Kolkata"}
+                        </p>
+                    </div>
+                  </div>
+              </div>
+            </div>
+          </motion.div>
 
           {/* 6. COMMUNICATION */}
           <motion.div 
@@ -418,54 +445,56 @@ export function Footer() {
           </motion.div>
 
           {/* 7. BUSINESS & LEGAL */}
-          {((showGST && legal.gstin) || (showFSSAI && legal.fssaiNumber)) && (
-            <motion.div 
-              variants={panelVariants(0.7)} 
-              animate="animate" 
-              className="space-y-6 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm h-fit self-start"
-            >
-              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Business & Legal</h4>
-              <div className="space-y-4">
-                  {showFSSAI && legal.fssaiNumber && (
-                    <div className="flex items-center gap-3">
-                       <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
-                       <div className="flex flex-col">
-                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">FSSAI License No.</span>
-                          <span className="text-[14px] text-stone-900 font-bold">{legal.fssaiNumber}</span>
-                       </div>
-                    </div>
-                  )}
-                  {showGST && legal.gstin && (
-                    <div className="flex items-center gap-3">
-                       <CheckCircle className="h-4 w-4 text-primary shrink-0" />
-                       <div className="flex flex-col">
-                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">GSTIN</span>
-                          <span className="text-[14px] text-stone-900 font-bold uppercase">{legal.gstin}</span>
-                       </div>
-                    </div>
-                  )}
-              </div>
-            </motion.div>
-          )}
+          <motion.div 
+            variants={panelVariants(0.7)} 
+            animate="animate" 
+            className="space-y-6 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm h-fit self-start"
+          >
+            <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Business & Legal</h4>
+            <div className="space-y-4">
+                {showFSSAI && legal.fssaiNumber && (
+                  <div className="flex items-center gap-3">
+                     <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
+                     <div className="flex flex-col">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">FSSAI License No.</span>
+                        <span className="text-[14px] text-stone-900 font-bold">{legal.fssaiNumber}</span>
+                     </div>
+                  </div>
+                )}
+                {showGST && legal.gstin && (
+                  <div className="flex items-center gap-3">
+                     <CheckCircle className="h-4 w-4 text-primary shrink-0" />
+                     <div className="flex flex-col">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">GSTIN</span>
+                        <span className="text-[14px] text-stone-900 font-bold uppercase">{legal.gstin}</span>
+                     </div>
+                  </div>
+                )}
+            </div>
+          </motion.div>
 
           {/* 8. SCAN TO PAY */}
-          {bank.qrCodeUrl && (
-            <motion.div 
-              variants={panelVariants(0.8)} 
-              animate="animate"
-              className="bg-white p-8 rounded-[2.5rem] border-2 border-stone-100 shadow-2xl space-y-4 h-fit self-start"
-            >
-              <div className="flex items-center gap-2">
-                <QrCode className="h-4 w-4 text-primary" />
-                <span className="text-[10px] font-black uppercase tracking-widest">Scan to Pay</span>
-              </div>
+          <motion.div 
+            variants={panelVariants(0.8)} 
+            animate="animate"
+            className="bg-white p-8 rounded-[2.5rem] border-2 border-stone-100 shadow-2xl space-y-4 h-fit self-start"
+          >
+            <div className="flex items-center gap-2">
+              <QrCode className="h-4 w-4 text-primary" />
+              <span className="text-[10px] font-black uppercase tracking-widest">Scan to Pay</span>
+            </div>
+            {bank.qrCodeUrl ? (
               <div className="aspect-square relative w-full bg-white rounded-2xl overflow-hidden border border-stone-50 shadow-inner">
                 <Image src={bank.qrCodeUrl} alt="Payment QR" fill className="object-contain p-4" />
               </div>
-            </motion.div>
-          )}
+            ) : (
+              <div className="aspect-square w-full bg-stone-50 rounded-2xl flex items-center justify-center border border-dashed border-stone-200">
+                <QrCode className="h-10 w-10 text-stone-200" />
+              </div>
+            )}
+          </motion.div>
 
-          {/* 9. PATRON COMMUNITIES (Full Width - Row 3) */}
+          {/* ROW 3: FULL WIDTH PATRON COMMUNITIES */}
           <motion.div 
             variants={panelVariants(0.9)} 
             animate="animate" 
