@@ -86,16 +86,16 @@ function FloatingBubbles() {
     return Array.from({ length: 80 }).map((_, i) => ({
       left: `${Math.random() * 100}%`,
       delay: `${Math.random() * 25}s`,
-      size: `${3 + Math.random() * 7}px`,
-      opacity: 0.3 + Math.random() * 0.4,
+      size: `${5 + Math.random() * 10}px`,
+      opacity: 0.4 + Math.random() * 0.4,
       drift: `${(Math.random() - 0.5) * 60}px`,
       color: [
-        'bg-cyan-200',
-        'bg-sky-200',
-        'bg-rose-200',
-        'bg-purple-200',
-        'bg-emerald-200',
-        'bg-amber-200'
+        'bg-cyan-400',
+        'bg-sky-400',
+        'bg-rose-400',
+        'bg-purple-400',
+        'bg-emerald-400',
+        'bg-amber-400'
       ][Math.floor(Math.random() * 6)],
       duration: `${20 + Math.random() * 20}s`
     }));
@@ -104,11 +104,11 @@ function FloatingBubbles() {
   if (!mounted || shouldReduceMotion) return null;
 
   return (
-    <div className="footer-bubbles absolute inset-0 overflow-hidden pointer-events-none z-[1]">
+    <div className="footer-bubbles absolute inset-0 overflow-hidden pointer-events-none z-[5]">
       {bubbles.map((b, i) => (
         <div 
           key={i}
-          className={cn("absolute bottom-[-20px] rounded-full animate-bubble-float shadow-[0_0_8px_rgba(255,255,255,0.3)]", b.color)}
+          className={cn("absolute bottom-[-20px] rounded-full animate-bubble-float shadow-[0_0_8px_rgba(255,255,255,0.4)]", b.color)}
           style={{ 
             left: b.left, 
             width: b.size, 
@@ -118,7 +118,7 @@ function FloatingBubbles() {
             animationDelay: b.delay, 
             animationDuration: b.duration,
             willChange: 'transform, opacity',
-            filter: 'blur(1px)'
+            filter: 'blur(0.5px)'
           } as any}
         />
       ))}
@@ -590,3 +590,4 @@ export function Footer() {
     </footer>
   );
 }
+
