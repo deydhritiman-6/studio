@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
@@ -430,7 +431,7 @@ export function Footer() {
           <motion.div 
             variants={panelVariants(0.6)} 
             animate="animate" 
-            className="space-y-6 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-[box-shadow] duration-300 ease-out hover:shadow-[0_0_35px_rgba(6,182,212,0.25)] z-10 h-fit self-start"
+            className="space-y-6 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-[box-shadow) duration-300 ease-out hover:shadow-[0_0_35px_rgba(6,182,212,0.25)] z-10 h-fit self-start"
           >
             <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3"><Phone className="h-3.5 w-3.5" /> Communication</h4>
             <div className="space-y-4">
@@ -487,6 +488,15 @@ export function Footer() {
                      <div className="flex flex-col">
                         <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">FSSAI License No.</span>
                         <span className="text-[14px] text-stone-900 font-bold">{legal.fssaiNumber}</span>
+                     </div>
+                  </div>
+                )}
+                {legal.udyamNumber && (
+                  <div className="flex items-center gap-3">
+                     <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
+                     <div className="flex flex-col">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">UDYAM REGISTRATION NO.</span>
+                        <span className="text-[14px] text-stone-900 font-bold uppercase">{legal.udyamNumber}</span>
                      </div>
                   </div>
                 )}

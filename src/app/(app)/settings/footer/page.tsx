@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -72,6 +73,7 @@ const footerSchema = z.object({
     fssaiNumber: z.string().optional().default(''),
     cin: z.string().optional().default(''),
     pan: z.string().optional().default(''),
+    udyamNumber: z.string().optional().default(''),
   }),
   bank: z.object({
     accountName: z.string().optional().default(''),
@@ -136,7 +138,7 @@ export default function FooterManagementPage() {
         email: 'roseberrychocolatellp@gmail.com', 
         supportEmail: 'customercare.roseberry@gmail.com' 
       },
-      legal: { gstin: '', fssaiNumber: '', cin: '', pan: '' },
+      legal: { gstin: '', fssaiNumber: '', cin: '', pan: '', udyamNumber: '' },
       bank: { accountName: '', bankName: '', branch: '', accountNumber: '', ifsc: '', upiId: '', qrCodeUrl: '' },
       maps: { locationName: '', mapUrl: '', embedUrl: '' },
       social: { instagram: '', facebook: '', youtube: '', twitter: '', linkedin: '' },
@@ -325,6 +327,9 @@ export default function FooterManagementPage() {
                     <FormField control={form.control} name="legal.fssaiNumber" render={({ field }) => (
                       <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">FSSAI License No.</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
                     )} />
+                    <FormField control={form.control} name="legal.udyamNumber" render={({ field }) => (
+                      <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Udyam Registration No.</FormLabel><FormControl><Input className="h-12 rounded-xl" {...field} /></FormControl></FormItem>
+                    )} />
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -351,7 +356,7 @@ export default function FooterManagementPage() {
                                  <Switch 
                                    checked={field.value} 
                                    onCheckedChange={field.onChange} 
-                                   className="w-[56px] h-[30px] data-[state=checked]:bg-primary data-[state=unchecked]:bg-stone-200 border-none hover:shadow-md transition-all shadow-inner"
+                                   className="w-[56px] h-[30px] data-[state=checked]:bg-primary data-[state=unchecked]:bg-input border-none hover:shadow-md transition-all shadow-inner"
                                    thumbClassName="h-6 w-6 data-[state=checked]:translate-x-[26px] data-[state=unchecked]:translate-x-1 shadow-md"
                                    aria-label="Toggle bank details visibility"
                                  />
