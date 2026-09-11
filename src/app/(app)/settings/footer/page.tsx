@@ -469,7 +469,7 @@ export default function FooterManagementPage() {
                                 </div>
                                 <div>
                                   <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground leading-none mb-1">{field.label}</p>
-                                  <p className="text-sm font-bold text-stone-900 line-clamp-1">{field.value}</p>
+                                  <p className="text-sm font-extrabold text-foreground line-clamp-1">{field.value}</p>
                                 </div>
                               </div>
                               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
