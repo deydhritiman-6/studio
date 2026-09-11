@@ -326,50 +326,49 @@ export function Footer() {
 
           {/* Column 3: HQ, Communication & Business/Legal - Content Driven Height */}
           <div className="space-y-8 h-fit self-start relative z-20">
-            {/* HQ & Communication Card */}
-            <motion.div variants={panelVariants(0.8)} animate="animate" className="space-y-10 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm">
-              <div className="space-y-6">
-                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3"><MapPin className="h-3.5 w-3.5" /> Headquarters</h4>
-                <div className="space-y-3">
-                    <p className="text-[16px] text-stone-900 font-black leading-tight">{address.businessName || "Roseberry Chocolate LLP"}</p>
-                    <p className="text-[15px] text-stone-900 font-bold leading-relaxed tracking-wide">
-                      {address.line1 || "Aashiyana Bhaban, 1A, Roypara-Hatiara Rd"}<br />
-                      {address.city || "Newtown, Kolkata"}, {address.state || "West Bengal"} {address.zip || "700157"}
-                    </p>
-                </div>
+            {/* Headquarters Card */}
+            <motion.div variants={panelVariants(0.8)} animate="animate" className="space-y-6 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm">
+              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3"><MapPin className="h-3.5 w-3.5" /> Headquarters</h4>
+              <div className="space-y-3">
+                  <p className="text-[16px] text-stone-900 font-black leading-tight">{address.businessName || "Roseberry Chocolate LLP"}</p>
+                  <p className="text-[15px] text-stone-900 font-bold leading-relaxed tracking-wide">
+                    {address.line1 || "Aashiyana Bhaban, 1A, Roypara-Hatiara Rd"}<br />
+                    {address.city || "Newtown, Kolkata"}, {address.state || "West Bengal"} {address.zip || "700157"}
+                  </p>
               </div>
+            </motion.div>
 
-              <div className="space-y-6">
-                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3"><Phone className="h-3.5 w-3.5" /> Communication</h4>
-                <div className="space-y-4">
-                  {contact.phone && (
-                    <a href={`tel:${contact.phone}`} className="flex items-center gap-4 group/contact">
-                      <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Phone className="h-4 w-4" /></div>
-                      <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">PRIMARY HOTLINE</span>
-                        <span className="text-[14px] text-stone-900 font-bold tracking-wide">{contact.phone}</span>
-                      </div>
-                    </a>
-                  )}
-                  {contact.whatsapp && (
-                    <a href={`https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 group/contact">
-                      <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><MessageCircle className="h-4 w-4" /></div>
-                      <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">WHATSAPP BUSINESS</span>
-                        <span className="text-[14px] text-stone-900 font-bold tracking-wide">{contact.whatsapp}</span>
-                      </div>
-                    </a>
-                  )}
-                  {contact.email && (
-                    <a href={`mailto:${contact.email}`} className="flex items-center gap-4 group/contact">
-                      <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Mail className="h-4 w-4" /></div>
-                      <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">OFFICIAL EMAIL</span>
-                        <span className="text-[14px] text-stone-900 font-bold tracking-wide break-all leading-tight">{contact.email}</span>
-                      </div>
-                    </a>
-                  )}
-                </div>
+            {/* Communication Card */}
+            <motion.div variants={panelVariants(0.9)} animate="animate" className="space-y-6 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm">
+              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3"><Phone className="h-3.5 w-3.5" /> Communication</h4>
+              <div className="space-y-4">
+                {contact.phone && (
+                  <a href={`tel:${contact.phone}`} className="flex items-center gap-4 group/contact">
+                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Phone className="h-4 w-4" /></div>
+                    <div className="flex flex-col">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">PRIMARY HOTLINE</span>
+                      <span className="text-[14px] text-stone-900 font-bold tracking-wide">{contact.phone}</span>
+                    </div>
+                  </a>
+                )}
+                {contact.whatsapp && (
+                  <a href={`https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 group/contact">
+                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><MessageCircle className="h-4 w-4" /></div>
+                    <div className="flex flex-col">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">WHATSAPP BUSINESS</span>
+                      <span className="text-[14px] text-stone-900 font-bold tracking-wide">{contact.whatsapp}</span>
+                    </div>
+                  </a>
+                )}
+                {contact.email && (
+                  <a href={`mailto:${contact.email}`} className="flex items-center gap-4 group/contact">
+                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Mail className="h-4 w-4" /></div>
+                    <div className="flex flex-col">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">OFFICIAL EMAIL</span>
+                      <span className="text-[14px] text-stone-900 font-bold break-all leading-tight">{contact.email}</span>
+                    </div>
+                  </a>
+                )}
               </div>
             </motion.div>
 
