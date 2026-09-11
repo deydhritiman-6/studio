@@ -239,7 +239,7 @@ export function Footer() {
             animate="animate"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            className="group space-y-8 bg-white p-10 rounded-[2.5rem] shadow-xl transition-all duration-700 hover:shadow-2xl relative z-10 h-fit self-start"
+            className="group space-y-8 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-all duration-700 hover:shadow-2xl relative z-10 h-fit self-start"
           >
             <div className="space-y-6">
               <Link href="/" className="inline-block transition-transform duration-500 hover:scale-105">
@@ -287,7 +287,7 @@ export function Footer() {
           <motion.div 
             variants={panelVariants(0.2)} 
             animate="animate" 
-            className="grid grid-cols-2 gap-8 bg-white p-10 rounded-[2.5rem] shadow-xl z-10 h-fit self-start"
+            className="grid grid-cols-2 gap-8 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl z-10 h-fit self-start"
           >
             <div className="space-y-10">
               <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-fuchsia-700">Discovery</h4>
@@ -329,7 +329,7 @@ export function Footer() {
           <motion.div 
             variants={panelVariants(0.3)} 
             animate="animate" 
-            className="space-y-6 bg-white p-10 rounded-[2.5rem] shadow-xl z-10 h-fit self-start"
+            className="space-y-6 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl z-10 h-fit self-start"
           >
             <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3"><MapPin className="h-3.5 w-3.5" /> Headquarters</h4>
             <div className="space-y-3">
@@ -345,7 +345,7 @@ export function Footer() {
           <motion.div 
             variants={panelVariants(0.4)} 
             animate="animate"
-            className="bg-white p-10 rounded-[2.5rem] shadow-xl space-y-8 z-10 h-fit self-start"
+            className="bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl space-y-8 z-10 h-fit self-start"
           >
             <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3">
               <CreditCard className="h-3.5 w-3.5" /> Financial Facilitation
@@ -430,7 +430,7 @@ export function Footer() {
           <motion.div 
             variants={panelVariants(0.6)} 
             animate="animate" 
-            className="space-y-6 bg-white p-10 rounded-[2.5rem] shadow-xl z-10 h-fit self-start"
+            className="space-y-6 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl z-10 h-fit self-start"
           >
             <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3"><Phone className="h-3.5 w-3.5" /> Communication</h4>
             <div className="space-y-4">
@@ -477,7 +477,7 @@ export function Footer() {
           <motion.div 
             variants={panelVariants(0.7)} 
             animate="animate" 
-            className="space-y-6 bg-white p-10 rounded-[2.5rem] shadow-xl z-10 h-fit self-start"
+            className="space-y-6 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl z-10 h-fit self-start"
           >
             <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Business & Legal</h4>
             <div className="space-y-4">
