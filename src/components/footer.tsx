@@ -18,7 +18,9 @@ import {
   ExternalLink,
   Heart,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Building,
+  Search
 } from 'lucide-react';
 import { motion, useReducedMotion, AnimatePresence } from 'framer-motion';
 import { useDoc, useFirestore } from '@/firebase';
@@ -173,11 +175,11 @@ export function Footer() {
       <FloatingBubbles />
 
       <div className="container max-w-7xl mx-auto px-6 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-10 mb-24 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 mb-12 items-start">
           
-          {/* Column 1: Story / About Card - Content Driven Height */}
+          {/* 1. STORY / ABOUT CARD */}
           <motion.div 
-            variants={panelVariants(0)}
+            variants={panelVariants(0.1)}
             animate="animate"
             className="group space-y-8 bg-white/45 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/60 shadow-xl transition-all duration-700 hover:shadow-2xl relative z-20 h-fit self-start"
           >
@@ -223,85 +225,258 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* Column 2: Links, Maps, and Communities - Content Driven Height */}
-          <div className="space-y-8 h-fit self-start relative z-20">
-            <motion.div variants={panelVariants(1.2)} animate="animate" className="grid grid-cols-2 gap-8 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm">
-              <div className="space-y-10">
-                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-fuchsia-700">Discovery</h4>
-                <ul className="space-y-5">
-                  {[
-                    { text: 'Our Story', url: '/#story' },
-                    { text: 'Collections', url: '/shop' },
-                    { text: 'Artisan Journey', url: '/shop/my-orders' },
-                    { text: 'Our Facilities', url: '/inside-roseberry' },
-                  ].map((link) => (
-                    <li key={link.text}>
-                      <Link href={link.url} className="text-stone-900 text-[15px] hover:text-fuchsia-600 transition-all duration-300 font-bold tracking-wide footer-navigation-link">
-                        {link.text}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="space-y-10">
-                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-fuchsia-700">Assistance</h4>
-                <ul className="space-y-5">
-                  {[
-                    { text: 'Privacy Policy', url: '#' },
-                    { text: 'Terms of Service', url: '#' },
-                    { text: 'Shipping Policy', url: '#' },
-                    { text: 'Return Policy', url: '#' },
-                  ].map((link) => (
-                    <li key={link.text}>
-                      <Link href={link.url} className="text-stone-900 text-[15px] hover:text-fuchsia-600 transition-all duration-300 font-bold tracking-wide footer-navigation-link">
-                        {link.text}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+          {/* 2. DISCOVERY + ASSISTANCE */}
+          <motion.div 
+            variants={panelVariants(0.2)} 
+            animate="animate" 
+            className="grid grid-cols-2 gap-8 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm h-fit self-start"
+          >
+            <div className="space-y-10">
+              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-fuchsia-700">Discovery</h4>
+              <ul className="space-y-5">
+                {[
+                  { text: 'Our Story', url: '/#story' },
+                  { text: 'Collections', url: '/shop' },
+                  { text: 'Artisan Journey', url: '/shop/my-orders' },
+                  { text: 'Our Facilities', url: '/inside-roseberry' },
+                ].map((link) => (
+                  <li key={link.text}>
+                    <Link href={link.url} className="text-stone-900 text-[15px] hover:text-fuchsia-600 transition-all duration-300 font-bold tracking-wide footer-navigation-link">
+                      {link.text}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="space-y-10">
+              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-fuchsia-700">Assistance</h4>
+              <ul className="space-y-5">
+                {[
+                  { text: 'Privacy Policy', url: '#' },
+                  { text: 'Terms of Service', url: '#' },
+                  { text: 'Shipping Policy', url: '#' },
+                  { text: 'Return Policy', url: '#' },
+                ].map((link) => (
+                  <li key={link.text}>
+                    <Link href={link.url} className="text-stone-900 text-[15px] hover:text-fuchsia-600 transition-all duration-300 font-bold tracking-wide footer-navigation-link">
+                      {link.text}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </motion.div>
+
+          {/* 3. HEADQUARTERS */}
+          <motion.div 
+            variants={panelVariants(0.3)} 
+            animate="animate" 
+            className="space-y-6 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm h-fit self-start"
+          >
+            <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3"><MapPin className="h-3.5 w-3.5" /> Headquarters</h4>
+            <div className="space-y-3">
+                <p className="text-[16px] text-stone-900 font-black leading-tight">{address.businessName || "Roseberry Chocolate LLP"}</p>
+                <p className="text-[15px] text-stone-900 font-bold leading-relaxed tracking-wide">
+                  {address.line1 || "Aashiyana Bhaban, 1A, Roypara-Hatiara Rd"}<br />
+                  {address.city || "Newtown, Kolkata"}, {address.state || "West Bengal"} {address.zip || "700157"}
+                </p>
+            </div>
+          </motion.div>
+
+          {/* 4. FINANCIAL FACILITATION */}
+          {showBankDetails && (
+            <motion.div 
+              variants={panelVariants(0.4)} 
+              animate="animate"
+              className="bg-white/50 backdrop-blur-md p-10 rounded-[2.5rem] border border-white/60 shadow-xl space-y-8 h-fit self-start"
+            >
+              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3">
+                <CreditCard className="h-3.5 w-3.5" /> Financial Facilitation
+              </h4>
+              <div className="space-y-4">
+                {bank.accountName && (
+                  <div className="flex flex-col">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Account Holder</span>
+                      <span className="text-[14px] text-stone-900 font-bold">{bank.accountName}</span>
+                  </div>
+                )}
+                {bank.bankName && (
+                  <div className="flex flex-col">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Bank</span>
+                      <span className="text-[14px] text-stone-900 font-bold">{bank.bankName}</span>
+                  </div>
+                )}
+                {bank.branch && (
+                  <div className="flex flex-col">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Branch</span>
+                      <span className="text-[14px] text-stone-900 font-bold">{bank.branch}</span>
+                  </div>
+                )}
+                {bank.accountNumber && (
+                  <div className="flex flex-col">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Account Number</span>
+                      <span className="text-[14px] text-stone-900 font-bold font-mono tracking-tight">{bank.accountNumber}</span>
+                  </div>
+                )}
+                {bank.ifsc && (
+                  <div className="flex flex-col">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">IFSC Code</span>
+                      <span className="text-[14px] text-stone-900 font-bold uppercase">{bank.ifsc}</span>
+                  </div>
+                )}
+                {bank.upiId && (
+                  <div className="flex flex-col pt-2 border-t border-stone-200/50">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">UPI ID</span>
+                      <span className="text-[14px] text-primary font-bold">{bank.upiId}</span>
+                  </div>
+                )}
               </div>
             </motion.div>
+          )}
 
-            {showMap && maps.embedUrl && (
-              <motion.div variants={panelVariants(1.4)} animate="animate" className="space-y-6 bg-white/40 backdrop-blur-md border border-white/60 rounded-[2.5rem] shadow-sm overflow-hidden">
-                <div className="flex flex-col">
-                  <div className="h-[220px] w-full border-b border-white/20 relative group/map">
-                    <iframe src={maps.embedUrl} width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" className="grayscale-[20%] hover:grayscale-0 transition-all duration-700" />
-                    {maps.mapUrl && (
-                      <a 
-                        href={maps.mapUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="absolute top-4 right-4 bg-white/90 backdrop-blur-xl px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-stone-900 shadow-2xl opacity-0 group-hover/map:opacity-100 transition-all duration-300 hover:bg-white hover:scale-105 active:scale-95 flex items-center gap-2 border border-white/50 z-30 pointer-events-auto"
-                      >
-                        Open in Maps <ExternalLink className="h-3 w-3" />
-                      </a>
-                    )}
-                  </div>
-                  <div className="p-6 space-y-4 bg-white/60">
-                      <div className="flex items-start gap-3">
-                        <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0"><MapPin className="h-4 w-4" /></div>
-                        <div className="space-y-0.5">
-                            <p className="text-[9px] font-black uppercase tracking-widest text-primary">Artisan Studio Location</p>
-                            <p className="text-xs text-stone-900 font-bold leading-tight tracking-tight">
-                              {address.line1 || "Aashiyana Bhaban, 1A, Roypara-Hatiara Rd"}, {address.city || "Newtown, Kolkata"}
-                            </p>
-                        </div>
-                      </div>
-                      {maps.mapUrl && (
-                        <Button asChild className="w-full h-10 rounded-xl bg-stone-900 text-white hover:bg-stone-800 font-bold uppercase text-[9px] tracking-widest">
-                        <a href={maps.mapUrl} target="_blank" rel="noopener noreferrer">View on Google Maps <ArrowRight className="ml-2 h-3 w-3" /></a>
-                      </Button>
-                      )}
-                  </div>
+          {/* 5. LOCATION MATRIX / GOOGLE MAP */}
+          {showMap && maps.embedUrl && (
+            <motion.div 
+              variants={panelVariants(0.5)} 
+              animate="animate" 
+              className="space-y-6 bg-white/40 backdrop-blur-md border border-white/60 rounded-[2.5rem] shadow-sm overflow-hidden h-fit self-start"
+            >
+              <div className="flex flex-col">
+                <div className="h-[220px] w-full border-b border-white/20 relative group/map">
+                  <iframe src={maps.embedUrl} width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" className="grayscale-[20%] hover:grayscale-0 transition-all duration-700" />
+                  {maps.mapUrl && (
+                    <a 
+                      href={maps.mapUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="absolute top-4 right-4 bg-white/90 backdrop-blur-xl px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-stone-900 shadow-2xl opacity-0 group-hover/map:opacity-100 transition-all duration-300 hover:bg-white hover:scale-105 active:scale-95 flex items-center gap-2 border border-white/50 z-30 pointer-events-auto"
+                    >
+                      Open in Maps <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
                 </div>
-              </motion.div>
-            )}
+                <div className="p-6 space-y-4 bg-white/60">
+                    <div className="flex items-start gap-3">
+                      <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0"><MapPin className="h-4 w-4" /></div>
+                      <div className="space-y-0.5">
+                          <p className="text-[9px] font-black uppercase tracking-widest text-primary">Artisan Studio Location</p>
+                          <p className="text-xs text-stone-900 font-bold leading-tight tracking-tight line-clamp-2">
+                            {address.line1 || "Aashiyana Bhaban, 1A, Roypara-Hatiara Rd"}, {address.city || "Newtown, Kolkata"}
+                          </p>
+                      </div>
+                    </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
 
-            {/* Patron Communities - Separate Card */}
-            <motion.div variants={panelVariants(1.6)} animate="animate" className="group space-y-6 bg-white/45 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/60 shadow-xl transition-all duration-700 hover:shadow-2xl relative">
-              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Patron Communities</h4>
-              <div className="flex flex-wrap gap-5">
+          {/* 6. COMMUNICATION */}
+          <motion.div 
+            variants={panelVariants(0.6)} 
+            animate="animate" 
+            className="space-y-6 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm h-fit self-start"
+          >
+            <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3"><Phone className="h-3.5 w-3.5" /> Communication</h4>
+            <div className="space-y-4">
+              {contact.phone && (
+                <a href={`tel:${contact.phone}`} className="flex items-center gap-4 group/contact">
+                  <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Phone className="h-4 w-4" /></div>
+                  <div className="flex flex-col">
+                    <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">PRIMARY HOTLINE</span>
+                    <span className="text-[14px] text-stone-900 font-bold tracking-wide">{contact.phone}</span>
+                  </div>
+                </a>
+              )}
+              {contact.whatsapp && (
+                <a href={`https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 group/contact">
+                  <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><MessageCircle className="h-4 w-4" /></div>
+                  <div className="flex flex-col">
+                    <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">WHATSAPP BUSINESS</span>
+                    <span className="text-[14px] text-stone-900 font-bold tracking-wide">{contact.whatsapp}</span>
+                  </div>
+                </a>
+              )}
+              {contact.email && (
+                <a href={`mailto:${contact.email}`} className="flex items-center gap-4 group/contact">
+                  <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Mail className="h-4 w-4" /></div>
+                  <div className="flex flex-col">
+                    <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">OFFICIAL EMAIL</span>
+                    <span className="text-[14px] text-stone-900 font-bold break-all leading-tight">{contact.email}</span>
+                  </div>
+                </a>
+              )}
+              {contact.supportEmail && (
+                <a href={`mailto:${contact.supportEmail}`} className="flex items-center gap-4 group/contact">
+                  <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Mail className="h-4 w-4" /></div>
+                  <div className="flex flex-col">
+                    <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">FOR CUSTOMER CARE</span>
+                    <span className="text-[14px] text-stone-900 font-bold break-all leading-tight">{contact.supportEmail}</span>
+                  </div>
+                </a>
+              )}
+            </div>
+          </motion.div>
+
+          {/* 7. BUSINESS & LEGAL */}
+          {((showGST && legal.gstin) || (showFSSAI && legal.fssaiNumber)) && (
+            <motion.div 
+              variants={panelVariants(0.7)} 
+              animate="animate" 
+              className="space-y-6 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm h-fit self-start"
+            >
+              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Business & Legal</h4>
+              <div className="space-y-4">
+                  {showFSSAI && legal.fssaiNumber && (
+                    <div className="flex items-center gap-3">
+                       <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
+                       <div className="flex flex-col">
+                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">FSSAI License No.</span>
+                          <span className="text-[14px] text-stone-900 font-bold">{legal.fssaiNumber}</span>
+                       </div>
+                    </div>
+                  )}
+                  {showGST && legal.gstin && (
+                    <div className="flex items-center gap-3">
+                       <CheckCircle className="h-4 w-4 text-primary shrink-0" />
+                       <div className="flex flex-col">
+                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">GSTIN</span>
+                          <span className="text-[14px] text-stone-900 font-bold uppercase">{legal.gstin}</span>
+                       </div>
+                    </div>
+                  )}
+              </div>
+            </motion.div>
+          )}
+
+          {/* 8. SCAN TO PAY */}
+          {bank.qrCodeUrl && (
+            <motion.div 
+              variants={panelVariants(0.8)} 
+              animate="animate"
+              className="bg-white p-8 rounded-[2.5rem] border-2 border-stone-100 shadow-2xl space-y-4 h-fit self-start"
+            >
+              <div className="flex items-center gap-2">
+                <QrCode className="h-4 w-4 text-primary" />
+                <span className="text-[10px] font-black uppercase tracking-widest">Scan to Pay</span>
+              </div>
+              <div className="aspect-square relative w-full bg-white rounded-2xl overflow-hidden border border-stone-50 shadow-inner">
+                <Image src={bank.qrCodeUrl} alt="Payment QR" fill className="object-contain p-4" />
+              </div>
+            </motion.div>
+          )}
+
+          {/* 9. PATRON COMMUNITIES (Full Width - Row 3) */}
+          <motion.div 
+            variants={panelVariants(0.9)} 
+            animate="animate" 
+            className="col-span-full group space-y-6 bg-white/45 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/60 shadow-xl transition-all duration-700 hover:shadow-2xl relative"
+          >
+            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="space-y-1 text-center md:text-left">
+                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Patron Communities</h4>
+                <p className="text-xs text-stone-400 font-medium italic">Join our artisanal circle for exclusive reveals.</p>
+              </div>
+              <div className="flex flex-wrap gap-5 justify-center">
                 {activeSocials.map(({ platform, url, config }) => (
                   <motion.a 
                     key={platform} 
@@ -310,173 +485,23 @@ export function Footer() {
                     rel="noopener noreferrer"
                     whileHover={{ scale: 1.15, y: -4 }}
                     whileTap={{ scale: 0.95 }}
-                    className="h-12 w-12 rounded-2xl bg-white/80 border border-stone-100 flex items-center justify-center transition-all duration-500 shadow-sm relative group/soc overflow-hidden"
+                    className="h-14 w-14 rounded-2xl bg-white/80 border border-stone-100 flex items-center justify-center transition-all duration-500 shadow-sm relative group/soc overflow-hidden"
                   >
                     <div className={cn("absolute inset-0 opacity-0 group-hover/soc:opacity-100 transition-opacity duration-500", config.hoverBg)} />
-                    <config.icon className={cn("h-5 w-5 transition-all duration-500 relative z-10 text-stone-500", config.color)} />
+                    <config.icon className={cn("h-6 w-6 transition-all duration-500 relative z-10 text-stone-500", config.color)} />
                   </motion.a>
                 ))}
               </div>
-            </motion.div>
-          </div>
-
-          {/* Column 3: HQ, Communication & Business/Legal - Independent Content Cards */}
-          <div className="space-y-8 h-fit self-start relative z-20">
-            {/* Headquarters Card */}
-            <motion.div variants={panelVariants(0.8)} animate="animate" className="space-y-6 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm">
-              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3"><MapPin className="h-3.5 w-3.5" /> Headquarters</h4>
-              <div className="space-y-3">
-                  <p className="text-[16px] text-stone-900 font-black leading-tight">{address.businessName || "Roseberry Chocolate LLP"}</p>
-                  <p className="text-[15px] text-stone-900 font-bold leading-relaxed tracking-wide">
-                    {address.line1 || "Aashiyana Bhaban, 1A, Roypara-Hatiara Rd"}<br />
-                    {address.city || "Newtown, Kolkata"}, {address.state || "West Bengal"} {address.zip || "700157"}
-                  </p>
-              </div>
-            </motion.div>
-
-            {/* Communication Card - Independent */}
-            <motion.div variants={panelVariants(0.9)} animate="animate" className="space-y-6 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm">
-              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3"><Phone className="h-3.5 w-3.5" /> Communication</h4>
-              <div className="space-y-4">
-                {contact.phone && (
-                  <a href={`tel:${contact.phone}`} className="flex items-center gap-4 group/contact">
-                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Phone className="h-4 w-4" /></div>
-                    <div className="flex flex-col">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">PRIMARY HOTLINE</span>
-                      <span className="text-[14px] text-stone-900 font-bold tracking-wide">{contact.phone}</span>
-                    </div>
-                  </a>
-                )}
-                {contact.whatsapp && (
-                  <a href={`https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 group/contact">
-                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><MessageCircle className="h-4 w-4" /></div>
-                    <div className="flex flex-col">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">WHATSAPP BUSINESS</span>
-                      <span className="text-[14px] text-stone-900 font-bold tracking-wide">{contact.whatsapp}</span>
-                    </div>
-                  </a>
-                )}
-                {contact.email && (
-                  <a href={`mailto:${contact.email}`} className="flex items-center gap-4 group/contact">
-                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Mail className="h-4 w-4" /></div>
-                    <div className="flex flex-col">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">OFFICIAL EMAIL</span>
-                      <span className="text-[14px] text-stone-900 font-bold break-all leading-tight">{contact.email}</span>
-                    </div>
-                  </a>
-                )}
-                {contact.supportEmail && (
-                  <a href={`mailto:${contact.supportEmail}`} className="flex items-center gap-4 group/contact">
-                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Mail className="h-4 w-4" /></div>
-                    <div className="flex flex-col">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">FOR CUSTOMER CARE</span>
-                      <span className="text-[14px] text-stone-900 font-bold break-all leading-tight">{contact.supportEmail}</span>
-                    </div>
-                  </a>
-                )}
-              </div>
-            </motion.div>
-
-            {/* Business & Legal Card - Independent */}
-            {((showGST && legal.gstin) || (showFSSAI && legal.fssaiNumber)) && (
-              <motion.div 
-                variants={panelVariants(1.0)} 
-                animate="animate" 
-                className="space-y-6 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm"
-              >
-                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Business & Legal</h4>
-                <div className="space-y-4">
-                    {showFSSAI && legal.fssaiNumber && (
-                      <div className="flex items-center gap-3">
-                         <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
-                         <div className="flex flex-col">
-                            <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">FSSAI License No.</span>
-                            <span className="text-[14px] text-stone-900 font-bold">{legal.fssaiNumber}</span>
-                         </div>
-                      </div>
-                    )}
-                    {showGST && legal.gstin && (
-                      <div className="flex items-center gap-3">
-                         <CheckCircle className="h-4 w-4 text-primary shrink-0" />
-                         <div className="flex flex-col">
-                            <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">GSTIN</span>
-                            <span className="text-[14px] text-stone-900 font-bold uppercase">{legal.gstin}</span>
-                         </div>
-                      </div>
-                    )}
-                </div>
-              </motion.div>
-            )}
-          </div>
-
-          {/* Column 4: Financial & QR - Content Driven Height */}
-          <motion.div variants={panelVariants(2.2)} animate="animate" className="space-y-8 relative z-20 h-fit self-start">
-            {showBankDetails && (
-              <div className="bg-white/50 backdrop-blur-md p-10 rounded-[2.5rem] border border-white/60 shadow-xl space-y-8">
-                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3">
-                  <CreditCard className="h-3.5 w-3.5" /> Financial Facilitation
-                </h4>
-                <div className="space-y-4">
-                  {bank.accountName && (
-                    <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Account Holder</span>
-                        <span className="text-[14px] text-stone-900 font-bold">{bank.accountName}</span>
-                    </div>
-                  )}
-                  {bank.bankName && (
-                    <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Bank</span>
-                        <span className="text-[14px] text-stone-900 font-bold">{bank.bankName}</span>
-                    </div>
-                  )}
-                  {bank.branch && (
-                    <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Branch</span>
-                        <span className="text-[14px] text-stone-900 font-bold">{bank.branch}</span>
-                    </div>
-                  )}
-                  {bank.accountNumber && (
-                    <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Account Number</span>
-                        <span className="text-[14px] text-stone-900 font-bold font-mono tracking-tight">{bank.accountNumber}</span>
-                    </div>
-                  )}
-                  {bank.ifsc && (
-                    <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">IFSC Code</span>
-                        <span className="text-[14px] text-stone-900 font-bold uppercase">{bank.ifsc}</span>
-                    </div>
-                  )}
-                  {bank.upiId && (
-                    <div className="flex flex-col pt-2 border-t border-stone-200/50">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">UPI ID</span>
-                        <span className="text-[14px] text-primary font-bold">{bank.upiId}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {bank.qrCodeUrl && (
-              <div className="bg-white p-8 rounded-[2.5rem] border-2 border-stone-100 shadow-2xl space-y-4">
-                <div className="flex items-center gap-2">
-                  <QrCode className="h-4 w-4 text-primary" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Scan to Pay</span>
-                </div>
-                <div className="aspect-square relative w-full bg-white rounded-2xl overflow-hidden border border-stone-50 shadow-inner">
-                  <Image src={bank.qrCodeUrl} alt="Payment QR" fill className="object-contain p-4" />
-                </div>
-              </div>
-            )}
-
-            <motion.div animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }} className="p-6 bg-rose-500/5 rounded-2xl border border-rose-500/10 flex items-center gap-4">
+              <div className="hidden lg:flex items-center gap-4 bg-rose-500/5 rounded-2xl px-6 py-4 border border-rose-500/10">
                 <div className="h-10 w-10 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-600 shadow-inner"><Heart className="h-5 w-5 fill-current" /></div>
                 <div className="space-y-0.5">
                     <p className="text-[10px] font-black uppercase tracking-widest text-rose-700 leading-none">Artisan Commitment</p>
                     <p className="text-[12px] font-bold text-rose-900/60 leading-tight">Handmade with Love</p>
                 </div>
-            </motion.div>
+              </div>
+            </div>
           </motion.div>
+
         </div>
 
         <Separator className="bg-stone-200/50 mb-12" />
@@ -485,6 +510,11 @@ export function Footer() {
           <p className="text-stone-600 text-[12px] font-black uppercase tracking-[0.3em]">
             © {new Date().getFullYear()} {address.businessName || "Roseberry Chocolate"}. Crafted with patience in Kolkata.
           </p>
+          <div className="flex items-center gap-4 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-700">
+            <CreditCard className="h-6 w-6" />
+            <div className="h-4 w-px bg-stone-300" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Secure Payments</span>
+          </div>
         </div>
       </div>
     </footer>
