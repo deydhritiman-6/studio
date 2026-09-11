@@ -231,7 +231,7 @@
   0% { transform: translateY(0) translateX(0); opacity: 0; }
   10% { opacity: var(--bubble-opacity, 0.4); }
   90% { opacity: var(--bubble-opacity, 0.4); }
-  100% { transform: translateY(-1300px) translateX(var(--bubble-drift, 20px)); opacity: 0; }
+  100% { transform: translateY(-2000px) translateX(var(--bubble-drift, 20px)); opacity: 0; }
 }
 
 .animate-bubble-float {

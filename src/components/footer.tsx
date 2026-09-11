@@ -83,12 +83,12 @@ function FloatingBubbles() {
 
   const bubbles = useMemo(() => {
     if (!mounted) return [];
-    return Array.from({ length: 80 }).map((_, i) => ({
+    return Array.from({ length: 150 }).map((_, i) => ({
       left: `${Math.random() * 100}%`,
-      delay: `${Math.random() * 25}s`,
-      size: `${5 + Math.random() * 10}px`,
-      opacity: 0.4 + Math.random() * 0.4,
-      drift: `${(Math.random() - 0.5) * 60}px`,
+      delay: `${Math.random() * 30}s`,
+      size: `${8 + Math.random() * 18}px`,
+      opacity: 0.6 + Math.random() * 0.3,
+      drift: `${(Math.random() - 0.5) * 100}px`,
       color: [
         'bg-cyan-400',
         'bg-sky-400',
@@ -97,7 +97,7 @@ function FloatingBubbles() {
         'bg-emerald-400',
         'bg-amber-400'
       ][Math.floor(Math.random() * 6)],
-      duration: `${20 + Math.random() * 20}s`
+      duration: `${15 + Math.random() * 25}s`
     }));
   }, [mounted]);
 
@@ -108,7 +108,7 @@ function FloatingBubbles() {
       {bubbles.map((b, i) => (
         <div 
           key={i}
-          className={cn("absolute bottom-[-20px] rounded-full animate-bubble-float shadow-[0_0_8px_rgba(255,255,255,0.4)]", b.color)}
+          className={cn("absolute bottom-[-30px] rounded-full animate-bubble-float shadow-[0_0_10px_rgba(255,255,255,0.5)]", b.color)}
           style={{ 
             left: b.left, 
             width: b.size, 
@@ -117,8 +117,7 @@ function FloatingBubbles() {
             '--bubble-drift': b.drift,
             animationDelay: b.delay, 
             animationDuration: b.duration,
-            willChange: 'transform, opacity',
-            filter: 'blur(0.5px)'
+            willChange: 'transform, opacity'
           } as any}
         />
       ))}
@@ -269,13 +268,13 @@ export function Footer() {
       <div className="container max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 mb-12 items-start">
           
-          {/* ROW 1: STORY / ABOUT */}
+          {/* Story Card */}
           <motion.div 
             variants={panelVariants(0.1)}
             animate="animate"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            className="group space-y-8 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-all duration-300 ease-out hover:shadow-[0_0_35px_rgba(229,169,169,0.3)] relative z-10 h-fit self-start border border-stone-100"
+            className="group space-y-8 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-all duration-400 ease-out hover:shadow-[0_0_35px_rgba(229,169,169,0.35)] relative z-10 h-fit self-start border border-stone-100"
           >
             <div className="space-y-6">
               <Link href="/" className="inline-block transition-transform duration-500 hover:scale-105">
@@ -319,11 +318,11 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* Discovery + Assistance */}
+          {/* Links Card */}
           <motion.div 
             variants={panelVariants(0.2)} 
             animate="animate" 
-            className="grid grid-cols-2 gap-8 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-all duration-300 ease-out hover:shadow-[0_0_35px_rgba(168,85,247,0.2)] z-10 h-fit self-start border border-stone-100"
+            className="grid grid-cols-2 gap-8 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-all duration-400 ease-out hover:shadow-[0_0_35px_rgba(168,85,247,0.25)] z-10 h-fit self-start border border-stone-100"
           >
             <div className="space-y-10">
               <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-fuchsia-700">Discovery</h4>
@@ -361,11 +360,11 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* Headquarters */}
+          {/* HQ Card */}
           <motion.div 
             variants={panelVariants(0.3)} 
             animate="animate" 
-            className="space-y-6 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-all duration-300 ease-out hover:shadow-[0_0_35px_rgba(16,185,129,0.25)] z-10 h-fit self-start border border-stone-100"
+            className="space-y-6 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-all duration-400 ease-out hover:shadow-[0_0_35px_rgba(16,185,129,0.3)] z-10 h-fit self-start border border-stone-100"
           >
             <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3"><MapPin className="h-3.5 w-3.5" /> Headquarters</h4>
             <div className="space-y-3">
@@ -377,11 +376,11 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* Financial Facilitation */}
+          {/* Bank Card */}
           <motion.div 
             variants={panelVariants(0.4)} 
             animate="animate"
-            className="bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-all duration-300 ease-out hover:shadow-[0_0_35px_rgba(245,158,11,0.25)] space-y-8 z-10 h-fit self-start border border-stone-100"
+            className="bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-all duration-400 ease-out hover:shadow-[0_0_35px_rgba(245,158,11,0.3)] space-y-8 z-10 h-fit self-start border border-stone-100"
           >
             <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3">
               <CreditCard className="h-3.5 w-3.5" /> Financial Facilitation
@@ -420,11 +419,11 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* Location Matrix */}
+          {/* Map Card */}
           <motion.div 
             variants={panelVariants(0.5)} 
             animate="animate" 
-            className="space-y-6 bg-white rounded-[2.5rem] shadow-xl transition-all duration-300 ease-out hover:shadow-[0_0_35px_rgba(14,165,233,0.2)] overflow-hidden z-10 h-fit self-start border border-stone-100"
+            className="space-y-6 bg-white rounded-[2.5rem] shadow-xl transition-all duration-400 ease-out hover:shadow-[0_0_35px_rgba(14,165,233,0.3)] overflow-hidden z-10 h-fit self-start border border-stone-100"
           >
             <div className="flex flex-col">
               <div className="h-[220px] w-full border-b border-white/20 relative group/map">
@@ -456,11 +455,11 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* Communication */}
+          {/* Contact Card */}
           <motion.div 
             variants={panelVariants(0.6)} 
             animate="animate" 
-            className="space-y-6 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-all duration-300 ease-out hover:shadow-[0_0_35px_rgba(6,182,212,0.25)] z-10 h-fit self-start border border-stone-100"
+            className="space-y-6 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-all duration-400 ease-out hover:shadow-[0_0_35px_rgba(6,182,212,0.3)] z-10 h-fit self-start border border-stone-100"
           >
             <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3"><Phone className="h-3.5 w-3.5" /> Communication</h4>
             <div className="space-y-4">
@@ -494,11 +493,11 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* Regulatory Matrix */}
+          {/* Legal Card */}
           <motion.div 
             variants={panelVariants(0.7)} 
             animate="animate" 
-            className="space-y-6 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-all duration-300 ease-out hover:shadow-[0_0_35px_rgba(59,130,246,0.25)] z-10 h-fit self-start border border-stone-100"
+            className="space-y-6 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-xl transition-all duration-400 ease-out hover:shadow-[0_0_35px_rgba(59,130,246,0.3)] z-10 h-fit self-start border border-stone-100"
           >
             <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Business & Legal</h4>
             <div className="space-y-4">
@@ -514,11 +513,11 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* QR Code */}
+          {/* QR Card */}
           <motion.div 
             variants={panelVariants(0.8)} 
             animate="animate"
-            className="bg-white p-8 rounded-[2.5rem] border-2 border-stone-100 shadow-xl transition-all duration-300 ease-out hover:shadow-[0_0_35px_rgba(100,116,139,0.25)] space-y-4 z-10 h-fit self-start"
+            className="bg-white p-8 rounded-[2.5rem] border-2 border-stone-100 shadow-xl transition-all duration-400 ease-out hover:shadow-[0_0_35px_rgba(100,116,139,0.3)] space-y-4 z-10 h-fit self-start"
           >
             <div className="flex items-center gap-2">
               <QrCode className="h-4 w-4 text-primary" />
@@ -535,11 +534,11 @@ export function Footer() {
             )}
           </motion.div>
 
-          {/* Patron Communities */}
+          {/* Communities Card */}
           <motion.div 
             variants={panelVariants(0.9)} 
             animate="animate" 
-            className="col-span-full group space-y-6 bg-white p-10 rounded-[2.5rem] shadow-xl transition-all duration-300 ease-out hover:shadow-[0_0_45px_rgba(244,63,94,0.15)] relative z-10 border border-stone-100"
+            className="col-span-full group space-y-6 bg-white p-10 rounded-[2.5rem] shadow-xl transition-all duration-400 ease-out hover:shadow-[0_0_45px_rgba(244,63,94,0.25)] relative z-10 border border-stone-100"
           >
             <div className="flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="space-y-1 text-center md:text-left">
@@ -590,4 +589,3 @@ export function Footer() {
     </footer>
   );
 }
-
