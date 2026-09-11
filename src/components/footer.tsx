@@ -408,39 +408,41 @@ export function Footer() {
           <motion.div variants={panelVariants(2.2)} animate="animate" className="space-y-12 relative z-20 h-fit self-start">
             {showBankDetails && (
               <div className="space-y-8">
-                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3"><CreditCard className="h-3.5 w-3.5" /> Financial Facilitation</h4>
                 <div className="space-y-6">
-                  <div className="space-y-4 bg-white/50 backdrop-blur-md p-6 rounded-[2.5rem] border border-white/60 shadow-xl">
-                    {bank.accountName && (
-                      <div className="flex flex-col">
-                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Account Holder</span>
-                          <span className="text-[14px] text-stone-900 font-bold">{bank.accountName}</span>
-                      </div>
-                    )}
-                    {bank.bankName && (
-                      <div className="flex flex-col">
-                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Bank</span>
-                          <span className="text-[14px] text-stone-900 font-bold">{bank.bankName}</span>
-                      </div>
-                    )}
-                    {bank.accountNumber && (
-                      <div className="flex flex-col">
-                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Account Number</span>
-                          <span className="text-[14px] text-stone-900 font-bold font-mono tracking-tight">{bank.accountNumber}</span>
-                      </div>
-                    )}
-                    {bank.ifsc && (
-                      <div className="flex flex-col">
-                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">IFSC Code</span>
-                          <span className="text-[14px] text-stone-900 font-bold uppercase">{bank.ifsc}</span>
-                      </div>
-                    )}
-                    {bank.upiId && (
-                      <div className="flex flex-col pt-2 border-t border-stone-200/50">
-                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">UPI ID</span>
-                          <span className="text-[14px] text-primary font-bold">{bank.upiId}</span>
-                      </div>
-                    )}
+                  <div className="bg-white/50 backdrop-blur-md p-10 rounded-[2.5rem] border border-white/60 shadow-xl space-y-8">
+                    <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3"><CreditCard className="h-3.5 w-3.5" /> Financial Facilitation</h4>
+                    <div className="space-y-4">
+                      {bank.accountName && (
+                        <div className="flex flex-col">
+                            <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Account Holder</span>
+                            <span className="text-[14px] text-stone-900 font-bold">{bank.accountName}</span>
+                        </div>
+                      )}
+                      {bank.bankName && (
+                        <div className="flex flex-col">
+                            <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Bank</span>
+                            <span className="text-[14px] text-stone-900 font-bold">{bank.bankName}</span>
+                        </div>
+                      )}
+                      {bank.accountNumber && (
+                        <div className="flex flex-col">
+                            <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Account Number</span>
+                            <span className="text-[14px] text-stone-900 font-bold font-mono tracking-tight">{bank.accountNumber}</span>
+                        </div>
+                      )}
+                      {bank.ifsc && (
+                        <div className="flex flex-col">
+                            <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">IFSC Code</span>
+                            <span className="text-[14px] text-stone-900 font-bold uppercase">{bank.ifsc}</span>
+                        </div>
+                      )}
+                      {bank.upiId && (
+                        <div className="flex flex-col pt-2 border-t border-stone-200/50">
+                            <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">UPI ID</span>
+                            <span className="text-[14px] text-primary font-bold">{bank.upiId}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   {bank.qrCodeUrl && (
                     <div className="bg-white p-8 rounded-[2.5rem] border-2 border-stone-100 shadow-2xl space-y-4">
