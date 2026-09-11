@@ -113,7 +113,7 @@ export default function CartPage() {
               <p className="text-stone-400 text-lg md:text-xl font-light max-w-md">Review your items and proceed to checkout for a taste of luxury.</p>
               
               {user?.email && (
-                <p className="text-stone-500 text-sm md:text-base font-medium italic">
+                <p className="text-stone-500 text-lg md:text-xl font-medium italic">
                   Welcome, <span className="text-primary font-bold not-italic">{user.email}</span>, to your cart
                 </p>
               )}
