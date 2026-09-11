@@ -365,6 +365,15 @@ export function Footer() {
                     </div>
                   </a>
                 )}
+                {contact.supportEmail && (
+                  <a href={`mailto:${contact.supportEmail}`} className="flex items-center gap-4 group/contact">
+                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Mail className="h-4 w-4" /></div>
+                    <div className="flex flex-col">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">FOR CUSTOMER CARE</span>
+                      <span className="text-[14px] text-stone-900 font-bold break-all leading-tight">{contact.supportEmail}</span>
+                    </div>
+                  </a>
+                )}
               </div>
             </motion.div>
 
