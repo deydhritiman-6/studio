@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   Mail, 
@@ -29,21 +29,31 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 function PremiumBackground() {
+  const [mounted, setMounted] = useState(false);
   const shouldReduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
       <div className="absolute inset-0 bg-[#f1e5d1]" /> 
       <div className="absolute inset-0 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]" />
-      {!shouldReduceMotion && (
+      
+      {/* Drifting Auras - Only start after mount to prevent hydration mismatch */}
+      {mounted && !shouldReduceMotion && (
         <>
-          <div className="absolute top-[-30%] left-[-30%] w-[1200px] h-[1200px] bg-cyan-400/25 rounded-full blur-[180px] animate-drifting-glow" />
-          <div className="absolute top-[10%] left-[10%] w-[1000px] h-[1000px] bg-fuchsia-400/20 rounded-full blur-[200px] animate-drifting-glow-reverse" />
-          <div className="absolute top-[-25%] right-[-30%] w-[1100px] h-[1100px] bg-emerald-400/25 rounded-full blur-[180px] animate-drifting-glow" />
-          <div className="absolute bottom-[-30%] left-[30%] w-[800px] h-[800px] bg-rose-400/15 rounded-full blur-[150px] animate-drifting-glow-reverse" />
+          <div className="absolute top-[-30%] left-[-30%] w-[1200px] h-[1200px] bg-cyan-400/20 rounded-full blur-[180px] animate-drifting-glow" />
+          <div className="absolute top-[10%] left-[10%] w-[1000px] h-[1000px] bg-fuchsia-400/15 rounded-full blur-[200px] animate-drifting-glow-reverse" />
+          <div className="absolute top-[-25%] right-[-30%] w-[1100px] h-[1100px] bg-emerald-400/20 rounded-full blur-[180px] animate-drifting-glow" />
+          <div className="absolute bottom-[-30%] left-[30%] w-[800px] h-[800px] bg-rose-400/10 rounded-full blur-[150px] animate-drifting-glow-reverse" />
         </>
       )}
+      
       <motion.svg 
-        animate={!shouldReduceMotion ? { y: [0, -20, 0], scaleY: [1, 1.08, 1] } : {}}
+        initial={false}
+        animate={mounted && !shouldReduceMotion ? { y: [0, -20, 0], scaleY: [1, 1.08, 1] } : {}}
         transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
         className="absolute bottom-0 left-0 w-full h-auto opacity-[0.04] text-stone-900" 
         viewBox="0 0 1440 320" 
@@ -57,16 +67,28 @@ function PremiumBackground() {
 }
 
 function FloatingParticles() {
+  const [mounted, setMounted] = useState(false);
   const shouldReduceMotion = useReducedMotion();
-  if (shouldReduceMotion) return null;
-  const particles = Array.from({ length: 50 }).map((_, i) => ({
-    left: `${Math.random() * 100}%`,
-    delay: `${Math.random() * 20}s`,
-    color: ['bg-cyan-300', 'bg-fuchsia-300', 'bg-emerald-300', 'bg-rose-300', 'bg-white', 'bg-amber-200'][i % 6],
-    duration: `${Math.random() * 15 + 10}s`
-  }));
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Use useMemo to generate stable particle properties after mount
+  const particles = useMemo(() => {
+    if (!mounted) return [];
+    return Array.from({ length: 45 }).map((_, i) => ({
+      left: `${(i * 13.7) % 100}%`, // Deterministic distribution
+      delay: `${(i * 0.5) % 20}s`,
+      color: ['bg-cyan-300', 'bg-fuchsia-300', 'bg-emerald-300', 'bg-rose-300', 'bg-white', 'bg-amber-200'][i % 6],
+      duration: `${15 + (i % 15)}s`
+    }));
+  }, [mounted]);
+
+  if (!mounted || shouldReduceMotion) return null;
+
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
       {particles.map((p, i) => (
         <div 
           key={i}
@@ -135,7 +157,7 @@ export function Footer() {
   const showMap = visibility?.showMap === true;
 
   return (
-    <footer id="footer" className="relative text-stone-900 pt-32 overflow-hidden border-t border-stone-200">
+    <footer id="footer" className="relative z-20 text-stone-900 pt-32 overflow-hidden border-t border-stone-200">
       <PremiumBackground />
       <FloatingParticles />
 
@@ -145,7 +167,7 @@ export function Footer() {
           <motion.div 
             variants={panelVariants(0)}
             animate="animate"
-            className="group space-y-8 bg-white/45 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/60 shadow-xl transition-all duration-700 hover:shadow-2xl"
+            className="group space-y-8 bg-white/45 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/60 shadow-xl transition-all duration-700 hover:shadow-2xl relative z-20"
           >
             <div className="space-y-6">
               <Link href="/" className="inline-block transition-transform duration-500 hover:scale-105">
@@ -183,7 +205,7 @@ export function Footer() {
             </div>
           </motion.div>
 
-          <motion.div variants={panelVariants(1.2)} animate="animate" className="grid grid-cols-2 gap-8 py-6">
+          <motion.div variants={panelVariants(1.2)} animate="animate" className="grid grid-cols-2 gap-8 py-6 relative z-20">
             <div className="space-y-10">
               <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-fuchsia-700">Discovery</h4>
               <ul className="space-y-5">
@@ -194,7 +216,7 @@ export function Footer() {
                   { text: 'Our Facilities', url: '/inside-roseberry' },
                 ].map((link) => (
                   <li key={link.text}>
-                    <Link href={link.url} className="text-stone-900 text-[15px] hover:text-fuchsia-600 transition-all duration-300 font-bold tracking-wide">
+                    <Link href={link.url} className="text-stone-900 text-[15px] hover:text-fuchsia-600 transition-all duration-300 font-bold tracking-wide footer-navigation-link">
                       {link.text}
                     </Link>
                   </li>
@@ -211,7 +233,7 @@ export function Footer() {
                   { text: 'Return Policy', url: '#' },
                 ].map((link) => (
                   <li key={link.text}>
-                    <Link href={link.url} className="text-stone-900 text-[15px] hover:text-fuchsia-600 transition-all duration-300 font-bold tracking-wide">
+                    <Link href={link.url} className="text-stone-900 text-[15px] hover:text-fuchsia-600 transition-all duration-300 font-bold tracking-wide footer-navigation-link">
                       {link.text}
                     </Link>
                   </li>
@@ -270,7 +292,7 @@ export function Footer() {
             </div>
           </motion.div>
 
-          <motion.div variants={panelVariants(0.8)} animate="animate" className="space-y-10 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm">
+          <motion.div variants={panelVariants(0.8)} animate="animate" className="space-y-10 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm relative z-20">
             <div className="space-y-6">
               <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3"><MapPin className="h-3.5 w-3.5" /> Headquarters</h4>
               <div className="space-y-3">
@@ -360,7 +382,7 @@ export function Footer() {
             )}
           </motion.div>
 
-          <motion.div variants={panelVariants(2.2)} animate="animate" className="space-y-12">
+          <motion.div variants={panelVariants(2.2)} animate="animate" className="space-y-12 relative z-20">
             {showBankDetails && (
               <div className="space-y-8">
                 <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3"><CreditCard className="h-3.5 w-3.5" /> Financial Facilitation</h4>
@@ -430,7 +452,7 @@ export function Footer() {
 
         <Separator className="bg-stone-200/50 mb-12" />
 
-        <div className="flex flex-col md:flex-row justify-between items-center gap-10 text-center md:text-left pb-16">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-10 text-center md:text-left pb-16 relative z-20">
           <p className="text-stone-600 text-[12px] font-black uppercase tracking-[0.3em]">
             © {new Date().getFullYear()} {address.businessName || "Roseberry Chocolate"}. Crafted with patience in Kolkata.
           </p>
