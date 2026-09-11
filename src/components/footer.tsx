@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { 
   Mail, 
@@ -66,7 +66,11 @@ function PremiumBackground() {
   );
 }
 
-function FloatingParticles() {
+/**
+ * FloatingBubbles - Renders soft, blurred, colorful orbs rising from the bottom.
+ * Designed to provide a premium atmospheric effect visible across all viewports.
+ */
+function FloatingBubbles() {
   const [mounted, setMounted] = useState(false);
   const shouldReduceMotion = useReducedMotion();
 
@@ -74,14 +78,18 @@ function FloatingParticles() {
     setMounted(true);
   }, []);
 
-  // Use useMemo to generate stable particle properties after mount
-  const particles = useMemo(() => {
+  const bubbles = useMemo(() => {
     if (!mounted) return [];
-    return Array.from({ length: 45 }).map((_, i) => ({
-      left: `${(i * 13.7) % 100}%`, // Deterministic distribution
-      delay: `${(i * 0.5) % 20}s`,
-      color: ['bg-cyan-300', 'bg-fuchsia-300', 'bg-emerald-300', 'bg-rose-300', 'bg-white', 'bg-amber-200'][i % 6],
-      duration: `${15 + (i % 15)}s`
+    return Array.from({ length: 25 }).map((_, i) => ({
+      left: `${(i * 4.1) % 100}%`,
+      delay: `${(i * 0.8) % 20}s`,
+      // Varied sizes to ensure visibility as "bubbles" rather than dust
+      size: `${25 + (i % 6) * 15}px`,
+      // Deep blurs for the atmospheric glowing effect
+      blur: i % 3 === 0 ? 'blur-xl' : i % 3 === 1 ? 'blur-2xl' : 'blur-3xl',
+      // Palette: Cyan, Magenta (Fuchsia), Emerald (Olive), Rose (Cherry)
+      color: ['bg-cyan-400/20', 'bg-fuchsia-400/15', 'bg-emerald-400/15', 'bg-rose-400/15', 'bg-white/10'][i % 5],
+      duration: `${18 + (i % 15)}s`
     }));
   }, [mounted]);
 
@@ -89,11 +97,18 @@ function FloatingParticles() {
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
-      {particles.map((p, i) => (
+      {bubbles.map((b, i) => (
         <div 
           key={i}
-          className={cn("absolute bottom-0 w-1.5 h-1.5 rounded-full blur-[1px] opacity-0 animate-particle-float", p.color)}
-          style={{ left: p.left, animationDelay: p.delay, animationDuration: p.duration }}
+          className={cn("absolute bottom-0 rounded-full opacity-0 animate-particle-float", b.blur, b.color)}
+          style={{ 
+            left: b.left, 
+            width: b.size, 
+            height: b.size, 
+            animationDelay: b.delay, 
+            animationDuration: b.duration,
+            willChange: 'transform, opacity'
+          }}
         />
       ))}
     </div>
@@ -159,7 +174,7 @@ export function Footer() {
   return (
     <footer id="footer" className="relative z-20 text-stone-900 pt-32 overflow-hidden border-t border-stone-200">
       <PremiumBackground />
-      <FloatingParticles />
+      <FloatingBubbles />
 
       <div className="container max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-10 mb-24">
