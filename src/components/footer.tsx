@@ -150,11 +150,6 @@ export function Footer() {
       }));
   }, [footerData]);
 
-  const isValidEmbedUrl = (url?: string) => {
-    if (!url) return false;
-    return url.includes('google.com/maps/embed') || url.includes('https://');
-  };
-
   if (loading) return null;
 
   const {
@@ -180,7 +175,7 @@ export function Footer() {
       <div className="container max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-10 mb-24 items-start">
           
-          {/* Brand/Story Card - Now Content Driven Height */}
+          {/* Column 1: Story / About Card - Content Driven Height */}
           <motion.div 
             variants={panelVariants(0)}
             animate="animate"
@@ -194,13 +189,13 @@ export function Footer() {
               <div className="space-y-4">
                 <motion.div
                   initial={false}
-                  animate={{ height: isAboutExpanded ? 'auto' : '4.5rem' }}
+                  animate={{ height: isAboutExpanded ? 'auto' : '6rem' }}
                   transition={{ duration: 0.4, ease: "easeInOut" }}
                   className="overflow-hidden"
                 >
                   <p className={cn(
                     "text-[#3D1E16] text-[15px] leading-relaxed font-bold italic",
-                    !isAboutExpanded && "line-clamp-3 md:line-clamp-4"
+                    !isAboutExpanded && "line-clamp-4"
                   )}>
                     {brand.description || "Every piece is a story of artisanal excellence, meticulously hand-tempered in our Kolkata studio using ethical, single-origin cacao."}
                   </p>
@@ -210,7 +205,7 @@ export function Footer() {
                   onClick={() => setIsAboutExpanded(!isAboutExpanded)}
                   className="text-[10px] font-black uppercase tracking-[0.2em] text-primary hover:text-rose-700 transition-colors flex items-center gap-1 group/view"
                 >
-                  {isAboutExpanded ? "View Less" : "View More"}
+                  {isAboutExpanded ? "VIEW LESS" : "VIEW MORE"}
                   {isAboutExpanded ? (
                     <ChevronUp className="h-3 w-3 transition-transform group-hover/view:-translate-y-0.5" />
                   ) : (
@@ -228,7 +223,7 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* Column 2: Discovery, Map, and Patron Communities - Content Driven Height */}
+          {/* Column 2: Links, Maps, and Communities - Content Driven Height */}
           <div className="space-y-8 h-fit self-start relative z-20">
             <motion.div variants={panelVariants(1.2)} animate="animate" className="grid grid-cols-2 gap-8 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm">
               <div className="space-y-10">
@@ -303,6 +298,7 @@ export function Footer() {
               </motion.div>
             )}
 
+            {/* Patron Communities - Separate Card */}
             <motion.div variants={panelVariants(1.6)} animate="animate" className="group space-y-6 bg-white/45 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/60 shadow-xl transition-all duration-700 hover:shadow-2xl relative">
               <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Patron Communities</h4>
               <div className="flex flex-wrap gap-5">
@@ -324,7 +320,7 @@ export function Footer() {
             </motion.div>
           </div>
 
-          {/* Column 3: HQ, Communication & Business/Legal - Content Driven Height */}
+          {/* Column 3: HQ, Communication & Business/Legal - Independent Content Cards */}
           <div className="space-y-8 h-fit self-start relative z-20">
             {/* Headquarters Card */}
             <motion.div variants={panelVariants(0.8)} animate="animate" className="space-y-6 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm">
@@ -338,7 +334,7 @@ export function Footer() {
               </div>
             </motion.div>
 
-            {/* Communication Card */}
+            {/* Communication Card - Independent */}
             <motion.div variants={panelVariants(0.9)} animate="animate" className="space-y-6 bg-white/40 backdrop-blur-md border border-white/60 p-10 rounded-[2.5rem] shadow-sm">
               <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-3"><Phone className="h-3.5 w-3.5" /> Communication</h4>
               <div className="space-y-4">
@@ -372,7 +368,7 @@ export function Footer() {
               </div>
             </motion.div>
 
-            {/* Business & Legal Card */}
+            {/* Business & Legal Card - Independent */}
             {((showGST && legal.gstin) || (showFSSAI && legal.fssaiNumber)) && (
               <motion.div 
                 variants={panelVariants(1.0)} 
@@ -404,55 +400,66 @@ export function Footer() {
             )}
           </div>
 
-          {/* Column 4: Financial/Policy - Content Driven Height */}
-          <motion.div variants={panelVariants(2.2)} animate="animate" className="space-y-12 relative z-20 h-fit self-start">
+          {/* Column 4: Financial & QR - Content Driven Height */}
+          <motion.div variants={panelVariants(2.2)} animate="animate" className="space-y-8 relative z-20 h-fit self-start">
             {showBankDetails && (
-              <div className="space-y-8">
-                <div className="space-y-6">
-                  <div className="bg-white/50 backdrop-blur-md p-10 rounded-[2.5rem] border border-white/60 shadow-xl space-y-8">
-                    <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3"><CreditCard className="h-3.5 w-3.5" /> Financial Facilitation</h4>
-                    <div className="space-y-4">
-                      {bank.accountName && (
-                        <div className="flex flex-col">
-                            <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Account Holder</span>
-                            <span className="text-[14px] text-stone-900 font-bold">{bank.accountName}</span>
-                        </div>
-                      )}
-                      {bank.bankName && (
-                        <div className="flex flex-col">
-                            <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Bank</span>
-                            <span className="text-[14px] text-stone-900 font-bold">{bank.bankName}</span>
-                        </div>
-                      )}
-                      {bank.accountNumber && (
-                        <div className="flex flex-col">
-                            <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Account Number</span>
-                            <span className="text-[14px] text-stone-900 font-bold font-mono tracking-tight">{bank.accountNumber}</span>
-                        </div>
-                      )}
-                      {bank.ifsc && (
-                        <div className="flex flex-col">
-                            <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">IFSC Code</span>
-                            <span className="text-[14px] text-stone-900 font-bold uppercase">{bank.ifsc}</span>
-                        </div>
-                      )}
-                      {bank.upiId && (
-                        <div className="flex flex-col pt-2 border-t border-stone-200/50">
-                            <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">UPI ID</span>
-                            <span className="text-[14px] text-primary font-bold">{bank.upiId}</span>
-                        </div>
-                      )}
+              <div className="bg-white/50 backdrop-blur-md p-10 rounded-[2.5rem] border border-white/60 shadow-xl space-y-8">
+                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3">
+                  <CreditCard className="h-3.5 w-3.5" /> Financial Facilitation
+                </h4>
+                <div className="space-y-4">
+                  {bank.accountName && (
+                    <div className="flex flex-col">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Account Holder</span>
+                        <span className="text-[14px] text-stone-900 font-bold">{bank.accountName}</span>
                     </div>
-                  </div>
-                  {bank.qrCodeUrl && (
-                    <div className="bg-white p-8 rounded-[2.5rem] border-2 border-stone-100 shadow-2xl space-y-4">
-                      <div className="flex items-center gap-2"><QrCode className="h-4 w-4 text-primary" /><span className="text-[10px] font-black uppercase tracking-widest">Scan to Pay</span></div>
-                      <div className="aspect-square relative w-full bg-white rounded-2xl overflow-hidden border border-stone-50 shadow-inner"><Image src={bank.qrCodeUrl} alt="Payment QR" fill className="object-contain p-4" /></div>
+                  )}
+                  {bank.bankName && (
+                    <div className="flex flex-col">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Bank</span>
+                        <span className="text-[14px] text-stone-900 font-bold">{bank.bankName}</span>
+                    </div>
+                  )}
+                  {bank.branch && (
+                    <div className="flex flex-col">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Branch</span>
+                        <span className="text-[14px] text-stone-900 font-bold">{bank.branch}</span>
+                    </div>
+                  )}
+                  {bank.accountNumber && (
+                    <div className="flex flex-col">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Account Number</span>
+                        <span className="text-[14px] text-stone-900 font-bold font-mono tracking-tight">{bank.accountNumber}</span>
+                    </div>
+                  )}
+                  {bank.ifsc && (
+                    <div className="flex flex-col">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">IFSC Code</span>
+                        <span className="text-[14px] text-stone-900 font-bold uppercase">{bank.ifsc}</span>
+                    </div>
+                  )}
+                  {bank.upiId && (
+                    <div className="flex flex-col pt-2 border-t border-stone-200/50">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">UPI ID</span>
+                        <span className="text-[14px] text-primary font-bold">{bank.upiId}</span>
                     </div>
                   )}
                 </div>
               </div>
             )}
+
+            {bank.qrCodeUrl && (
+              <div className="bg-white p-8 rounded-[2.5rem] border-2 border-stone-100 shadow-2xl space-y-4">
+                <div className="flex items-center gap-2">
+                  <QrCode className="h-4 w-4 text-primary" />
+                  <span className="text-[10px] font-black uppercase tracking-widest">Scan to Pay</span>
+                </div>
+                <div className="aspect-square relative w-full bg-white rounded-2xl overflow-hidden border border-stone-50 shadow-inner">
+                  <Image src={bank.qrCodeUrl} alt="Payment QR" fill className="object-contain p-4" />
+                </div>
+              </div>
+            )}
+
             <motion.div animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }} className="p-6 bg-rose-500/5 rounded-2xl border border-rose-500/10 flex items-center gap-4">
                 <div className="h-10 w-10 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-600 shadow-inner"><Heart className="h-5 w-5 fill-current" /></div>
                 <div className="space-y-0.5">
@@ -460,12 +467,6 @@ export function Footer() {
                     <p className="text-[12px] font-bold text-rose-900/60 leading-tight">Handmade with Love</p>
                 </div>
             </motion.div>
-
-            <div className="pt-6 border-t border-stone-200/50">
-                <Badge className="bg-stone-900/5 text-stone-500 border-none px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
-                  Artisan v1.2
-                </Badge>
-            </div>
           </motion.div>
         </div>
 
