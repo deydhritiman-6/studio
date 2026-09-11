@@ -16,9 +16,11 @@ import {
   QrCode, 
   ArrowRight,
   ExternalLink,
-  Heart
+  Heart,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion, AnimatePresence } from 'framer-motion';
 import { useDoc, useFirestore } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { Logo } from '@/components/logo';
@@ -68,7 +70,6 @@ function PremiumBackground() {
 
 /**
  * FloatingBubbles - Renders soft, blurred, colorful orbs rising from the bottom.
- * Designed to provide a premium atmospheric effect visible across all viewports.
  */
 function FloatingBubbles() {
   const [mounted, setMounted] = useState(false);
@@ -83,11 +84,8 @@ function FloatingBubbles() {
     return Array.from({ length: 40 }).map((_, i) => ({
       left: `${(i * 2.5) % 100}%`,
       delay: `${(i * 0.5) % 15}s`,
-      // Varied sizes to ensure visibility as "bubbles" rather than dust
       size: `${30 + (i % 8) * 12}px`,
-      // Deep blurs for the atmospheric glowing effect
       blur: i % 4 === 0 ? 'blur-xl' : i % 4 === 1 ? 'blur-2xl' : i % 4 === 2 ? 'blur-3xl' : 'blur-[40px]',
-      // Palette: Cyan, Magenta (Fuchsia), Emerald (Olive), Rose (Cherry)
       color: [
         'bg-cyan-500/30', 
         'bg-fuchsia-500/25', 
@@ -137,6 +135,7 @@ export function Footer() {
   const firestore = useFirestore();
   const settingsRef = useMemo(() => (firestore ? doc(firestore, 'settings', 'footer') : null), [firestore]);
   const { data: footerData, loading } = useDoc<any>(settingsRef as any);
+  const [isAboutExpanded, setIsAboutExpanded] = useState(false);
 
   const socialIcons: Record<string, any> = {
     instagram: { icon: Instagram, color: 'text-fuchsia-600', aura: 'rgba(217, 70, 239, 0.5)', hoverBg: 'bg-fuchsia-50' },
@@ -185,6 +184,7 @@ export function Footer() {
       <div className="container max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-10 mb-24">
           
+          {/* Brand/Story Card */}
           <motion.div 
             variants={panelVariants(0)}
             animate="animate"
@@ -194,9 +194,35 @@ export function Footer() {
               <Link href="/" className="inline-block transition-transform duration-500 hover:scale-105">
                 <Logo className="h-12 w-auto" />
               </Link>
-              <p className="text-[#3D1E16] text-[15px] leading-relaxed font-bold italic">
-                {brand.description || "Every piece is a story of artisanal excellence, meticulously hand-tempered in our Kolkata studio using ethical, single-origin cacao."}
-              </p>
+              
+              <div className="space-y-4">
+                <motion.div
+                  initial={false}
+                  animate={{ height: isAboutExpanded ? 'auto' : '110px' }}
+                  transition={{ duration: 0.4, ease: "easeInOut" }}
+                  className="overflow-hidden"
+                >
+                  <p className={cn(
+                    "text-[#3D1E16] text-[15px] leading-relaxed font-bold italic",
+                    !isAboutExpanded && "line-clamp-4"
+                  )}>
+                    {brand.description || "Every piece is a story of artisanal excellence, meticulously hand-tempered in our Kolkata studio using ethical, single-origin cacao."}
+                  </p>
+                </motion.div>
+                
+                <button 
+                  onClick={() => setIsAboutExpanded(!isAboutExpanded)}
+                  className="text-[10px] font-black uppercase tracking-[0.2em] text-primary hover:text-rose-700 transition-colors flex items-center gap-1 group/view"
+                >
+                  {isAboutExpanded ? "View Less" : "View More"}
+                  {isAboutExpanded ? (
+                    <ChevronUp className="h-3 w-3 transition-transform group-hover/view:-translate-y-0.5" />
+                  ) : (
+                    <ChevronDown className="h-3 w-3 transition-transform group-hover/view:translate-y-0.5" />
+                  )}
+                </button>
+              </div>
+
               <div className="pt-2 flex items-center gap-3">
                  <div className="h-px flex-1 bg-primary/20" />
                  <p className="text-stone-600 text-[11px] font-black uppercase tracking-[0.4em] whitespace-nowrap">
@@ -204,28 +230,9 @@ export function Footer() {
                  </p>
               </div>
             </div>
-            
-            <div className="space-y-6 pt-4">
-              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Patron Communities</h4>
-              <div className="flex flex-wrap gap-5">
-                {activeSocials.map(({ platform, url, config }) => (
-                  <motion.a 
-                    key={platform} 
-                    href={url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    whileHover={{ scale: 1.15, y: -4 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="h-12 w-12 rounded-2xl bg-white/80 border border-stone-100 flex items-center justify-center transition-all duration-500 shadow-sm relative group/soc overflow-hidden"
-                  >
-                    <div className={cn("absolute inset-0 opacity-0 group-hover/soc:opacity-100 transition-opacity duration-500", config.hoverBg)} />
-                    <config.icon className={cn("h-5 w-5 transition-all duration-500 relative z-10 text-stone-500", config.color)} />
-                  </motion.a>
-                ))}
-              </div>
-            </div>
           </motion.div>
 
+          {/* Discovery, Map, and Patron Communities Column */}
           <motion.div variants={panelVariants(1.2)} animate="animate" className="grid grid-cols-2 gap-8 py-6 relative z-20">
             <div className="space-y-10">
               <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-fuchsia-700">Discovery</h4>
@@ -262,7 +269,8 @@ export function Footer() {
               </ul>
             </div>
 
-            <div className="col-span-2 pt-8">
+            <div className="col-span-2 pt-8 space-y-8">
+              {/* Map Card */}
               {showMap && maps.embedUrl && (
                 <div className="space-y-6">
                   <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-cyan-700 flex items-center gap-3">
@@ -310,6 +318,29 @@ export function Footer() {
                   </div>
                 </div>
               )}
+
+              {/* Independent Patron Communities Card */}
+              <div className="space-y-6">
+                <div className="group space-y-6 bg-white/45 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/60 shadow-xl transition-all duration-700 hover:shadow-2xl relative">
+                  <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-500">Patron Communities</h4>
+                  <div className="flex flex-wrap gap-5">
+                    {activeSocials.map(({ platform, url, config }) => (
+                      <motion.a 
+                        key={platform} 
+                        href={url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        whileHover={{ scale: 1.15, y: -4 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="h-12 w-12 rounded-2xl bg-white/80 border border-stone-100 flex items-center justify-center transition-all duration-500 shadow-sm relative group/soc overflow-hidden"
+                      >
+                        <div className={cn("absolute inset-0 opacity-0 group-hover/soc:opacity-100 transition-opacity duration-500", config.hoverBg)} />
+                        <config.icon className={cn("h-5 w-5 transition-all duration-500 relative z-10 text-stone-500", config.color)} />
+                      </motion.a>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </motion.div>
 
@@ -337,15 +368,6 @@ export function Footer() {
                     </div>
                   </a>
                 )}
-                {contact.altPhone && (
-                  <a href={`tel:${contact.altPhone}`} className="flex items-center gap-4 group/contact">
-                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Phone className="h-4 w-4" /></div>
-                    <div className="flex flex-col">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">SECONDARY LINE</span>
-                      <span className="text-[14px] text-stone-900 font-bold tracking-wide">{contact.altPhone}</span>
-                    </div>
-                  </a>
-                )}
                 {contact.whatsapp && (
                   <a href={`https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 group/contact">
                     <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><MessageCircle className="h-4 w-4" /></div>
@@ -361,15 +383,6 @@ export function Footer() {
                     <div className="flex flex-col">
                       <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">OFFICIAL EMAIL</span>
                       <span className="text-[14px] text-stone-900 font-bold tracking-wide break-all leading-tight">{contact.email}</span>
-                    </div>
-                  </a>
-                )}
-                {contact.supportEmail && (
-                  <a href={`mailto:${contact.supportEmail}`} className="flex items-center gap-4 group/contact">
-                    <div className="h-9 w-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 transition-all shadow-sm"><Mail className="h-4 w-4" /></div>
-                    <div className="flex flex-col">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">CUSTOMER CARE EMAIL</span>
-                      <span className="text-[14px] text-stone-900 font-bold tracking-wide break-all leading-tight">{contact.supportEmail}</span>
                     </div>
                   </a>
                 )}
@@ -419,12 +432,6 @@ export function Footer() {
                       <div className="flex flex-col">
                           <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Bank</span>
                           <span className="text-[14px] text-stone-900 font-bold">{bank.bankName}</span>
-                      </div>
-                    )}
-                    {bank.branch && (
-                      <div className="flex flex-col">
-                          <span className="text-[8px] font-black uppercase tracking-widest text-stone-400">Branch</span>
-                          <span className="text-[14px] text-stone-900 font-bold">{bank.branch}</span>
                       </div>
                     )}
                     {bank.accountNumber && (
@@ -482,4 +489,3 @@ export function Footer() {
     </footer>
   );
 }
-
