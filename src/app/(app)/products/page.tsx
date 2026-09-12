@@ -291,7 +291,8 @@ export default function ProductsPage() {
       }
     });
 
-    return list.filter(p => !p.isArchived && p.name !== 'Rajbhog').sort((a, b) => a.name.localeCompare(b.name));
+    // Fixed the Rajbhog synchronization issue by removing the Rajbhog name filter from the Admin Portfolio view.
+    return list.filter(p => !p.isArchived).sort((a, b) => a.name.localeCompare(b.name));
   }, [allProductsRaw, galleries]);
 
   const form = useForm<ProductFormValues>({
