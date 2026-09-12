@@ -26,6 +26,7 @@ import { TestimonialMarquee } from '@/components/testimonial-marquee';
 import { DirectorMessage } from '@/components/director-message';
 import { ChocolatierProfile } from '@/components/chocolatier-profile';
 import { Footer } from '@/components/footer';
+import { cn } from '@/lib/utils';
 
 export default function LandingPage() {
   const firestore = useFirestore();
@@ -83,7 +84,7 @@ export default function LandingPage() {
                 </Link>
                 <Link href="/inside-roseberry" className="relative group hover:text-amber-600 transition-colors duration-300">
                   Inside Roseberry
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all duration-300 group-hover:w-full"></span>
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-rose-700 transition-all duration-300 group-hover:w-full"></span>
                 </Link>
                 <Link href="/shop" className="relative group hover:text-rose-700 transition-colors duration-300">
                   Collections
@@ -221,8 +222,8 @@ export default function LandingPage() {
                         />
                         <div className="absolute inset-0 bg-stone-900/10 group-hover:bg-stone-900/30 transition-colors duration-500"></div>
                         <div className="absolute bottom-10 left-10 right-10 text-white space-y-2">
-                           <h3 className="text-3xl font-bold font-headline drop-shadow-md">{product.name}</h3>
-                           <p className="text-sm font-light text-white/90 opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 duration-500 drop-shadow-md line-clamp-2">
+                           <h3 className="text-3xl font-bold font-headline text-emboss-premium">{product.name}</h3>
+                           <p className="text-sm font-light text-white/90 opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 duration-500 text-emboss-premium line-clamp-2">
                              {product.flavor} — A masterpiece of artisan tempering and pure cacao excellence.
                            </p>
                            <p className="text-xl font-bold text-primary opacity-0 group-hover:opacity-100 transition-all duration-500">
