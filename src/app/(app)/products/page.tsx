@@ -291,7 +291,7 @@ export default function ProductsPage() {
       }
     });
 
-    return list.filter(p => !p.isArchived).sort((a, b) => a.name.localeCompare(b.name));
+    return list.filter(p => !p.isArchived && p.name !== 'Rajbhog').sort((a, b) => a.name.localeCompare(b.name));
   }, [allProductsRaw, galleries]);
 
   const form = useForm<ProductFormValues>({
@@ -582,7 +582,7 @@ export default function ProductsPage() {
             <form onSubmit={form.handleSubmit((v) => saveProduct(v, editingProduct?.id))} className="flex flex-col flex-1 overflow-hidden">
               <ScrollArea className="flex-1 px-10 custom-scrollbar" dual>
                 <div className="space-y-12 py-10">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <FormField control={form.control} name="name" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Product Identity</FormLabel>
@@ -608,6 +608,13 @@ export default function ProductsPage() {
                       <FormItem>
                         <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Flavor Profile</FormLabel>
                         <FormControl><Input placeholder="e.g., Sea Salt Dark Truffle" className="h-12 rounded-xl" {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="weight" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Product Weight (g)</FormLabel>
+                        <FormControl><Input placeholder="e.g., 100" className="h-12 rounded-xl" {...field} value={field.value ?? ''} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
