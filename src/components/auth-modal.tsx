@@ -330,7 +330,7 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
         <div id="recaptcha-container" className="absolute pointer-events-none opacity-0"></div>
         
         <div className="bg-stone-900 text-white p-8 pb-4 shrink-0 flex flex-col items-center text-center space-y-4">
-          <Logo className="h-10 w-auto brightness-0 invert" />
+          <Logo className="h-10 w-auto" />
           <div className="space-y-1">
             <DialogTitle className="text-2xl font-headline font-bold">
               {view === 'sign-in' && "Artisan Access"}
