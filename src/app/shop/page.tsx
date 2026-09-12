@@ -64,7 +64,8 @@ export default function ShopPage() {
       }
     });
 
-    return list.filter(p => !p.isArchived && p.name !== 'Rajbhog').sort((a, b) => a.name.localeCompare(b.name));
+    // Restored Rajbhog by removing the explicit name filter
+    return list.filter(p => !p.isArchived).sort((a, b) => a.name.localeCompare(b.name));
   }, [allProductsRaw, galleries]);
 
   const addToCart = (product: Product) => {

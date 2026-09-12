@@ -39,8 +39,9 @@ export default function LandingPage() {
 
   const sweetDelights = useMemo(() => {
     if (!products) return [];
+    // Restored Rajbhog by removing the explicit name filter
     return products
-      .filter(p => !p.isArchived && p.name !== 'Rajbhog')
+      .filter(p => !p.isArchived)
       .slice(0, 6);
   }, [products]);
 
