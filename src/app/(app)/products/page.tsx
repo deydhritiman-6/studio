@@ -278,6 +278,7 @@ export default function ProductsPage() {
         textureName: base?.textureName,
         productionStatus: 'Product Ready',
         isArchived: base?.isArchived ?? false,
+        weight: base?.weight,
       } as Product);
     });
 
@@ -291,7 +292,6 @@ export default function ProductsPage() {
       }
     });
 
-    // Fixed the Rajbhog synchronization issue by removing the Rajbhog name filter from the Admin Portfolio view.
     return list.filter(p => !p.isArchived).sort((a, b) => a.name.localeCompare(b.name));
   }, [allProductsRaw, galleries]);
 
@@ -467,8 +467,6 @@ export default function ProductsPage() {
       deletedAt: new Date().toISOString() 
     };
 
-    // Use setDoc with merge:true instead of updateDoc to handle cases where the product 
-    // document might not exist yet (e.g. merged gallery-only items).
     setDoc(productRef, archiveData, { merge: true })
       .then(() => { 
         toast({ title: 'Moved to Bin' }); 
@@ -989,7 +987,10 @@ export default function ProductsPage() {
                 </div>
                 <div className="flex justify-between items-end pt-4 border-t">
                   <div className="space-y-0.5">
-                    <p className="text-2xl font-bold">{formatINR(product.price)}</p>
+                    <p className="text-2xl font-bold">
+                      {formatINR(product.price)}
+                      {product.weight && <span className="text-sm font-medium text-stone-400 ml-2"> • {product.weight} g</span>}
+                    </p>
                     <p className="text-[9px] text-stone-400 uppercase tracking-widest">{product.textureName || 'Smooth Milk'}</p>
                   </div>
                   <Badge variant={product.availabilityStatus === 'In Stock' ? 'default' : 'destructive'} className="rounded-full uppercase tracking-widest text-[8px] py-1.5 px-4">{product.availabilityStatus}</Badge>

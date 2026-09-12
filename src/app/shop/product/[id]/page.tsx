@@ -235,7 +235,10 @@ export default function ProductDetailPage() {
           </div>
 
           <div className="flex items-center gap-6">
-             <span className="text-5xl font-bold text-primary">{formatINR(product.price)}</span>
+             <span className="text-5xl font-bold text-primary">
+              {formatINR(product.price)}
+              {product.weight && <span className="text-2xl font-light ml-3 opacity-40"> • {product.weight} g</span>}
+             </span>
              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 uppercase tracking-widest text-[10px] px-3 py-1 font-bold">{product.availabilityStatus}</Badge>
           </div>
 
@@ -262,7 +265,7 @@ export default function ProductDetailPage() {
                   {product.weight && (
                     <div className="space-y-1">
                        <p className="text-[9px] font-bold text-stone-400 uppercase tracking-tighter">Approx. Weight</p>
-                       <p className="text-sm font-bold text-foreground">{product.weight}</p>
+                       <p className="text-sm font-bold text-foreground">{product.weight} g</p>
                     </div>
                   )}
                   {product.sku && (

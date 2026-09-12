@@ -27,6 +27,7 @@ import { DirectorMessage } from '@/components/director-message';
 import { ChocolatierProfile } from '@/components/chocolatier-profile';
 import { Footer } from '@/components/footer';
 import { cn } from '@/lib/utils';
+import { formatINR } from '@/lib/currency';
 
 export default function LandingPage() {
   const firestore = useFirestore();
@@ -226,8 +227,8 @@ export default function LandingPage() {
                            <p className="text-sm font-light text-white/90 opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 duration-500 text-emboss-premium line-clamp-2">
                              {product.flavor} — A masterpiece of artisan tempering and pure cacao excellence.
                            </p>
-                           <p className="text-xl font-bold text-primary opacity-0 group-hover:opacity-100 transition-all duration-500">
-                             {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(product.price)}
+                           <p className="text-xl font-bold text-primary opacity-0 group-hover:opacity-100 transition-all duration-500 text-emboss-premium">
+                             {formatINR(product.price)}{product.weight && ` • ${product.weight} g`}
                            </p>
                         </div>
                       </div>
