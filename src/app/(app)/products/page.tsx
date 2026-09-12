@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
@@ -58,6 +57,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CHOCOLATE_TEXTURES, DEFAULT_TEXTURE } from '@/lib/textures';
+import { formatINR } from '@/lib/currency';
 import Link from 'next/link';
 
 const SHAPE_CONFIG: Record<string, { fields: { name: string; label: string; placeholder?: string; type: 'number' | 'text' }[] }> = {
@@ -258,6 +258,7 @@ export default function ProductsPage() {
     
     const list: Product[] = [];
     
+    // Merge Gallery entries (prioritizing visual assets)
     galleries.forEach(g => {
       const base = allProductsRaw.find(p => p.id === g.productId || p.name === g.productName);
       
@@ -280,6 +281,7 @@ export default function ProductsPage() {
       } as Product);
     });
 
+    // Add portfolio products not yet in the gallery
     allProductsRaw.forEach(p => {
       if (p.productionStatus === 'Product Ready' && !p.isArchived) {
         const alreadyInList = list.some(item => item.id === p.id || item.name === p.name);
@@ -480,7 +482,7 @@ export default function ProductsPage() {
 
     return (
       <div className="space-y-2">
-        <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground flex justify-between">
+        <Label className="uppercase text-[10px] font-black tracking-widest text-muted-foreground flex justify-between">
           {label} {required && <span className="text-primary">*</span>}
           {value && (
             <button type="button" onClick={() => form.setValue(fieldName, '', { shouldValidate: true })} className="text-destructive hover:text-destructive/80 flex items-center gap-1 transition-colors">
@@ -928,7 +930,7 @@ export default function ProductsPage() {
            <Button variant="link" className="text-primary mt-4" onClick={() => setIsAddDialogOpen(true)}>Define prototype</Button>
         </div>
       ) : (
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-8 md:gap-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {products.map((product) => (
             <Card key={product.id} className="flex flex-col group overflow-hidden border-stone-100 shadow-sm hover:shadow-2xl transition-all duration-500 rounded-[2rem] bg-card relative">
               <CardHeader className="p-0 relative">
@@ -970,7 +972,7 @@ export default function ProductsPage() {
                 </div>
                 <div className="flex justify-between items-end pt-4 border-t">
                   <div className="space-y-0.5">
-                    <p className="text-2xl font-bold">₹{product.price.toLocaleString()}</p>
+                    <p className="text-2xl font-bold">{formatINR(product.price)}</p>
                     <p className="text-[9px] text-stone-400 uppercase tracking-widest">{product.textureName || 'Smooth Milk'}</p>
                   </div>
                   <Badge variant={product.availabilityStatus === 'In Stock' ? 'default' : 'destructive'} className="rounded-full uppercase tracking-widest text-[8px] py-1.5 px-4">{product.availabilityStatus}</Badge>

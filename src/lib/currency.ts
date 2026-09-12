@@ -5,7 +5,7 @@
 export const formatINR = (amount: number | string): string => {
   const numericAmount =
     typeof amount === "string"
-      ? Number(amount.replace(/[₹₽,\s]/g, ""))
+      ? Number(amount.replace(/[₹₱,\s]/g, ""))
       : amount;
 
   if (!Number.isFinite(numericAmount)) {
