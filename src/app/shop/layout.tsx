@@ -100,7 +100,12 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
 
   const isReady = !authLoading && !isAuthInitializing && !!firebaseUser;
 
-  const showBackToShop = pathname === '/shop/cart' || pathname === '/shop/my-orders' || pathname.startsWith('/shop/product/');
+  // Show "Back to Shop" button on these specific pages
+  const showBackToShop = 
+    pathname === '/shop/cart' || 
+    pathname === '/shop/my-orders' || 
+    pathname === '/shop/checkout' || 
+    pathname.startsWith('/shop/product/');
 
   return (
     <ShopContext.Provider value={{ requireAuth }}>
@@ -150,7 +155,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
               {/* Actions - Right */}
               <div className="lg:col-span-3 flex justify-end items-center gap-2 md:gap-4">
                 <div className="flex items-center gap-1 md:gap-2">
-                  {/* Back to Shop Button (Visible on Cart/My Orders) */}
+                  {/* Back to Shop Button (Visible on Cart/My Orders/Checkout/Product Detail) */}
                   {showBackToShop && (
                     <Button 
                       asChild 
