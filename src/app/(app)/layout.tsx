@@ -165,14 +165,7 @@ type User = {
 function NavSidebar({ pathname }: { pathname: string }) {
   const { setOpen, isMobile } = useSidebar();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  const startCollapseTimer = useCallback(() => {
-    if (isMobile) return;
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      setOpen(false);
-    }, 8000);
-  }, [isMobile, setOpen]);
+  const isHoveringRef = useRef(false);
 
   const stopCollapseTimer = useCallback(() => {
     if (timerRef.current) {
@@ -181,19 +174,38 @@ function NavSidebar({ pathname }: { pathname: string }) {
     }
   }, []);
 
+  const startCollapseTimer = useCallback(() => {
+    if (isMobile || isHoveringRef.current) return;
+    stopCollapseTimer();
+    timerRef.current = setTimeout(() => {
+      if (!isHoveringRef.current) {
+        setOpen(false);
+      }
+    }, 8000);
+  }, [isMobile, setOpen, stopCollapseTimer]);
+
   useEffect(() => {
     startCollapseTimer();
     return () => stopCollapseTimer();
-  }, [startCollapseTimer, stopCollapseTimer]);
+  }, [startCollapseTimer, stopCollapseTimer, pathname]);
 
   const handleMouseEnter = () => {
+    isHoveringRef.current = true;
     stopCollapseTimer();
     setOpen(true);
   };
 
   const handleMouseLeave = () => {
+    isHoveringRef.current = false;
     startCollapseTimer();
   };
+
+  const handleMouseMove = useCallback(() => {
+    if (!isHoveringRef.current) {
+      isHoveringRef.current = true;
+      stopCollapseTimer();
+    }
+  }, [stopCollapseTimer]);
 
   const isItemActive = (href: string) => {
     if (href === '/dashboard' || href === '/') {
@@ -208,6 +220,7 @@ function NavSidebar({ pathname }: { pathname: string }) {
       className="border-r border-sidebar-border bg-sidebar transition-all duration-300"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onMouseMove={handleMouseMove}
     >
       <SidebarHeader className="h-20 flex items-center justify-between px-4">
         <Link href="/dashboard" className="flex items-center gap-2 overflow-hidden">
