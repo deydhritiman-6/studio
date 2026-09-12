@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -39,7 +38,7 @@ export default function LandingPage() {
   const sweetDelights = useMemo(() => {
     if (!products) return [];
     return products
-      .filter(p => !p.isArchived)
+      .filter(p => !p.isArchived && p.name !== 'Rajbhog')
       .slice(0, 6);
   }, [products]);
 
@@ -227,7 +226,7 @@ export default function LandingPage() {
                              {product.flavor} — A masterpiece of artisan tempering and pure cacao excellence.
                            </p>
                            <p className="text-xl font-bold text-primary opacity-0 group-hover:opacity-100 transition-all duration-500">
-                             ₹{product.price.toLocaleString()}
+                             {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(product.price)}
                            </p>
                         </div>
                       </div>
