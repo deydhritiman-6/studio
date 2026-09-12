@@ -101,7 +101,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
   return (
     <ShopContext.Provider value={{ requireAuth }}>
       <div className="min-h-screen flex flex-col bg-stone-50 font-body">
-        {/* Floating Header Wrapper - Matching page.tsx structure */}
+        {/* Floating Header Wrapper */}
         <div className="fixed top-0 z-50 w-full pt-4 px-4 md:px-8 pointer-events-none">
           <header className="pointer-events-auto max-w-7xl mx-auto border bg-white/70 backdrop-blur-lg rounded-full px-6 md:px-10 h-16 md:h-20 flex items-center shadow-2xl transition-all duration-500">
             <div className="w-full grid grid-cols-2 lg:grid-cols-12 items-center gap-4 relative z-10">
@@ -145,16 +145,6 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
 
               {/* Actions - Right */}
               <div className="lg:col-span-3 flex justify-end items-center gap-2 md:gap-4">
-                {/* Shop Now Button */}
-                <Button 
-                  asChild 
-                  className="hidden xl:flex bg-[#3D1E16] hover:bg-[#4A251B] text-[#D4AF37] border border-[#D4AF37]/20 rounded-full h-10 md:h-12 px-6 font-black uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-black/20 transition-all hover:scale-105 active:scale-95 group"
-                >
-                  <Link href="/shop">
-                    Shop Now <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </Link>
-                </Button>
-
                 <div className="flex items-center gap-1 md:gap-2">
                   {/* Track Orders */}
                   <Button 
