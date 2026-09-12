@@ -1,5 +1,6 @@
 /**
  * @fileOverview Centralized Indian Rupee (INR) currency formatter.
+ * Build Synchronization Timestamp: 2024-05-21T12:00:00Z
  */
 
 export const formatINR = (amount: number | string): string => {
