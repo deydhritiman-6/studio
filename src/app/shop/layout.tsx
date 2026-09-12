@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Loader2, Home, ArrowRight } from 'lucide-react';
+import { Loader2, Home, ArrowLeft } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState, createContext, useContext } from 'react';
@@ -157,7 +157,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
                       className="hidden xl:flex bg-[#3D1E16] hover:bg-[#4A251B] text-[#D4AF37] border border-[#D4AF37]/20 rounded-full h-10 md:h-12 px-6 md:px-8 font-black uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-black/20 transition-all hover:scale-105 active:scale-95 group mr-2"
                     >
                       <Link href="/shop">
-                        Back to Shop <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                        <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" /> Back to Shop
                       </Link>
                     </Button>
                   )}
