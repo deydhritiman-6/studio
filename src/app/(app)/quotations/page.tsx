@@ -17,6 +17,7 @@ import Link from 'next/link';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { formatINR } from '@/lib/currency';
 
 const statusColorMap: Record<string, string> = {
   'Draft': 'bg-slate-500/10 text-slate-500 border-slate-500/20',
@@ -101,7 +102,7 @@ export default function QuotationsListPage() {
                       <p className="text-[10px] text-muted-foreground">Expires on</p>
                     </TableCell>
                     <TableCell className="p-6">
-                      <div className="font-bold">₹{q.totalAmount.toLocaleString('en-IN')}</div>
+                      <div className="font-bold">{formatINR(q.totalAmount)}</div>
                     </TableCell>
                     <TableCell className="p-6">
                       <Badge variant="outline" className={cn("rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest", statusColorMap[q.status])}>

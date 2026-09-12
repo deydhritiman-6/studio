@@ -8,7 +8,7 @@ export const formatINR = (amount: number | string): string => {
       ? Number(amount.replace(/[₹₱,\s]/g, ""))
       : amount;
 
-  if (!Number.isFinite(numericAmount)) {
+  if (!Number.isFinite(numericAmount) || numericAmount === null) {
     return "₹0";
   }
 

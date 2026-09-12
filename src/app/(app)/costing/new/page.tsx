@@ -45,6 +45,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { CostingGuide } from '@/components/costing-guide';
+import { formatINR } from '@/lib/currency';
 
 const costingFormSchema = z.object({
   productId: z.string().min(1, 'Product selection is required'),
@@ -527,10 +528,10 @@ function NewCostingForm() {
                             </TableCell>
                             <TableCell className="p-6 text-center text-xs tabular-nums">{item.quantity} {item.unit}</TableCell>
                             <TableCell className="p-6 text-center text-xs tabular-nums text-stone-400">
-                                {item.missingPrice ? '---' : `₹${item.rate} / ${item.rateUnit}`}
+                                {item.missingPrice ? '---' : `${formatINR(item.rate)} / ${item.rateUnit}`}
                             </TableCell>
                             <TableCell className="p-6 text-right font-bold tabular-nums">
-                                {item.missingPrice ? '₹0.00' : `₹${item.cost.toFixed(2)}`}
+                                {item.missingPrice ? '₹0' : formatINR(item.cost)}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -540,11 +541,11 @@ function NewCostingForm() {
                   <CardFooter className="p-8 bg-stone-50 border-t justify-end gap-10">
                       <div className="text-right">
                          <p className="text-[8px] font-black uppercase text-stone-400">Subtotal Raw Material</p>
-                         <p className="text-xl font-bold font-headline">₹{calculationResults.rawMaterialCost.toFixed(2)}</p>
+                         <p className="text-xl font-bold font-headline">{formatINR(calculationResults.rawMaterialCost)}</p>
                       </div>
                       <div className="text-right">
                          <p className="text-[8px] font-black uppercase text-primary">With {watchAll.wastagePercent}% Wastage</p>
-                         <p className="text-xl font-bold font-headline text-primary">₹{calculationResults.adjustedRawMaterialCost.toFixed(2)}</p>
+                         <p className="text-xl font-bold font-headline text-primary">{formatINR(calculationResults.adjustedRawMaterialCost)}</p>
                       </div>
                   </CardFooter>
                 </CollapsibleContent>
@@ -564,10 +565,10 @@ function NewCostingForm() {
                     <div className="space-y-8">
                         <div className="text-center space-y-2">
                             <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Basic Cost Per Unit</p>
-                            <p className="text-6xl font-bold font-headline tabular-nums">₹{calculationResults.costPerUnit.toFixed(2)}</p>
+                            <p className="text-6xl font-bold font-headline tabular-nums">{formatINR(calculationResults.costPerUnit)}</p>
                             {calculationResults.costPer100g > 0 && (
                                 <p className="text-[10px] text-stone-500 font-bold uppercase tracking-widest mt-2">
-                                    ₹{calculationResults.costPer100g.toFixed(2)} per 100g
+                                    {formatINR(calculationResults.costPer100g)} per 100g
                                 </p>
                             )}
                         </div>
@@ -577,23 +578,23 @@ function NewCostingForm() {
                         <div className="space-y-4">
                            <div className="flex justify-between items-center">
                               <span className="text-[10px] font-black uppercase text-stone-500 tracking-widest">Base Material</span>
-                              <span className="font-bold">₹{calculationResults.rawMaterialCost.toFixed(2)}</span>
+                              <span className="font-bold">{formatINR(calculationResults.rawMaterialCost)}</span>
                            </div>
                            <div className="flex justify-between items-center">
                               <span className="text-[10px] font-black uppercase text-stone-500 tracking-widest">Wastage Buffer</span>
-                              <span className="font-bold text-amber-500">+₹{calculationResults.wastageAmount.toFixed(2)}</span>
+                              <span className="font-bold text-amber-500">+{formatINR(calculationResults.wastageAmount)}</span>
                            </div>
                            <div className="flex justify-between items-center">
                               <span className="text-[10px] font-black uppercase text-stone-500 tracking-widest">Labour Input</span>
-                              <span className="font-bold">₹{calculationResults.totalLabourCost.toFixed(2)}</span>
+                              <span className="font-bold">{formatINR(calculationResults.totalLabourCost)}</span>
                            </div>
                            <div className="flex justify-between items-center">
                               <span className="text-[10px] font-black uppercase text-stone-500 tracking-widest">Packaging Set</span>
-                              <span className="font-bold">₹{calculationResults.totalPackagingCost.toFixed(2)}</span>
+                              <span className="font-bold">{formatINR(calculationResults.totalPackagingCost)}</span>
                            </div>
                            <div className="flex justify-between items-center">
                               <span className="text-[10px] font-black uppercase text-stone-500 tracking-widest">Overhead ({watchAll.overheadRate}%)</span>
-                              <span className="font-bold">₹{calculationResults.totalOverheadCost.toFixed(2)}</span>
+                              <span className="font-bold">{formatINR(calculationResults.totalOverheadCost)}</span>
                            </div>
                         </div>
 
@@ -603,7 +604,7 @@ function NewCostingForm() {
                             <p className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2"><TrendingUp className="h-3 w-3" /> Pricing Strategy</p>
                             <div className="flex justify-between items-baseline">
                                <span className="text-xs text-stone-400 italic">Suggested Retail</span>
-                               <span className="text-2xl font-bold text-green-400 tabular-nums">₹{suggestedPrice.toFixed(0)}</span>
+                               <span className="text-2xl font-bold text-green-400 tabular-nums">{formatINR(suggestedPrice)}</span>
                             </div>
                         </div>
 

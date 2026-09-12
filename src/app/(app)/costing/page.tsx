@@ -32,6 +32,7 @@ import { deleteCostingAction } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { formatINR } from '@/lib/currency';
 
 const statusColors: Record<string, string> = {
   'Draft': 'bg-slate-500/10 text-slate-500 border-slate-500/20',
@@ -129,7 +130,7 @@ export default function CostingManagementPage() {
                       </TableCell>
                       <TableCell className="p-8 text-center">
                         <div className="inline-flex flex-col items-center bg-muted/30 px-6 py-2 rounded-2xl border">
-                           <span className="text-xl font-bold font-headline text-primary">₹{costing.results.costPerUnit.toFixed(2)}</span>
+                           <span className="text-xl font-bold font-headline text-primary">{formatINR(costing.results.costPerUnit)}</span>
                            <span className="text-[9px] font-black uppercase tracking-tighter text-stone-400">Basic Cost</span>
                         </div>
                       </TableCell>

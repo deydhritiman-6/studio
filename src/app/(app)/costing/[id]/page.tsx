@@ -25,6 +25,7 @@ import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { formatINR } from '@/lib/currency';
 
 export default function CostingViewPage() {
   const params = useParams();
@@ -112,8 +113,8 @@ export default function CostingViewPage() {
                                 {item.missingPrice && <AlertTriangle className="inline h-3 w-3 ml-2 text-amber-500" />}
                             </TableCell>
                             <TableCell className="p-4 text-center text-xs tabular-nums">{item.quantity} {item.unit}</TableCell>
-                            <TableCell className="p-4 text-center text-xs tabular-nums text-stone-400">₹{item.rate} / {item.rateUnit}</TableCell>
-                            <TableCell className="p-4 text-right text-xs font-bold tabular-nums">₹{item.cost.toFixed(2)}</TableCell>
+                            <TableCell className="p-4 text-center text-xs tabular-nums text-stone-400">{formatINR(item.rate)} / {item.rateUnit}</TableCell>
+                            <TableCell className="p-4 text-right text-xs font-bold tabular-nums">{formatINR(item.cost)}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -122,11 +123,11 @@ export default function CostingViewPage() {
                   <div className="flex justify-end gap-10 text-xs">
                      <div className="text-right">
                         <span className="text-stone-400 uppercase font-black tracking-widest block text-[8px] mb-1">Base Material Load</span>
-                        <span className="font-bold text-lg">₹{costing.results.rawMaterialCost.toFixed(2)}</span>
+                        <span className="font-bold text-lg">{formatINR(costing.results.rawMaterialCost)}</span>
                      </div>
                      <div className="text-right">
                         <span className="text-stone-400 uppercase font-black tracking-widest block text-[8px] mb-1">With {costing.snapshot.wastagePercent}% Wastage</span>
-                        <span className="font-bold text-lg text-primary">₹{costing.results.adjustedRawMaterialCost.toFixed(2)}</span>
+                        <span className="font-bold text-lg text-primary">{formatINR(costing.results.adjustedRawMaterialCost)}</span>
                      </div>
                   </div>
                </div>
@@ -149,7 +150,7 @@ export default function CostingViewPage() {
                        </div>
                        <div className="flex justify-between border-t pt-2">
                           <span className="text-stone-500 font-bold">Total Labour Cost:</span>
-                          <span className="font-bold text-primary">₹{costing.results.totalLabourCost.toFixed(2)}</span>
+                          <span className="font-bold text-primary">{formatINR(costing.results.totalLabourCost)}</span>
                        </div>
                     </div>
                   </div>
@@ -161,12 +162,12 @@ export default function CostingViewPage() {
                        {Object.entries(costing.snapshot.packagingCosts).map(([type, cost]) => (
                          <div key={type} className="flex justify-between">
                             <span className="text-stone-500 capitalize">{type} Packaging:</span>
-                            <span className="font-bold">₹{(cost as number).toFixed(2)}</span>
+                            <span className="font-bold">{formatINR(cost as number)}</span>
                          </div>
                        ))}
                        <div className="flex justify-between border-t pt-2">
                           <span className="text-stone-500 font-bold">Total Packaging:</span>
-                          <span className="font-bold text-primary">₹{costing.results.totalPackagingCost.toFixed(2)}</span>
+                          <span className="font-bold text-primary">{formatINR(costing.results.totalPackagingCost)}</span>
                        </div>
                     </div>
                   </div>
@@ -175,13 +176,13 @@ export default function CostingViewPage() {
             <CardFooter className="bg-stone-900 text-white p-10 flex flex-col items-center gap-6">
                 <div className="flex flex-col items-center gap-2 text-center">
                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Certified Basic Manufacturing Cost</p>
-                    <p className="text-7xl font-bold font-headline tabular-nums">₹{costing.results.costPerUnit.toFixed(2)}</p>
+                    <p className="text-7xl font-bold font-headline tabular-nums">{formatINR(costing.results.costPerUnit)}</p>
                     <div className="flex items-center gap-4">
                         <p className="text-[10px] font-bold text-stone-500 uppercase tracking-widest">Value Per Finished Unit</p>
                         {costing.results.costPer100g > 0 && (
                             <>
                                 <Separator orientation="vertical" className="h-3 bg-stone-700" />
-                                <p className="text-[10px] font-bold text-primary uppercase tracking-widest">₹{costing.results.costPer100g.toFixed(2)} / 100g</p>
+                                <p className="text-[10px] font-bold text-primary uppercase tracking-widest">{formatINR(costing.results.costPer100g)} / 100g</p>
                             </>
                         )}
                     </div>
@@ -209,7 +210,7 @@ export default function CostingViewPage() {
                     <Separator />
                     <div className="text-center space-y-3">
                        <p className="text-[10px] font-black uppercase tracking-widest text-stone-400">Suggested Listing Price</p>
-                       <p className="text-5xl font-bold font-headline text-stone-900">₹{costing.pricing?.suggestedRetailPrice.toFixed(0)}</p>
+                       <p className="text-5xl font-bold font-headline text-stone-900">{formatINR(costing.pricing?.suggestedRetailPrice || 0)}</p>
                     </div>
                  </div>
                  

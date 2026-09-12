@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -40,6 +39,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { formatINR } from '@/lib/currency';
 
 const purchaseFormSchema = z.object({
   purchaseDate: z.string().min(1, 'Date is required'),
@@ -221,7 +221,7 @@ export default function MaterialPurchasePage() {
                        </div>
                     </TableCell>
                     <TableCell className="p-8 text-right font-black font-headline text-lg">
-                       ₹{p.totalAmount.toLocaleString()}
+                       {formatINR(p.totalAmount)}
                     </TableCell>
                     <TableCell className="p-8 text-center">
                        <Badge variant="outline" className={cn(
@@ -344,7 +344,7 @@ export default function MaterialPurchasePage() {
                   <div className="flex items-center gap-10">
                      <div className="space-y-1">
                         <p className="text-[10px] font-black uppercase text-stone-400 tracking-widest">Total Investment</p>
-                        <p className="text-4xl font-bold font-headline text-stone-900 tabular-nums">₹{totalAmount.toLocaleString()}</p>
+                        <p className="text-4xl font-bold font-headline text-stone-900 tabular-nums">{formatINR(totalAmount)}</p>
                      </div>
                      <Separator orientation="vertical" className="h-12 hidden md:block" />
                      <FormField control={form.control} name="status" render={({ field }) => (
@@ -371,6 +371,45 @@ export default function MaterialPurchasePage() {
                </div>
             </form>
           </Form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!itemToDelete} onOpenChange={(o) => { if(!o) { setItemToDelete(null); setDeleteInput(''); } }}>
+        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden p-0">
+          <div className="bg-destructive/10 p-8 border-b border-destructive/20">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-headline flex items-center gap-3 text-destructive">
+                <ShieldAlert className="h-8 w-8" />
+                Confirm De-Registration
+              </DialogTitle>
+              <DialogDescription className="text-stone-600 font-medium">
+                Are you sure you want to permanently remove vendor <strong className="text-stone-900">{itemToDelete?.name}</strong> from the artisan network?
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+          <div className="p-10 space-y-6">
+            <div className="space-y-4">
+              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Security Verification</Label>
+              <p className="text-xs text-stone-500 italic">Type the word <span className="font-bold text-destructive underline">delete</span> manually to authorize removal.</p>
+              <Input 
+                placeholder="Type here..." 
+                value={deleteInput}
+                onChange={(e) => setDeleteInput(e.target.value)}
+                className="h-14 rounded-2xl border-2 border-stone-200 focus:border-destructive/40 focus:ring-destructive/10 text-center text-lg font-bold tracking-widest"
+              />
+            </div>
+            <div className="flex gap-4">
+               <Button variant="ghost" onClick={() => setItemToDelete(null)} className="flex-1 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest" disabled={isDeleting}>Abort</Button>
+               <Button 
+                variant="destructive" 
+                className="flex-2 px-10 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest shadow-xl shadow-destructive/20" 
+                disabled={deleteInput.toLowerCase() !== 'delete' || isDeleting}
+                onClick={confirmDelete}
+               >
+                 {isDeleting ? <Loader2 className="animate-spin h-4 w-4" /> : 'Final De-Register'}
+               </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </>

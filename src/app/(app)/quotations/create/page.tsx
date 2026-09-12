@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -19,6 +18,7 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection, doc, setDoc } from 'firebase/firestore';
 import type { Product, Customer } from '@/lib/types';
 import { useRouter } from 'next/navigation';
+import { formatINR } from '@/lib/currency';
 
 const itemSchema = z.object({
   productId: z.string().min(1, "Product is required."),
@@ -196,7 +196,7 @@ export default function CreateQuotationPage() {
 
           <div className="space-y-8">
             <Card className="rounded-[2.5rem] border-none shadow-2xl bg-stone-900 text-white overflow-hidden sticky top-28">
-              <CardHeader className="p-10 pb-6 bg-stone-800/50">
+              <CardHeader className="p-10 pb-4 bg-stone-800/50">
                 <CardTitle className="text-2xl font-headline">Summary</CardTitle>
                 <CardDescription className="text-stone-400">Patron and validity details.</CardDescription>
               </CardHeader>
@@ -228,7 +228,7 @@ export default function CreateQuotationPage() {
 
                 <div className="flex justify-between items-baseline pt-4">
                     <span className="text-stone-500 font-bold uppercase text-[10px] tracking-widest">Estimated Value</span>
-                    <span className="text-4xl font-bold text-primary tabular-nums">₹{subtotal.toLocaleString('en-IN')}</span>
+                    <span className="text-4xl font-bold text-primary tabular-nums">{formatINR(subtotal)}</span>
                 </div>
 
                 <Button type="submit" disabled={isSaving || subtotal === 0} className="w-full h-16 text-lg font-bold rounded-2xl shadow-2xl shadow-primary/20 bg-primary text-stone-950 transition-all hover:scale-[1.02] active:scale-[0.98]">
