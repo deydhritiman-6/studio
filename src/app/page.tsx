@@ -39,9 +39,9 @@ export default function LandingPage() {
 
   const sweetDelights = useMemo(() => {
     if (!products) return [];
-    // Restored Rajbhog by removing the explicit name filter
+    // Only display products specifically selected for the Sweet Delights section
     return products
-      .filter(p => !p.isArchived)
+      .filter(p => !p.isArchived && p.showOnSweetDelights)
       .slice(0, 6);
   }, [products]);
 
@@ -86,7 +86,7 @@ export default function LandingPage() {
                 </Link>
                 <Link href="/inside-roseberry" className="relative group hover:text-amber-600 transition-colors duration-300">
                   Inside Roseberry
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-rose-700 transition-all duration-300 group-hover:w-full"></span>
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all duration-300 group-hover:w-full"></span>
                 </Link>
                 <Link href="/shop" className="relative group hover:text-rose-700 transition-colors duration-300">
                   Collections

@@ -33,7 +33,8 @@ import {
   RotateCw,
   Maximize,
   Move,
-  ShieldAlert
+  ShieldAlert,
+  Star
 } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
@@ -279,6 +280,7 @@ export default function ProductsPage() {
         productionStatus: 'Product Ready',
         isArchived: base?.isArchived ?? false,
         weight: base?.weight,
+        showOnSweetDelights: base?.showOnSweetDelights ?? false,
       } as Product);
     });
 
@@ -389,6 +391,33 @@ export default function ProductsPage() {
       });
       setIdentityMode('existing');
     }, 100);
+  };
+
+  const toggleSweetDelights = (product: Product) => {
+    if (!firestore) return;
+    const isSelected = !!product.showOnSweetDelights;
+    const selectedCount = products.filter(p => p.showOnSweetDelights).length;
+
+    if (!isSelected && selectedCount >= 6) {
+      toast({
+        variant: 'destructive',
+        title: 'Limit Reached',
+        description: 'You can only select up to 6 products for Sweet Delights.'
+      });
+      return;
+    }
+
+    const productRef = doc(firestore, 'products', product.id);
+    updateDoc(productRef, { showOnSweetDelights: !isSelected })
+      .then(() => {
+        toast({ 
+          title: isSelected ? 'Removed from Home' : 'Promoted to Home',
+          description: isSelected ? `${product.name} is no longer in Sweet Delights.` : `${product.name} is now featured on the Home Page.`
+        });
+      })
+      .catch((err) => {
+        console.error('Toggle Sweet Delights error:', err);
+      });
   };
 
   const optimizeImage = (dataUrl: string): Promise<string> => {
@@ -959,7 +988,26 @@ export default function ProductsPage() {
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                     />
                   </button>
+
+                  {/* Selection for Sweet Delights */}
+                  <button 
+                    type="button" 
+                    onClick={(e) => { e.stopPropagation(); toggleSweetDelights(product); }}
+                    className={cn(
+                      "absolute top-4 right-14 z-20 h-8 w-8 rounded-full shadow-2xl backdrop-blur-md border border-white/10 flex items-center justify-center transition-all duration-300",
+                      product.showOnSweetDelights ? "bg-amber-500 text-stone-950 scale-110" : "bg-stone-900/60 text-white hover:bg-stone-900/80"
+                    )}
+                    title={product.showOnSweetDelights ? "Remove from Sweet Delights" : "Select for Sweet Delights"}
+                  >
+                    <Star className={cn("h-4 w-4", product.showOnSweetDelights && "fill-current")} />
+                  </button>
+
                   <div className="absolute top-4 left-4 flex flex-col gap-2 z-20">
+                    {product.showOnSweetDelights && (
+                       <Badge className="bg-amber-500 text-stone-950 border-none uppercase tracking-[0.15em] text-[8px] font-black px-2 py-0.5 shadow-lg animate-pulse">
+                         Promoted
+                       </Badge>
+                    )}
                     {product.sku && (
                       <Badge className="bg-stone-900/90 text-white border-none uppercase tracking-[0.1em] text-[9px] font-bold px-2 py-0.5 backdrop-blur-sm shadow-md w-fit">
                         {product.sku}

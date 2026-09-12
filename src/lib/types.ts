@@ -1,4 +1,3 @@
-
 export type Customer = {
   id: string;
   name: string;
@@ -285,6 +284,19 @@ export type SurfacePattern =
   | 'Embossed Surface' 
   | 'Debossed Surface';
 
+export type SurfacePatternParamsType = {
+  length: number;
+  width: number;
+  depth: number;
+  scale: number;
+  repeatX: number;
+  repeatY: number;
+  spacing: number;
+  offsetX: number;
+  offsetY: number;
+  rotation: number;
+};
+
 export type SegmentType = 'Square' | 'Rectangular' | 'Rounded' | 'Modular' | 'Premium';
 
 export type Product = {
@@ -323,6 +335,7 @@ export type Product = {
   originalOrderId?: string;
   isArchived?: boolean;
   deletedAt?: string;
+  showOnSweetDelights?: boolean;
 };
 
 export type ProductGallery = {
