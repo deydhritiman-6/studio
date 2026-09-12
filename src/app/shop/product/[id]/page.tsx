@@ -230,7 +230,7 @@ export default function ProductDetailPage() {
                 <div className="flex gap-1">{[...Array(5)].map((_, i) => <Star key={i} className="h-3 w-3 fill-current" />)}</div>
                 <span className="text-[10px] font-black tracking-[0.3em] uppercase opacity-60">Hand-Crafted Excellence</span>
             </div>
-            <h1 className="text-5xl font-bold font-headline text-stone-900 leading-tight">{product.name}</h1>
+            <h1 className="text-5xl font-bold font-headline text-foreground leading-tight">{product.name}</h1>
             <p className="text-2xl text-stone-400 font-light italic">{product.flavor}</p>
           </div>
 
@@ -257,18 +257,18 @@ export default function ProductDetailPage() {
                <div className="grid grid-cols-2 gap-y-6">
                   <div className="space-y-1">
                      <p className="text-[9px] font-bold text-stone-400 uppercase tracking-tighter">Artisan Shape</p>
-                     <p className="text-sm font-bold text-stone-900">{product.productShape || 'Rectangular'}</p>
+                     <p className="text-sm font-bold text-foreground">{product.productShape || 'Rectangular'}</p>
                   </div>
                   {product.weight && (
                     <div className="space-y-1">
                        <p className="text-[9px] font-bold text-stone-400 uppercase tracking-tighter">Approx. Weight</p>
-                       <p className="text-sm font-bold text-stone-900">{product.weight}</p>
+                       <p className="text-sm font-bold text-foreground">{product.weight}</p>
                     </div>
                   )}
                   {product.sku && (
                     <div className="space-y-1">
                        <p className="text-[9px] font-bold text-stone-400 uppercase tracking-tighter">Artisan ID</p>
-                       <p className="text-sm font-bold text-stone-900 font-mono">{product.sku}</p>
+                       <p className="text-sm font-bold text-foreground font-mono">{product.sku}</p>
                     </div>
                   )}
                </div>

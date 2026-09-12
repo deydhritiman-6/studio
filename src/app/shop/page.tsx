@@ -190,14 +190,14 @@ export default function ShopPage() {
               
               <CardHeader className="p-8 pb-3">
                  <div className="space-y-0.5">
-                    <CardTitle className="font-headline text-3xl text-stone-800 line-clamp-1 group-hover:text-primary transition-colors duration-300 leading-none">{product.name}</CardTitle>
+                    <CardTitle className="font-headline text-3xl text-foreground line-clamp-1 group-hover:text-primary transition-colors duration-300 leading-none">{product.name}</CardTitle>
                     <p className="text-[10px] text-stone-400 font-black tracking-[0.15em] uppercase mt-3">{product.flavor}</p>
                  </div>
               </CardHeader>
               
               <CardContent className="p-8 pt-0 flex-grow space-y-4">
                  {product.description && (
-                    <p className="text-xs text-stone-800 font-medium line-clamp-2 italic leading-relaxed">
+                    <p className="text-xs text-muted-foreground font-medium line-clamp-2 italic leading-relaxed">
                       {product.description}
                     </p>
                  )}
