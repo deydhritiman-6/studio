@@ -461,17 +461,26 @@ export default function ProductsPage() {
     setIsArchiving(true);
 
     const productRef = doc(firestore, 'products', productToArchive.id);
-    updateDoc(productRef, { isArchived: true, deletedAt: new Date().toISOString() })
+    const archiveData = { 
+      isArchived: true, 
+      deletedAt: new Date().toISOString() 
+    };
+
+    // Use setDoc with merge:true instead of updateDoc to handle cases where the product 
+    // document might not exist yet (e.g. merged gallery-only items).
+    setDoc(productRef, archiveData, { merge: true })
       .then(() => { 
         toast({ title: 'Moved to Bin' }); 
         setProductToArchive(null);
         setDeleteInput('');
       })
-      .catch((e) => {
-        console.error('Archive failed - likely gallery-only item:', e);
-        toast({ variant: 'destructive', title: 'Action Failed', description: 'This item is currently only managed in the Photo Gallery.' });
-        setProductToArchive(null);
-        setDeleteInput('');
+      .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: productRef.path,
+          operation: 'update',
+          requestResourceData: archiveData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
       })
       .finally(() => setIsArchiving(false));
   };
