@@ -128,6 +128,25 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
     }
   };
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    // Allow only '+' at the start and digits everywhere else
+    const numericVal = val.replace(/(?!^\+)[^0-9]/g, '');
+    
+    // Strict length limit: +91 (3 chars) + 10 digits = 13 chars
+    // We allow up to 15 to accommodate potential international numbers if prefix changes
+    if (numericVal.length <= 15) {
+      setPhone(numericVal);
+    }
+  };
+
+  const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/[^0-9]/g, '');
+    if (val.length <= 6) {
+      setOtp(val);
+    }
+  };
+
   const syncCustomerProfile = async (uid: string, data: any) => {
     if (!firestore) return;
     const ref = doc(firestore, 'customers', uid);
@@ -201,7 +220,6 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
   const handleSendOtp = async () => {
     if (!auth) return;
     
-    // Simple E.164 check: +[country code][number]
     const cleanPhone = phone.trim();
     if (!cleanPhone.startsWith('+') || cleanPhone.length < 10) {
       toast({ variant: "destructive", title: "Invalid Mobile", description: "Please include country code (e.g. +91)." });
@@ -220,7 +238,6 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
       toast({ title: "OTP Sent", description: "A verification code is on its way to your mobile." });
     } catch (error: any) {
       handleAuthError(error);
-      // Reset reCAPTCHA on failure to allow retry
       if (recaptchaVerifier.current) {
         recaptchaVerifier.current.clear();
         recaptchaVerifier.current = null;
@@ -326,7 +343,6 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden bg-background">
-        {/* Hidden reCAPTCHA container - MUST BE INSIDE DIALOG CONTENT */}
         <div id="recaptcha-container" className="absolute pointer-events-none opacity-0"></div>
         
         <div className="bg-stone-900 text-white p-8 pb-4 shrink-0 flex flex-col items-center text-center space-y-4">
@@ -412,7 +428,16 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
                     <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground ml-1">Mobile Number</Label>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-300" />
-                      <Input type="tel" placeholder="+91 0000000000" className="pl-10 h-12 rounded-xl" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+                      <Input 
+                        type="tel" 
+                        inputMode="tel"
+                        pattern="[0-9+]*"
+                        placeholder="+91 0000000000" 
+                        className="pl-10 h-12 rounded-xl" 
+                        value={phone} 
+                        onChange={handlePhoneChange} 
+                        required 
+                      />
                     </div>
                   </div>
                 )}
@@ -478,7 +503,16 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
                     <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground ml-1">Mobile Number</Label>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-300" />
-                      <Input type="tel" placeholder="+91 0000000000" className="pl-10 h-12 rounded-xl" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+                      <Input 
+                        type="tel" 
+                        inputMode="tel"
+                        pattern="[0-9+]*"
+                        placeholder="+91 0000000000" 
+                        className="pl-10 h-12 rounded-xl" 
+                        value={phone} 
+                        onChange={handlePhoneChange} 
+                        required 
+                      />
                     </div>
                   </div>
                 )}
@@ -511,7 +545,7 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
                     className="h-14 rounded-2xl text-center text-2xl tracking-[0.5em] font-black" 
                     maxLength={6} 
                     value={otp} 
-                    onChange={(e) => setOtp(e.target.value)} 
+                    onChange={handleOtpChange} 
                     required 
                   />
                </div>
