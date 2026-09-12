@@ -10,7 +10,7 @@ export const formatINR = (amount: number | string): string => {
       : amount;
 
   if (!Number.isFinite(numericAmount) || numericAmount === null) {
-    return "₹0";
+    return "\u20B90";
   }
 
   // We explicitly prepend the ₹ symbol and use Indian locale number formatting
@@ -20,5 +20,5 @@ export const formatINR = (amount: number | string): string => {
     maximumFractionDigits: 0,
   }).format(numericAmount);
 
-  return `₹${formattedNumber}`;
+  return `\u20B9${formattedNumber}`;
 };
