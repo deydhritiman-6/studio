@@ -68,7 +68,6 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
-  const recaptchaRef = useRef<HTMLDivElement>(null);
   const recaptchaVerifier = useRef<RecaptchaVerifier | null>(null);
 
   // Reset state when opening/closing
@@ -85,33 +84,44 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
         setIsLoading(false);
         setShowPassword(false);
         setConfirmationResult(null);
+        if (recaptchaVerifier.current) {
+          recaptchaVerifier.current.clear();
+          recaptchaVerifier.current = null;
+        }
       }, 300);
     }
   }, [isOpen]);
 
-  // Cleanup Recaptcha
+  // Handle reCAPTCHA initialization when switching to mobile
   useEffect(() => {
-    return () => {
-      if (recaptchaVerifier.current) {
-        recaptchaVerifier.current.clear();
-        recaptchaVerifier.current = null;
-      }
-    };
-  }, []);
-
-  // Handle auto-transition to verification screen if user is logged in but not verified
-  useEffect(() => {
-    if (user && !user.emailVerified && !user.isAnonymous && !user.phoneNumber && isOpen) {
-      setView('verify-email');
+    if (isOpen && method === 'mobile' && !recaptchaVerifier.current && auth) {
+      const initTimer = setTimeout(() => {
+        initRecaptcha();
+      }, 500); // Give DOM time to render the container
+      return () => clearTimeout(initTimer);
     }
-  }, [user, isOpen]);
+  }, [isOpen, method, auth]);
 
   const initRecaptcha = () => {
     if (!auth || recaptchaVerifier.current) return;
+    const container = document.getElementById('recaptcha-container');
+    if (!container) return;
+    
+    // Ensure container is clean
+    container.innerHTML = '';
+    
     try {
       recaptchaVerifier.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
         size: 'invisible',
-        callback: () => {},
+        callback: () => {
+          // reCAPTCHA solved
+        },
+        'expired-callback': () => {
+          if (recaptchaVerifier.current) {
+            recaptchaVerifier.current.clear();
+            recaptchaVerifier.current = null;
+          }
+        }
       });
     } catch (e) {
       console.error('Recaptcha init failed', e);
@@ -190,20 +200,27 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
 
   const handleSendOtp = async () => {
     if (!auth) return;
-    if (!phone || phone.length < 10) {
-      toast({ variant: "destructive", title: "Invalid Mobile", description: "Please enter a valid mobile number." });
+    
+    // Simple E.164 check: +[country code][number]
+    const cleanPhone = phone.trim();
+    if (!cleanPhone.startsWith('+') || cleanPhone.length < 10) {
+      toast({ variant: "destructive", title: "Invalid Mobile", description: "Please include country code (e.g. +91)." });
       return;
     }
+
     setIsLoading(true);
-    initRecaptcha();
+    if (!recaptchaVerifier.current) {
+      initRecaptcha();
+    }
 
     try {
-      const result = await signInWithPhoneNumber(auth, phone, recaptchaVerifier.current!);
+      const result = await signInWithPhoneNumber(auth, cleanPhone, recaptchaVerifier.current!);
       setConfirmationResult(result);
       setView('verify-otp');
       toast({ title: "OTP Sent", description: "A verification code is on its way to your mobile." });
     } catch (error: any) {
       handleAuthError(error);
+      // Reset reCAPTCHA on failure to allow retry
       if (recaptchaVerifier.current) {
         recaptchaVerifier.current.clear();
         recaptchaVerifier.current = null;
@@ -294,11 +311,13 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
     } else if (code === 'auth/too-many-requests') {
       message = "Too many verification attempts. Please wait and try again.";
     } else if (code === 'auth/invalid-phone-number') {
-      message = "Please enter a valid mobile number.";
+      message = "Please enter a valid mobile number with country code.";
     } else if (code === 'auth/code-expired') {
       message = "Verification code expired. Please try again.";
     } else if (code === 'auth/invalid-verification-code') {
       message = "Incorrect verification code. Please try again.";
+    } else if (code === 'auth/captcha-check-failed') {
+      message = "reCAPTCHA verification failed. Please try again.";
     }
 
     toast({ variant: "destructive", title: "Indulgence Interrupted", description: message });
@@ -307,7 +326,9 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden bg-background">
-        <div id="recaptcha-container"></div>
+        {/* Hidden reCAPTCHA container - MUST BE INSIDE DIALOG CONTENT */}
+        <div id="recaptcha-container" className="absolute pointer-events-none opacity-0"></div>
+        
         <div className="bg-stone-900 text-white p-8 pb-4 shrink-0 flex flex-col items-center text-center space-y-4">
           <Logo className="h-10 w-auto brightness-0 invert" />
           <div className="space-y-1">
@@ -569,4 +590,3 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
     </Dialog>
   );
 }
-
