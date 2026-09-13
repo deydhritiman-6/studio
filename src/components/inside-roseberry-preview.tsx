@@ -169,7 +169,7 @@ export function InsideRoseberryPreview() {
           <h2 className="text-5xl md:text-7xl font-bold font-headline text-stone-900 tracking-tight leading-tight">
             {displaySettings.homepageTitle}
           </h2>
-          <p className="text-xl md:text-2xl text-primary font-light italic">
+          <p className="text-xl md:text-2xl text-primary font-bold">
             {displaySettings.homepageSubtitle}
           </p>
           <p className="text-stone-500 text-lg font-light leading-relaxed max-w-2xl mx-auto">

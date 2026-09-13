@@ -210,7 +210,7 @@ export default function InsideRoseberryPage() {
             <h1 className="text-6xl md:text-8xl font-bold font-headline tracking-tight leading-[1.05] drop-shadow-2xl">
               {displaySettings.title}
             </h1>
-            <p className="text-2xl md:text-3xl text-primary font-light italic drop-shadow-lg">
+            <p className="text-2xl md:text-3xl text-primary font-bold drop-shadow-lg">
               {displaySettings.subtitle}
             </p>
             <p className="text-stone-300 text-lg md:text-xl font-light max-w-2xl mx-auto leading-relaxed drop-shadow-md">
