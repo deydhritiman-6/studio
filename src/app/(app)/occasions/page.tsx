@@ -36,6 +36,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import type { OccasionMessage } from '@/lib/types';
+import { ImportantDaysCalendar } from '@/components/admin/important-days-calendar'; // Import the new calendar
 
 const occasionSchema = z.object({
   title: z.string().min(1, 'Occasion title is required'),
@@ -224,7 +225,7 @@ export default function OccasionMessagesPage() {
                           </div>
                         </td>
                         <td className="p-8 text-center">
-                          <Badge variant={o.isActive ? "default" : "secondary"} className={cn("rounded-full uppercase text-[8px] tracking-widest px-3", o.isActive ? "bg-green-600" : "bg-stone-200")}>
+                          <Badge variant={o.isActive ? 'default' : 'secondary'} className={cn("rounded-full uppercase text-[8px] tracking-widest px-3", o.isActive ? "bg-green-600" : "bg-stone-200")}>
                             {o.isActive ? 'Active' : 'Offline'}
                           </Badge>
                         </td>
@@ -248,6 +249,9 @@ export default function OccasionMessagesPage() {
            )}
         </CardContent>
       </Card>
+
+      {/* --- Important Days & Festivals Calendar --- */}
+      <ImportantDaysCalendar />
 
       <Dialog open={isDialogOpen} onOpenChange={(o) => { if(!o) { setIsDialogOpen(false); setEditingOccasion(null); } }}>
         <DialogContent className="sm:max-w-xl rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl flex flex-col h-[85vh] bg-background gap-0">
