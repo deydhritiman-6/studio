@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -257,12 +256,17 @@ export default function OccasionMessagesPage() {
               <DialogTitle className="text-3xl font-headline">{editingOccasion ? 'Refine Occasion' : 'Schedule Greeting'}</DialogTitle>
               <DialogDescription className="text-[10px] uppercase tracking-[0.2em] font-black text-stone-500">Festive Artisan Configuration</DialogDescription>
             </DialogHeader>
+            <DialogClose asChild>
+              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-white/10 text-white">
+                <X className="h-5 w-5" />
+              </Button>
+            </DialogClose>
           </div>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSave)} className="flex flex-col flex-1 overflow-hidden">
-               <ScrollArea className="flex-1 px-10 py-10">
-                  <div className="space-y-10">
+            <form onSubmit={form.handleSubmit(onSave)} className="flex flex-col flex-1 overflow-hidden min-h-0">
+               <ScrollArea className="flex-1">
+                  <div className="px-10 py-10 space-y-10">
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <FormField control={form.control} name="title" render={({ field }) => (
                           <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Event Title</FormLabel><FormControl><Input className="h-12 rounded-xl" placeholder="e.g. Diwali Greeting" {...field} /></FormControl><FormMessage /></FormItem>
@@ -284,7 +288,7 @@ export default function OccasionMessagesPage() {
                            ) : (
                              <div className="h-full w-full flex flex-col items-center justify-center text-stone-400 gap-2">
                                 <Upload className="h-8 w-8" />
-                                <span className="text-[10px] font-bold uppercase">Upload Asset</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest">Upload Asset</span>
                              </div>
                            )}
                            <input id="occ-upload" type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
