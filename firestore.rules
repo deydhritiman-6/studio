@@ -2,56 +2,138 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // --- HELPER FUNCTIONS ---
     
-    // Helper function to check if a user is signed in
+    // Check if the user is a hardcoded administrator
+    function isAdmin() {
+      return request.auth != null && 
+             request.auth.token.email in ['deydhritiman@gmail.com', 'deyalankrit@gmail.com'];
+    }
+
+    // Check if the user is authenticated (including anonymous sessions for carts)
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // --- PUBLIC-FACING DATA ---
-    // These collections are readable by anyone, including unauthenticated visitors.
+    // Check if the user is authenticated via a permanent account (non-anonymous)
+    function isPermanentUser() {
+      return request.auth != null && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    // --- PUBLIC COLLECTIONS (Read: Public, Write: Admin) ---
+    // These power the public-facing boutique and branding sections.
+
+    match /products/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /product-galleries/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     match /occasions/{docId} {
       allow read: if true;
+      allow write: if isAdmin();
     }
+
     match /facilities/{docId} {
       allow read: if true;
+      allow write: if isAdmin();
     }
-    
-    // --- APP SETTINGS ---
-    // General settings for the app, readable by anyone.
-    // Writes should be restricted, perhaps to an admin role in the future.
+
+    match /siteContent/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     match /settings/{docId} {
-        allow read: if true;
-        allow write: if isAuthenticated(); // Only logged-in users can change settings
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
-    // --- USER-SPECIFIC DATA ---
-    // A user can only read or write to their own document in the users collection.
-    match /users/{userId} {
-      allow read, write: if request.auth.uid == userId;
+    // --- PATRON STORIES (TESTIMONIALS) ---
+    match /testimonials/{docId} {
+      // Guests see approved stories; admins see all for moderation
+      allow read: if resource.data.status == 'approved' || isAdmin();
+      // Any authenticated patron can share an experience
+      allow create: if isAuthenticated();
+      // Moderation actions restricted to system admins
+      allow update, delete: if isAdmin();
     }
 
-    // --- AUTHENTICATED-ONLY DATA ---
-    // The following collections are part of your business operations and require 
-    // a user to be logged in to read or write any data.
+    // --- INTERNAL WORKSPACE COLLECTIONS (Read/Write: Authenticated Staff/Admin) ---
+    // These collections handle the daily operations of the chocolate studio.
     
-    match /products/{productId} {
+    match /customers/{docId} {
       allow read, write: if isAuthenticated();
     }
-    
-    match /orders/{orderId} {
-      allow create: if isAuthenticated();
-      allow read, update: if isAuthenticated(); // For now, any user can see any order.
-      allow delete: if false; // Prevent accidental deletion of orders.
-    }
-    
-    match /customers/{customerId} { allow read, write: if isAuthenticated(); }
-    match /inventory/{itemId} { allow read, write: if isAuthenticated(); }
-    match /distributors/{distributorId} { allow read, write: if isAuthenticated(); }
-    match /recipes/{recipeId} { allow read, write: if isAuthenticated(); }
-    match /invoices/{invoiceId} { allow read, write: if isAuthenticated(); }
-    match /testimonials/{testimonialId} { allow read, write: if isAuthenticated(); }
 
-    // Any path not explicitly matched above is denied by default.
+    match /distributors/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /ingredients/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /inventory/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /recipes/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /vendors/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /material-purchases/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /costings/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /quotations/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // --- ORDERS & INVOICING ---
+    match /orders/{orderId} {
+      // Patrons can create orders via checkout
+      allow create: if isAuthenticated();
+      // Staff can manage orders; patrons can track their own if identified
+      allow read, update: if isAuthenticated();
+      // Deletions are restricted to protect financial history
+      allow delete: if isAdmin();
+    }
+
+    // --- USER IDENTITY MATRIX ---
+    match /users/{userId} {
+      // Users can manage their own artisan profile
+      allow read, update: if request.auth.uid == userId || isAdmin();
+      // Staff registration restricted to admins
+      allow create, delete: if isAdmin();
+    }
+
+    // --- RESTRICTED SYSTEM COLLECTIONS (Admin Only) ---
+    
+    match /broadcasts/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /seo/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // --- DEFAULT FALLBACK ---
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
   }
 }
