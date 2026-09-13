@@ -250,7 +250,7 @@ export default function OccasionMessagesPage() {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={(o) => { if(!o) { setIsDialogOpen(false); setEditingOccasion(null); } }}>
-        <DialogContent className="sm:max-w-xl rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl flex flex-col max-h-[90vh] bg-background">
+        <DialogContent className="sm:max-w-xl rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl flex flex-col h-[85vh] bg-background gap-0">
           <div className="bg-stone-900 text-white p-8 shrink-0 flex items-center justify-between">
             <DialogHeader className="text-left">
               <DialogTitle className="text-3xl font-headline">{editingOccasion ? 'Refine Occasion' : 'Schedule Greeting'}</DialogTitle>
@@ -265,24 +265,45 @@ export default function OccasionMessagesPage() {
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSave)} className="flex flex-col flex-1 overflow-hidden min-h-0">
-               <ScrollArea className="flex-1">
+               <ScrollArea className="flex-1 w-full">
                   <div className="px-10 py-10 space-y-10">
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <FormField control={form.control} name="title" render={({ field }) => (
-                          <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Event Title</FormLabel><FormControl><Input className="h-12 rounded-xl" placeholder="e.g. Diwali Greeting" {...field} /></FormControl><FormMessage /></FormItem>
+                          <FormItem>
+                            <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Event Title</FormLabel>
+                            <FormControl>
+                              <Input className="h-12 rounded-xl" placeholder="e.g. Diwali Greeting" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
                         )} />
                         <FormField control={form.control} name="date" render={({ field }) => (
-                          <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Occasion Date</FormLabel><FormControl><Input type="date" className="h-12 rounded-xl" {...field} /></FormControl><FormMessage /></FormItem>
+                          <FormItem>
+                            <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Occasion Date</FormLabel>
+                            <FormControl>
+                              <Input type="date" className="h-12 rounded-xl" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
                         )} />
                      </div>
 
                      <FormField control={form.control} name="message" render={({ field }) => (
-                        <FormItem><FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Artisan Greeting Text</FormLabel><FormControl><Textarea className="rounded-xl min-h-[100px]" placeholder="Wishing our patrons a sweet celebration..." {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem>
+                          <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Artisan Greeting Text</FormLabel>
+                          <FormControl>
+                            <Textarea className="rounded-xl min-h-[100px]" placeholder="Wishing our patrons a sweet celebration..." {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
                      )} />
 
                      <div className="space-y-4">
                         <FormLabel className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">Visual Asset</FormLabel>
-                        <div className="aspect-video relative rounded-[2rem] overflow-hidden border-2 border-dashed border-stone-200 bg-muted/20 group cursor-pointer" onClick={() => document.getElementById('occ-upload')?.click()}>
+                        <div 
+                          className="aspect-video relative rounded-[2rem] overflow-hidden border-2 border-dashed border-stone-200 bg-muted/20 group cursor-pointer" 
+                          onClick={() => document.getElementById('occ-upload')?.click()}
+                        >
                            {form.watch('imageUrl') ? (
                              <Image src={form.watch('imageUrl')} alt="" fill className="object-cover" />
                            ) : (
@@ -302,7 +323,9 @@ export default function OccasionMessagesPage() {
                             <FormLabel className="text-sm font-bold uppercase">Enabled</FormLabel>
                             <FormDescription className="text-[10px]">Show this message when the date matches.</FormDescription>
                           </div>
-                          <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                          <FormControl>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
                         </FormItem>
                      )} />
                   </div>
@@ -314,8 +337,14 @@ export default function OccasionMessagesPage() {
                     <p className="text-[10px] font-black uppercase tracking-widest">Secure Artisan Sync</p>
                   </div>
                   <div className="flex gap-4">
-                    <DialogClose asChild><Button type="button" variant="ghost" className="h-12 px-8 rounded-xl font-bold uppercase text-[10px]">Discard</Button></DialogClose>
-                    <Button type="submit" disabled={isSaving} className="h-12 px-12 rounded-xl font-bold uppercase text-[10px] shadow-xl shadow-primary/20">
+                    <DialogClose asChild>
+                      <Button type="button" variant="ghost" className="h-12 px-8 rounded-xl font-bold uppercase text-[10px]">Discard</Button>
+                    </DialogClose>
+                    <Button 
+                      type="submit" 
+                      disabled={isSaving} 
+                      className="h-12 px-12 rounded-xl font-bold uppercase text-[10px] shadow-xl shadow-primary/20"
+                    >
                        {isSaving ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <Save className="h-4 w-4 mr-2" />}
                        Commit Spec
                     </Button>
