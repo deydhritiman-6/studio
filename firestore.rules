@@ -4,132 +4,69 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // --- HELPER FUNCTIONS ---
-    
-    // Check if the user is a hardcoded administrator
     function isAdmin() {
+      // Hardcoded admin emails for executive oversight
       return request.auth != null && 
              request.auth.token.email in ['deydhritiman@gmail.com', 'deyalankrit@gmail.com'];
     }
 
-    // Check if the user is authenticated (including anonymous sessions for carts)
     function isAuthenticated() {
+      // Required for prototype login flow which utilizes anonymous authentication for staff/admins
       return request.auth != null;
     }
 
-    // Check if the user is authenticated via a permanent account (non-anonymous)
-    function isPermanentUser() {
-      return request.auth != null && request.auth.token.firebase.sign_in_provider != 'anonymous';
-    }
-
-    // --- PUBLIC COLLECTIONS (Read: Public, Write: Admin) ---
-    // These power the public-facing boutique and branding sections.
-
-    match /products/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /product-galleries/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /occasions/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /facilities/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /siteContent/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
+    // --- PUBLIC COLLECTIONS (Patron Facing) ---
+    match /products/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /product-galleries/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /occasions/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /facilities/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /siteContent/{docId} { allow read: if true; allow write: if isAdmin(); }
+    
+    // --- SITE CONFIGURATION ---
     match /settings/{docId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // --- PATRON STORIES (TESTIMONIALS) ---
+    // --- PATRON STORIES (Moderated Feedback) ---
     match /testimonials/{docId} {
-      // Guests see approved stories; admins see all for moderation
-      allow read: if resource.data.status == 'approved' || isAdmin();
-      // Any authenticated patron can share an experience
-      allow create: if isAuthenticated();
-      // Moderation actions restricted to system admins
-      allow update, delete: if isAdmin();
+        allow read: if resource.data.status == 'approved' || isAdmin();
+        allow create: if isAuthenticated();
+        allow update, delete: if isAdmin();
     }
 
-    // --- INTERNAL WORKSPACE COLLECTIONS (Read/Write: Authenticated Staff/Admin) ---
-    // These collections handle the daily operations of the chocolate studio.
+    // --- USER-SPECIFIC & STAFF-MANAGED COLLECTIONS ---
+    match /users/{userId} {
+      allow read, update: if (request.auth != null && request.auth.uid == userId) || isAdmin();
+      allow create, delete: if isAdmin();
+    }
     
-    match /customers/{docId} {
-      allow read, write: if isAuthenticated();
+    match /customers/{customerId} {
+      // Individual patrons can access their profile; Staff/Admins can list all for management.
+      allow get: if (request.auth != null && request.auth.uid == customerId) || isAdmin();
+      allow list: if isAuthenticated();
+      allow write: if (request.auth != null && request.auth.uid == customerId) || isAdmin();
     }
 
-    match /distributors/{docId} {
-      allow read, write: if isAuthenticated();
-    }
-
-    match /ingredients/{docId} {
-      allow read, write: if isAuthenticated();
-    }
-
-    match /inventory/{docId} {
-      allow read, write: if isAuthenticated();
-    }
-
-    match /recipes/{docId} {
-      allow read, write: if isAuthenticated();
-    }
-
-    match /vendors/{docId} {
-      allow read, write: if isAuthenticated();
-    }
-
-    match /material-purchases/{docId} {
-      allow read, write: if isAuthenticated();
-    }
-
-    match /costings/{docId} {
-      allow read, write: if isAuthenticated();
-    }
-
-    match /quotations/{docId} {
-      allow read, write: if isAuthenticated();
-    }
-
-    // --- ORDERS & INVOICING ---
     match /orders/{orderId} {
-      // Patrons can create orders via checkout
-      allow create: if isAuthenticated();
-      // Staff can manage orders; patrons can track their own if identified
-      allow read, update: if isAuthenticated();
-      // Deletions are restricted to protect financial history
+      // Patrons create and track their own journeys; Staff manage the production floor.
+      allow create: if isAuthenticated(); 
+      allow get: if (request.auth != null && (resource.data.customerId == request.auth.uid || resource.data.userId == request.auth.uid)) || isAdmin();
+      allow list: if isAuthenticated();
+      allow update: if (request.auth != null && (resource.data.customerId == request.auth.uid || resource.data.userId == request.auth.uid)) || isAdmin();
       allow delete: if isAdmin();
     }
 
-    // --- USER IDENTITY MATRIX ---
-    match /users/{userId} {
-      // Users can manage their own artisan profile
-      allow read, update: if request.auth.uid == userId || isAdmin();
-      // Staff registration restricted to admins
-      allow create, delete: if isAdmin();
-    }
-
-    // --- RESTRICTED SYSTEM COLLECTIONS (Admin Only) ---
-    
-    match /broadcasts/{docId} {
-      allow read, write: if isAdmin();
-    }
-
-    match /seo/{docId} {
-      allow read, write: if isAdmin();
-    }
+    // --- INTERNAL ARTISAN OPERATIONS ---
+    // These collections house the heart of Roseberry Ops and require authentication.
+    match /quotations/{docId} { allow read, write: if isAuthenticated(); }
+    match /vendors/{docId} { allow read, write: if isAuthenticated(); }
+    match /ingredients/{docId} { allow read, write: if isAuthenticated(); }
+    match /material-purchases/{docId} { allow read, write: if isAuthenticated(); }
+    match /inventory/{docId} { allow read, write: if isAuthenticated(); }
+    match /recipes/{docId} { allow read, write: if isAuthenticated(); }
+    match /costings/{docId} { allow read, write: if isAuthenticated(); }
+    match /distributors/{docId} { allow read, write: if isAuthenticated(); }
 
     // --- DEFAULT FALLBACK ---
     match /{document=**} {
