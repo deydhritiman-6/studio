@@ -136,6 +136,21 @@ export default function ProductDetailPage() {
     setSelectedImage(allImages[prevIndex]);
   };
 
+  const handleThumbnailClick = (url: string) => {
+    setSelectedImage(url);
+    
+    // Smoothly center the main card in view after a small delay for state update
+    setTimeout(() => {
+      const mainCard = document.getElementById('product-card-main');
+      if (mainCard) {
+        mainCard.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }
+    }, 50);
+  };
+
   const handleGalleryNavigation = () => {
     if (isMainImagePrimary) {
       document.getElementById('other-images-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -222,7 +237,7 @@ export default function ProductDetailPage() {
                   return (
                     <button 
                       key={i} 
-                      onClick={() => setSelectedImage(url)} 
+                      onClick={() => handleThumbnailClick(url)} 
                       className={`h-28 w-28 md:h-40 md:w-40 relative rounded-[1.5rem] overflow-hidden border-2 transition-all border-transparent opacity-60 hover:opacity-100 hover:scale-105 shadow-md`}
                     >
                        <Image src={url} alt={`${product.name} perspective ${i + 1}`} fill className="object-cover" data-ai-hint={product.imageHint} sizes="(max-width: 768px) 120px, 200px" />
