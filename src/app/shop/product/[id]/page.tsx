@@ -254,6 +254,18 @@ export default function ProductDetailPage() {
                })}
             </div>
           )}
+
+          {/* Repositioned Call to Action Button */}
+          <div className="pt-6 flex justify-center">
+            <Button 
+              size="lg" 
+              className="w-full max-w-2xl text-xl h-20 shadow-2xl shadow-primary/30 rounded-2xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98]" 
+              onClick={addToCart} 
+              disabled={product.availabilityStatus === 'Out of Stock'}
+            >
+              <ShoppingCart className="h-6 w-6 mr-4" /> {product.availabilityStatus === 'Out of Stock' ? 'Sold Out' : 'Reserve Your Indulgence'}
+            </Button>
+          </div>
         </div>
 
         <div className="lg:col-span-5 flex flex-col justify-center space-y-10">
@@ -327,9 +339,6 @@ export default function ProductDetailPage() {
           </div>
 
           <div className="pt-10 space-y-8">
-             <Button size="lg" className="w-full text-xl h-20 shadow-2xl shadow-primary/30 rounded-2xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98]" onClick={addToCart} disabled={product.availabilityStatus === 'Out of Stock'}>
-                <ShoppingCart className="h-6 w-6 mr-4" /> {product.availabilityStatus === 'Out of Stock' ? 'Sold Out' : 'Reserve Your Indulgence'}
-             </Button>
              <div className="grid grid-cols-3 gap-4 text-center">
                <div className="space-y-2"><ShieldCheck className="h-5 w-5 mx-auto text-stone-300" /><p className="text-[9px] text-stone-400 font-bold uppercase tracking-widest leading-tight">Secure Checkout</p></div>
                <div className="space-y-2"><div className="h-5 w-5 mx-auto text-stone-300 flex items-center justify-center text-[10px] font-bold">IN</div><p className="text-[9px] text-stone-400 font-bold uppercase tracking-widest leading-tight">Artisan Made in India</p></div>
