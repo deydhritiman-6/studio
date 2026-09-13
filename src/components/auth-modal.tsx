@@ -70,7 +70,18 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
   const { toast } = useToast();
   const recaptchaVerifier = useRef<RecaptchaVerifier | null>(null);
 
-  // Reset state when opening/closing
+  // Clean up reCAPTCHA on unmount or close
+  const cleanupRecaptcha = () => {
+    if (recaptchaVerifier.current) {
+      try {
+        recaptchaVerifier.current.clear();
+      } catch (e) {}
+      recaptchaVerifier.current = null;
+    }
+    const container = document.getElementById('recaptcha-container');
+    if (container) container.innerHTML = '';
+  };
+
   useEffect(() => {
     if (!isOpen) {
       setTimeout(() => {
@@ -84,21 +95,18 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
         setIsLoading(false);
         setShowPassword(false);
         setConfirmationResult(null);
-        if (recaptchaVerifier.current) {
-          try {
-            recaptchaVerifier.current.clear();
-          } catch (e) {}
-          recaptchaVerifier.current = null;
-        }
+        cleanupRecaptcha();
       }, 300);
     }
   }, [isOpen]);
 
   const initRecaptcha = async () => {
-    if (!auth || recaptchaVerifier.current) return;
+    if (!auth) return null;
+    
+    cleanupRecaptcha();
     
     const container = document.getElementById('recaptcha-container');
-    if (!container) return;
+    if (!container) return null;
     
     try {
       const verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
@@ -107,28 +115,27 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
           // reCAPTCHA solved
         },
         'expired-callback': () => {
-          if (recaptchaVerifier.current) {
-            recaptchaVerifier.current.clear();
-            recaptchaVerifier.current = null;
-          }
+          cleanupRecaptcha();
         }
       });
       
-      recaptchaVerifier.current = verifier;
       await verifier.render();
+      recaptchaVerifier.current = verifier;
+      return verifier;
     } catch (e) {
       console.error('Recaptcha init failed', e);
+      return null;
     }
   };
 
-  // Handle reCAPTCHA initialization when switching to mobile
+  // Re-init reCAPTCHA when switching to mobile method
   useEffect(() => {
     if (isOpen && method === 'mobile' && auth) {
-      const initTimer = setTimeout(() => {
-        initRecaptcha();
-      }, 200); 
-      return () => clearTimeout(initTimer);
+      initRecaptcha();
+    } else {
+      cleanupRecaptcha();
     }
+    return () => cleanupRecaptcha();
   }, [isOpen, method, auth]);
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -149,16 +156,20 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
   const syncCustomerProfile = async (uid: string, data: any) => {
     if (!firestore) return;
     const ref = doc(firestore, 'customers', uid);
-    const snap = await getDoc(ref);
-    if (!snap.exists()) {
-      await setDoc(ref, {
-        id: uid,
-        ...data,
-        customerType: 'Regular',
-        vipLevel: 'Silver',
-        totalPurchaseValue: 0,
-        joinedDate: new Date().toISOString().split('T')[0],
-      });
+    try {
+      const snap = await getDoc(ref);
+      if (!snap.exists()) {
+        await setDoc(ref, {
+          id: uid,
+          ...data,
+          customerType: 'Regular',
+          vipLevel: 'Silver',
+          totalPurchaseValue: 0,
+          joinedDate: new Date().toISOString().split('T')[0],
+        });
+      }
+    } catch (e) {
+      console.error('Profile sync failed', e);
     }
   };
 
@@ -227,30 +238,25 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
 
     setIsLoading(true);
     
-    // Ensure verifier is ready
-    if (!recaptchaVerifier.current) {
-      await initRecaptcha();
+    let verifier = recaptchaVerifier.current;
+    if (!verifier) {
+      verifier = await initRecaptcha();
     }
 
-    if (!recaptchaVerifier.current) {
+    if (!verifier) {
       setIsLoading(false);
-      toast({ variant: "destructive", title: "Security Error", description: "Could not initialize security verification. Please refresh." });
+      toast({ variant: "destructive", title: "Security Error", description: "Could not initialize security verification. Please refresh and try again." });
       return;
     }
 
     try {
-      const result = await signInWithPhoneNumber(auth, cleanPhone, recaptchaVerifier.current);
+      const result = await signInWithPhoneNumber(auth, cleanPhone, verifier);
       setConfirmationResult(result);
       setView('verify-otp');
       toast({ title: "OTP Sent", description: "A verification code is on its way to your mobile." });
     } catch (error: any) {
       handleAuthError(error);
-      if (recaptchaVerifier.current) {
-        try {
-          recaptchaVerifier.current.clear();
-        } catch (e) {}
-        recaptchaVerifier.current = null;
-      }
+      cleanupRecaptcha(); // Clean up on error to allow retry
     } finally {
       setIsLoading(false);
     }
@@ -344,6 +350,8 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
       message = "Incorrect verification code. Please try again.";
     } else if (code === 'auth/captcha-check-failed') {
       message = "reCAPTCHA verification failed. Please try again.";
+    } else if (code === 'auth/internal-error') {
+      message = "Internal authentication error. Please check your network.";
     }
 
     toast({ variant: "destructive", title: "Indulgence Interrupted", description: message });
@@ -352,7 +360,8 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden bg-background">
-        <div id="recaptcha-container" className="absolute pointer-events-none opacity-0"></div>
+        {/* Persistent reCAPTCHA container inside DialogContent to ensure it's in the DOM when needed */}
+        <div id="recaptcha-container" className="absolute pointer-events-none opacity-0 left-0 top-0"></div>
         
         <div className="bg-stone-900 text-white p-8 pb-4 shrink-0 flex flex-col items-center text-center space-y-4">
           <Logo className="h-10 w-auto" />
@@ -612,7 +621,7 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
                 </div>
                 <div className="space-y-2">
                   <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground ml-1">Email Address</Label>
-                  <Input type="email" placeholder="your@email.com" className="h-12 rounded-xl" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  <Input type="email" placeholder="your@email.com" className="pl-10 h-12 rounded-xl" value={email} onChange={(e) => setEmail(e.target.value)} required />
                 </div>
               </div>
               <div className="flex flex-col gap-4">
