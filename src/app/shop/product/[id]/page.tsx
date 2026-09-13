@@ -156,18 +156,6 @@ export default function ProductDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 xl:gap-24">
         <div className="lg:col-span-7 space-y-8 relative">
-          {/* GO TO PRIMARY PRODUCT IMAGE BUTTON */}
-          <Button 
-            variant="outline"
-            onClick={() => {
-              setSelectedImage(null);
-              document.getElementById('product-card-main')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }}
-            className="hidden xl:flex absolute -left-12 top-1/2 -translate-y-1/2 h-fit py-8 rounded-2xl border-2 border-stone-100 bg-white shadow-xl hover:shadow-2xl hover:border-primary/40 transition-all text-primary font-black uppercase text-[10px] tracking-widest [writing-mode:vertical-lr] rotate-180 z-20"
-          >
-            GO TO PRIMARY PRODUCT IMAGE
-          </Button>
-
           <div id="product-card-main" className="aspect-square relative rounded-[2.5rem] overflow-hidden shadow-2xl bg-white border border-stone-100 p-8 flex flex-col">
             <div className="relative flex-1 w-full rounded-[1.5rem] overflow-hidden group">
               <Image 
@@ -180,7 +168,20 @@ export default function ProductDetailPage() {
                 sizes="(max-width: 1024px) 100vw, 800px" 
               />
               
-              {/* Image Label Overlay - Repositioned to bottom-right */}
+              {/* GO TO PRIMARY PRODUCT IMAGE BUTTON - Restyled and repositioned to bottom-left */}
+              <button 
+                onClick={() => {
+                  setSelectedImage(null);
+                  document.getElementById('product-card-main')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }}
+                className="absolute bottom-6 left-6 z-20 bg-stone-900/60 backdrop-blur-md border border-white/20 rounded-full px-5 py-2 shadow-2xl transition-all hover:bg-stone-900/80 active:scale-95 group/btn"
+              >
+                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white">
+                  GO TO PRIMARY PRODUCT IMAGE
+                </p>
+              </button>
+
+              {/* Image Label Overlay - Symmetrical bottom-right */}
               <div className="absolute bottom-6 right-6 z-20">
                 <div className="bg-stone-900/60 backdrop-blur-md border border-white/20 rounded-full px-5 py-2 shadow-2xl">
                   <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white">
