@@ -168,7 +168,7 @@ export default function ProductDetailPage() {
                 sizes="(max-width: 1024px) 100vw, 800px" 
               />
               
-              {/* GO TO PRIMARY PRODUCT IMAGE BUTTON - Restyled and repositioned to bottom-left */}
+              {/* GO TO OTHER IMAGES BUTTON - Horizontal pill at bottom-left */}
               <button 
                 onClick={() => {
                   setSelectedImage(null);
@@ -177,7 +177,7 @@ export default function ProductDetailPage() {
                 className="absolute bottom-6 left-6 z-20 bg-stone-900/60 backdrop-blur-md border border-white/20 rounded-full px-5 py-2 shadow-2xl transition-all hover:bg-stone-900/80 active:scale-95 group/btn"
               >
                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white">
-                  GO TO PRIMARY PRODUCT IMAGE
+                  GO TO OTHER IMAGES
                 </p>
               </button>
 
