@@ -85,33 +85,23 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
         setShowPassword(false);
         setConfirmationResult(null);
         if (recaptchaVerifier.current) {
-          recaptchaVerifier.current.clear();
+          try {
+            recaptchaVerifier.current.clear();
+          } catch (e) {}
           recaptchaVerifier.current = null;
         }
       }, 300);
     }
   }, [isOpen]);
 
-  // Handle reCAPTCHA initialization when switching to mobile
-  useEffect(() => {
-    if (isOpen && method === 'mobile' && !recaptchaVerifier.current && auth) {
-      const initTimer = setTimeout(() => {
-        initRecaptcha();
-      }, 500); // Give DOM time to render the container
-      return () => clearTimeout(initTimer);
-    }
-  }, [isOpen, method, auth]);
-
-  const initRecaptcha = () => {
+  const initRecaptcha = async () => {
     if (!auth || recaptchaVerifier.current) return;
+    
     const container = document.getElementById('recaptcha-container');
     if (!container) return;
     
-    // Ensure container is clean
-    container.innerHTML = '';
-    
     try {
-      recaptchaVerifier.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
+      const verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
         size: 'invisible',
         callback: () => {
           // reCAPTCHA solved
@@ -123,18 +113,27 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
           }
         }
       });
+      
+      recaptchaVerifier.current = verifier;
+      await verifier.render();
     } catch (e) {
       console.error('Recaptcha init failed', e);
     }
   };
 
+  // Handle reCAPTCHA initialization when switching to mobile
+  useEffect(() => {
+    if (isOpen && method === 'mobile' && auth) {
+      const initTimer = setTimeout(() => {
+        initRecaptcha();
+      }, 200); 
+      return () => clearTimeout(initTimer);
+    }
+  }, [isOpen, method, auth]);
+
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    // Allow only '+' at the start and digits everywhere else
     const numericVal = val.replace(/(?!^\+)[^0-9]/g, '');
-    
-    // Strict length limit: +91 (3 chars) + 10 digits = 13 chars
-    // We allow up to 15 to accommodate potential international numbers if prefix changes
     if (numericVal.length <= 15) {
       setPhone(numericVal);
     }
@@ -227,19 +226,29 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
     }
 
     setIsLoading(true);
+    
+    // Ensure verifier is ready
     if (!recaptchaVerifier.current) {
-      initRecaptcha();
+      await initRecaptcha();
+    }
+
+    if (!recaptchaVerifier.current) {
+      setIsLoading(false);
+      toast({ variant: "destructive", title: "Security Error", description: "Could not initialize security verification. Please refresh." });
+      return;
     }
 
     try {
-      const result = await signInWithPhoneNumber(auth, cleanPhone, recaptchaVerifier.current!);
+      const result = await signInWithPhoneNumber(auth, cleanPhone, recaptchaVerifier.current);
       setConfirmationResult(result);
       setView('verify-otp');
       toast({ title: "OTP Sent", description: "A verification code is on its way to your mobile." });
     } catch (error: any) {
       handleAuthError(error);
       if (recaptchaVerifier.current) {
-        recaptchaVerifier.current.clear();
+        try {
+          recaptchaVerifier.current.clear();
+        } catch (e) {}
         recaptchaVerifier.current = null;
       }
     } finally {
