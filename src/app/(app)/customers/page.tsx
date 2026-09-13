@@ -83,7 +83,7 @@ export default function CustomersPage() {
       .then(() => {
         setIsAddOrEditDialogOpen(false);
         setEditingCustomer(null);
-        toast({ title: customerType ? 'Customer Updated' : 'Customer Added', description: `${values.name}'s details have been saved.` });
+        toast({ title: editingCustomer ? 'Customer Updated' : 'Customer Added', description: `${values.name}'s details have been saved.` });
       })
       .catch(async (error) => {
         const permissionError = new FirestorePermissionError({
@@ -97,9 +97,19 @@ export default function CustomersPage() {
 
   const filteredCustomers = useMemo(() => {
     if (!customers) return [];
-    return customers
-      .filter(c => filterType === 'all' || c.customerType.toLowerCase() === filterType.toLowerCase())
-      .filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()) || c.email.toLowerCase().includes(searchTerm.toLowerCase()));
+    const term = searchTerm.toLowerCase();
+    const filter = filterType.toLowerCase();
+
+    return customers.filter(c => {
+      const cType = (c.customerType || '').toLowerCase();
+      const cName = (c.name || '').toLowerCase();
+      const cEmail = (c.email || '').toLowerCase();
+
+      const typeMatch = filter === 'all' || cType === filter;
+      const searchMatch = cName.includes(term) || cEmail.includes(term);
+
+      return typeMatch && searchMatch;
+    });
   }, [customers, searchTerm, filterType]);
 
   if (loading) {

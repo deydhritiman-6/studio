@@ -1,13 +1,12 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
 
     // --- HELPER FUNCTIONS ---
     function isAdmin() {
       // Hardcoded admin emails for executive oversight
-      return request.auth != null && 
-             request.auth.token.email in ['deydhritiman@gmail.com', 'deyalankrit@gmail.com'];
+      return request.auth != null &&
+              request.auth.token.email in ['deydhritiman@gmail.com', 'deyalankrit@gmail.com'];
     }
 
     function isAuthenticated() {
@@ -21,7 +20,7 @@ service cloud.firestore {
     match /occasions/{docId} { allow read: if true; allow write: if isAdmin(); }
     match /facilities/{docId} { allow read: if true; allow write: if isAdmin(); }
     match /siteContent/{docId} { allow read: if true; allow write: if isAdmin(); }
-    
+
     // --- SITE CONFIGURATION ---
     match /settings/{docId} {
       allow read: if true;
@@ -40,17 +39,17 @@ service cloud.firestore {
       allow read, update: if (request.auth != null && request.auth.uid == userId) || isAdmin();
       allow create, delete: if isAdmin();
     }
-    
+
     match /customers/{customerId} {
-      // Individual patrons can access their profile; Staff/Admins can list all for management.
+      // Individual patrons can access their own profile; only Staff/Admins can list all for management.
       allow get: if (request.auth != null && request.auth.uid == customerId) || isAdmin();
-      allow list: if isAuthenticated();
+      allow list: if isAdmin();
       allow write: if (request.auth != null && request.auth.uid == customerId) || isAdmin();
     }
 
     match /orders/{orderId} {
       // Patrons create and track their own journeys; Staff manage the production floor.
-      allow create: if isAuthenticated(); 
+      allow create: if isAuthenticated();
       allow get: if (request.auth != null && (resource.data.customerId == request.auth.uid || resource.data.userId == request.auth.uid)) || isAdmin();
       allow list: if isAuthenticated();
       allow update: if (request.auth != null && (resource.data.customerId == request.auth.uid || resource.data.userId == request.auth.uid)) || isAdmin();
