@@ -189,8 +189,8 @@ export default function ProductDetailPage() {
 
               <div className="absolute bottom-6 right-6 z-20">
                 <div className="bg-stone-900/60 backdrop-blur-md border border-white/20 rounded-full px-5 py-2 shadow-2xl">
-                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white">
-                    {isMainImagePrimary ? "PRIMARY PRODUCT IMAGE" : "Other Images"}
+                  <p className={cn("text-[10px] font-black uppercase tracking-[0.4em]", isMainImagePrimary ? "text-white" : "text-yellow-400")}>
+                    {isMainImagePrimary ? "PRIMARY PRODUCT IMAGE" : "OTHER VIEW"}
                   </p>
                 </div>
               </div>
@@ -229,8 +229,8 @@ export default function ProductDetailPage() {
                        
                        <div className="absolute bottom-2 left-2 z-10">
                           <div className="bg-stone-900/60 backdrop-blur-md border border-white/20 rounded-full px-2 py-0.5 shadow-lg">
-                            <p className="text-[6px] font-black uppercase tracking-widest text-white whitespace-nowrap">
-                              {isThisThumbnailPrimary ? "PRIMARY PRODUCT IMAGE" : "Other Images"}
+                            <p className={cn("text-[6px] font-black uppercase tracking-widest whitespace-nowrap", isThisThumbnailPrimary ? "text-white" : "text-yellow-400")}>
+                              {isThisThumbnailPrimary ? "PRIMARY PRODUCT IMAGE" : "OTHER VIEW"}
                             </p>
                           </div>
                        </div>
