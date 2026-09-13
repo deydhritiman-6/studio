@@ -135,6 +135,15 @@ export default function ProductDetailPage() {
     setSelectedImage(allImages[prevIndex]);
   };
 
+  const handleGalleryNavigation = () => {
+    if (isMainImagePrimary) {
+      document.getElementById('other-images-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      setSelectedImage(null);
+      document.getElementById('product-card-main')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
   return (
     <div className="space-y-12 animate-in slide-in-from-bottom-8 duration-1000">
       <div className="flex items-center justify-between">
@@ -168,20 +177,15 @@ export default function ProductDetailPage() {
                 sizes="(max-width: 1024px) 100vw, 800px" 
               />
               
-              {/* GO TO OTHER IMAGES BUTTON - Horizontal pill at bottom-left */}
               <button 
-                onClick={() => {
-                  setSelectedImage(null);
-                  document.getElementById('product-card-main')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }}
+                onClick={handleGalleryNavigation}
                 className="absolute bottom-6 left-6 z-20 bg-stone-900/60 backdrop-blur-md border border-white/20 rounded-full px-5 py-2 shadow-2xl transition-all hover:bg-stone-900/80 active:scale-95 group/btn"
               >
                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white">
-                  GO TO OTHER IMAGES
+                  {isMainImagePrimary ? "GO TO OTHER IMAGES" : "GO TO PRIMARY PRODUCT IMAGE"}
                 </p>
               </button>
 
-              {/* Image Label Overlay - Symmetrical bottom-right */}
               <div className="absolute bottom-6 right-6 z-20">
                 <div className="bg-stone-900/60 backdrop-blur-md border border-white/20 rounded-full px-5 py-2 shadow-2xl">
                   <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white">
@@ -211,7 +215,7 @@ export default function ProductDetailPage() {
             </div>
           </div>
           {thumbnails.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-8 px-4">
+            <div id="other-images-section" className="flex flex-wrap justify-center gap-8 px-4">
                {thumbnails.map((url, i) => {
                   const isThisThumbnailPrimary = url === allImages[0];
                   return (
@@ -222,7 +226,6 @@ export default function ProductDetailPage() {
                     >
                        <Image src={url} alt={`${product.name} perspective ${i + 1}`} fill className="object-cover" data-ai-hint={product.imageHint} sizes="(max-width: 768px) 120px, 200px" />
                        
-                       {/* Label Overlay for Thumbnails */}
                        <div className="absolute bottom-2 left-2 z-10">
                           <div className="bg-stone-900/60 backdrop-blur-md border border-white/20 rounded-full px-2 py-0.5 shadow-lg">
                             <p className="text-[6px] font-black uppercase tracking-widest text-white whitespace-nowrap">
