@@ -1,3 +1,4 @@
+
 export type Customer = {
   id: string;
   name: string;
@@ -517,5 +518,16 @@ export type ChocolatierSettings = {
   quote?: string;
   imageUrl: string;
   isVisible: boolean;
+  updatedAt: string;
+};
+
+export type OccasionMessage = {
+  id: string;
+  title: string;
+  date: string;
+  message: string;
+  imageUrl: string;
+  isActive: boolean;
+  createdAt: string;
   updatedAt: string;
 };

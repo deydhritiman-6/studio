@@ -55,7 +55,8 @@ import {
   MessageSquareQuote,
   Layout,
   MessageSquareText,
-  UserRound
+  UserRound,
+  PartyPopper
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -132,6 +133,7 @@ const navItems = [
   { href: '/testimonials', icon: MessageSquareQuote, label: 'Patron Stories' },
   { href: '/distributors', icon: Truck, label: 'Distributors' },
   { href: '/broadcast', icon: Radio, label: 'Broadcasts' },
+  { href: '/occasions', icon: PartyPopper, label: 'Occasion Messages' },
   { href: '/costing', icon: Calculator, label: 'Costing' },
   {
     icon: BrainCircuit,

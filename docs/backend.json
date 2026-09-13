@@ -164,6 +164,22 @@
         "isVisible": { "type": "boolean" },
         "updatedAt": { "type": "string" }
       }
+    },
+    "OccasionMessage": {
+      "title": "Occasion Message",
+      "description": "A scheduled message for festivals and special occasions.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "message": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["title", "date", "message", "imageUrl"]
     }
   },
   "auth": {
@@ -193,6 +209,10 @@
     "/siteContent/chocolatier": {
       "schema": "#/backend/entities/ChocolatierSettings",
       "description": "Artisan chocolatier profile data."
+    },
+    "/occasions/{occasionId}": {
+      "schema": "#/backend/entities/OccasionMessage",
+      "description": "Artisan festive and special day messages."
     }
   }
 }

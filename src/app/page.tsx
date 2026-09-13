@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -26,6 +27,7 @@ import { TestimonialMarquee } from '@/components/testimonial-marquee';
 import { DirectorMessage } from '@/components/director-message';
 import { ChocolatierProfile } from '@/components/chocolatier-profile';
 import { Footer } from '@/components/footer';
+import { OccasionCard } from '@/components/occasion-card';
 import { cn } from '@/lib/utils';
 import { formatINR } from '@/lib/currency';
 
@@ -174,6 +176,14 @@ export default function LandingPage() {
                 <p className="mt-8 text-[10px] font-black uppercase tracking-[0.6em] text-stone-400">The Legend of Raisa & Roseberry</p>
               </div>
             )}
+          </div>
+
+          {/* Occasion Message Component - Floating Right on Desktop, Bottom on Mobile */}
+          <div className="hidden lg:block absolute right-12 top-1/2 -translate-y-1/2 z-30">
+            <OccasionCard />
+          </div>
+          <div className="lg:hidden w-full max-w-sm mt-12 mx-auto">
+            <OccasionCard />
           </div>
         </section>
 
