@@ -155,8 +155,20 @@ export default function ProductDetailPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 xl:gap-24">
-        <div className="lg:col-span-7 space-y-8">
-          <div className="aspect-square relative rounded-[2.5rem] overflow-hidden shadow-2xl bg-white border border-stone-100 p-8 flex flex-col">
+        <div className="lg:col-span-7 space-y-8 relative">
+          {/* GO TO PRIMARY PRODUCT IMAGE BUTTON */}
+          <Button 
+            variant="outline"
+            onClick={() => {
+              setSelectedImage(null);
+              document.getElementById('product-card-main')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }}
+            className="hidden xl:flex absolute -left-12 top-1/2 -translate-y-1/2 h-fit py-8 rounded-2xl border-2 border-stone-100 bg-white shadow-xl hover:shadow-2xl hover:border-primary/40 transition-all text-primary font-black uppercase text-[10px] tracking-widest [writing-mode:vertical-lr] rotate-180 z-20"
+          >
+            GO TO PRIMARY PRODUCT IMAGE
+          </Button>
+
+          <div id="product-card-main" className="aspect-square relative rounded-[2.5rem] overflow-hidden shadow-2xl bg-white border border-stone-100 p-8 flex flex-col">
             <div className="relative flex-1 w-full rounded-[1.5rem] overflow-hidden group">
               <Image 
                 src={mainPreviewImage} 
