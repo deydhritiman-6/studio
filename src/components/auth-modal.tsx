@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
@@ -63,12 +64,23 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
   const [isVerifying, setIsVerifying] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+  // Tracks whether we're mounted on the client, so the recaptcha portal
+  // only tries to render into document.body after hydration.
+  const [isMounted, setIsMounted] = useState(false);
   
   const auth = useAuth();
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
   const recaptchaVerifier = useRef<RecaptchaVerifier | null>(null);
+  // Hard lock (ref, not state) to prevent concurrent handleSendOtp calls.
+  // Refs update instantly, unlike state, so this reliably blocks a fast
+  // double-click/tap from racing two renders into the same container.
+  const isSendingOtpRef = useRef(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Clean up reCAPTCHA on unmount or close
   const cleanupRecaptcha = () => {
@@ -134,6 +146,7 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
         setIsLoading(false);
         setShowPassword(false);
         setConfirmationResult(null);
+        isSendingOtpRef.current = false;
         cleanupRecaptcha();
       }, 300);
     }
@@ -237,13 +250,21 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
 
   const handleSendOtp = async () => {
     if (!auth) return;
-    
+
+    // Hard guard: if a send is already in flight (e.g. user double-tapped
+    // "Send OTP" / "Resend OTP" before the button visually disabled),
+    // bail out immediately instead of racing a second recaptcha render.
+    if (isSendingOtpRef.current) {
+      return;
+    }
+
     const cleanPhone = phone.trim();
     if (!cleanPhone.startsWith('+') || cleanPhone.length < 10) {
       toast({ variant: "destructive", title: "Invalid Mobile", description: "Please include country code (e.g. +91)." });
       return;
     }
 
+    isSendingOtpRef.current = true;
     setIsLoading(true);
     
     try {
@@ -252,7 +273,6 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
       const verifier = await initRecaptcha();
 
       if (!verifier) {
-        setIsLoading(false);
         toast({ variant: "destructive", title: "Security Error", description: "Could not initialize security verification. Please try again." });
         return;
       }
@@ -266,6 +286,7 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
       cleanupRecaptcha(); 
     } finally {
       setIsLoading(false);
+      isSendingOtpRef.current = false;
     }
   };
 
@@ -365,137 +386,91 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden bg-background">
-        {/* Invisible reCAPTCHA container */}
-        <div id="recaptcha-container"></div>
-        
-        <div className="bg-stone-900 text-white p-8 pb-4 shrink-0 flex flex-col items-center text-center space-y-4">
-          <Logo className="h-10 w-auto" />
-          <div className="space-y-1">
-            <DialogTitle className="text-2xl font-headline font-bold">
-              {view === 'sign-in' && "Artisan Access"}
-              {view === 'sign-up' && "Join the Family"}
-              {view === 'verify-email' && "Verify Your Story"}
-              {view === 'forgot-password' && "Recover Access"}
-              {view === 'verify-otp' && "Confirm Mobile"}
-            </DialogTitle>
-            <DialogDescription className="text-stone-400 text-[10px] font-black uppercase tracking-[0.3em]">
-              {view === 'verify-email' || view === 'verify-otp' ? "Security Protocol" : "Certified Artisan Portal"}
-            </DialogDescription>
-          </div>
-        </div>
+    <>
+      {/*
+        The reCAPTCHA container is rendered through a portal directly into
+        document.body, OUTSIDE the Dialog's DOM tree. Radix's DialogContent
+        applies a CSS transform to its wrapper for open/close animations,
+        and any `position: fixed` element nested inside a transformed
+        ancestor gets positioned relative to that ancestor instead of the
+        viewport. That's what caused the invisible reCAPTCHA badge to
+        render in the wrong place / look glitchy. Portaling it to <body>
+        sidesteps the transform entirely so it behaves like a normal
+        fixed-position element again.
+      */}
+      {isMounted && createPortal(
+        <div
+          id="recaptcha-container"
+          style={{ position: 'fixed', bottom: 0, right: 0, zIndex: 9999 }}
+        />,
+        document.body
+      )}
 
-        <div className="p-10 pt-6">
-          {(view === 'sign-in' || view === 'sign-up') && (
-            <div className="flex bg-muted/50 p-1 rounded-xl mb-6">
-               <button 
-                onClick={() => setMethod('email')}
-                className={cn(
-                  "flex-1 h-9 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
-                  method === 'email' ? "bg-white text-primary shadow-sm" : "text-stone-400 hover:text-stone-600"
-                )}
-               >
-                 Email
-               </button>
-               <button 
-                onClick={() => setMethod('mobile')}
-                className={cn(
-                  "flex-1 h-9 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
-                  method === 'mobile' ? "bg-white text-primary shadow-sm" : "text-stone-400 hover:text-stone-600"
-                )}
-               >
-                 Mobile Number
-               </button>
+      <Dialog open={isOpen} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden bg-background">
+          <div className="bg-stone-900 text-white p-8 pb-4 shrink-0 flex flex-col items-center text-center space-y-4">
+            <Logo className="h-10 w-auto" />
+            <div className="space-y-1">
+              <DialogTitle className="text-2xl font-headline font-bold">
+                {view === 'sign-in' && "Artisan Access"}
+                {view === 'sign-up' && "Join the Family"}
+                {view === 'verify-email' && "Verify Your Story"}
+                {view === 'forgot-password' && "Recover Access"}
+                {view === 'verify-otp' && "Confirm Mobile"}
+              </DialogTitle>
+              <DialogDescription className="text-stone-400 text-[10px] font-black uppercase tracking-[0.3em]">
+                {view === 'verify-email' || view === 'verify-otp' ? "Security Protocol" : "Certified Artisan Portal"}
+              </DialogDescription>
             </div>
-          )}
+          </div>
 
-          {view === 'sign-in' && (
-            <form onSubmit={handleSignIn} className="space-y-6">
-              <div className="space-y-4">
-                {method === 'email' ? (
-                  <>
-                    <div className="space-y-2">
-                      <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground ml-1">Workplace Email</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-300" />
-                        <Input type="email" placeholder="email@example.com" className="pl-10 h-12 rounded-xl" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground ml-1">Secret Key</Label>
-                        <button type="button" onClick={() => setView('forgot-password')} className="text-[9px] font-black uppercase tracking-widest text-primary hover:text-rose-700 transition-colors">Forgot?</button>
-                      </div>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-300" />
-                        <Input 
-                          type={showPassword ? "text" : "password"} 
-                          placeholder="••••••••" 
-                          className="pl-10 pr-10 h-12 rounded-xl" 
-                          value={password} 
-                          onChange={(e) => setPassword(e.target.value)} 
-                          required 
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-300 hover:text-stone-500 transition-colors"
-                          aria-label={showPassword ? "Hide password" : "Show password"}
-                        >
-                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="space-y-2">
-                    <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground ml-1">Mobile Number</Label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-300" />
-                      <Input 
-                        type="tel" 
-                        inputMode="tel"
-                        pattern="[0-9+]*"
-                        placeholder="+91 0000000000" 
-                        className="pl-10 h-12 rounded-xl" 
-                        value={phone} 
-                        onChange={handlePhoneChange} 
-                        required 
-                      />
-                    </div>
-                  </div>
-                )}
+          <div className="p-10 pt-6">
+            {(view === 'sign-in' || view === 'sign-up') && (
+              <div className="flex bg-muted/50 p-1 rounded-xl mb-6">
+                 <button 
+                  onClick={() => setMethod('email')}
+                  className={cn(
+                    "flex-1 h-9 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                    method === 'email' ? "bg-white text-primary shadow-sm" : "text-stone-400 hover:text-stone-600"
+                  )}
+                 >
+                   Email
+                 </button>
+                 <button 
+                  onClick={() => setMethod('mobile')}
+                  className={cn(
+                    "flex-1 h-9 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                    method === 'mobile' ? "bg-white text-primary shadow-sm" : "text-stone-400 hover:text-stone-600"
+                  )}
+                 >
+                   Mobile Number
+                 </button>
               </div>
-              <Button type="submit" disabled={isLoading} className="w-full h-14 text-lg font-bold rounded-2xl shadow-xl shadow-primary/20 bg-primary hover:bg-primary/90 text-white">
-                {isLoading ? <Loader2 className="animate-spin" /> : <><ShieldCheck className="mr-2 h-5 w-5" /> {method === 'email' ? 'Enter Boutique' : 'Send OTP'}</>}
-              </Button>
-              <p className="text-center text-[10px] text-stone-400 font-bold uppercase tracking-widest">
-                New to Roseberry? <button type="button" onClick={() => setView('sign-up')} className="text-primary hover:underline">Create Account</button>
-              </p>
-            </form>
-          )}
+            )}
 
-          {view === 'sign-up' && (
-            <form onSubmit={handleSignUp} className="space-y-6">
-              <div className="space-y-4">
-                {method === 'email' ? (
-                  <>
-                    <div className="space-y-2">
-                      <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground ml-1">Email Address</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-300" />
-                        <Input type="email" placeholder="your@email.com" className="pl-10 h-12 rounded-xl" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
+            {view === 'sign-in' && (
+              <form onSubmit={handleSignIn} className="space-y-6">
+                <div className="space-y-4">
+                  {method === 'email' ? (
+                    <>
                       <div className="space-y-2">
-                        <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground ml-1">Access Key</Label>
+                        <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground ml-1">Workplace Email</Label>
                         <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-300" />
+                          <Input type="email" placeholder="email@example.com" className="pl-10 h-12 rounded-xl" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground ml-1">Secret Key</Label>
+                          <button type="button" onClick={() => setView('forgot-password')} className="text-[9px] font-black uppercase tracking-widest text-primary hover:text-rose-700 transition-colors">Forgot?</button>
+                        </div>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-300" />
                           <Input 
                             type={showPassword ? "text" : "password"} 
                             placeholder="••••••••" 
-                            className="pr-10 h-12 rounded-xl" 
+                            className="pl-10 pr-10 h-12 rounded-xl" 
                             value={password} 
                             onChange={(e) => setPassword(e.target.value)} 
                             required 
@@ -510,142 +485,206 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
                           </button>
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground ml-1">Confirm Key</Label>
+                    </>
+                  ) : (
+                    <div className="space-y-2">
+                      <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground ml-1">Mobile Number</Label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-300" />
                         <Input 
-                          type={showPassword ? "text" : "password"} 
-                          placeholder="••••••••" 
-                          className="h-12 rounded-xl" 
-                          value={confirmPassword} 
-                          onChange={(e) => setConfirmPassword(e.target.value)} 
+                          type="tel" 
+                          inputMode="tel"
+                          pattern="[0-9+]*"
+                          placeholder="+91 0000000000" 
+                          className="pl-10 h-12 rounded-xl" 
+                          value={phone} 
+                          onChange={handlePhoneChange} 
                           required 
                         />
                       </div>
                     </div>
-                  </>
-                ) : (
-                  <div className="space-y-2">
-                    <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground ml-1">Mobile Number</Label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-300" />
-                      <Input 
-                        type="tel" 
-                        inputMode="tel"
-                        pattern="[0-9+]*"
-                        placeholder="+91 0000000000" 
-                        className="pl-10 h-12 rounded-xl" 
-                        value={phone} 
-                        onChange={handlePhoneChange} 
-                        required 
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-              <Button type="submit" disabled={isLoading} className="w-full h-14 text-lg font-bold rounded-2xl shadow-xl shadow-primary/20">
-                {isLoading ? <Loader2 className="animate-spin" /> : <><Sparkles className="mr-2 h-5 w-5" /> {method === 'email' ? 'Join Collection' : 'Verify Mobile'}</>}
-              </Button>
-              <p className="text-center text-[10px] text-stone-400 font-bold uppercase tracking-widest">
-                Already registered? <button type="button" onClick={() => setView('sign-in')} className="text-primary hover:underline">Sign In</button>
-              </p>
-            </form>
-          )}
-
-          {view === 'verify-otp' && (
-            <form onSubmit={handleVerifyOtp} className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
-               <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="h-16 w-16 bg-muted rounded-full flex items-center justify-center">
-                    <MessageSquare className="h-8 w-8 text-primary" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="font-bold text-stone-800">Verification Sent</p>
-                    <p className="text-xs text-stone-500">Enter the 6-digit code sent to {phone}</p>
-                  </div>
-               </div>
-               
-               <div className="space-y-2">
-                  <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground ml-1">Verification Code</Label>
-                  <Input 
-                    placeholder="000000" 
-                    className="h-14 rounded-2xl text-center text-2xl tracking-[0.5em] font-black" 
-                    maxLength={6} 
-                    value={otp} 
-                    onChange={handleOtpChange} 
-                    required 
-                  />
-               </div>
-
-               <div className="space-y-4">
-                 <Button type="submit" disabled={isLoading || otp.length < 6} className="w-full h-14 text-lg font-bold rounded-2xl shadow-xl">
-                   {isLoading ? <Loader2 className="animate-spin" /> : "Verify & Enter"}
-                 </Button>
-                 <div className="flex justify-between items-center px-2">
-                   <button type="button" onClick={handleSendOtp} className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">Resend OTP</button>
-                   <button type="button" onClick={() => setView('sign-in')} className="text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-stone-600">Change Number</button>
-                 </div>
-               </div>
-            </form>
-          )}
-
-          {view === 'verify-email' && (
-            <div className="flex flex-col items-center text-center space-y-8 animate-in fade-in zoom-in-95 duration-500">
-              <div className="h-24 w-24 bg-primary/10 rounded-[2rem] flex items-center justify-center shadow-inner">
-                <Mail className="h-10 w-10 text-primary animate-pulse" />
-              </div>
-              <div className="space-y-2">
-                <p className="text-lg font-bold text-stone-800">Verify your indulgence</p>
-                <p className="text-xs text-stone-500 leading-relaxed px-4">
-                  We've sent a craft-protection link to <strong className="text-stone-900">{user?.email}</strong>. Please click it to continue your artisanal selection.
+                  )}
+                </div>
+                <Button type="submit" disabled={isLoading} className="w-full h-14 text-lg font-bold rounded-2xl shadow-xl shadow-primary/20 bg-primary hover:bg-primary/90 text-white">
+                  {isLoading ? <Loader2 className="animate-spin" /> : <><ShieldCheck className="mr-2 h-5 w-5" /> {method === 'email' ? 'Enter Boutique' : 'Send OTP'}</>}
+                </Button>
+                <p className="text-center text-[10px] text-stone-400 font-bold uppercase tracking-widest">
+                  New to Roseberry? <button type="button" onClick={() => setView('sign-up')} className="text-primary hover:underline">Create Account</button>
                 </p>
-              </div>
-              
-              <div className="w-full space-y-3">
-                <Button onClick={checkVerification} disabled={isVerifying} className="w-full h-14 rounded-2xl font-bold uppercase text-[10px] tracking-widest shadow-lg">
-                  {isVerifying ? <Loader2 className="animate-spin mr-2" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
-                  I've Verified My Email
-                </Button>
-                <Button variant="outline" onClick={resendVerification} disabled={isLoading} className="w-full h-12 rounded-xl border-2 font-bold text-[10px] uppercase tracking-widest">
-                  {isLoading ? <Loader2 className="animate-spin" /> : <><RefreshCw className="mr-2 h-3.5 w-3.5" /> Resend Link</>}
-                </Button>
-              </div>
+              </form>
+            )}
 
-              <button 
-                type="button" 
-                onClick={() => { signOut(auth!); setView('sign-in'); }} 
-                className="text-[9px] font-black uppercase tracking-widest text-stone-400 hover:text-primary transition-colors"
-              >
-                Use different email
-              </button>
-            </div>
-          )}
+            {view === 'sign-up' && (
+              <form onSubmit={handleSignUp} className="space-y-6">
+                <div className="space-y-4">
+                  {method === 'email' ? (
+                    <>
+                      <div className="space-y-2">
+                        <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground ml-1">Email Address</Label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-300" />
+                          <Input type="email" placeholder="your@email.com" className="pl-10 h-12 rounded-xl" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground ml-1">Access Key</Label>
+                          <div className="relative">
+                            <Input 
+                              type={showPassword ? "text" : "password"} 
+                              placeholder="••••••••" 
+                              className="pr-10 h-12 rounded-xl" 
+                              value={password} 
+                              onChange={(e) => setPassword(e.target.value)} 
+                              required 
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-300 hover:text-stone-500 transition-colors"
+                              aria-label={showPassword ? "Hide password" : "Show password"}
+                            >
+                              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground ml-1">Confirm Key</Label>
+                          <Input 
+                            type={showPassword ? "text" : "password"} 
+                            placeholder="••••••••" 
+                            className="h-12 rounded-xl" 
+                            value={confirmPassword} 
+                            onChange={(e) => setConfirmPassword(e.target.value)} 
+                            required 
+                          />
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="space-y-2">
+                      <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground ml-1">Mobile Number</Label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-300" />
+                        <Input 
+                          type="tel" 
+                          inputMode="tel"
+                          pattern="[0-9+]*"
+                          placeholder="+91 0000000000" 
+                          className="pl-10 h-12 rounded-xl" 
+                          value={phone} 
+                          onChange={handlePhoneChange} 
+                          required 
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <Button type="submit" disabled={isLoading} className="w-full h-14 text-lg font-bold rounded-2xl shadow-xl shadow-primary/20">
+                  {isLoading ? <Loader2 className="animate-spin" /> : <><Sparkles className="mr-2 h-5 w-5" /> {method === 'email' ? 'Join Collection' : 'Verify Mobile'}</>}
+                </Button>
+                <p className="text-center text-[10px] text-stone-400 font-bold uppercase tracking-widest">
+                  Already registered? <button type="button" onClick={() => setView('sign-in')} className="text-primary hover:underline">Sign In</button>
+                </p>
+              </form>
+            )}
 
-          {view === 'forgot-password' && (
-            <form onSubmit={handleForgotPassword} className="space-y-8">
-              <div className="space-y-4">
-                <div className="p-4 bg-amber-50 rounded-2xl border-2 border-amber-100 flex gap-4">
-                  <AlertCircle className="h-5 w-5 text-amber-600 shrink-0" />
-                  <p className="text-[10px] text-amber-700 font-bold uppercase leading-relaxed">Enter your registered email to receive a secure recovery key.</p>
+            {view === 'verify-otp' && (
+              <form onSubmit={handleVerifyOtp} className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
+                 <div className="flex flex-col items-center text-center space-y-4">
+                    <div className="h-16 w-16 bg-muted rounded-full flex items-center justify-center">
+                      <MessageSquare className="h-8 w-8 text-primary" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="font-bold text-stone-800">Verification Sent</p>
+                      <p className="text-xs text-stone-500">Enter the 6-digit code sent to {phone}</p>
+                    </div>
+                 </div>
+                 
+                 <div className="space-y-2">
+                    <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground ml-1">Verification Code</Label>
+                    <Input 
+                      placeholder="000000" 
+                      className="h-14 rounded-2xl text-center text-2xl tracking-[0.5em] font-black" 
+                      maxLength={6} 
+                      value={otp} 
+                      onChange={handleOtpChange} 
+                      required 
+                    />
+                 </div>
+
+                 <div className="space-y-4">
+                   <Button type="submit" disabled={isLoading || otp.length < 6} className="w-full h-14 text-lg font-bold rounded-2xl shadow-xl">
+                     {isLoading ? <Loader2 className="animate-spin" /> : "Verify & Enter"}
+                   </Button>
+                   <div className="flex justify-between items-center px-2">
+                     <button type="button" onClick={handleSendOtp} disabled={isLoading} className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline disabled:opacity-50 disabled:pointer-events-none">Resend OTP</button>
+                     <button type="button" onClick={() => setView('sign-in')} className="text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-stone-600">Change Number</button>
+                   </div>
+                 </div>
+              </form>
+            )}
+
+            {view === 'verify-email' && (
+              <div className="flex flex-col items-center text-center space-y-8 animate-in fade-in zoom-in-95 duration-500">
+                <div className="h-24 w-24 bg-primary/10 rounded-[2rem] flex items-center justify-center shadow-inner">
+                  <Mail className="h-10 w-10 text-primary animate-pulse" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground ml-1">Email Address</Label>
-                  <Input type="email" placeholder="your@email.com" className="pl-10 h-12 rounded-xl" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  <p className="text-lg font-bold text-stone-800">Verify your indulgence</p>
+                  <p className="text-xs text-stone-500 leading-relaxed px-4">
+                    We've sent a craft-protection link to <strong className="text-stone-900">{user?.email}</strong>. Please click it to continue your artisanal selection.
+                  </p>
                 </div>
-              </div>
-              <div className="flex flex-col gap-4">
-                <Button type="submit" disabled={isLoading} className="h-14 text-lg font-bold rounded-2xl shadow-xl">
-                  {isLoading ? <Loader2 className="animate-spin" /> : "Send Recovery Key"}
-                </Button>
-                <button type="button" onClick={() => setView('sign-in')} className="text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-stone-900 transition-colors">Return to Login</button>
-              </div>
-            </form>
-          )}
-        </div>
+                
+                <div className="w-full space-y-3">
+                  <Button onClick={checkVerification} disabled={isVerifying} className="w-full h-14 rounded-2xl font-bold uppercase text-[10px] tracking-widest shadow-lg">
+                    {isVerifying ? <Loader2 className="animate-spin mr-2" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+                    I've Verified My Email
+                  </Button>
+                  <Button variant="outline" onClick={resendVerification} disabled={isLoading} className="w-full h-12 rounded-xl border-2 font-bold text-[10px] uppercase tracking-widest">
+                    {isLoading ? <Loader2 className="animate-spin" /> : <><RefreshCw className="mr-2 h-3.5 w-3.5" /> Resend Link</>}
+                  </Button>
+                </div>
 
-        <div className="p-6 bg-stone-50 border-t flex items-center justify-center gap-4">
-           <ShieldCheck className="h-4 w-4 text-stone-300" />
-           <span className="text-[8px] font-black uppercase tracking-[0.2em] text-stone-400">Secure Artisan Authentication Node</span>
-        </div>
-      </DialogContent>
-    </Dialog>
+                <button 
+                  type="button" 
+                  onClick={() => { signOut(auth!); setView('sign-in'); }} 
+                  className="text-[9px] font-black uppercase tracking-widest text-stone-400 hover:text-primary transition-colors"
+                >
+                  Use different email
+                </button>
+              </div>
+            )}
+
+            {view === 'forgot-password' && (
+              <form onSubmit={handleForgotPassword} className="space-y-8">
+                <div className="space-y-4">
+                  <div className="p-4 bg-amber-50 rounded-2xl border-2 border-amber-100 flex gap-4">
+                    <AlertCircle className="h-5 w-5 text-amber-600 shrink-0" />
+                    <p className="text-[10px] text-amber-700 font-bold uppercase leading-relaxed">Enter your registered email to receive a secure recovery key.</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="uppercase text-[9px] font-black tracking-widest text-muted-foreground ml-1">Email Address</Label>
+                    <Input type="email" placeholder="your@email.com" className="pl-10 h-12 rounded-xl" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-4">
+                  <Button type="submit" disabled={isLoading} className="h-14 text-lg font-bold rounded-2xl shadow-xl">
+                    {isLoading ? <Loader2 className="animate-spin" /> : "Send Recovery Key"}
+                  </Button>
+                  <button type="button" onClick={() => setView('sign-in')} className="text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-stone-900 transition-colors">Return to Login</button>
+                </div>
+              </form>
+            )}
+          </div>
+
+          <div className="p-6 bg-stone-50 border-t flex items-center justify-center gap-4">
+             <ShieldCheck className="h-4 w-4 text-stone-300" />
+             <span className="text-[8px] font-black uppercase tracking-[0.2em] text-stone-400">Secure Artisan Authentication Node</span>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
