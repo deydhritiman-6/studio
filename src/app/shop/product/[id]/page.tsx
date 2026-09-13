@@ -13,6 +13,7 @@ import { doc, collection, query, where } from 'firebase/firestore';
 import { ChocolateMeshViewer } from '@/components/chocolate-mesh-viewer';
 import { formatINR } from '@/lib/currency';
 import { useShopAuth } from '../../layout';
+import { cn } from '@/lib/utils';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -181,8 +182,8 @@ export default function ProductDetailPage() {
                 onClick={handleGalleryNavigation}
                 className="absolute bottom-6 left-6 z-20 bg-stone-900/60 backdrop-blur-md border border-white/20 rounded-full px-5 py-2 shadow-2xl transition-all hover:bg-stone-900/80 active:scale-95 group/btn"
               >
-                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white">
-                  {isMainImagePrimary ? "GO TO OTHER IMAGES" : "GO TO PRIMARY PRODUCT IMAGE"}
+                <p className={cn("text-[10px] font-black uppercase tracking-[0.4em]", isMainImagePrimary ? "text-yellow-400" : "text-white")}>
+                  {isMainImagePrimary ? "OTHER VIEW" : "GO TO PRIMARY PRODUCT IMAGE"}
                 </p>
               </button>
 
