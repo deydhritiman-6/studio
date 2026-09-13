@@ -168,11 +168,11 @@ export default function ProductDetailPage() {
                 sizes="(max-width: 1024px) 100vw, 800px" 
               />
               
-              {/* Image Label Overlay */}
-              <div className="absolute top-6 left-6 z-20">
+              {/* Image Label Overlay - Repositioned to bottom-right */}
+              <div className="absolute bottom-6 right-6 z-20">
                 <div className="bg-stone-900/60 backdrop-blur-md border border-white/20 rounded-full px-5 py-2 shadow-2xl">
                   <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white">
-                    {isMainImagePrimary ? "Primary Product Image" : "Other Images"}
+                    {isMainImagePrimary ? "PRIMARY PRODUCT IMAGE" : "Other Images"}
                   </p>
                 </div>
               </div>
@@ -213,7 +213,7 @@ export default function ProductDetailPage() {
                        <div className="absolute bottom-2 left-2 z-10">
                           <div className="bg-stone-900/60 backdrop-blur-md border border-white/20 rounded-full px-2 py-0.5 shadow-lg">
                             <p className="text-[6px] font-black uppercase tracking-widest text-white whitespace-nowrap">
-                              {isThisThumbnailPrimary ? "Primary Product Image" : "Other Images"}
+                              {isThisThumbnailPrimary ? "PRIMARY PRODUCT IMAGE" : "Other Images"}
                             </p>
                           </div>
                        </div>
