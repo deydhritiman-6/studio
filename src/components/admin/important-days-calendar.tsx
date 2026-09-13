@@ -13,6 +13,7 @@ import { getMonth, getYear, eachDayOfInterval, startOfMonth, endOfMonth, startOf
 // --- DATA & TYPES ---
 const categories = {
   HINDU: { label: 'Hindu', icon: '🕉️', color: 'bg-orange-100 text-orange-800' },
+  BENGALI: { label: 'Bengali Festivals', icon: '🌺', color: 'bg-rose-100 text-rose-800' },
   BUDDHIST: { label: 'Buddhist', icon: '☸️', color: 'bg-yellow-100 text-yellow-800' },
   CHRISTIAN: { label: 'Christian', icon: '✝️', color: 'bg-blue-100 text-blue-800' },
   MUSLIM: { label: 'Muslim', icon: '☪️', color: 'bg-green-100 text-green-800' },
@@ -32,6 +33,28 @@ interface Occasion {
 
 // Comprehensive list of important days and festivals, now using MM-DD for annual repetition.
 const importantOccasions: Occasion[] = [
+  // Bengali Festivals
+  { date: '01-14', name: 'Poush Parbon / Ganga Sagar Mela', category: 'BENGALI' },
+  { date: '02-14', name: 'Saraswati Puja', category: 'BENGALI' },
+  { date: '03-08', name: 'Maha Shivratri', category: 'BENGALI' },
+  { date: '03-25', name: 'Dol Jatra / Dol Purnima', category: 'BENGALI' },
+  { date: '04-14', name: 'Poila Boishakh / Bengali New Year', category: 'BENGALI' },
+  { date: '04-16', name: 'Basanti Puja', category: 'BENGALI' },
+  { date: '06-12', name: 'Jamai Shashti', category: 'BENGALI' },
+  { date: '07-07', name: 'Rathayatra', category: 'BENGALI' },
+  { date: '08-26', name: 'Janmashtami', category: 'BENGALI' },
+  { date: '09-17', name: 'Vishwakarma Puja', category: 'BENGALI' },
+  { date: '10-02', name: 'Mahalaya', category: 'BENGALI' },
+  { date: '10-10', name: 'Durga Puja (Maha Saptami)', category: 'BENGALI' },
+  { date: '10-11', name: 'Durga Puja (Maha Ashtami)', category: 'BENGALI' },
+  { date: '10-12', name: 'Durga Puja (Maha Navami)', category: 'BENGALI' },
+  { date: '10-13', name: 'Bijoya Dashami', category: 'BENGALI' },
+  { date: '10-16', name: 'Kojagari Lakshmi Puja', category: 'BENGALI' },
+  { date: '10-31', name: 'Kali Puja', category: 'BENGALI' },
+  { date: '11-03', name: 'Bhai Phonta', category: 'BENGALI' },
+  { date: '11-10', name: 'Jagaddhatri Puja', category: 'BENGALI' },
+  { date: '11-17', name: 'Nabanna', category: 'BENGALI' },
+
   // Hindu
   { date: '08-19', name: 'Raksha Bandhan', category: 'HINDU' },
   { date: '08-26', name: 'Janmashtami', category: 'HINDU' },
