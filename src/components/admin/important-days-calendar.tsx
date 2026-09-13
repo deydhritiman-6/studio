@@ -7,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight, Search, Calendar as CalendarIcon, Sparkles } from 'lucide-react';
-import { enUS } from 'date-fns/locale';
 import { getMonth, getYear, eachDayOfInterval, startOfMonth, endOfMonth, startOfWeek, endOfWeek, format, isSameMonth, isToday, addMonths, subMonths, isSameDay } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -294,10 +293,10 @@ export function ImportantDaysCalendar() {
             <div className="lg:col-span-8">
               <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-6">
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center bg-stone-100 p-1 rounded-xl border border-stone-200 shadow-inner">
-                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-lg hover:bg-white transition-all" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}><ChevronLeft className="h-5 w-5" /></Button>
+                  <div className="flex items-center bg-stone-100 p-1 rounded-xl border border-stone-200 shadow-inner shrink-0 min-w-fit">
+                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-lg hover:bg-white transition-all shrink-0" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}><ChevronLeft className="h-5 w-5" /></Button>
                     <h2 className="text-lg font-bold w-44 text-center font-headline text-stone-900 drop-shadow-sm">{format(currentMonth, 'MMMM yyyy')}</h2>
-                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-lg hover:bg-white transition-all" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}><ChevronRight className="h-5 w-5" /></Button>
+                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-lg hover:bg-white transition-all shrink-0" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}><ChevronRight className="h-5 w-5" /></Button>
                   </div>
                   <Button variant="outline" className="rounded-xl h-12 px-6 border-2 border-stone-200 font-bold uppercase text-[10px] tracking-widest hover:border-primary/30 hover:text-primary transition-all hidden md:inline-flex" onClick={handleGoToToday}>
                     Today
