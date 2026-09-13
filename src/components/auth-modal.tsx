@@ -75,11 +75,50 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
     if (recaptchaVerifier.current) {
       try {
         recaptchaVerifier.current.clear();
-      } catch (e) {}
+      } catch (e) {
+        console.warn('Error clearing reCAPTCHA instance:', e);
+      }
       recaptchaVerifier.current = null;
     }
     const container = document.getElementById('recaptcha-container');
-    if (container) container.innerHTML = '';
+    if (container) {
+      container.innerHTML = '';
+    }
+  };
+
+  const initRecaptcha = async () => {
+    if (!auth) return null;
+    
+    // Check if already initialized to avoid "already rendered" error
+    if (recaptchaVerifier.current) {
+      return recaptchaVerifier.current;
+    }
+
+    const container = document.getElementById('recaptcha-container');
+    if (!container) return null;
+    
+    // Clear any leftover content in the container
+    container.innerHTML = '';
+    
+    try {
+      const verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        size: 'invisible',
+        callback: () => {
+          // reCAPTCHA solved
+        },
+        'expired-callback': () => {
+          cleanupRecaptcha();
+        }
+      });
+      
+      await verifier.render();
+      recaptchaVerifier.current = verifier;
+      return verifier;
+    } catch (e) {
+      console.error('Recaptcha init failed', e);
+      cleanupRecaptcha();
+      return null;
+    }
   };
 
   useEffect(() => {
@@ -100,43 +139,12 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
     }
   }, [isOpen]);
 
-  const initRecaptcha = async () => {
-    if (!auth) return null;
-    
-    cleanupRecaptcha();
-    
-    const container = document.getElementById('recaptcha-container');
-    if (!container) return null;
-    
-    try {
-      const verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        size: 'invisible',
-        callback: () => {
-          // reCAPTCHA solved
-        },
-        'expired-callback': () => {
-          cleanupRecaptcha();
-        }
-      });
-      
-      await verifier.render();
-      recaptchaVerifier.current = verifier;
-      return verifier;
-    } catch (e) {
-      console.error('Recaptcha init failed', e);
-      return null;
-    }
-  };
-
-  // Re-init reCAPTCHA when switching to mobile method
+  // Clean up when switching away from mobile method
   useEffect(() => {
-    if (isOpen && method === 'mobile' && auth) {
-      initRecaptcha();
-    } else {
+    if (method !== 'mobile') {
       cleanupRecaptcha();
     }
-    return () => cleanupRecaptcha();
-  }, [isOpen, method, auth]);
+  }, [method]);
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -238,25 +246,24 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
 
     setIsLoading(true);
     
-    let verifier = recaptchaVerifier.current;
-    if (!verifier) {
-      verifier = await initRecaptcha();
-    }
-
-    if (!verifier) {
-      setIsLoading(false);
-      toast({ variant: "destructive", title: "Security Error", description: "Could not initialize security verification. Please refresh and try again." });
-      return;
-    }
-
     try {
+      // Re-init verifier explicitly on send to handle any DOM glitches
+      cleanupRecaptcha();
+      const verifier = await initRecaptcha();
+
+      if (!verifier) {
+        setIsLoading(false);
+        toast({ variant: "destructive", title: "Security Error", description: "Could not initialize security verification. Please try again." });
+        return;
+      }
+
       const result = await signInWithPhoneNumber(auth, cleanPhone, verifier);
       setConfirmationResult(result);
       setView('verify-otp');
       toast({ title: "OTP Sent", description: "A verification code is on its way to your mobile." });
     } catch (error: any) {
       handleAuthError(error);
-      cleanupRecaptcha(); // Clean up on error to allow retry
+      cleanupRecaptcha(); 
     } finally {
       setIsLoading(false);
     }
@@ -360,8 +367,8 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden bg-background">
-        {/* Persistent reCAPTCHA container inside DialogContent to ensure it's in the DOM when needed */}
-        <div id="recaptcha-container" className="absolute pointer-events-none opacity-0 left-0 top-0"></div>
+        {/* Invisible reCAPTCHA container */}
+        <div id="recaptcha-container"></div>
         
         <div className="bg-stone-900 text-white p-8 pb-4 shrink-0 flex flex-col items-center text-center space-y-4">
           <Logo className="h-10 w-auto" />
