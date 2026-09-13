@@ -216,21 +216,45 @@ export default function PhotoGalleryManagementPage() {
     if (!firestore || !itemToDelete) return;
     setIsDeleting(true);
 
-    const galleryRef = doc(firestore, 'product-galleries', itemToDelete.id);
-    deleteDoc(galleryRef)
-      .then(() => {
-        toast({ title: 'Set Removed' });
-        setItemToDelete(null);
-        setDeleteInput('');
-      })
-      .catch(async (error) => {
-        const permissionError = new FirestorePermissionError({
-          path: galleryRef.path,
-          operation: 'delete',
-        });
-        errorEmitter.emit('permission-error', permissionError);
-      })
-      .finally(() => setIsDeleting(false));
+    const isVirtual = itemToDelete.id.startsWith('VIRTUAL-');
+    const productId = isVirtual ? itemToDelete.id.replace('VIRTUAL-', '') : (itemToDelete as any).productId;
+
+    if (isVirtual) {
+      // For virtual items, removal from visual archive means archiving the source product
+      const productRef = doc(firestore, 'products', productId);
+      const archiveData = { isArchived: true, deletedAt: new Date().toISOString() };
+      
+      setDoc(productRef, archiveData, { merge: true })
+        .then(() => {
+          toast({ title: 'Creation Removed' });
+          setItemToDelete(null);
+          setDeleteInput('');
+        })
+        .catch(async (error) => {
+          errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: productRef.path,
+            operation: 'update',
+            requestResourceData: archiveData,
+          }));
+        })
+        .finally(() => setIsDeleting(false));
+    } else {
+      // For real gallery items, delete the entry
+      const galleryRef = doc(firestore, 'product-galleries', itemToDelete.id);
+      deleteDoc(galleryRef)
+        .then(() => {
+          toast({ title: 'Set Removed' });
+          setItemToDelete(null);
+          setDeleteInput('');
+        })
+        .catch(async (error) => {
+          errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: galleryRef.path,
+            operation: 'delete',
+          }));
+        })
+        .finally(() => setIsDeleting(false));
+    }
   };
 
   const PhotoSlot = ({ fieldName, label, required = false }: { fieldName: keyof GalleryFormValues, label: string, required?: boolean }) => {
@@ -361,7 +385,6 @@ export default function PhotoGalleryManagementPage() {
                             size="icon" 
                             className="h-9 w-9 rounded-xl hover:bg-destructive/10 hover:text-destructive" 
                             onClick={() => setItemToDelete(gallery)}
-                            disabled={gallery.id.startsWith('VIRTUAL-')}
                         >
                             <Trash2 className="h-4 w-4" />
                         </Button>
