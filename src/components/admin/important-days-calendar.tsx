@@ -33,8 +33,6 @@ interface Occasion {
 
 /**
  * COMPREHENSIVE 2026 AUDITED FESTIVAL DATA
- * Fixed dates use MM-DD format.
- * Movable dates (Lunar/Tithi based) use YYYY-MM-DD format for 2026 specifically.
  */
 const importantOccasions: Occasion[] = [
   // --- BENGALI FESTIVALS (2026 Audited) ---
@@ -130,7 +128,6 @@ function CalendarGrid({ currentMonth, onDateSelect, occasions, selectedDate, tod
         const fullDateKey = format(day, 'yyyy-MM-dd');
         const monthDayKey = format(day, 'MM-dd');
         
-        // Match either specific YYYY-MM-DD or generic MM-DD
         const occasionsOnDay = occasions.filter(o => o.date === fullDateKey || o.date === monthDayKey);
         
         const isTodayIST = isSameDay(day, today);
@@ -294,9 +291,25 @@ export function ImportantDaysCalendar() {
               <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-6">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center bg-stone-100 p-1 rounded-xl border border-stone-200 shadow-inner shrink-0 min-w-fit">
-                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-lg hover:bg-white transition-all shrink-0" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}><ChevronLeft className="h-5 w-5" /></Button>
-                    <h2 className="text-lg font-bold w-44 text-center font-headline text-stone-900 drop-shadow-sm">{format(currentMonth, 'MMMM yyyy')}</h2>
-                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-lg hover:bg-white transition-all shrink-0" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}><ChevronRight className="h-5 w-5" /></Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-10 w-10 rounded-lg hover:bg-white transition-all shrink-0 text-stone-600 flex items-center justify-center" 
+                      onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </Button>
+                    <span className="text-lg font-bold w-44 text-center font-headline text-stone-900 drop-shadow-sm flex items-center justify-center">
+                      {format(currentMonth, 'MMMM yyyy')}
+                    </span>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-10 w-10 rounded-lg hover:bg-white transition-all shrink-0 text-stone-600 flex items-center justify-center" 
+                      onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                    >
+                      <ChevronRight className="h-5 w-5" />
+                    </Button>
                   </div>
                   <Button variant="outline" className="rounded-xl h-12 px-6 border-2 border-stone-200 font-bold uppercase text-[10px] tracking-widest hover:border-primary/30 hover:text-primary transition-all hidden md:inline-flex" onClick={handleGoToToday}>
                     Today
